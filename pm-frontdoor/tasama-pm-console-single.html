@@ -72,17 +72,6 @@
   }
 }
 
-@keyframes quick-links-modal-in {
-  from {
-    opacity: 0;
-    transform: translate(-50%, calc(-50% + 8px)) scale(0.992);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-}
-
 * {
   box-sizing: border-box;
 }
@@ -94,6 +83,25 @@ body {
 
 html {
   font-family: var(--font);
+}
+
+app-root,
+app-pm-console-shell,
+app-pm-console-content {
+  display: block;
+  min-height: 0;
+  min-width: 0;
+}
+
+app-root,
+app-pm-console-shell {
+  height: 100%;
+}
+
+app-pm-console-content {
+  grid-column: 2;
+  grid-row: 2;
+  height: 100%;
 }
 
 body {
@@ -1518,6 +1526,7 @@ p {
 .app-canvas {
   grid-column: 2;
   grid-row: 2;
+  height: 100%;
   min-height: 0;
   min-width: 0;
   padding: 14px 22px;
@@ -2735,7 +2744,7 @@ p {
 .pm-project-table {
   border-collapse: separate;
   border-spacing: 0;
-  min-width: 1120px;
+  min-width: 1060px;
   width: 100%;
 }
 
@@ -2812,10 +2821,14 @@ p {
 
 .pm-table-trend,
 .pm-table-manager,
-.pm-table-budget,
-.pm-table-actions-cell {
+.pm-table-budget {
   align-items: center;
   display: flex;
+}
+
+.pm-table-actions-cell,
+.pm-table-status-cell {
+  display: table-cell;
 }
 
 .pm-table-trend {
@@ -2825,37 +2838,44 @@ p {
 
 .pm-table-trend-dot {
   align-items: center;
-  border: 1px solid currentColor;
   border-radius: 999px;
+  border: 0;
+  color: #ffffff;
   display: inline-flex;
-  height: 22px;
+  height: 24px;
   justify-content: center;
-  width: 22px;
+  width: 24px;
 }
 
 .pm-table-trend-dot .icon {
-  height: 13px;
-  width: 13px;
+  height: 14px;
+  width: 14px;
+}
+
+.pm-table-trend-dot .icon svg {
+  stroke-width: 2;
 }
 
 .pm-table-trend-dot.green {
-  color: #17a365;
+  background: var(--green);
 }
 
 .pm-table-trend-dot.amber {
-  color: #f47a20;
+  background: var(--amber);
 }
 
 .pm-table-trend-dot.red {
-  color: #d64545;
+  background: var(--red);
 }
 
 .pm-table-trend-dot.blue {
-  color: #315fcb;
+  background: var(--blue);
+  color: #ffffff;
 }
 
 .pm-table-trend-dot.neutral {
-  color: #9aa1ad;
+  background: #9aa1ad;
+  color: #ffffff;
 }
 
 .pm-table-manager {
@@ -2905,15 +2925,20 @@ p {
 }
 
 .pm-table-actions-cell {
-  gap: 8px;
-  justify-content: flex-end;
   min-width: 146px;
+  text-align: right;
+}
+
+.pm-table-status-cell {
+  min-width: 106px;
 }
 
 .pm-table-row-status {
   border-radius: 999px;
+  display: inline-flex;
   font-size: 11px;
   font-weight: 600;
+  justify-content: center;
   line-height: 14px;
   padding: 5px 8px;
   white-space: nowrap;
@@ -3990,12 +4015,9 @@ p {
 
 .report-trend-row {
   --report-border: #dfe4ee;
-  --report-glow: rgba(104, 113, 130, 0.12);
   --report-chip-bg: rgba(104, 113, 130, 0.12);
   --report-chip-text: #687182;
-  background:
-    radial-gradient(72px 30px at 18px 6px, var(--report-glow) 0%, rgba(255, 255, 255, 0) 100%),
-    #ffffff;
+  background: #ffffff;
   border-color: var(--report-border);
   border-radius: 12px;
   box-shadow: 0 1px 2px rgba(1, 10, 15, 0.15);
@@ -4010,21 +4032,18 @@ p {
 
 .report-trend-row.red {
   --report-border: #ffbdbd;
-  --report-glow: rgba(224, 82, 82, 0.16);
   --report-chip-bg: rgba(185, 28, 28, 0.15);
   --report-chip-text: #b91c1c;
 }
 
 .report-trend-row.green {
   --report-border: #74bc9e;
-  --report-glow: rgba(34, 160, 107, 0.16);
   --report-chip-bg: rgba(34, 160, 107, 0.15);
   --report-chip-text: #15803d;
 }
 
 .report-trend-row.amber {
   --report-border: #ffbd8c;
-  --report-glow: rgba(232, 119, 34, 0.16);
   --report-chip-bg: rgba(232, 119, 34, 0.15);
   --report-chip-text: #e87722;
 }
@@ -4074,8 +4093,11 @@ p {
 .report-trend-row .report-trend {
   align-items: center;
   background: #ffffff;
+  border: 1px solid rgba(223, 228, 238, 0.86);
   border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(1, 10, 15, 0.1);
+  box-shadow:
+    0 -1px 2px rgba(25, 33, 61, 0.035),
+    0 3px 8px rgba(25, 33, 61, 0.1);
   display: grid;
   gap: 0;
   grid-template-columns: repeat(var(--report-trend-count), minmax(0, 1fr));
@@ -5078,6 +5100,7 @@ p {
 
 .task-stack {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   gap: 10px;
   min-height: 0;
@@ -5257,81 +5280,54 @@ p {
 }
 
 .pm101-view {
-  background: #fff;
-  border: 1px solid #eef0f5;
-  border-radius: 8px;
-  overflow: auto;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  justify-content: flex-start;
+  overflow: hidden;
+  padding-top: 28px;
 }
 
 .pm101-flow {
-  min-height: 100%;
+  align-items: flex-start;
+  display: flex;
+  min-height: 264px;
   min-width: 0;
-  padding: clamp(24px, 3vw, 42px) clamp(20px, 3vw, 44px) 26px;
+  padding: 0;
   position: relative;
-}
-
-.pm101-connector {
-  color: rgba(16, 6, 159, 0.24);
-  height: 160px;
-  left: 48px;
-  position: absolute;
-  top: 24px;
-  width: calc(100% - 96px);
-}
-
-.pm101-connector path {
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-width: 1.3;
+  width: 100%;
 }
 
 .pm101-step-list {
   display: grid;
-  gap: clamp(14px, 2vw, 32px);
-  grid-template-columns: repeat(5, minmax(112px, 1fr));
-  justify-content: space-between;
+  gap: 16px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   list-style: none;
-  max-width: 980px;
   margin: 0;
-  min-height: 414px;
+  min-height: 264px;
   padding: 0;
   position: relative;
+  width: 100%;
   z-index: 1;
 }
 
 .pm101-step {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
+  min-width: 0;
   margin: 0;
 }
 
-.pm101-step.is-lower {
-  padding-top: 80px;
-}
-
 .pm101-step-number {
-  align-items: center;
-  background:
-    radial-gradient(circle at 50% 50%, #fff 0 63%, transparent 64%),
-    conic-gradient(from 0deg, transparent 0 7%, rgba(16, 6, 159, 0.62) 7% 25%, transparent 25% 100%);
-  border: 1px solid #e7e8ee;
-  border-radius: 999px;
-  box-shadow:
-    0 0 2px rgba(1, 10, 15, 0.08),
-    0 2px 4px rgba(1, 10, 15, 0.12);
-  color: rgba(16, 6, 159, 0.48);
-  display: inline-flex;
-  flex: 0 0 auto;
-  font-size: 24px;
+  bottom: auto;
+  color: rgba(16, 6, 159, 0.05);
+  font-size: 96px;
   font-weight: 700;
-  height: 72px;
-  justify-content: center;
-  line-height: 1;
-  margin-bottom: 28px;
-  position: relative;
-  width: 72px;
+  left: -9px;
+  line-height: normal;
+  pointer-events: none;
+  position: absolute;
+  top: 228.5px;
+  transform: translateY(-50%);
+  z-index: 0;
 }
 
 .pm101-card {
@@ -5340,10 +5336,13 @@ p {
     #fff;
   border: 1px solid #e8e8e8;
   border-radius: 16px;
-  box-shadow: 0 8px 16px rgba(1, 10, 15, 0.1);
+  box-shadow:
+    0 1px 1px rgba(1, 10, 15, 0.04),
+    0 2px 4px rgba(1, 10, 15, 0.12);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
+  height: 100%;
   min-height: 264px;
   overflow: hidden;
   padding: 12px;
@@ -5367,18 +5366,23 @@ p {
   z-index: 1;
 }
 
-.pm101-card-icon .icon {
+.pm101-card-icon .icon,
+.pm101-card-icon-asset {
   height: 24px;
   width: 24px;
 }
 
+.pm101-card-icon-asset {
+  display: block;
+  object-fit: contain;
+}
+
 .pm101-card strong {
-  color: #050505;
+  color: #0b0b0b;
   display: block;
   font-size: 18px;
   font-weight: 600;
   line-height: 24px;
-  margin-top: 4px;
   max-width: 136px;
   position: relative;
   z-index: 1;
@@ -5394,30 +5398,51 @@ p {
 }
 
 .pm101-decor {
-  bottom: -34px;
+  bottom: -33px;
   color: #97d878;
   height: 120px;
+  opacity: 0.95;
+  pointer-events: none;
   position: absolute;
-  right: -34px;
+  right: -33px;
   width: 120px;
+  z-index: 0;
 }
 
-.pm101-decor svg {
-  display: block;
+.pm101-decor-asset {
   height: 100%;
+  inset: 0;
+  object-fit: contain;
+  position: absolute;
   width: 100%;
 }
 
-.pm101-decor path,
-.pm101-decor ellipse {
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 2;
+.pm101-decor-plus {
+  bottom: -31px;
+  overflow: hidden;
 }
 
-.pm101-decor-plus path {
-  stroke-width: 4;
+.pm101-decor-plus .pm101-decor-asset {
+  height: 61.63%;
+  object-fit: fill;
+  top: 19.19%;
+  width: 9.38%;
+}
+
+.pm101-decor-plus .pm101-decor-asset-1 {
+  left: 20.58%;
+}
+
+.pm101-decor-plus .pm101-decor-asset-2 {
+  left: 37.14%;
+}
+
+.pm101-decor-plus .pm101-decor-asset-3 {
+  left: 53.49%;
+}
+
+.pm101-decor-plus .pm101-decor-asset-4 {
+  left: 70.04%;
 }
 
 .view-toolbar {
@@ -6822,7 +6847,7 @@ p {
   position: absolute;
   right: 0;
   top: 0;
-  width: min(900px, 62vw);
+  width: min(900px, calc(100vw - 72px));
 }
 
 .report-compose-form {
@@ -7027,10 +7052,10 @@ p {
   border-radius: 0;
   display: flex;
   flex: 0 0 auto;
-  gap: 6px;
+  gap: 20px;
   min-height: 36px;
   overflow-x: auto;
-  padding: 0 0 8px;
+  padding: 0 0 9px;
   position: sticky;
   top: 0;
   z-index: 2;
@@ -7228,28 +7253,29 @@ p {
   border-radius: 10px;
   display: grid;
   gap: 10px;
-  padding: 12px 13px;
+  padding: 12px;
 }
 
 .report-overview-section {
   gap: 16px;
+  min-height: 582px;
 }
 
 .report-overview-top {
   align-items: stretch;
   display: grid;
   gap: 12px;
-  grid-template-columns: minmax(300px, 1.15fr) minmax(160px, 0.55fr) minmax(360px, 1.25fr);
+  grid-template-columns: 319px 144px minmax(0, 1fr);
 }
 
 .report-overview-status,
 .report-overview-trend,
 .report-overview-past {
   background: #fbfcff;
-  border: 1px solid #e2e7f0;
+  border: 1px solid rgba(226, 231, 240, 0.46);
   border-radius: 9px;
   min-width: 0;
-  padding: 10px;
+  padding: 10px 11px;
 }
 
 .report-overview-label {
@@ -7262,13 +7288,19 @@ p {
 
 .report-inline-status {
   align-items: center;
-  background: #f2f4f8;
+  background: rgba(242, 244, 248, 0.55);
   border: 1px solid #e2e7f0;
   border-radius: 8px;
   display: grid;
   gap: 3px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   padding: 3px;
+}
+
+.report-overview-status .report-inline-status {
+  grid-template-columns: repeat(3, 88px);
+  height: 36px;
+  justify-content: space-between;
 }
 
 .report-inline-status label {
@@ -7303,20 +7335,29 @@ p {
 
 .report-inline-status input:checked + span {
   background: white;
-  box-shadow: 0 1px 2px rgba(26, 34, 57, 0.08);
+  box-shadow: 0 1px 1px rgba(26, 34, 57, 0.08);
 }
 
 .report-inline-status .icon {
+  align-items: center;
   border-radius: 999px;
   color: white;
+  display: inline-flex;
+  flex: 0 0 16px;
   height: 16px;
   justify-content: center;
+  padding: 0;
   width: 16px;
 }
 
-.report-inline-status .icon i {
-  height: 9px;
-  width: 9px;
+.report-inline-status .icon i,
+.report-inline-status .icon svg {
+  height: 12px;
+  width: 12px;
+}
+
+.report-inline-status .icon svg {
+  stroke-width: 1.6;
 }
 
 .report-inline-status .green .icon {
@@ -7343,6 +7384,7 @@ p {
   font-weight: 500;
   gap: 5px;
   padding: 0 10px;
+  width: 122px;
 }
 
 .report-overview-trend .icon {
@@ -7400,47 +7442,6 @@ p {
   line-height: 1.2;
   text-align: center;
   white-space: nowrap;
-}
-
-.report-progress-row {
-  align-items: end;
-  display: grid;
-  gap: 18px;
-  grid-template-columns: minmax(240px, 1fr) auto;
-}
-
-.report-progress-line {
-  align-items: center;
-  display: grid;
-  gap: 10px;
-  grid-template-columns: 54px minmax(0, 1fr);
-  max-width: 420px;
-}
-
-.report-progress-line strong {
-  background: var(--brand);
-  border-radius: 999px;
-  color: white;
-  font-size: 10px;
-  font-weight: 500;
-  height: 17px;
-  line-height: 17px;
-  text-align: center;
-}
-
-.report-progress-line i {
-  background: #eceef3;
-  border-radius: 999px;
-  display: block;
-  height: 8px;
-  overflow: hidden;
-}
-
-.report-progress-line em {
-  background: var(--brand);
-  border-radius: inherit;
-  display: block;
-  height: 100%;
 }
 
 .report-end-dates {
@@ -7553,6 +7554,10 @@ p {
   width: 100%;
 }
 
+.report-overview-section .report-description-input {
+  min-height: 91px;
+}
+
 .report-description-input:focus {
   border-color: rgba(16, 6, 159, 0.32);
   box-shadow: 0 0 0 3px rgba(16, 6, 159, 0.06);
@@ -7563,7 +7568,9 @@ p {
 }
 
 .report-scope-section {
-  gap: 12px;
+  align-content: start;
+  gap: 8px;
+  min-height: 1191px;
 }
 
 .scope-status-grid {
@@ -7580,9 +7587,23 @@ p {
   padding: 10px;
 }
 
+.scope-comments-field {
+  gap: 7px;
+}
+
+.report-scope-section .report-description-input {
+  min-height: 91px;
+}
+
 .scope-comment-panel,
 .scope-past-panel {
   grid-column: 1 / -1;
+}
+
+.scope-past-panel {
+  border-radius: 10px;
+  min-height: 84px;
+  padding: 10px 11px;
 }
 
 .scope-panel-label {
@@ -7693,6 +7714,7 @@ p {
 }
 
 .scope-group-card {
+  background: #fbfcff;
   border: 1px solid #e2e7f0;
   border-radius: 10px;
   display: grid;
@@ -7755,8 +7777,9 @@ p {
   border: 1px solid #e2e7f0;
   border-radius: 9px;
   display: grid;
-  gap: 9px;
-  padding: 10px;
+  gap: 14px;
+  min-height: 149px;
+  padding: 12px;
 }
 
 .scope-product-title {
@@ -7765,7 +7788,32 @@ p {
   display: inline-flex;
   font-size: 11.5px;
   font-weight: 600;
-  gap: 7px;
+  gap: 10px;
+  min-height: 20px;
+}
+
+.scope-product-title strong {
+  color: #303645;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.22;
+}
+
+.scope-product-icon {
+  align-items: center;
+  background: #eef1f6;
+  border: 1px solid #e2e7f0;
+  border-radius: 999px;
+  color: #596273;
+  display: inline-flex;
+  height: 20px;
+  justify-content: center;
+  width: 20px;
+}
+
+.scope-product-icon .icon {
+  height: 12px;
+  width: 12px;
 }
 
 .scope-product-grid {
@@ -7798,7 +7846,7 @@ p {
 .scope-product-controls {
   display: grid;
   gap: 8px;
-  grid-template-columns: 1.2fr 1fr 1fr 0.75fr;
+  grid-template-columns: minmax(0, 231px) minmax(0, 192px) minmax(0, 192px) minmax(0, 144px);
 }
 
 .scope-product-controls label {
@@ -7810,6 +7858,7 @@ p {
   background: white;
   border: 1px solid var(--line);
   border-radius: 7px;
+  box-sizing: border-box;
   color: #303645;
   font: inherit;
   font-size: 10.5px;
@@ -7821,9 +7870,22 @@ p {
 
 .scope-percent-input {
   align-items: center;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  box-sizing: border-box;
   display: grid;
   gap: 5px;
   grid-template-columns: minmax(0, 1fr) auto;
+  height: 31px;
+  padding: 0 9px;
+}
+
+.scope-product-controls .scope-percent-input input {
+  border: 0;
+  border-radius: 0;
+  height: auto;
+  padding: 0;
 }
 
 .scope-empty-note {
@@ -8346,15 +8408,14 @@ p {
 }
 
 .project-frontdoor .quick-actions-card {
-  flex: 1 1 auto;
-  min-height: 0;
+  flex: 0 0 auto;
+  min-height: 542px;
 }
 
 .quick-card-head {
   align-items: flex-start;
   display: flex;
   flex-direction: column;
-  gap: 4px;
   justify-content: flex-start;
   padding-bottom: 0;
 }
@@ -8368,74 +8429,56 @@ p {
   margin: 0;
 }
 
-.quick-card-head p {
-  color: #2f2f2f;
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 16px;
-  margin: 0;
-  max-width: 272px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .quick-actions-card {
   border-color: #eee;
   border-radius: 16px;
   box-shadow:
     0 1px 1px rgba(1, 10, 15, 0.04),
     0 2px 4px rgba(1, 10, 15, 0.08);
+  display: flex;
+  flex-direction: column;
+  min-height: 542px;
   padding: 15px;
 }
 
 .project-frontdoor .quick-actions-card {
   background: #ffffff;
   align-self: stretch;
+  min-height: 542px;
   overflow: hidden;
   padding: 15px;
   width: 100%;
 }
 
 .quick-action-list {
-  align-content: stretch;
-  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 12px;
+  flex: 1 1 auto;
+  justify-content: space-between;
+  margin-top: 15px;
   min-height: 0;
-  overflow-y: auto;
-  padding: 1px;
+  overflow: visible;
+  padding: 0;
 }
 
 .project-frontdoor .quick-action-list {
   flex: 1 1 auto;
-  margin-top: 12px;
-  overflow: auto;
-  padding: 1px;
+  margin-top: 15px;
+  overflow: visible;
+  padding: 0;
 }
 
 .quick-action-grid {
   display: grid;
   gap: 12px;
+  grid-auto-rows: 72px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.quick-action-divider {
-  background: linear-gradient(90deg, rgba(31, 48, 72, 0), rgba(31, 48, 72, 0.24), rgba(31, 48, 72, 0));
-  border-radius: 999px;
-  display: block;
-  flex: 0 0 auto;
-  height: 1px;
-  margin: 2px 0;
-  width: 100%;
 }
 
 .quick-action {
   align-items: flex-start;
   background:
-    radial-gradient(84px 66px at 88% -12%, rgba(157, 156, 178, 0.13), rgba(206, 205, 216, 0.07) 48%, rgba(255, 255, 255, 0) 74%),
+    radial-gradient(92px 70px at 88% -12%, rgba(157, 156, 178, 0.15), rgba(206, 205, 216, 0.08) 50%, rgba(255, 255, 255, 0) 74%),
     #fff;
   border: 1px solid #eee;
   border-radius: 12px;
@@ -8481,11 +8524,8 @@ p {
 }
 
 .quick-action-main:focus-visible,
-.quick-action-view-all:focus-visible,
 .quick-pin-button:focus-visible,
-.quick-links-close:focus-visible,
-.quick-links-secondary:focus-visible,
-.quick-links-primary:focus-visible {
+.quick-links-page-button:focus-visible {
   outline: 2px solid rgba(16, 6, 159, 0.16);
   outline-offset: 2px;
 }
@@ -8528,12 +8568,12 @@ p {
 
 .quick-pin-button {
   align-items: center;
-  background: rgba(255, 255, 255, 0.94);
-  border: 1px solid #eee;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(238, 238, 238, 0.92);
   border-radius: 6px;
   color: var(--brand);
   display: inline-flex;
-  height: 22px;
+  height: 20px;
   justify-content: center;
   opacity: 0;
   position: absolute;
@@ -8544,7 +8584,8 @@ p {
     opacity var(--motion-fast) var(--motion-ease),
     transform var(--motion-fast) var(--motion-ease),
     background-color var(--motion-fast) var(--motion-ease);
-  width: 22px;
+  width: 20px;
+  z-index: 2;
 }
 
 .quick-pin-button .icon {
@@ -8552,240 +8593,93 @@ p {
   width: 12px;
 }
 
+.quick-pin-unpin {
+  display: none;
+}
+
 .quick-action.is-pinned .quick-pin-button {
-  opacity: 0.62;
+  color: rgba(16, 6, 159, 0.42);
+  opacity: 0.72;
 }
 
 .quick-action:hover .quick-pin-button,
 .quick-action:focus-within .quick-pin-button {
+  color: var(--brand);
   opacity: 1;
   transform: scale(1);
+}
+
+.quick-action.is-pinned:hover .quick-pin-default,
+.quick-action.is-pinned .quick-pin-button:focus-visible .quick-pin-default {
+  display: none;
+}
+
+.quick-action.is-pinned:hover .quick-pin-unpin,
+.quick-action.is-pinned .quick-pin-button:focus-visible .quick-pin-unpin {
+  display: inline-flex;
 }
 
 .quick-pin-button:hover {
   background: #f5f3ff;
 }
 
-.quick-action-view-all {
+.quick-links-pager {
   align-items: center;
-  background: rgba(16, 6, 159, 0.05);
-  border-color: transparent;
-  color: var(--brand);
-  flex-direction: column;
-  font-size: 12px;
-  font-weight: 500;
-  gap: 8px;
-  justify-content: center;
-  line-height: 16px;
-  min-height: 72px;
-  text-align: center;
-}
-
-.quick-action-view-icon {
-  align-items: center;
-  background: #fff;
-  border-radius: 999px;
-  box-shadow: 0 1px 4px rgba(1, 10, 15, 0.1);
-  color: var(--brand);
-  display: inline-flex;
-  height: 24px;
-  justify-content: center;
-  width: 24px;
-}
-
-.quick-action-view-icon .icon {
-  height: 16px;
-  width: 16px;
-}
-
-.quick-links-modal-shell {
-  inset: 0;
-  position: fixed;
-  z-index: 90;
-}
-
-.quick-links-modal-backdrop {
-  background: rgba(15, 23, 42, 0.32);
-  height: 100%;
-  inset: 0;
-  position: absolute;
-  width: 100%;
-}
-
-.quick-links-modal {
-  animation: quick-links-modal-in var(--motion-medium) var(--motion-ease) both;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 24px 80px rgba(1, 10, 15, 0.24);
   display: flex;
-  flex-direction: column;
-  left: 50%;
-  max-height: min(640px, calc(100vh - 48px));
-  overflow: hidden;
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: min(800px, calc(100vw - 48px));
-}
-
-.quick-links-modal-head {
-  align-items: center;
-  border-bottom: 1px solid #ddd;
-  display: flex;
-  flex: 0 0 auto;
   justify-content: space-between;
-  padding: 16px 24px;
+  margin-top: 26px;
+  min-height: 24px;
 }
 
-.quick-links-modal-title {
+.quick-links-page-button {
   align-items: center;
-  color: var(--brand);
-  display: flex;
-  gap: 8px;
-  min-width: 0;
-}
-
-.quick-links-modal-title .icon {
-  height: 24px;
-  width: 24px;
-}
-
-.quick-links-modal-title h2 {
-  color: #0c0c0c;
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 24px;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.quick-links-modal-title h2 span {
-  font-size: 14px;
-  font-weight: 400;
-}
-
-.quick-links-close {
-  align-items: center;
-  border-radius: 8px;
-  color: #1f3048;
-  display: inline-flex;
-  height: 32px;
-  justify-content: center;
-  width: 32px;
-}
-
-.quick-links-close:hover {
-  background: rgba(16, 6, 159, 0.05);
-  color: var(--brand);
-}
-
-.quick-links-modal-body {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 18px 24px 24px;
-}
-
-.quick-links-intro h3 {
+  border: 1px solid var(--global\/border-default, #d3d3d3);
+  border-radius: 6px;
   color: #252a34;
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 24px;
-}
-
-.quick-links-intro p {
-  color: #2f2f2f;
-  font-size: 12px;
-  line-height: 16px;
-  margin-top: 4px;
-}
-
-.quick-links-pinned-panel {
-  background: rgba(16, 6, 159, 0.05);
-  border-radius: 16px;
-  margin-top: 16px;
-  overflow: hidden;
-  padding: 16px;
-  position: relative;
-}
-
-.quick-links-pinned-panel > p {
-  color: #2f2f2f;
-  font-size: 12px;
-  line-height: 16px;
-  margin: 0 32px 8px 0;
-}
-
-.quick-links-pinned-mark {
-  color: rgba(16, 6, 159, 0.36);
-  position: absolute;
-  right: 16px;
-  top: 16px;
-}
-
-.quick-links-pinned-mark .icon {
-  height: 16px;
-  width: 16px;
-}
-
-.quick-links-modal-grid,
-.quick-links-all-grid {
-  display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  width: min(720px, 100%);
-}
-
-.quick-links-all-grid {
-  margin-top: 24px;
-}
-
-.quick-links-modal .quick-action {
-  min-height: 72px;
-}
-
-.quick-links-modal-actions {
-  align-items: center;
-  display: flex;
-  flex: 0 0 auto;
-  gap: 16px;
-  justify-content: flex-end;
-  padding: 16px 24px 24px;
-}
-
-.quick-links-secondary,
-.quick-links-primary {
-  align-items: center;
-  border-radius: 999px;
   display: inline-flex;
-  font-size: 14px;
-  font-weight: 600;
-  gap: 8px;
+  height: 22px;
   justify-content: center;
-  line-height: 20px;
-  min-height: 40px;
-  padding: 10px 16px;
+  transition:
+    background var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease),
+    opacity var(--motion-fast) var(--motion-ease);
+  width: 22px;
 }
 
-.quick-links-secondary {
-  color: #404040;
+.quick-links-page-button .icon {
+  height: 12px;
+  width: 12px;
 }
 
-.quick-links-secondary:hover {
+.quick-links-page-button:hover:not(:disabled) {
   background: rgba(16, 6, 159, 0.05);
+  border-color: rgba(16, 6, 159, 0.18);
   color: var(--brand);
 }
 
-.quick-links-primary {
-  background: var(--brand);
-  color: #fff;
-  min-width: 134px;
+.quick-links-page-button:disabled {
+  opacity: 0.25;
 }
 
-.quick-links-primary:hover {
-  background: #1d12b6;
+.quick-links-page-dots {
+  align-items: center;
+  display: inline-flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.quick-links-page-dots span {
+  background: #d8d8d8;
+  border-radius: 999px;
+  display: block;
+  height: 6px;
+  width: 6px;
+}
+
+.quick-links-page-dots span.active {
+  background: var(--brand);
+  width: 24px;
 }
 
 .quick-links-toast {
@@ -12114,7 +12008,7 @@ p {
 
 .project-plan-card-frame .project-plan-hero {
   border: 0;
-  border-bottom: 1px solid rgba(16, 6, 159, 0.1);
+  border-bottom: 0;
   height: 142px;
   padding: 18px 16px 0;
 }
@@ -12206,13 +12100,15 @@ p {
 
 .project-plan-card-frame .project-modebar-inline .project-mode-toggle button.active::after {
   background: #ffffff;
-  bottom: -1px;
+  bottom: -2px;
   content: "";
   display: block;
-  height: 2px;
-  left: 0;
+  height: 4px;
+  left: -1px;
+  pointer-events: none;
   position: absolute;
-  right: 0;
+  right: -1px;
+  z-index: 3;
 }
 
 .project-plan-card-frame .project-modebar-inline .project-mode-toggle button .icon {
@@ -12324,12 +12220,12 @@ p {
 
 .plan-builder-shell.quick-plan-shell > .matrix-plan-nav {
   grid-column: 1;
-  grid-row: 2;
+  grid-row: 1;
 }
 
 .plan-builder-shell.quick-plan-shell > .quick-plan-workspace {
   grid-column: 1 / -1;
-  grid-row: 2;
+  grid-row: 1;
 }
 
 .plan-builder-shell.quick-plan-shell.detailed-plan-shell > .quick-plan-workspace {
@@ -12339,6 +12235,16 @@ p {
 .plan-builder-shell.quick-plan-shell.project-report-shell {
   grid-template-columns: 231px minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
+}
+
+.plan-builder-shell.quick-plan-shell.project-report-shell.project-reports-shell {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.plan-builder-shell.quick-plan-shell.project-report-shell.project-reports-shell > .project-report-workspace {
+  background: #ffffff;
+  grid-column: 1;
+  grid-row: 1;
 }
 
 .plan-builder-shell.quick-plan-shell.project-report-shell > .project-report-nav {
@@ -12581,6 +12487,263 @@ p {
   padding: 16px 21px;
 }
 
+.project-report-surface.project-reports-dashboard {
+  display: grid;
+  gap: 12px;
+  grid-template-rows: auto minmax(0, 1fr);
+  justify-content: stretch;
+  padding: 20px 55px 28px;
+}
+
+.project-reports-summary-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(3, minmax(150px, 1fr)) minmax(340px, 2.25fr);
+}
+
+.project-report-metric-card,
+.project-report-trend-panel {
+  background: #ffffff;
+  border: 1px solid #e5e7ec;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  min-width: 0;
+}
+
+.project-report-metric-card {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  min-height: 90px;
+  padding: 14px 16px 14px 18px;
+}
+
+.project-report-metric-copy {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
+.project-report-metric-copy > span,
+.project-report-trend-copy > span {
+  color: #333333;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+}
+
+.project-report-metric-copy strong {
+  align-items: center;
+  color: #333333;
+  display: inline-flex;
+  font-size: 22px;
+  font-weight: 400;
+  gap: 8px;
+  line-height: 28px;
+}
+
+.project-report-metric-copy small {
+  align-items: center;
+  background: #f5f7fb;
+  border: 1px solid #e4e7ef;
+  border-radius: 999px;
+  color: #9aa1ad;
+  display: inline-flex;
+  font-size: 10px;
+  font-weight: 400;
+  gap: 3px;
+  line-height: 12px;
+  padding: 2px 6px;
+}
+
+.project-report-metric-copy small .icon {
+  height: 10px;
+  width: 10px;
+}
+
+.project-report-metric-icon {
+  align-items: center;
+  background: #e4f2ff;
+  border-radius: 999px;
+  color: #2d8df0;
+  display: inline-flex;
+  flex: 0 0 36px;
+  height: 36px;
+  justify-content: center;
+  width: 36px;
+}
+
+.project-report-metric-icon .icon {
+  height: 17px;
+  width: 17px;
+}
+
+.project-report-trend-panel {
+  display: grid;
+  gap: 16px;
+  min-height: 90px;
+  padding: 15px 18px 14px;
+}
+
+.project-report-trend-track {
+  align-items: end;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(58px, 1fr));
+  min-width: 0;
+}
+
+.project-report-trend-point {
+  align-items: center;
+  color: #555555;
+  display: inline-grid;
+  gap: 8px;
+  justify-items: center;
+  min-width: 0;
+}
+
+.project-report-trend-point small {
+  color: #555555;
+  font-size: 9px;
+  font-weight: 400;
+  line-height: 11px;
+  white-space: nowrap;
+}
+
+.project-report-trend-point i {
+  align-items: center;
+  border-radius: 999px;
+  color: #ffffff;
+  display: inline-flex;
+  height: 16px;
+  justify-content: center;
+  width: 16px;
+}
+
+.project-report-trend-point i .icon {
+  height: 10px;
+  width: 10px;
+}
+
+.project-report-trend-point.green i {
+  background: #8dcf7c;
+}
+
+.project-report-trend-point.red i {
+  background: #e75d2e;
+}
+
+.project-report-trend-point.amber i {
+  background: #c69a3d;
+}
+
+.project-reports-table-scroll {
+  border-color: #e5e7ec;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.project-reports-table {
+  min-width: 980px;
+}
+
+.project-reports-table th,
+.project-reports-table td {
+  border-color: #e8e8e8;
+  color: #555555;
+  font-size: 12px;
+  font-weight: 400;
+  padding: 12px 16px;
+}
+
+.project-reports-table th {
+  background: #fbfcff;
+  color: #333333;
+  font-weight: 400;
+}
+
+.project-reports-table th:nth-child(2),
+.project-reports-table td:nth-child(2) {
+  min-width: 235px;
+}
+
+.project-reports-table th:nth-child(3),
+.project-reports-table td:nth-child(3),
+.project-reports-table th:nth-child(4),
+.project-reports-table td:nth-child(4),
+.project-reports-table th:nth-child(5),
+.project-reports-table td:nth-child(5) {
+  min-width: 170px;
+}
+
+.project-reports-table .project-report-open-row {
+  cursor: pointer;
+}
+
+.project-reports-table .project-report-open-row:hover td,
+.project-reports-table .project-report-open-row:focus-visible td {
+  background: #fbfcff;
+}
+
+.project-reports-table .project-report-open-row:focus-visible {
+  outline: 2px solid rgba(16, 6, 159, 0.22);
+  outline-offset: -2px;
+}
+
+.project-report-sort {
+  color: #7c8596;
+  display: inline-flex;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.project-report-sort .icon {
+  height: 12px;
+  width: 12px;
+}
+
+.project-reports-table .project-report-period-cell button {
+  align-items: center;
+  color: #354cb5;
+  flex-direction: row;
+  gap: 10px;
+  max-width: none;
+}
+
+.project-reports-table .project-report-period-cell strong {
+  color: #354cb5;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+}
+
+.project-report-owner {
+  color: #555555;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.project-report-row-marker {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 16px;
+  justify-content: center;
+  width: 16px;
+}
+
+.project-report-row-marker .icon {
+  height: 16px;
+  width: 16px;
+}
+
+.project-report-row-marker.high {
+  color: #de5b4a;
+}
+
+.project-report-row-marker.paused {
+  color: #6f7785;
+}
+
 .project-report-placeholder-card {
   background: #ffffff;
   border: 1px solid #e8e8e8;
@@ -12676,6 +12839,104 @@ p {
 
 .simple-field-card .matrix-field-group-meta .icon {
   display: none;
+}
+
+.simple-field-card.read-only-card.simple-plan-section-card {
+  background: #ffffff;
+  border: 1px solid #e3e7ee;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  display: grid;
+  gap: 18px;
+  grid-template-columns: 220px minmax(0, 1fr);
+  min-height: 0;
+  padding: 16px;
+}
+
+.simple-field-card.read-only-card .simple-field-card-head {
+  align-self: stretch;
+  background: transparent;
+  border-right: 1px solid #eceff5;
+  gap: 12px;
+  justify-content: flex-start;
+  padding: 2px 18px 2px 0;
+}
+
+.simple-field-card.read-only-card .simple-plan-section-icon {
+  background: #f6f7ff;
+  border: 1px solid #edf0ff;
+  border-radius: 9px;
+  box-shadow: none;
+  height: 34px;
+  width: 34px;
+}
+
+.simple-field-card.read-only-card .simple-plan-section-icon .icon {
+  height: 18px;
+  width: 18px;
+}
+
+.simple-field-card.read-only-card .matrix-field-group-copy strong {
+  color: #151923;
+  font-size: 18px;
+  font-weight: 650;
+  line-height: 24px;
+}
+
+.simple-field-card.read-only-card .matrix-field-group-copy small {
+  color: #777f8f;
+  font-size: 12px;
+  line-height: 17px;
+  max-width: 210px;
+}
+
+.simple-field-card.read-only-card .simple-plan-section-fields {
+  align-self: stretch;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  overflow: visible;
+  padding: 0;
+}
+
+.simple-field-card.read-only-card .simple-readonly-field {
+  background: #fbfcff;
+  border: 1px solid #e6eaf1;
+  border-radius: 8px;
+  gap: 7px;
+  min-height: 66px;
+  padding: 12px 14px;
+}
+
+.simple-field-card.read-only-card .matrix-field-label {
+  color: #697386;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 14px;
+}
+
+.simple-field-card.read-only-card .simple-readonly-value {
+  min-height: 22px;
+}
+
+.simple-field-card.read-only-card .simple-readonly-value strong {
+  color: #202532;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 22px;
+}
+
+.simple-field-card.read-only-card .simple-person-avatar {
+  background: #f0efff;
+  color: #10069f;
+  flex-basis: 22px;
+  font-size: 9px;
+  height: 22px;
+  line-height: 10px;
+  width: 22px;
 }
 
 .simple-plan-section-card h3 {
@@ -13218,6 +13479,7 @@ p {
   border: 1px solid rgba(166, 166, 166, 0.2);
   border-left: 0;
   border-right: 0;
+  border-top: 0;
   display: flex;
   justify-content: center;
   min-height: 58px;
@@ -14044,6 +14306,11 @@ p {
     overflow: visible;
   }
 
+  app-pm-console-content,
+  .app-canvas {
+    height: auto;
+  }
+
   .app-canvas {
     min-height: calc(100vh - 66px);
   }
@@ -14159,11 +14426,6 @@ p {
     width: min(680px, calc(100vw - 24px));
   }
 
-  .quick-links-modal-grid,
-  .quick-links-all-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    width: 100%;
-  }
 }
 
 @media (max-width: 760px) {
@@ -14276,6 +14538,15 @@ p {
 
   .simple-plan-section-fields .simple-field-control {
     grid-column: 1 / -1;
+  }
+
+  .project-reports-summary-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .project-report-trend-track {
+    grid-template-columns: repeat(5, minmax(48px, 1fr));
+    overflow-x: auto;
   }
 
   .simple-register-field {
@@ -14395,6 +14666,10 @@ p {
     grid-template-rows: auto minmax(0, 1fr);
   }
 
+  .plan-builder-shell.quick-plan-shell.project-report-shell.project-reports-shell {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
   .plan-builder-shell.quick-plan-shell.project-report-shell > .project-report-nav {
     grid-column: 1;
     grid-row: 1;
@@ -14434,6 +14709,18 @@ p {
   .project-report-placeholder-card {
     height: auto;
     min-height: 420px;
+  }
+
+  .project-report-surface.project-reports-dashboard {
+    padding: 18px 18px 24px;
+  }
+
+  .project-reports-summary-grid {
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+  }
+
+  .project-report-trend-panel {
+    grid-column: 1 / -1;
   }
 
   .project-plan-matrix-card.simple-plan-card,
@@ -14702,53 +14989,26 @@ p {
   }
 
   .pm101-view {
-    overflow: visible;
+    overflow: hidden;
   }
 
   .pm101-flow {
     min-width: 0;
-    padding: 14px;
-  }
-
-  .pm101-connector {
-    display: none;
+    padding: 0;
   }
 
   .pm101-step-list {
     gap: 12px;
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     min-height: 0;
   }
 
-  .pm101-step,
-  .pm101-step.is-lower {
-    align-items: stretch;
-    display: grid;
-    gap: 10px;
-    grid-template-columns: 54px minmax(0, 1fr);
-    padding-top: 0;
-  }
-
-  .pm101-step:not(:last-child)::after {
-    background: rgba(16, 6, 159, 0.18);
-    content: "";
-    grid-column: 1;
-    height: 18px;
-    justify-self: center;
-    margin: -2px 0 -8px;
-    order: 3;
-    width: 1px;
-  }
-
   .pm101-step-number {
-    font-size: 18px;
-    height: 54px;
-    margin: 0;
-    width: 54px;
+    font-size: 84px;
   }
 
   .pm101-card {
-    min-height: 150px;
+    min-height: 220px;
     width: 100%;
   }
 
@@ -14797,8 +15057,7 @@ p {
     padding: 16px;
   }
 
-  .report-common-row,
-  .report-progress-row {
+  .report-common-row {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -14893,31 +15152,8 @@ p {
     min-width: 700px;
   }
 
-  .quick-links-modal {
-    max-height: calc(100vh - 24px);
-    width: calc(100vw - 24px);
-  }
-
-  .quick-links-modal-head,
-  .quick-links-modal-body,
-  .quick-links-modal-actions {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-
-  .quick-links-modal-grid,
-  .quick-links-all-grid,
   .quick-action-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .quick-links-modal-actions {
-    justify-content: stretch;
-  }
-
-  .quick-links-secondary,
-  .quick-links-primary {
-    flex: 1 1 0;
   }
 
   .right-column {
@@ -15341,7 +15577,8 @@ const projectQuickActions = [
   },
 ];
 
-const QUICK_LINK_PIN_LIMIT = 9;
+const QUICK_LINK_PIN_LIMIT = 10;
+const QUICK_LINK_PAGE_SIZE = 10;
 const QUICK_LINK_STORAGE_KEY = "tasama.quickLinks.pinned";
 const defaultPinnedQuickLinkIds = ["project-plan", "wbs"];
 
@@ -16713,7 +16950,7 @@ function ReportComposerDrawer(selectedReportProject) {
   const details = reportCreationDetails[report.project] || reportCreationDetails["Vision 2030"];
   const currentStatus = reportVisualStatus(latestStatus?.status || "due").label;
   const statusOptions = [
-    { label: "On track", value: "On track", tone: "green", icon: "check" },
+    { label: "On track", value: "On track", tone: "green", icon: "checkMark" },
     { label: "Alert/Discuss", value: "Alert", tone: "amber", icon: "bell" },
     { label: "Off track", value: "Off Track", tone: "red", icon: "close" },
   ];
@@ -16723,9 +16960,9 @@ function ReportComposerDrawer(selectedReportProject) {
     ["Planned Activities for the next reporting period", "", details.planned, 4],
   ];
   const pastOverviewTrend = [
-    "31/03/2026",
+    "31/3/2026",
     "31/12/2025",
-    "30/09/2025",
+    "30/9/2025",
     "30/06/2025",
     "31/12/2024",
   ];
@@ -16759,51 +16996,55 @@ function ReportComposerDrawer(selectedReportProject) {
   const scopeProducts = [
     {
       title: "Collaboration platform",
+      icon: "dependencies",
       type: "Technology",
       owner: "Richelle Hilton",
-      capability: "-",
+      capability: "Richelle Hilton",
       dates: "11/02/2026 - 26/06/2026",
       budget: "$0",
-      status: "Not Started",
+      status: "",
       actualStart: "11/02/2026",
       actualEnd: "26/06/2026",
       completed: "33",
     },
     {
       title: "National R&D database",
-      type: "Information",
-      owner: "Canning Santos",
-      capability: "-",
-      dates: "01/01/2026 - 31/05/2026",
+      icon: "database",
+      type: "Technology",
+      owner: "Richelle Hilton",
+      capability: "Richelle Hilton",
+      dates: "11/02/2026 - 26/06/2026",
       budget: "$0",
-      status: "Not Started",
-      actualStart: "01/01/2026",
-      actualEnd: "31/05/2026",
-      completed: "0",
+      status: "",
+      actualStart: "11/02/2026",
+      actualEnd: "26/06/2026",
+      completed: "33",
     },
     {
       title: "Opportunity marketplace",
+      icon: "store",
       type: "Technology",
-      owner: "Amanda Blevins",
-      capability: "-",
-      dates: "07/04/2026 - 01/10/2026",
+      owner: "Richelle Hilton",
+      capability: "Richelle Hilton",
+      dates: "11/02/2026 - 26/06/2026",
       budget: "$0",
-      status: "Not Started",
-      actualStart: "07/04/2026",
-      actualEnd: "01/10/2026",
-      completed: "",
+      status: "",
+      actualStart: "11/02/2026",
+      actualEnd: "26/06/2026",
+      completed: "33",
     },
     {
       title: "CRM",
-      type: "-",
-      owner: "-",
-      capability: "-",
-      dates: "-",
+      icon: "",
+      type: "Technology",
+      owner: "Richelle Hilton",
+      capability: "Richelle Hilton",
+      dates: "11/02/2026 - 26/06/2026",
       budget: "$0",
-      status: "Not Started",
-      actualStart: "-",
-      actualEnd: "-",
-      completed: "",
+      status: "",
+      actualStart: "11/02/2026",
+      actualEnd: "26/06/2026",
+      completed: "33",
     },
   ];
   const reportSectionId = (label) => `report-section-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
@@ -16816,10 +17057,14 @@ function ReportComposerDrawer(selectedReportProject) {
   const reportSectionFillLabel = (state) => (state === "complete" ? "Complete" : "Partially filled");
   const scopeProductCard = (product, index) => `
     <article class="scope-product-card">
-      <label class="scope-product-title">
-        <input type="checkbox" ${index === 0 ? "checked" : ""} />
-        <span>${escapeHtml(product.title)}</span>
-      </label>
+      <div class="scope-product-title">
+        ${
+          product.icon
+            ? `<span class="scope-product-icon" aria-hidden="true">${icon(product.icon)}</span>`
+            : `<input type="checkbox" aria-label="${escapeHtml(`Add ${product.title} to report`)}" />`
+        }
+        <strong>${escapeHtml(product.title)}</strong>
+      </div>
       <div class="scope-product-grid">
         <span><small>Type</small><strong>${escapeHtml(product.type)}</strong></span>
         <span><small>Product owner</small><strong>${escapeHtml(product.owner)}</strong></span>
@@ -16830,10 +17075,11 @@ function ReportComposerDrawer(selectedReportProject) {
       <div class="scope-product-controls">
         <label>
           <span>Report status</span>
-          <select>
+          <select aria-label="${escapeHtml(`Report status for ${product.title}`)}">
             <option>${escapeHtml(product.status)}</option>
-            <option>In Progress</option>
-            <option>Complete</option>
+            <option>On track</option>
+            <option>Alert/Discuss</option>
+            <option>Off track</option>
           </select>
         </label>
         <label>
@@ -16853,23 +17099,15 @@ function ReportComposerDrawer(selectedReportProject) {
   `;
   const scopeReportSection = (status, tone) => `
     <section class="report-form-section report-area-section report-scope-section" id="${escapeHtml(reportSectionId("Scope"))}" data-report-section role="tabpanel" hidden>
-      <div class="report-section-head">
-        <div>
-          <h3>Scope</h3>
-          <p>Review scope status, trend, and reportable products for this interval.</p>
-        </div>
-        <span class="report-area-pill ${tone}">${escapeHtml(status)}</span>
-      </div>
-
-      <div class="scope-status-grid">
-        <div class="scope-panel">
-          <span class="scope-panel-label">Reporting status</span>
-          <div class="report-inline-status" role="radiogroup" aria-label="Scope reporting status">
+      <div class="report-overview-top scope-overview-top">
+        <div class="report-overview-status">
+          <span class="report-overview-label">Overall Status</span>
+          <div class="report-inline-status" role="radiogroup" aria-label="Scope overall status">
             ${statusOptions
               .map(
-                (option, index) => `
+                (option) => `
                   <label class="${option.tone}">
-                    <input type="radio" name="scope-reporting-status" ${index === 0 ? "checked" : ""} />
+                    <input type="radio" name="scope-overall-status" ${option.value === currentStatus ? "checked" : ""} />
                     <span>${icon(option.icon)}${escapeHtml(option.label)}</span>
                   </label>
                 `
@@ -16877,35 +17115,45 @@ function ReportComposerDrawer(selectedReportProject) {
               .join("")}
           </div>
         </div>
-
-        <div class="scope-panel">
-          <span class="scope-panel-label">Scope trend</span>
-          <div class="scope-trend-options" role="radiogroup" aria-label="Scope trend">
-            <label><input type="radio" name="scope-trend" checked /><span>Improving</span></label>
-            <label><input type="radio" name="scope-trend" /><span>No change</span></label>
-            <label><input type="radio" name="scope-trend" /><span>Declining</span></label>
-          </div>
+        <div class="report-overview-trend">
+          <span class="report-overview-label">Overall Status Trend</span>
+          <strong>${icon("arrow")} ${escapeHtml(details.overallTrend)}</strong>
         </div>
-
-        <label class="scope-panel scope-comment-panel">
-          <span class="scope-panel-label">Comment</span>
-          <textarea class="report-description-input" rows="3" placeholder="Add scope commentary for this interval"></textarea>
-        </label>
-
-        <div class="scope-panel scope-past-panel">
-          <span class="scope-panel-label">Past reported statuses</span>
-          <div class="scope-status-timeline">
-            ${scopePastStatuses
+        <div class="report-overview-past">
+          <span class="report-overview-label">Past Overview Trend</span>
+          <div class="report-past-trend">
+            ${pastOverviewTrend
               .map(
-                ([date, statusTone, label]) => `
-                  <span class="${statusTone}" title="${escapeHtml(label)}">
-                    <i>${icon(statusTone === "amber" ? "bell" : "close")}</i>
+                (date) => `
+                  <span>
+                    ${icon("check")}
                     <small>${escapeHtml(date)}</small>
                   </span>
                 `
               )
               .join("")}
           </div>
+        </div>
+      </div>
+
+      <label class="report-editor-field scope-comments-field">
+        <span class="report-editor-label">Comments</span>
+        <textarea class="report-description-input" rows="4" maxlength="3000"></textarea>
+      </label>
+
+      <div class="scope-panel scope-past-panel">
+        <span class="scope-panel-label">Past reported statuses</span>
+        <div class="scope-status-timeline">
+          ${scopePastStatuses
+            .map(
+              ([date, statusTone, label]) => `
+                <span class="${statusTone}" title="${escapeHtml(label)}">
+                  <i>${icon(statusTone === "amber" ? "bell" : "close")}</i>
+                  <small>${escapeHtml(date)}</small>
+                </span>
+              `
+            )
+            .join("")}
         </div>
       </div>
 
@@ -16932,7 +17180,7 @@ function ReportComposerDrawer(selectedReportProject) {
             <span>0 items</span>
           </div>
           <label class="report-include-toggle">
-            <input type="checkbox" checked />
+            <input type="checkbox" />
             <span>Add to report</span>
           </label>
         </div>
@@ -17005,7 +17253,7 @@ function ReportComposerDrawer(selectedReportProject) {
                 <section class="report-form-section report-overview-section">
                   <div class="report-overview-top">
                     <div class="report-overview-status">
-                      <span class="report-overview-label">Overall Status:</span>
+                      <span class="report-overview-label">Overall Status</span>
                       <div class="report-inline-status" role="radiogroup" aria-label="Overall status">
                         ${statusOptions
                           .map(
@@ -17020,11 +17268,11 @@ function ReportComposerDrawer(selectedReportProject) {
                       </div>
                     </div>
                     <div class="report-overview-trend">
-                      <span class="report-overview-label">Overall Status Trend:</span>
+                      <span class="report-overview-label">Overall Status Trend</span>
                       <strong>${icon("arrow")} ${escapeHtml(details.overallTrend)}</strong>
                     </div>
                     <div class="report-overview-past">
-                      <span class="report-overview-label">Past Overview Trend:</span>
+                      <span class="report-overview-label">Past Overview Trend</span>
                       <div class="report-past-trend">
                         ${pastOverviewTrend
                           .map(
@@ -17040,23 +17288,9 @@ function ReportComposerDrawer(selectedReportProject) {
                     </div>
                   </div>
 
-                  <div class="report-progress-row">
-                    <div class="report-progress-field">
-                      <span class="report-overview-label">Project Progress:</span>
-                      <div class="report-progress-line">
-                        <strong>${escapeHtml(reportProgress)}</strong>
-                        <i><em style="width:${details.progress}%"></em></i>
-                      </div>
-                    </div>
-                    <div class="report-end-dates">
-                      <span>Baseline End date <strong>${escapeHtml(details.baselineEnd)}</strong></span>
-                      <span>Forecast End date <strong>${escapeHtml(details.forecastEnd)}</strong></span>
-                    </div>
-                  </div>
-
                   <div class="report-narrative-grid">
                     ${narrativeFields
-                      .map(reportEditorField)
+                      .map((field) => reportEditorField({ ...field, value: "" }))
                       .join("")}
                   </div>
                 </section>
@@ -17125,6 +17359,7 @@ function icon(name) {
     wbs: "git-branch",
     stageGate: "clipboard-check",
     changeRequest: "git-pull-request",
+    database: "database",
     dependencies: "network",
     resources: "users",
     risks: "triangle-alert",
@@ -17145,6 +17380,7 @@ function icon(name) {
     close: "x",
     history: "history",
     check: "circle-check",
+    checkMark: "check",
     alert: "triangle-alert",
     trendUp: "trending-up",
     trendDown: "trending-down",
@@ -17180,6 +17416,7 @@ function icon(name) {
     fileCheck: "file-check-2",
     folderOpen: "folder-open",
     route: "route",
+    store: "store",
   };
   return `<span class="icon" aria-hidden="true"><i data-lucide="${icons[name] || icons.grid}"></i></span>`;
 }
@@ -17241,7 +17478,7 @@ function AppHeader(selectedProject, notificationOpen = false, selectedPage = "wo
   return `
     <header class="app-header ${isUnassigned ? "unassigned-header" : ""}">
       <div class="brand-block">
-        <button class="brand-logo-button ${isPlayground ? "active" : ""}" type="button" ${isUnassigned ? "disabled aria-disabled=\"true\"" : "data-page-target=\"playground\""} aria-label="Open Project Playground">
+        <button class="brand-logo-button" type="button" data-page-target="workspace" data-project-id="all" data-workspace-view="calendar" aria-label="Go to home">
           <img class="brand-logo" src="./assets/tasama-small.svg" alt="Tasama" />
         </button>
         ${isUnassigned ? NoProjectSelector() : ProjectSelector(headerProject, !isProjectScopedPage)}
@@ -17563,14 +17800,26 @@ function WorkspaceTableStatCard(item) {
 }
 
 function WorkspaceTableTrendDot(tone) {
-  const iconName = tone === "green" ? "check" : tone === "blue" ? "todo" : tone === "neutral" ? "status" : "alert";
-  return `<span class="pm-table-trend-dot ${tone}">${icon(iconName)}</span>`;
+  const iconNames = {
+    green: "checkMark",
+    amber: "bell",
+    red: "close",
+    blue: "todo",
+    neutral: "minus",
+  };
+  const labels = {
+    green: "On track",
+    amber: "Alert",
+    red: "Off track",
+    blue: "Not started",
+    neutral: "No report",
+  };
+  const label = labels[tone] || "No report";
+  return `<span class="pm-table-trend-dot ${tone}" role="img" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">${icon(iconNames[tone] || "status")}</span>`;
 }
 
 function WorkspaceProjectTableRow(project) {
   const projectId = project.id || project.title;
-  const priorityIcon = project.priority === "high" ? "priority" : project.priority === "not-started" ? "pauseCircle" : "moreVertical";
-  const priorityLabel = project.priority === "high" ? "High priority" : project.priority === "not-started" ? "Not started" : "More actions";
 
   return `
     <tr>
@@ -17596,9 +17845,8 @@ function WorkspaceProjectTableRow(project) {
       <td>${escapeHtml(project.baselineStart)}</td>
       <td>${escapeHtml(project.baselineEnd)}</td>
       <td><span class="pm-table-budget"><strong>${escapeHtml(project.budgetUsed)}</strong><small>/ ${escapeHtml(project.budgetTotal)}</small></span></td>
-      <td class="pm-table-actions-cell">
+      <td class="pm-table-status-cell">
         <span class="pm-table-row-status ${project.statusTone}">${escapeHtml(project.status)}</span>
-        <button type="button" aria-label="${escapeHtml(priorityLabel)}">${icon(priorityIcon)}</button>
       </td>
     </tr>
   `;
@@ -17633,7 +17881,7 @@ function WorkspaceProjectsTable() {
               <th>Baseline Start Date</th>
               <th>Baseline End Date</th>
               <th>Budget Utilised</th>
-              <th aria-label="Row actions"></th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
@@ -18189,106 +18437,61 @@ const pm101Steps = [
   {
     title: "Project assigned",
     body: "You’ll receive a PMO assignment notification.",
-    iconName: "rocket",
+    iconAsset: "./assets/pm101/icon-1.svg",
     decor: "burst",
+    decorAssets: ["./assets/pm101/decor-1.svg"],
   },
   {
     title: "Build project plan",
     body: "Set scope, timeline, risks, and dependencies.",
-    iconName: "folderOpen",
+    iconAsset: "./assets/pm101/icon-2.svg",
     decor: "rings",
+    decorAssets: ["./assets/pm101/decor-2.svg"],
   },
   {
     title: "Submit for approval",
     body: "Send your baseline for PMO review and endorsement.",
-    iconName: "fileCheck",
+    iconAsset: "./assets/pm101/icon-3.svg",
     decor: "plus",
+    decorAssets: ["./assets/pm101/decor-3-group-1.svg", "./assets/pm101/decor-3-group-2.svg", "./assets/pm101/decor-3-group-3.svg", "./assets/pm101/decor-3-group-4.svg"],
   },
   {
     title: "Manage delivery",
     body: "Track milestones, issues, and dependencies.",
-    iconName: "route",
+    iconAsset: "./assets/pm101/icon-4.svg",
     decor: "loops",
+    decorAssets: ["./assets/pm101/decor-4.svg"],
   },
   {
     title: "Report progress",
     body: "Submit PSRs and maintain delivery health.",
-    iconName: "chart",
+    iconAsset: "./assets/pm101/icon-5.svg",
     decor: "hex",
+    decorAssets: ["./assets/pm101/decor-5.svg"],
   },
 ];
 
-function PM101Decor(type) {
-  const shapes = {
-    burst: `
-      <svg viewBox="0 0 120 120" fill="none">
-        ${Array.from({ length: 18 }, (_, index) => {
-          const angle = (index * 20 * Math.PI) / 180;
-          const x1 = 60 + Math.cos(angle) * 8;
-          const y1 = 60 + Math.sin(angle) * 8;
-          const x2 = 60 + Math.cos(angle) * 48;
-          const y2 = 60 + Math.sin(angle) * 48;
-          return `<path d="M${x1.toFixed(1)} ${y1.toFixed(1)}L${x2.toFixed(1)} ${y2.toFixed(1)}" />`;
-        }).join("")}
-      </svg>
-    `,
-    rings: `
-      <svg viewBox="0 0 120 120" fill="none">
-        <path d="M18 73c26-18 58-18 84 0" />
-        <path d="M18 85c26-18 58-18 84 0" />
-        <path d="M18 97c26-18 58-18 84 0" />
-        <path d="M18 73c26 18 58 18 84 0" />
-        <path d="M18 85c26 18 58 18 84 0" />
-      </svg>
-    `,
-    plus: `
-      <svg viewBox="0 0 120 120" fill="none">
-        ${Array.from({ length: 15 }, (_, index) => {
-          const col = index % 5;
-          const row = Math.floor(index / 5);
-          const x = 24 + col * 18;
-          const y = 35 + row * 18;
-          return `<path d="M${x - 4} ${y}h8M${x} ${y - 4}v8" />`;
-        }).join("")}
-      </svg>
-    `,
-    loops: `
-      <svg viewBox="0 0 120 120" fill="none">
-        <ellipse cx="42" cy="70" rx="15" ry="36" />
-        <ellipse cx="66" cy="70" rx="15" ry="36" />
-        <ellipse cx="90" cy="70" rx="15" ry="36" />
-      </svg>
-    `,
-    hex: `
-      <svg viewBox="0 0 120 120" fill="none">
-        <path d="M26 42l16-9 16 9v18l-16 9-16-9z" />
-        <path d="M58 42l16-9 16 9v18l-16 9-16-9z" />
-        <path d="M42 69l16-9 16 9v18l-16 9-16-9z" />
-        <path d="M74 69l16-9 16 9v18l-16 9-16-9z" />
-      </svg>
-    `,
-  };
-  return `<span class="pm101-decor pm101-decor-${type}" aria-hidden="true">${shapes[type] || shapes.burst}</span>`;
+function PM101Decor(step) {
+  return `<span class="pm101-decor pm101-decor-${step.decor}" aria-hidden="true">${step.decorAssets
+    .map((asset, index) => `<img class="pm101-decor-asset pm101-decor-asset-${index + 1}" src="${escapeHtml(asset)}" alt="" />`)
+    .join("")}</span>`;
 }
 
 function PM101View(selectedView) {
   return `
     <div class="pm101-view ${selectedView === "pm101" ? "" : "is-hidden"}" data-work-view="pm101">
       <div class="pm101-flow" aria-label="PM 101 project delivery flow">
-        <svg class="pm101-connector" viewBox="0 0 1000 160" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M88 44 L278 124 L500 44 L722 124 L912 44" />
-        </svg>
         <ol class="pm101-step-list">
           ${pm101Steps
             .map(
               (step, index) => `
-                <li class="pm101-step ${index % 2 ? "is-lower" : "is-upper"}">
-                  <span class="pm101-step-number">${index + 1}</span>
+                <li class="pm101-step">
                   <article class="pm101-card">
-                    <span class="pm101-card-icon">${icon(step.iconName)}</span>
+                    <span class="pm101-card-icon"><img class="pm101-card-icon-asset" src="${escapeHtml(step.iconAsset)}" alt="" /></span>
                     <strong>${escapeHtml(step.title)}</strong>
                     <p>${escapeHtml(step.body)}</p>
-                    ${PM101Decor(step.decor)}
+                    ${PM101Decor(step)}
+                    <span class="pm101-step-number" aria-hidden="true">${index + 1}</span>
                   </article>
                 </li>
               `
@@ -18488,10 +18691,6 @@ function persistPinnedQuickLinks() {
   }
 }
 
-function quickLinkPinnedIds() {
-  return quickLinksOverlayOpen && quickLinksDraftPinnedIds ? quickLinksDraftPinnedIds : pinnedQuickLinkIds;
-}
-
 function quickActionById(id) {
   return projectQuickActions.find((action) => action.id === id);
 }
@@ -18511,98 +18710,69 @@ function quickActionAttributes(action) {
 }
 
 function QuickLinkCard(action, selectedProject, options = {}) {
-  const pinnedIds = options.pinnedIds || quickLinkPinnedIds();
+  const pinnedIds = options.pinnedIds || pinnedQuickLinkIds;
   const isPinned = pinnedIds.includes(action.id);
   const pinMode = isPinned ? "unpin" : "pin";
   const pinLabel = `${isPinned ? "Unpin" : "Pin"} ${action.title}`;
-  const cardMode = options.overlay ? "overlay" : "compact";
   return `
-    <article class="quick-action quick-link-card ${isPinned ? "is-pinned" : ""} ${options.ghost ? "is-ghost" : ""}" data-quick-link-id="${escapeHtml(action.id)}" data-quick-card-mode="${cardMode}">
+    <article class="quick-action quick-link-card ${isPinned ? "is-pinned" : ""} ${options.ghost ? "is-ghost" : ""}" data-quick-link-id="${escapeHtml(action.id)}">
       <button class="quick-action-main" type="button" aria-label="${escapeHtml(`${action.title} for ${projectName(selectedProject)}`)}" ${quickActionAttributes(action)}>
         <span class="quick-action-icon">${icon(action.icon)}</span>
         <span class="quick-action-label">${escapeHtml(action.title)}</span>
       </button>
       <button class="quick-pin-button" type="button" data-quick-pin="${escapeHtml(action.id)}" data-quick-pin-action="${pinMode}" aria-label="${escapeHtml(pinLabel)}" title="${escapeHtml(pinLabel)}">
-        ${icon(isPinned ? "pinOff" : "pin")}
+        <span class="icon quick-pin-default" aria-hidden="true"><i data-lucide="pin"></i></span>
+        <span class="icon quick-pin-unpin" aria-hidden="true"><i data-lucide="pin-off"></i></span>
       </button>
     </article>
   `;
 }
 
+function quickLinksOrderedActions() {
+  const pinnedIds = normalizePinnedQuickLinks();
+  const pinnedSet = new Set(pinnedIds);
+  return [...quickActionsFromIds(pinnedIds), ...projectQuickActions.filter((action) => !pinnedSet.has(action.id))];
+}
+
+function quickLinksTotalPages() {
+  return Math.max(1, Math.ceil(quickLinksOrderedActions().length / QUICK_LINK_PAGE_SIZE));
+}
+
+function quickLinksPageIndex() {
+  return Math.min(quickLinksPage, quickLinksTotalPages() - 1);
+}
+
+function quickLinksPageActions() {
+  const start = quickLinksPageIndex() * QUICK_LINK_PAGE_SIZE;
+  return quickLinksOrderedActions().slice(start, start + QUICK_LINK_PAGE_SIZE);
+}
+
 function QuickLinks(selectedProject) {
   const pinnedIds = normalizePinnedQuickLinks();
-  const pinnedActions = quickActionsFromIds(pinnedIds);
-  const previewSlots = Math.max(0, QUICK_LINK_PIN_LIMIT - pinnedActions.length);
-  const unpinnedPreview = projectQuickActions.filter((action) => !pinnedIds.includes(action.id)).slice(0, previewSlots);
-
+  const currentPage = quickLinksPageIndex();
+  const totalPages = quickLinksTotalPages();
   return `
-    <section class="side-card context-card quick-actions-card" aria-label="Quick links">
+    <section class="side-card context-card quick-actions-card" aria-label="Project Quick links">
       <div class="quick-card-head">
-        <h2>Quick links</h2>
-        <p>${escapeHtml(projectName(selectedProject))} shortcuts</p>
+        <h2>Project Quick links</h2>
       </div>
       <div class="quick-action-list">
-        ${
-          pinnedActions.length
-            ? `<div class="quick-action-grid quick-action-pinned-grid">
-                ${pinnedActions.map((action) => QuickLinkCard(action, selectedProject, { pinnedIds })).join("")}
-              </div>`
-            : ""
-        }
-        ${pinnedActions.length && unpinnedPreview.length ? `<span class="quick-action-divider" aria-hidden="true"></span>` : ""}
         <div class="quick-action-grid">
-          ${unpinnedPreview.map((action) => QuickLinkCard(action, selectedProject, { pinnedIds })).join("")}
-          <button class="quick-action quick-action-view-all" type="button" data-quick-links-open aria-label="View all quick links">
-            <span class="quick-action-view-icon">${icon("quickGrid")}</span>
-            <span>View all</span>
+          ${quickLinksPageActions().map((action) => QuickLinkCard(action, selectedProject, { pinnedIds })).join("")}
+        </div>
+        <div class="quick-links-pager" aria-label="Quick links pages">
+          <button class="quick-links-page-button" type="button" data-quick-links-page-shift="-1" ${currentPage === 0 ? "disabled" : ""} aria-label="Previous quick links page">
+            <span class="icon" aria-hidden="true"><i data-lucide="arrow-left"></i></span>
+          </button>
+          <div class="quick-links-page-dots" aria-hidden="true">
+            ${Array.from({ length: totalPages }, (_, page) => `<span class="${page === currentPage ? "active" : ""}"></span>`).join("")}
+          </div>
+          <button class="quick-links-page-button" type="button" data-quick-links-page-shift="1" ${currentPage >= totalPages - 1 ? "disabled" : ""} aria-label="Next quick links page">
+            <span class="icon" aria-hidden="true"><i data-lucide="arrow-right"></i></span>
           </button>
         </div>
       </div>
     </section>
-  `;
-}
-
-function QuickLinksOverlay(selectedProject) {
-  if (!quickLinksOverlayOpen) return "";
-  const draftPinnedIds = normalizePinnedQuickLinks(quickLinksDraftPinnedIds || pinnedQuickLinkIds);
-  const pinnedActions = quickActionsFromIds(draftPinnedIds);
-  return `
-    <div class="quick-links-modal-shell" role="presentation">
-      <button class="quick-links-modal-backdrop" type="button" data-quick-links-close aria-label="Close quick links"></button>
-      <section class="quick-links-modal" role="dialog" aria-modal="true" aria-labelledby="quick-links-modal-title">
-        <header class="quick-links-modal-head">
-          <div class="quick-links-modal-title">
-            ${icon("link")}
-            <h2 id="quick-links-modal-title">Quick links <span>(${escapeHtml(projectName(selectedProject))} shortcuts)</span></h2>
-          </div>
-          <button class="quick-links-close" type="button" data-quick-links-close aria-label="Close quick links">${icon("close")}</button>
-        </header>
-
-        <div class="quick-links-modal-body">
-          <div class="quick-links-intro">
-            <h3>Click to open</h3>
-            <p>Showing all ${projectQuickActions.length} quick links</p>
-          </div>
-
-          <section class="quick-links-pinned-panel" aria-label="Pinned quick links">
-            <p>Pinned quick links (${draftPinnedIds.length}/${QUICK_LINK_PIN_LIMIT} pinned)</p>
-            <span class="quick-links-pinned-mark" aria-hidden="true">${icon("pin")}</span>
-            <div class="quick-links-modal-grid">
-              ${pinnedActions.map((action) => QuickLinkCard(action, selectedProject, { overlay: true, pinnedIds: draftPinnedIds })).join("")}
-            </div>
-          </section>
-
-          <div class="quick-links-all-grid">
-            ${projectQuickActions.map((action) => QuickLinkCard(action, selectedProject, { overlay: true, pinnedIds: draftPinnedIds })).join("")}
-          </div>
-        </div>
-
-        <footer class="quick-links-modal-actions">
-          <button class="quick-links-secondary" type="button" data-quick-links-close>Cancel</button>
-          <button class="quick-links-primary" type="button" data-quick-links-save>Save changes</button>
-        </footer>
-      </section>
-    </div>
   `;
 }
 
@@ -18738,6 +18908,22 @@ const projectPlanWorkspaceEntries = {
   "change-request": { title: "Change Request", aria: "change request" },
   closure: { title: "Closure", aria: "closure" },
 };
+const projectReportsRows = [
+  { period: "Initiation", owner: "Jordan Lee", date: "01/15/2024", budget: "$2.5M/$4.3M", priority: "normal" },
+  { period: "Planning", owner: "Alex Adams", date: "03/22/2026", budget: "$3.1M/$3.1M", priority: "normal" },
+  { period: "Execution", owner: "Taylor Reed", date: "07/04/2023", budget: "$4.0M/$4.0M", priority: "high" },
+  { period: "On - Hold", owner: "Jordan Blake", date: "11/30/2025", budget: "$2.2M/$2.2M", priority: "paused" },
+  { period: "Initiation", owner: "Taylor Reed", date: "09/19/2024", budget: "$2.9M/$2.9M", priority: "normal" },
+  { period: "Execution", owner: "Morgan Lee", date: "05/11/2027", budget: "$3.5M/$3.5M", priority: "normal" },
+  { period: "Planning", owner: "Casey Smith", date: "02/14/2023", budget: "$2.2M/$2.2M", priority: "normal" },
+];
+const projectReportTrendPoints = [
+  { date: "20/01/2025", tone: "green", iconName: "check" },
+  { date: "20/01/2025", tone: "green", iconName: "check" },
+  { date: "20/01/2025", tone: "green", iconName: "check" },
+  { date: "20/12/2024", tone: "red", iconName: "close" },
+  { date: "20/11/2024", tone: "amber", iconName: "status" },
+];
 
 const projectPlanFieldMatrix = [
   { section: "Project Setup", field: "Project name", mandatory: true, simple: true, intermediate: true, detailed: true, type: "text", value: "UAE Research Map" },
@@ -18961,17 +19147,109 @@ function ProjectPlanReportNav(activeSection) {
   `;
 }
 
+function ProjectReportMetricCard(label) {
+  return `
+    <article class="project-report-metric-card">
+      <div class="project-report-metric-copy">
+        <span>${escapeHtml(label)}</span>
+        <strong>40% <small>${icon("trendUp")}21%</small></strong>
+      </div>
+      <span class="project-report-metric-icon">${icon("plan")}</span>
+    </article>
+  `;
+}
+
+function ProjectReportTrendPanel() {
+  return `
+    <article class="project-report-trend-panel" aria-label="Reporting trend">
+      <div class="project-report-trend-copy">
+        <span>Reporting Trend</span>
+      </div>
+      <div class="project-report-trend-track">
+        ${projectReportTrendPoints
+          .map(
+            (point) => `
+              <span class="project-report-trend-point ${point.tone}">
+                <small>${escapeHtml(point.date)}</small>
+                <i>${icon(point.iconName)}</i>
+              </span>
+            `
+          )
+          .join("")}
+      </div>
+    </article>
+  `;
+}
+
+function ProjectReportPriorityIcon(priority) {
+  if (priority === "high") return `<span class="project-report-row-marker high" title="High priority">${icon("priority")}</span>`;
+  if (priority === "paused") return `<span class="project-report-row-marker paused" title="Paused">${icon("pauseCircle")}</span>`;
+  return "";
+}
+
+function ProjectReportTableRow(row, planProject) {
+  return `
+    <tr
+      class="project-report-open-row"
+      data-report-row-create="${escapeHtml(planProject)}"
+      role="button"
+      tabindex="0"
+      aria-label="${escapeHtml(`Open ${row.period} report drawer for ${planProject}`)}"
+    >
+      <td class="pm-table-check-cell"><input type="checkbox" data-report-row-ignore aria-label="Select ${escapeHtml(row.period)} report" /></td>
+      <td class="pm-table-project-cell project-report-period-cell">
+        <button type="button" data-report-create="${escapeHtml(planProject)}">
+          <strong>${escapeHtml(row.period)}</strong>
+          ${ProjectReportPriorityIcon(row.priority)}
+        </button>
+      </td>
+      <td>
+        <span class="project-report-owner">${escapeHtml(row.owner)}</span>
+      </td>
+      <td>${escapeHtml(row.date)}</td>
+      <td><span class="pm-table-budget"><strong>${escapeHtml(row.budget)}</strong></span></td>
+      <td class="pm-table-actions-cell">
+        <button type="button" data-report-row-ignore aria-label="${escapeHtml(`More actions for ${row.period} report`)}">${icon("moreVertical")}</button>
+      </td>
+    </tr>
+  `;
+}
+
+function ProjectReportsTable(planProject) {
+  return `
+    <div class="pm-project-table-scroll project-reports-table-scroll" tabindex="0">
+      <table class="pm-project-table project-reports-table">
+        <thead>
+          <tr>
+            <th class="pm-table-check-cell"><input type="checkbox" aria-label="Select all reports" /></th>
+            <th>Reporting Period <span class="project-report-sort">${icon("trendUp")}</span></th>
+            <th>Reporting Status</th>
+            <th>Project Status</th>
+            <th>Report Type</th>
+            <th aria-label="Row actions"></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${projectReportsRows.map((row) => ProjectReportTableRow(row, planProject)).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
 function ProjectPlanReportPage(planProject) {
-  const activeSection = projectPlanReportSections.includes(projectPlanReportActiveSection) ? projectPlanReportActiveSection : projectPlanReportSections[0];
   return `
     <section class="project-plan-page plan-builder-page has-project-modebar report-plan-mode" aria-label="${escapeHtml(`${planProject} reporting`)}">
       <div class="project-plan-card-frame project-report-card-frame">
-        ${ProjectScopeHero(planProject, { cardHero: true, showModeTabs: true, activeEntry: "reports", titleSuffix: " - Reporting" })}
-        <div class="project-plan-shell plan-builder-shell quick-plan-shell project-report-shell">
-          ${ProjectPlanReportNav(activeSection)}
+        ${ProjectScopeHero(planProject, { cardHero: true, showModeTabs: true, activeEntry: "reports" })}
+        <div class="project-plan-shell plan-builder-shell quick-plan-shell project-report-shell project-reports-shell">
           <main class="project-plan-content plan-builder-workspace quick-plan-workspace project-report-workspace">
-            <section class="project-report-surface" aria-label="${escapeHtml(`${activeSection} report workspace`)}">
-              <article class="project-report-placeholder-card" aria-label="${escapeHtml(`${activeSection} report content`)}"></article>
+            <section class="project-report-surface project-reports-dashboard" aria-label="${escapeHtml(`${planProject} reports dashboard`)}">
+              <div class="project-reports-summary-grid" aria-label="Report summary">
+                ${["Total Reports", "Reports Overview", "Reporting Compliance"].map(ProjectReportMetricCard).join("")}
+                ${ProjectReportTrendPanel()}
+              </div>
+              ${ProjectReportsTable(planProject)}
             </section>
           </main>
         </div>
@@ -20640,7 +20918,6 @@ function App(
     ${ReportComposerDrawer(selectedReportProject)}
     ${PlaygroundDrawer(selectedPlaygroundDrawer)}
     ${NotificationPanel(notificationPanelOpen)}
-    ${QuickLinksOverlay(selectedProject)}
     ${QuickLinksToast()}
     ${GuidedTourOverlay()}
   `;
@@ -20667,8 +20944,7 @@ let projectPlanExpandedFieldSections = {};
 let projectPlanReportActiveSection = "Overview";
 let notificationPanelOpen = false;
 let pinnedQuickLinkIds = loadPinnedQuickLinks();
-let quickLinksOverlayOpen = false;
-let quickLinksDraftPinnedIds = null;
+let quickLinksPage = 0;
 let quickLinksToast = null;
 let quickLinksToastTimer = null;
 let guidedTourActive = false;
@@ -20746,6 +21022,16 @@ function clearAiInsightsTimer() {
   aiInsightTimer = null;
 }
 
+function isModalInteractionActive() {
+  return Boolean(
+    notificationPanelOpen ||
+      selectedReportProject ||
+      selectedStageGate ||
+      selectedPlaygroundDrawer ||
+      guidedTourActive
+  );
+}
+
 function enterFrontDoor(projectId = "all", startTour = false, mode = "assigned", postTourMode = null) {
   isAuthenticated = true;
   onboardingActive = false;
@@ -20760,8 +21046,7 @@ function enterFrontDoor(projectId = "all", startTour = false, mode = "assigned",
   selectedStageGate = null;
   selectedReportProject = null;
   selectedPlaygroundDrawer = null;
-  quickLinksOverlayOpen = false;
-  quickLinksDraftPinnedIds = null;
+  quickLinksPage = 0;
   projectPlanDetailMode = "simple";
   projectPlanActiveSection = "Overview";
   projectPlanReportActiveSection = "Overview";
@@ -20904,7 +21189,6 @@ function initPmoAssignmentPreview() {
     selectedReportProject = null;
     selectedPlaygroundDrawer = null;
     notificationPanelOpen = false;
-    closeQuickLinksOverlay();
     renderApp();
   });
 }
@@ -21021,7 +21305,6 @@ function initPageNavigation() {
       selectedReportProject = null;
       selectedPlaygroundDrawer = null;
       notificationPanelOpen = false;
-      closeQuickLinksOverlay();
       renderApp();
     });
   });
@@ -21036,7 +21319,6 @@ function initProjectSwitch() {
       selectedReportProject = null;
       selectedPlaygroundDrawer = null;
       playgroundFullscreen = false;
-      closeQuickLinksOverlay();
       renderApp();
     });
   });
@@ -21049,7 +21331,6 @@ function initWorkspaceSwitch() {
       selectedStageGate = null;
       selectedReportProject = null;
       selectedPlaygroundDrawer = null;
-      closeQuickLinksOverlay();
       renderApp();
     });
   });
@@ -21092,10 +21373,10 @@ function initAiInsightsWidget() {
     });
   });
 
-  if (!widget || aiWorkspaceInsights.length < 2) return;
+  if (!widget || aiWorkspaceInsights.length < 2 || isModalInteractionActive()) return;
 
   aiInsightTimer = window.setInterval(() => {
-    if (!document.querySelector(".ai-insight-widget") || document.hidden) return;
+    if (!document.querySelector(".ai-insight-widget") || document.hidden || isModalInteractionActive()) return;
     selectedAiInsightIndex = (selectedAiInsightIndex + 1) % aiWorkspaceInsights.length;
     renderApp();
   }, 4200);
@@ -21711,13 +21992,31 @@ function initStageGateDrawer() {
 }
 
 function initReportDrawer() {
+  const openReportProject = (project) => {
+    selectedReportProject = project;
+    selectedStageGate = null;
+    selectedPlaygroundDrawer = null;
+    notificationPanelOpen = false;
+    renderApp();
+  };
+
   document.querySelectorAll("[data-report-create]").forEach((button) => {
-    button.addEventListener("click", () => {
-      selectedReportProject = button.dataset.reportCreate;
-      selectedStageGate = null;
-      selectedPlaygroundDrawer = null;
-      notificationPanelOpen = false;
-      renderApp();
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      openReportProject(button.dataset.reportCreate);
+    });
+  });
+
+  document.querySelectorAll("[data-report-row-create]").forEach((row) => {
+    row.addEventListener("click", (event) => {
+      const isIgnoredTarget = event.target instanceof Element && event.target.closest("[data-report-row-ignore]");
+      if (isIgnoredTarget) return;
+      openReportProject(row.dataset.reportRowCreate);
+    });
+    row.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      openReportProject(row.dataset.reportRowCreate);
     });
   });
 
@@ -21768,8 +22067,6 @@ function initNotificationPanel() {
       selectedStageGate = null;
       selectedReportProject = null;
       selectedPlaygroundDrawer = null;
-      quickLinksOverlayOpen = false;
-      quickLinksDraftPinnedIds = null;
       renderApp();
     });
   });
@@ -21795,54 +22092,28 @@ function showQuickLinksToast(message) {
 }
 
 function setQuickLinkPinned(id, shouldPin) {
-  const currentIds = normalizePinnedQuickLinks(quickLinksOverlayOpen && quickLinksDraftPinnedIds ? quickLinksDraftPinnedIds : pinnedQuickLinkIds);
+  const currentIds = normalizePinnedQuickLinks(pinnedQuickLinkIds);
   if (shouldPin && currentIds.includes(id)) return true;
   if (!shouldPin && !currentIds.includes(id)) return true;
   if (shouldPin && currentIds.length >= QUICK_LINK_PIN_LIMIT) {
-    showQuickLinksToast(`You can pin up to ${QUICK_LINK_PIN_LIMIT} quick links because View all uses the last slot.`);
+    showQuickLinksToast(`You can't pin more than ${QUICK_LINK_PIN_LIMIT} quick links.`);
     return false;
   }
 
   const nextIds = shouldPin ? [...currentIds, id] : currentIds.filter((pinnedId) => pinnedId !== id);
-  if (quickLinksOverlayOpen) {
-    quickLinksDraftPinnedIds = normalizePinnedQuickLinks(nextIds);
-  } else {
-    pinnedQuickLinkIds = normalizePinnedQuickLinks(nextIds);
-    persistPinnedQuickLinks();
-  }
+  pinnedQuickLinkIds = normalizePinnedQuickLinks(nextIds);
+  quickLinksPage = 0;
+  persistPinnedQuickLinks();
   return true;
 }
 
-function closeQuickLinksOverlay() {
-  quickLinksOverlayOpen = false;
-  quickLinksDraftPinnedIds = null;
-}
-
 function initQuickLinks() {
-  document.querySelectorAll("[data-quick-links-open]").forEach((button) => {
+  document.querySelectorAll("[data-quick-links-page-shift]").forEach((button) => {
     button.addEventListener("click", () => {
-      quickLinksOverlayOpen = true;
-      quickLinksDraftPinnedIds = normalizePinnedQuickLinks(pinnedQuickLinkIds);
-      notificationPanelOpen = false;
-      selectedStageGate = null;
-      selectedReportProject = null;
-      selectedPlaygroundDrawer = null;
+      const delta = Number(button.dataset.quickLinksPageShift || 0);
+      quickLinksPage = Math.min(Math.max(quickLinksPageIndex() + delta, 0), quickLinksTotalPages() - 1);
       renderApp();
     });
-  });
-
-  document.querySelectorAll("[data-quick-links-close]").forEach((button) => {
-    button.addEventListener("click", () => {
-      closeQuickLinksOverlay();
-      renderApp();
-    });
-  });
-
-  document.querySelector("[data-quick-links-save]")?.addEventListener("click", () => {
-    pinnedQuickLinkIds = normalizePinnedQuickLinks(quickLinksDraftPinnedIds || pinnedQuickLinkIds);
-    persistPinnedQuickLinks();
-    closeQuickLinksOverlay();
-    renderApp();
   });
 
   document.querySelectorAll("[data-quick-pin]").forEach((button) => {
@@ -21859,12 +22130,11 @@ function initQuickLinks() {
 }
 
 document.addEventListener("keydown", (event) => {
-  if (event.key !== "Escape" || (!notificationPanelOpen && !selectedReportProject && !selectedStageGate && !selectedPlaygroundDrawer && !quickLinksOverlayOpen)) return;
+  if (event.key !== "Escape" || (!notificationPanelOpen && !selectedReportProject && !selectedStageGate && !selectedPlaygroundDrawer)) return;
   notificationPanelOpen = false;
   selectedReportProject = null;
   selectedStageGate = null;
   selectedPlaygroundDrawer = null;
-  closeQuickLinksOverlay();
   renderApp();
 });
 

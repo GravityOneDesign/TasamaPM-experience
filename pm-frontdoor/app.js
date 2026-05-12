@@ -409,7 +409,8 @@ const projectQuickActions = [
   },
 ];
 
-const QUICK_LINK_PIN_LIMIT = 9;
+const QUICK_LINK_PIN_LIMIT = 10;
+const QUICK_LINK_PAGE_SIZE = 10;
 const QUICK_LINK_STORAGE_KEY = "tasama.quickLinks.pinned";
 const defaultPinnedQuickLinkIds = ["project-plan", "wbs"];
 
@@ -1781,7 +1782,7 @@ function ReportComposerDrawer(selectedReportProject) {
   const details = reportCreationDetails[report.project] || reportCreationDetails["Vision 2030"];
   const currentStatus = reportVisualStatus(latestStatus?.status || "due").label;
   const statusOptions = [
-    { label: "On track", value: "On track", tone: "green", icon: "check" },
+    { label: "On track", value: "On track", tone: "green", icon: "checkMark" },
     { label: "Alert/Discuss", value: "Alert", tone: "amber", icon: "bell" },
     { label: "Off track", value: "Off Track", tone: "red", icon: "close" },
   ];
@@ -1791,9 +1792,9 @@ function ReportComposerDrawer(selectedReportProject) {
     ["Planned Activities for the next reporting period", "", details.planned, 4],
   ];
   const pastOverviewTrend = [
-    "31/03/2026",
+    "31/3/2026",
     "31/12/2025",
-    "30/09/2025",
+    "30/9/2025",
     "30/06/2025",
     "31/12/2024",
   ];
@@ -1827,51 +1828,55 @@ function ReportComposerDrawer(selectedReportProject) {
   const scopeProducts = [
     {
       title: "Collaboration platform",
+      icon: "dependencies",
       type: "Technology",
       owner: "Richelle Hilton",
-      capability: "-",
+      capability: "Richelle Hilton",
       dates: "11/02/2026 - 26/06/2026",
       budget: "$0",
-      status: "Not Started",
+      status: "",
       actualStart: "11/02/2026",
       actualEnd: "26/06/2026",
       completed: "33",
     },
     {
       title: "National R&D database",
-      type: "Information",
-      owner: "Canning Santos",
-      capability: "-",
-      dates: "01/01/2026 - 31/05/2026",
+      icon: "database",
+      type: "Technology",
+      owner: "Richelle Hilton",
+      capability: "Richelle Hilton",
+      dates: "11/02/2026 - 26/06/2026",
       budget: "$0",
-      status: "Not Started",
-      actualStart: "01/01/2026",
-      actualEnd: "31/05/2026",
-      completed: "0",
+      status: "",
+      actualStart: "11/02/2026",
+      actualEnd: "26/06/2026",
+      completed: "33",
     },
     {
       title: "Opportunity marketplace",
+      icon: "store",
       type: "Technology",
-      owner: "Amanda Blevins",
-      capability: "-",
-      dates: "07/04/2026 - 01/10/2026",
+      owner: "Richelle Hilton",
+      capability: "Richelle Hilton",
+      dates: "11/02/2026 - 26/06/2026",
       budget: "$0",
-      status: "Not Started",
-      actualStart: "07/04/2026",
-      actualEnd: "01/10/2026",
-      completed: "",
+      status: "",
+      actualStart: "11/02/2026",
+      actualEnd: "26/06/2026",
+      completed: "33",
     },
     {
       title: "CRM",
-      type: "-",
-      owner: "-",
-      capability: "-",
-      dates: "-",
+      icon: "",
+      type: "Technology",
+      owner: "Richelle Hilton",
+      capability: "Richelle Hilton",
+      dates: "11/02/2026 - 26/06/2026",
       budget: "$0",
-      status: "Not Started",
-      actualStart: "-",
-      actualEnd: "-",
-      completed: "",
+      status: "",
+      actualStart: "11/02/2026",
+      actualEnd: "26/06/2026",
+      completed: "33",
     },
   ];
   const reportSectionId = (label) => `report-section-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
@@ -1884,10 +1889,14 @@ function ReportComposerDrawer(selectedReportProject) {
   const reportSectionFillLabel = (state) => (state === "complete" ? "Complete" : "Partially filled");
   const scopeProductCard = (product, index) => `
     <article class="scope-product-card">
-      <label class="scope-product-title">
-        <input type="checkbox" ${index === 0 ? "checked" : ""} />
-        <span>${escapeHtml(product.title)}</span>
-      </label>
+      <div class="scope-product-title">
+        ${
+          product.icon
+            ? `<span class="scope-product-icon" aria-hidden="true">${icon(product.icon)}</span>`
+            : `<input type="checkbox" aria-label="${escapeHtml(`Add ${product.title} to report`)}" />`
+        }
+        <strong>${escapeHtml(product.title)}</strong>
+      </div>
       <div class="scope-product-grid">
         <span><small>Type</small><strong>${escapeHtml(product.type)}</strong></span>
         <span><small>Product owner</small><strong>${escapeHtml(product.owner)}</strong></span>
@@ -1898,10 +1907,11 @@ function ReportComposerDrawer(selectedReportProject) {
       <div class="scope-product-controls">
         <label>
           <span>Report status</span>
-          <select>
+          <select aria-label="${escapeHtml(`Report status for ${product.title}`)}">
             <option>${escapeHtml(product.status)}</option>
-            <option>In Progress</option>
-            <option>Complete</option>
+            <option>On track</option>
+            <option>Alert/Discuss</option>
+            <option>Off track</option>
           </select>
         </label>
         <label>
@@ -1921,23 +1931,15 @@ function ReportComposerDrawer(selectedReportProject) {
   `;
   const scopeReportSection = (status, tone) => `
     <section class="report-form-section report-area-section report-scope-section" id="${escapeHtml(reportSectionId("Scope"))}" data-report-section role="tabpanel" hidden>
-      <div class="report-section-head">
-        <div>
-          <h3>Scope</h3>
-          <p>Review scope status, trend, and reportable products for this interval.</p>
-        </div>
-        <span class="report-area-pill ${tone}">${escapeHtml(status)}</span>
-      </div>
-
-      <div class="scope-status-grid">
-        <div class="scope-panel">
-          <span class="scope-panel-label">Reporting status</span>
-          <div class="report-inline-status" role="radiogroup" aria-label="Scope reporting status">
+      <div class="report-overview-top scope-overview-top">
+        <div class="report-overview-status">
+          <span class="report-overview-label">Overall Status</span>
+          <div class="report-inline-status" role="radiogroup" aria-label="Scope overall status">
             ${statusOptions
               .map(
-                (option, index) => `
+                (option) => `
                   <label class="${option.tone}">
-                    <input type="radio" name="scope-reporting-status" ${index === 0 ? "checked" : ""} />
+                    <input type="radio" name="scope-overall-status" ${option.value === currentStatus ? "checked" : ""} />
                     <span>${icon(option.icon)}${escapeHtml(option.label)}</span>
                   </label>
                 `
@@ -1945,35 +1947,45 @@ function ReportComposerDrawer(selectedReportProject) {
               .join("")}
           </div>
         </div>
-
-        <div class="scope-panel">
-          <span class="scope-panel-label">Scope trend</span>
-          <div class="scope-trend-options" role="radiogroup" aria-label="Scope trend">
-            <label><input type="radio" name="scope-trend" checked /><span>Improving</span></label>
-            <label><input type="radio" name="scope-trend" /><span>No change</span></label>
-            <label><input type="radio" name="scope-trend" /><span>Declining</span></label>
-          </div>
+        <div class="report-overview-trend">
+          <span class="report-overview-label">Overall Status Trend</span>
+          <strong>${icon("arrow")} ${escapeHtml(details.overallTrend)}</strong>
         </div>
-
-        <label class="scope-panel scope-comment-panel">
-          <span class="scope-panel-label">Comment</span>
-          <textarea class="report-description-input" rows="3" placeholder="Add scope commentary for this interval"></textarea>
-        </label>
-
-        <div class="scope-panel scope-past-panel">
-          <span class="scope-panel-label">Past reported statuses</span>
-          <div class="scope-status-timeline">
-            ${scopePastStatuses
+        <div class="report-overview-past">
+          <span class="report-overview-label">Past Overview Trend</span>
+          <div class="report-past-trend">
+            ${pastOverviewTrend
               .map(
-                ([date, statusTone, label]) => `
-                  <span class="${statusTone}" title="${escapeHtml(label)}">
-                    <i>${icon(statusTone === "amber" ? "bell" : "close")}</i>
+                (date) => `
+                  <span>
+                    ${icon("check")}
                     <small>${escapeHtml(date)}</small>
                   </span>
                 `
               )
               .join("")}
           </div>
+        </div>
+      </div>
+
+      <label class="report-editor-field scope-comments-field">
+        <span class="report-editor-label">Comments</span>
+        <textarea class="report-description-input" rows="4" maxlength="3000"></textarea>
+      </label>
+
+      <div class="scope-panel scope-past-panel">
+        <span class="scope-panel-label">Past reported statuses</span>
+        <div class="scope-status-timeline">
+          ${scopePastStatuses
+            .map(
+              ([date, statusTone, label]) => `
+                <span class="${statusTone}" title="${escapeHtml(label)}">
+                  <i>${icon(statusTone === "amber" ? "bell" : "close")}</i>
+                  <small>${escapeHtml(date)}</small>
+                </span>
+              `
+            )
+            .join("")}
         </div>
       </div>
 
@@ -2000,7 +2012,7 @@ function ReportComposerDrawer(selectedReportProject) {
             <span>0 items</span>
           </div>
           <label class="report-include-toggle">
-            <input type="checkbox" checked />
+            <input type="checkbox" />
             <span>Add to report</span>
           </label>
         </div>
@@ -2073,7 +2085,7 @@ function ReportComposerDrawer(selectedReportProject) {
                 <section class="report-form-section report-overview-section">
                   <div class="report-overview-top">
                     <div class="report-overview-status">
-                      <span class="report-overview-label">Overall Status:</span>
+                      <span class="report-overview-label">Overall Status</span>
                       <div class="report-inline-status" role="radiogroup" aria-label="Overall status">
                         ${statusOptions
                           .map(
@@ -2088,11 +2100,11 @@ function ReportComposerDrawer(selectedReportProject) {
                       </div>
                     </div>
                     <div class="report-overview-trend">
-                      <span class="report-overview-label">Overall Status Trend:</span>
+                      <span class="report-overview-label">Overall Status Trend</span>
                       <strong>${icon("arrow")} ${escapeHtml(details.overallTrend)}</strong>
                     </div>
                     <div class="report-overview-past">
-                      <span class="report-overview-label">Past Overview Trend:</span>
+                      <span class="report-overview-label">Past Overview Trend</span>
                       <div class="report-past-trend">
                         ${pastOverviewTrend
                           .map(
@@ -2108,23 +2120,9 @@ function ReportComposerDrawer(selectedReportProject) {
                     </div>
                   </div>
 
-                  <div class="report-progress-row">
-                    <div class="report-progress-field">
-                      <span class="report-overview-label">Project Progress:</span>
-                      <div class="report-progress-line">
-                        <strong>${escapeHtml(reportProgress)}</strong>
-                        <i><em style="width:${details.progress}%"></em></i>
-                      </div>
-                    </div>
-                    <div class="report-end-dates">
-                      <span>Baseline End date <strong>${escapeHtml(details.baselineEnd)}</strong></span>
-                      <span>Forecast End date <strong>${escapeHtml(details.forecastEnd)}</strong></span>
-                    </div>
-                  </div>
-
                   <div class="report-narrative-grid">
                     ${narrativeFields
-                      .map(reportEditorField)
+                      .map((field) => reportEditorField({ ...field, value: "" }))
                       .join("")}
                   </div>
                 </section>
@@ -2193,6 +2191,7 @@ function icon(name) {
     wbs: "git-branch",
     stageGate: "clipboard-check",
     changeRequest: "git-pull-request",
+    database: "database",
     dependencies: "network",
     resources: "users",
     risks: "triangle-alert",
@@ -2213,6 +2212,7 @@ function icon(name) {
     close: "x",
     history: "history",
     check: "circle-check",
+    checkMark: "check",
     alert: "triangle-alert",
     trendUp: "trending-up",
     trendDown: "trending-down",
@@ -2248,6 +2248,7 @@ function icon(name) {
     fileCheck: "file-check-2",
     folderOpen: "folder-open",
     route: "route",
+    store: "store",
   };
   return `<span class="icon" aria-hidden="true"><i data-lucide="${icons[name] || icons.grid}"></i></span>`;
 }
@@ -2309,7 +2310,7 @@ function AppHeader(selectedProject, notificationOpen = false, selectedPage = "wo
   return `
     <header class="app-header ${isUnassigned ? "unassigned-header" : ""}">
       <div class="brand-block">
-        <button class="brand-logo-button ${isPlayground ? "active" : ""}" type="button" ${isUnassigned ? "disabled aria-disabled=\"true\"" : "data-page-target=\"playground\""} aria-label="Open Project Playground">
+        <button class="brand-logo-button" type="button" data-page-target="workspace" data-project-id="all" data-workspace-view="calendar" aria-label="Go to home">
           <img class="brand-logo" src="./assets/tasama-small.svg" alt="Tasama" />
         </button>
         ${isUnassigned ? NoProjectSelector() : ProjectSelector(headerProject, !isProjectScopedPage)}
@@ -2631,14 +2632,26 @@ function WorkspaceTableStatCard(item) {
 }
 
 function WorkspaceTableTrendDot(tone) {
-  const iconName = tone === "green" ? "check" : tone === "blue" ? "todo" : tone === "neutral" ? "status" : "alert";
-  return `<span class="pm-table-trend-dot ${tone}">${icon(iconName)}</span>`;
+  const iconNames = {
+    green: "checkMark",
+    amber: "bell",
+    red: "close",
+    blue: "todo",
+    neutral: "minus",
+  };
+  const labels = {
+    green: "On track",
+    amber: "Alert",
+    red: "Off track",
+    blue: "Not started",
+    neutral: "No report",
+  };
+  const label = labels[tone] || "No report";
+  return `<span class="pm-table-trend-dot ${tone}" role="img" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">${icon(iconNames[tone] || "status")}</span>`;
 }
 
 function WorkspaceProjectTableRow(project) {
   const projectId = project.id || project.title;
-  const priorityIcon = project.priority === "high" ? "priority" : project.priority === "not-started" ? "pauseCircle" : "moreVertical";
-  const priorityLabel = project.priority === "high" ? "High priority" : project.priority === "not-started" ? "Not started" : "More actions";
 
   return `
     <tr>
@@ -2664,9 +2677,8 @@ function WorkspaceProjectTableRow(project) {
       <td>${escapeHtml(project.baselineStart)}</td>
       <td>${escapeHtml(project.baselineEnd)}</td>
       <td><span class="pm-table-budget"><strong>${escapeHtml(project.budgetUsed)}</strong><small>/ ${escapeHtml(project.budgetTotal)}</small></span></td>
-      <td class="pm-table-actions-cell">
+      <td class="pm-table-status-cell">
         <span class="pm-table-row-status ${project.statusTone}">${escapeHtml(project.status)}</span>
-        <button type="button" aria-label="${escapeHtml(priorityLabel)}">${icon(priorityIcon)}</button>
       </td>
     </tr>
   `;
@@ -2701,7 +2713,7 @@ function WorkspaceProjectsTable() {
               <th>Baseline Start Date</th>
               <th>Baseline End Date</th>
               <th>Budget Utilised</th>
-              <th aria-label="Row actions"></th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
@@ -3257,106 +3269,61 @@ const pm101Steps = [
   {
     title: "Project assigned",
     body: "You’ll receive a PMO assignment notification.",
-    iconName: "rocket",
+    iconAsset: "./assets/pm101/icon-1.svg",
     decor: "burst",
+    decorAssets: ["./assets/pm101/decor-1.svg"],
   },
   {
     title: "Build project plan",
     body: "Set scope, timeline, risks, and dependencies.",
-    iconName: "folderOpen",
+    iconAsset: "./assets/pm101/icon-2.svg",
     decor: "rings",
+    decorAssets: ["./assets/pm101/decor-2.svg"],
   },
   {
     title: "Submit for approval",
     body: "Send your baseline for PMO review and endorsement.",
-    iconName: "fileCheck",
+    iconAsset: "./assets/pm101/icon-3.svg",
     decor: "plus",
+    decorAssets: ["./assets/pm101/decor-3-group-1.svg", "./assets/pm101/decor-3-group-2.svg", "./assets/pm101/decor-3-group-3.svg", "./assets/pm101/decor-3-group-4.svg"],
   },
   {
     title: "Manage delivery",
     body: "Track milestones, issues, and dependencies.",
-    iconName: "route",
+    iconAsset: "./assets/pm101/icon-4.svg",
     decor: "loops",
+    decorAssets: ["./assets/pm101/decor-4.svg"],
   },
   {
     title: "Report progress",
     body: "Submit PSRs and maintain delivery health.",
-    iconName: "chart",
+    iconAsset: "./assets/pm101/icon-5.svg",
     decor: "hex",
+    decorAssets: ["./assets/pm101/decor-5.svg"],
   },
 ];
 
-function PM101Decor(type) {
-  const shapes = {
-    burst: `
-      <svg viewBox="0 0 120 120" fill="none">
-        ${Array.from({ length: 18 }, (_, index) => {
-          const angle = (index * 20 * Math.PI) / 180;
-          const x1 = 60 + Math.cos(angle) * 8;
-          const y1 = 60 + Math.sin(angle) * 8;
-          const x2 = 60 + Math.cos(angle) * 48;
-          const y2 = 60 + Math.sin(angle) * 48;
-          return `<path d="M${x1.toFixed(1)} ${y1.toFixed(1)}L${x2.toFixed(1)} ${y2.toFixed(1)}" />`;
-        }).join("")}
-      </svg>
-    `,
-    rings: `
-      <svg viewBox="0 0 120 120" fill="none">
-        <path d="M18 73c26-18 58-18 84 0" />
-        <path d="M18 85c26-18 58-18 84 0" />
-        <path d="M18 97c26-18 58-18 84 0" />
-        <path d="M18 73c26 18 58 18 84 0" />
-        <path d="M18 85c26 18 58 18 84 0" />
-      </svg>
-    `,
-    plus: `
-      <svg viewBox="0 0 120 120" fill="none">
-        ${Array.from({ length: 15 }, (_, index) => {
-          const col = index % 5;
-          const row = Math.floor(index / 5);
-          const x = 24 + col * 18;
-          const y = 35 + row * 18;
-          return `<path d="M${x - 4} ${y}h8M${x} ${y - 4}v8" />`;
-        }).join("")}
-      </svg>
-    `,
-    loops: `
-      <svg viewBox="0 0 120 120" fill="none">
-        <ellipse cx="42" cy="70" rx="15" ry="36" />
-        <ellipse cx="66" cy="70" rx="15" ry="36" />
-        <ellipse cx="90" cy="70" rx="15" ry="36" />
-      </svg>
-    `,
-    hex: `
-      <svg viewBox="0 0 120 120" fill="none">
-        <path d="M26 42l16-9 16 9v18l-16 9-16-9z" />
-        <path d="M58 42l16-9 16 9v18l-16 9-16-9z" />
-        <path d="M42 69l16-9 16 9v18l-16 9-16-9z" />
-        <path d="M74 69l16-9 16 9v18l-16 9-16-9z" />
-      </svg>
-    `,
-  };
-  return `<span class="pm101-decor pm101-decor-${type}" aria-hidden="true">${shapes[type] || shapes.burst}</span>`;
+function PM101Decor(step) {
+  return `<span class="pm101-decor pm101-decor-${step.decor}" aria-hidden="true">${step.decorAssets
+    .map((asset, index) => `<img class="pm101-decor-asset pm101-decor-asset-${index + 1}" src="${escapeHtml(asset)}" alt="" />`)
+    .join("")}</span>`;
 }
 
 function PM101View(selectedView) {
   return `
     <div class="pm101-view ${selectedView === "pm101" ? "" : "is-hidden"}" data-work-view="pm101">
       <div class="pm101-flow" aria-label="PM 101 project delivery flow">
-        <svg class="pm101-connector" viewBox="0 0 1000 160" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M88 44 L278 124 L500 44 L722 124 L912 44" />
-        </svg>
         <ol class="pm101-step-list">
           ${pm101Steps
             .map(
               (step, index) => `
-                <li class="pm101-step ${index % 2 ? "is-lower" : "is-upper"}">
-                  <span class="pm101-step-number">${index + 1}</span>
+                <li class="pm101-step">
                   <article class="pm101-card">
-                    <span class="pm101-card-icon">${icon(step.iconName)}</span>
+                    <span class="pm101-card-icon"><img class="pm101-card-icon-asset" src="${escapeHtml(step.iconAsset)}" alt="" /></span>
                     <strong>${escapeHtml(step.title)}</strong>
                     <p>${escapeHtml(step.body)}</p>
-                    ${PM101Decor(step.decor)}
+                    ${PM101Decor(step)}
+                    <span class="pm101-step-number" aria-hidden="true">${index + 1}</span>
                   </article>
                 </li>
               `
@@ -3556,10 +3523,6 @@ function persistPinnedQuickLinks() {
   }
 }
 
-function quickLinkPinnedIds() {
-  return quickLinksOverlayOpen && quickLinksDraftPinnedIds ? quickLinksDraftPinnedIds : pinnedQuickLinkIds;
-}
-
 function quickActionById(id) {
   return projectQuickActions.find((action) => action.id === id);
 }
@@ -3579,98 +3542,69 @@ function quickActionAttributes(action) {
 }
 
 function QuickLinkCard(action, selectedProject, options = {}) {
-  const pinnedIds = options.pinnedIds || quickLinkPinnedIds();
+  const pinnedIds = options.pinnedIds || pinnedQuickLinkIds;
   const isPinned = pinnedIds.includes(action.id);
   const pinMode = isPinned ? "unpin" : "pin";
   const pinLabel = `${isPinned ? "Unpin" : "Pin"} ${action.title}`;
-  const cardMode = options.overlay ? "overlay" : "compact";
   return `
-    <article class="quick-action quick-link-card ${isPinned ? "is-pinned" : ""} ${options.ghost ? "is-ghost" : ""}" data-quick-link-id="${escapeHtml(action.id)}" data-quick-card-mode="${cardMode}">
+    <article class="quick-action quick-link-card ${isPinned ? "is-pinned" : ""} ${options.ghost ? "is-ghost" : ""}" data-quick-link-id="${escapeHtml(action.id)}">
       <button class="quick-action-main" type="button" aria-label="${escapeHtml(`${action.title} for ${projectName(selectedProject)}`)}" ${quickActionAttributes(action)}>
         <span class="quick-action-icon">${icon(action.icon)}</span>
         <span class="quick-action-label">${escapeHtml(action.title)}</span>
       </button>
       <button class="quick-pin-button" type="button" data-quick-pin="${escapeHtml(action.id)}" data-quick-pin-action="${pinMode}" aria-label="${escapeHtml(pinLabel)}" title="${escapeHtml(pinLabel)}">
-        ${icon(isPinned ? "pinOff" : "pin")}
+        <span class="icon quick-pin-default" aria-hidden="true"><i data-lucide="pin"></i></span>
+        <span class="icon quick-pin-unpin" aria-hidden="true"><i data-lucide="pin-off"></i></span>
       </button>
     </article>
   `;
 }
 
+function quickLinksOrderedActions() {
+  const pinnedIds = normalizePinnedQuickLinks();
+  const pinnedSet = new Set(pinnedIds);
+  return [...quickActionsFromIds(pinnedIds), ...projectQuickActions.filter((action) => !pinnedSet.has(action.id))];
+}
+
+function quickLinksTotalPages() {
+  return Math.max(1, Math.ceil(quickLinksOrderedActions().length / QUICK_LINK_PAGE_SIZE));
+}
+
+function quickLinksPageIndex() {
+  return Math.min(quickLinksPage, quickLinksTotalPages() - 1);
+}
+
+function quickLinksPageActions() {
+  const start = quickLinksPageIndex() * QUICK_LINK_PAGE_SIZE;
+  return quickLinksOrderedActions().slice(start, start + QUICK_LINK_PAGE_SIZE);
+}
+
 function QuickLinks(selectedProject) {
   const pinnedIds = normalizePinnedQuickLinks();
-  const pinnedActions = quickActionsFromIds(pinnedIds);
-  const previewSlots = Math.max(0, QUICK_LINK_PIN_LIMIT - pinnedActions.length);
-  const unpinnedPreview = projectQuickActions.filter((action) => !pinnedIds.includes(action.id)).slice(0, previewSlots);
-
+  const currentPage = quickLinksPageIndex();
+  const totalPages = quickLinksTotalPages();
   return `
-    <section class="side-card context-card quick-actions-card" aria-label="Quick links">
+    <section class="side-card context-card quick-actions-card" aria-label="Project Quick links">
       <div class="quick-card-head">
-        <h2>Quick links</h2>
-        <p>${escapeHtml(projectName(selectedProject))} shortcuts</p>
+        <h2>Project Quick links</h2>
       </div>
       <div class="quick-action-list">
-        ${
-          pinnedActions.length
-            ? `<div class="quick-action-grid quick-action-pinned-grid">
-                ${pinnedActions.map((action) => QuickLinkCard(action, selectedProject, { pinnedIds })).join("")}
-              </div>`
-            : ""
-        }
-        ${pinnedActions.length && unpinnedPreview.length ? `<span class="quick-action-divider" aria-hidden="true"></span>` : ""}
         <div class="quick-action-grid">
-          ${unpinnedPreview.map((action) => QuickLinkCard(action, selectedProject, { pinnedIds })).join("")}
-          <button class="quick-action quick-action-view-all" type="button" data-quick-links-open aria-label="View all quick links">
-            <span class="quick-action-view-icon">${icon("quickGrid")}</span>
-            <span>View all</span>
+          ${quickLinksPageActions().map((action) => QuickLinkCard(action, selectedProject, { pinnedIds })).join("")}
+        </div>
+        <div class="quick-links-pager" aria-label="Quick links pages">
+          <button class="quick-links-page-button" type="button" data-quick-links-page-shift="-1" ${currentPage === 0 ? "disabled" : ""} aria-label="Previous quick links page">
+            <span class="icon" aria-hidden="true"><i data-lucide="arrow-left"></i></span>
+          </button>
+          <div class="quick-links-page-dots" aria-hidden="true">
+            ${Array.from({ length: totalPages }, (_, page) => `<span class="${page === currentPage ? "active" : ""}"></span>`).join("")}
+          </div>
+          <button class="quick-links-page-button" type="button" data-quick-links-page-shift="1" ${currentPage >= totalPages - 1 ? "disabled" : ""} aria-label="Next quick links page">
+            <span class="icon" aria-hidden="true"><i data-lucide="arrow-right"></i></span>
           </button>
         </div>
       </div>
     </section>
-  `;
-}
-
-function QuickLinksOverlay(selectedProject) {
-  if (!quickLinksOverlayOpen) return "";
-  const draftPinnedIds = normalizePinnedQuickLinks(quickLinksDraftPinnedIds || pinnedQuickLinkIds);
-  const pinnedActions = quickActionsFromIds(draftPinnedIds);
-  return `
-    <div class="quick-links-modal-shell" role="presentation">
-      <button class="quick-links-modal-backdrop" type="button" data-quick-links-close aria-label="Close quick links"></button>
-      <section class="quick-links-modal" role="dialog" aria-modal="true" aria-labelledby="quick-links-modal-title">
-        <header class="quick-links-modal-head">
-          <div class="quick-links-modal-title">
-            ${icon("link")}
-            <h2 id="quick-links-modal-title">Quick links <span>(${escapeHtml(projectName(selectedProject))} shortcuts)</span></h2>
-          </div>
-          <button class="quick-links-close" type="button" data-quick-links-close aria-label="Close quick links">${icon("close")}</button>
-        </header>
-
-        <div class="quick-links-modal-body">
-          <div class="quick-links-intro">
-            <h3>Click to open</h3>
-            <p>Showing all ${projectQuickActions.length} quick links</p>
-          </div>
-
-          <section class="quick-links-pinned-panel" aria-label="Pinned quick links">
-            <p>Pinned quick links (${draftPinnedIds.length}/${QUICK_LINK_PIN_LIMIT} pinned)</p>
-            <span class="quick-links-pinned-mark" aria-hidden="true">${icon("pin")}</span>
-            <div class="quick-links-modal-grid">
-              ${pinnedActions.map((action) => QuickLinkCard(action, selectedProject, { overlay: true, pinnedIds: draftPinnedIds })).join("")}
-            </div>
-          </section>
-
-          <div class="quick-links-all-grid">
-            ${projectQuickActions.map((action) => QuickLinkCard(action, selectedProject, { overlay: true, pinnedIds: draftPinnedIds })).join("")}
-          </div>
-        </div>
-
-        <footer class="quick-links-modal-actions">
-          <button class="quick-links-secondary" type="button" data-quick-links-close>Cancel</button>
-          <button class="quick-links-primary" type="button" data-quick-links-save>Save changes</button>
-        </footer>
-      </section>
-    </div>
   `;
 }
 
@@ -3806,6 +3740,22 @@ const projectPlanWorkspaceEntries = {
   "change-request": { title: "Change Request", aria: "change request" },
   closure: { title: "Closure", aria: "closure" },
 };
+const projectReportsRows = [
+  { period: "Initiation", owner: "Jordan Lee", date: "01/15/2024", budget: "$2.5M/$4.3M", priority: "normal" },
+  { period: "Planning", owner: "Alex Adams", date: "03/22/2026", budget: "$3.1M/$3.1M", priority: "normal" },
+  { period: "Execution", owner: "Taylor Reed", date: "07/04/2023", budget: "$4.0M/$4.0M", priority: "high" },
+  { period: "On - Hold", owner: "Jordan Blake", date: "11/30/2025", budget: "$2.2M/$2.2M", priority: "paused" },
+  { period: "Initiation", owner: "Taylor Reed", date: "09/19/2024", budget: "$2.9M/$2.9M", priority: "normal" },
+  { period: "Execution", owner: "Morgan Lee", date: "05/11/2027", budget: "$3.5M/$3.5M", priority: "normal" },
+  { period: "Planning", owner: "Casey Smith", date: "02/14/2023", budget: "$2.2M/$2.2M", priority: "normal" },
+];
+const projectReportTrendPoints = [
+  { date: "20/01/2025", tone: "green", iconName: "check" },
+  { date: "20/01/2025", tone: "green", iconName: "check" },
+  { date: "20/01/2025", tone: "green", iconName: "check" },
+  { date: "20/12/2024", tone: "red", iconName: "close" },
+  { date: "20/11/2024", tone: "amber", iconName: "status" },
+];
 
 const projectPlanFieldMatrix = [
   { section: "Project Setup", field: "Project name", mandatory: true, simple: true, intermediate: true, detailed: true, type: "text", value: "UAE Research Map" },
@@ -4029,17 +3979,109 @@ function ProjectPlanReportNav(activeSection) {
   `;
 }
 
+function ProjectReportMetricCard(label) {
+  return `
+    <article class="project-report-metric-card">
+      <div class="project-report-metric-copy">
+        <span>${escapeHtml(label)}</span>
+        <strong>40% <small>${icon("trendUp")}21%</small></strong>
+      </div>
+      <span class="project-report-metric-icon">${icon("plan")}</span>
+    </article>
+  `;
+}
+
+function ProjectReportTrendPanel() {
+  return `
+    <article class="project-report-trend-panel" aria-label="Reporting trend">
+      <div class="project-report-trend-copy">
+        <span>Reporting Trend</span>
+      </div>
+      <div class="project-report-trend-track">
+        ${projectReportTrendPoints
+          .map(
+            (point) => `
+              <span class="project-report-trend-point ${point.tone}">
+                <small>${escapeHtml(point.date)}</small>
+                <i>${icon(point.iconName)}</i>
+              </span>
+            `
+          )
+          .join("")}
+      </div>
+    </article>
+  `;
+}
+
+function ProjectReportPriorityIcon(priority) {
+  if (priority === "high") return `<span class="project-report-row-marker high" title="High priority">${icon("priority")}</span>`;
+  if (priority === "paused") return `<span class="project-report-row-marker paused" title="Paused">${icon("pauseCircle")}</span>`;
+  return "";
+}
+
+function ProjectReportTableRow(row, planProject) {
+  return `
+    <tr
+      class="project-report-open-row"
+      data-report-row-create="${escapeHtml(planProject)}"
+      role="button"
+      tabindex="0"
+      aria-label="${escapeHtml(`Open ${row.period} report drawer for ${planProject}`)}"
+    >
+      <td class="pm-table-check-cell"><input type="checkbox" data-report-row-ignore aria-label="Select ${escapeHtml(row.period)} report" /></td>
+      <td class="pm-table-project-cell project-report-period-cell">
+        <button type="button" data-report-create="${escapeHtml(planProject)}">
+          <strong>${escapeHtml(row.period)}</strong>
+          ${ProjectReportPriorityIcon(row.priority)}
+        </button>
+      </td>
+      <td>
+        <span class="project-report-owner">${escapeHtml(row.owner)}</span>
+      </td>
+      <td>${escapeHtml(row.date)}</td>
+      <td><span class="pm-table-budget"><strong>${escapeHtml(row.budget)}</strong></span></td>
+      <td class="pm-table-actions-cell">
+        <button type="button" data-report-row-ignore aria-label="${escapeHtml(`More actions for ${row.period} report`)}">${icon("moreVertical")}</button>
+      </td>
+    </tr>
+  `;
+}
+
+function ProjectReportsTable(planProject) {
+  return `
+    <div class="pm-project-table-scroll project-reports-table-scroll" tabindex="0">
+      <table class="pm-project-table project-reports-table">
+        <thead>
+          <tr>
+            <th class="pm-table-check-cell"><input type="checkbox" aria-label="Select all reports" /></th>
+            <th>Reporting Period <span class="project-report-sort">${icon("trendUp")}</span></th>
+            <th>Reporting Status</th>
+            <th>Project Status</th>
+            <th>Report Type</th>
+            <th aria-label="Row actions"></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${projectReportsRows.map((row) => ProjectReportTableRow(row, planProject)).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
 function ProjectPlanReportPage(planProject) {
-  const activeSection = projectPlanReportSections.includes(projectPlanReportActiveSection) ? projectPlanReportActiveSection : projectPlanReportSections[0];
   return `
     <section class="project-plan-page plan-builder-page has-project-modebar report-plan-mode" aria-label="${escapeHtml(`${planProject} reporting`)}">
       <div class="project-plan-card-frame project-report-card-frame">
-        ${ProjectScopeHero(planProject, { cardHero: true, showModeTabs: true, activeEntry: "reports", titleSuffix: " - Reporting" })}
-        <div class="project-plan-shell plan-builder-shell quick-plan-shell project-report-shell">
-          ${ProjectPlanReportNav(activeSection)}
+        ${ProjectScopeHero(planProject, { cardHero: true, showModeTabs: true, activeEntry: "reports" })}
+        <div class="project-plan-shell plan-builder-shell quick-plan-shell project-report-shell project-reports-shell">
           <main class="project-plan-content plan-builder-workspace quick-plan-workspace project-report-workspace">
-            <section class="project-report-surface" aria-label="${escapeHtml(`${activeSection} report workspace`)}">
-              <article class="project-report-placeholder-card" aria-label="${escapeHtml(`${activeSection} report content`)}"></article>
+            <section class="project-report-surface project-reports-dashboard" aria-label="${escapeHtml(`${planProject} reports dashboard`)}">
+              <div class="project-reports-summary-grid" aria-label="Report summary">
+                ${["Total Reports", "Reports Overview", "Reporting Compliance"].map(ProjectReportMetricCard).join("")}
+                ${ProjectReportTrendPanel()}
+              </div>
+              ${ProjectReportsTable(planProject)}
             </section>
           </main>
         </div>
@@ -5708,7 +5750,6 @@ function App(
     ${ReportComposerDrawer(selectedReportProject)}
     ${PlaygroundDrawer(selectedPlaygroundDrawer)}
     ${NotificationPanel(notificationPanelOpen)}
-    ${QuickLinksOverlay(selectedProject)}
     ${QuickLinksToast()}
     ${GuidedTourOverlay()}
   `;
@@ -5735,8 +5776,7 @@ let projectPlanExpandedFieldSections = {};
 let projectPlanReportActiveSection = "Overview";
 let notificationPanelOpen = false;
 let pinnedQuickLinkIds = loadPinnedQuickLinks();
-let quickLinksOverlayOpen = false;
-let quickLinksDraftPinnedIds = null;
+let quickLinksPage = 0;
 let quickLinksToast = null;
 let quickLinksToastTimer = null;
 let guidedTourActive = false;
@@ -5814,6 +5854,16 @@ function clearAiInsightsTimer() {
   aiInsightTimer = null;
 }
 
+function isModalInteractionActive() {
+  return Boolean(
+    notificationPanelOpen ||
+      selectedReportProject ||
+      selectedStageGate ||
+      selectedPlaygroundDrawer ||
+      guidedTourActive
+  );
+}
+
 function enterFrontDoor(projectId = "all", startTour = false, mode = "assigned", postTourMode = null) {
   isAuthenticated = true;
   onboardingActive = false;
@@ -5828,8 +5878,7 @@ function enterFrontDoor(projectId = "all", startTour = false, mode = "assigned",
   selectedStageGate = null;
   selectedReportProject = null;
   selectedPlaygroundDrawer = null;
-  quickLinksOverlayOpen = false;
-  quickLinksDraftPinnedIds = null;
+  quickLinksPage = 0;
   projectPlanDetailMode = "simple";
   projectPlanActiveSection = "Overview";
   projectPlanReportActiveSection = "Overview";
@@ -5972,7 +6021,6 @@ function initPmoAssignmentPreview() {
     selectedReportProject = null;
     selectedPlaygroundDrawer = null;
     notificationPanelOpen = false;
-    closeQuickLinksOverlay();
     renderApp();
   });
 }
@@ -6089,7 +6137,6 @@ function initPageNavigation() {
       selectedReportProject = null;
       selectedPlaygroundDrawer = null;
       notificationPanelOpen = false;
-      closeQuickLinksOverlay();
       renderApp();
     });
   });
@@ -6104,7 +6151,6 @@ function initProjectSwitch() {
       selectedReportProject = null;
       selectedPlaygroundDrawer = null;
       playgroundFullscreen = false;
-      closeQuickLinksOverlay();
       renderApp();
     });
   });
@@ -6117,7 +6163,6 @@ function initWorkspaceSwitch() {
       selectedStageGate = null;
       selectedReportProject = null;
       selectedPlaygroundDrawer = null;
-      closeQuickLinksOverlay();
       renderApp();
     });
   });
@@ -6160,10 +6205,10 @@ function initAiInsightsWidget() {
     });
   });
 
-  if (!widget || aiWorkspaceInsights.length < 2) return;
+  if (!widget || aiWorkspaceInsights.length < 2 || isModalInteractionActive()) return;
 
   aiInsightTimer = window.setInterval(() => {
-    if (!document.querySelector(".ai-insight-widget") || document.hidden) return;
+    if (!document.querySelector(".ai-insight-widget") || document.hidden || isModalInteractionActive()) return;
     selectedAiInsightIndex = (selectedAiInsightIndex + 1) % aiWorkspaceInsights.length;
     renderApp();
   }, 4200);
@@ -6779,13 +6824,31 @@ function initStageGateDrawer() {
 }
 
 function initReportDrawer() {
+  const openReportProject = (project) => {
+    selectedReportProject = project;
+    selectedStageGate = null;
+    selectedPlaygroundDrawer = null;
+    notificationPanelOpen = false;
+    renderApp();
+  };
+
   document.querySelectorAll("[data-report-create]").forEach((button) => {
-    button.addEventListener("click", () => {
-      selectedReportProject = button.dataset.reportCreate;
-      selectedStageGate = null;
-      selectedPlaygroundDrawer = null;
-      notificationPanelOpen = false;
-      renderApp();
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      openReportProject(button.dataset.reportCreate);
+    });
+  });
+
+  document.querySelectorAll("[data-report-row-create]").forEach((row) => {
+    row.addEventListener("click", (event) => {
+      const isIgnoredTarget = event.target instanceof Element && event.target.closest("[data-report-row-ignore]");
+      if (isIgnoredTarget) return;
+      openReportProject(row.dataset.reportRowCreate);
+    });
+    row.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      openReportProject(row.dataset.reportRowCreate);
     });
   });
 
@@ -6836,8 +6899,6 @@ function initNotificationPanel() {
       selectedStageGate = null;
       selectedReportProject = null;
       selectedPlaygroundDrawer = null;
-      quickLinksOverlayOpen = false;
-      quickLinksDraftPinnedIds = null;
       renderApp();
     });
   });
@@ -6863,54 +6924,28 @@ function showQuickLinksToast(message) {
 }
 
 function setQuickLinkPinned(id, shouldPin) {
-  const currentIds = normalizePinnedQuickLinks(quickLinksOverlayOpen && quickLinksDraftPinnedIds ? quickLinksDraftPinnedIds : pinnedQuickLinkIds);
+  const currentIds = normalizePinnedQuickLinks(pinnedQuickLinkIds);
   if (shouldPin && currentIds.includes(id)) return true;
   if (!shouldPin && !currentIds.includes(id)) return true;
   if (shouldPin && currentIds.length >= QUICK_LINK_PIN_LIMIT) {
-    showQuickLinksToast(`You can pin up to ${QUICK_LINK_PIN_LIMIT} quick links because View all uses the last slot.`);
+    showQuickLinksToast(`You can't pin more than ${QUICK_LINK_PIN_LIMIT} quick links.`);
     return false;
   }
 
   const nextIds = shouldPin ? [...currentIds, id] : currentIds.filter((pinnedId) => pinnedId !== id);
-  if (quickLinksOverlayOpen) {
-    quickLinksDraftPinnedIds = normalizePinnedQuickLinks(nextIds);
-  } else {
-    pinnedQuickLinkIds = normalizePinnedQuickLinks(nextIds);
-    persistPinnedQuickLinks();
-  }
+  pinnedQuickLinkIds = normalizePinnedQuickLinks(nextIds);
+  quickLinksPage = 0;
+  persistPinnedQuickLinks();
   return true;
 }
 
-function closeQuickLinksOverlay() {
-  quickLinksOverlayOpen = false;
-  quickLinksDraftPinnedIds = null;
-}
-
 function initQuickLinks() {
-  document.querySelectorAll("[data-quick-links-open]").forEach((button) => {
+  document.querySelectorAll("[data-quick-links-page-shift]").forEach((button) => {
     button.addEventListener("click", () => {
-      quickLinksOverlayOpen = true;
-      quickLinksDraftPinnedIds = normalizePinnedQuickLinks(pinnedQuickLinkIds);
-      notificationPanelOpen = false;
-      selectedStageGate = null;
-      selectedReportProject = null;
-      selectedPlaygroundDrawer = null;
+      const delta = Number(button.dataset.quickLinksPageShift || 0);
+      quickLinksPage = Math.min(Math.max(quickLinksPageIndex() + delta, 0), quickLinksTotalPages() - 1);
       renderApp();
     });
-  });
-
-  document.querySelectorAll("[data-quick-links-close]").forEach((button) => {
-    button.addEventListener("click", () => {
-      closeQuickLinksOverlay();
-      renderApp();
-    });
-  });
-
-  document.querySelector("[data-quick-links-save]")?.addEventListener("click", () => {
-    pinnedQuickLinkIds = normalizePinnedQuickLinks(quickLinksDraftPinnedIds || pinnedQuickLinkIds);
-    persistPinnedQuickLinks();
-    closeQuickLinksOverlay();
-    renderApp();
   });
 
   document.querySelectorAll("[data-quick-pin]").forEach((button) => {
@@ -6927,12 +6962,11 @@ function initQuickLinks() {
 }
 
 document.addEventListener("keydown", (event) => {
-  if (event.key !== "Escape" || (!notificationPanelOpen && !selectedReportProject && !selectedStageGate && !selectedPlaygroundDrawer && !quickLinksOverlayOpen)) return;
+  if (event.key !== "Escape" || (!notificationPanelOpen && !selectedReportProject && !selectedStageGate && !selectedPlaygroundDrawer)) return;
   notificationPanelOpen = false;
   selectedReportProject = null;
   selectedStageGate = null;
   selectedPlaygroundDrawer = null;
-  closeQuickLinksOverlay();
   renderApp();
 });
 
