@@ -1,0 +1,15 @@
+.DS_Store
+**/.DS_Store
+
+# Dependencies
+node_modules/
+
+# Angular build/cache output
+dist/
+.angular/
+
+# Logs and local environment
+*.log
+.env
+.env.*
+

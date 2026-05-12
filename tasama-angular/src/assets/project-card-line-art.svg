@@ -1,0 +1,19 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 519 138" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Structural green line artwork" opacity="0.5" clip-path="url(#clip0_0_4)">
+<path id="Vector" d="M0 124.967H519" stroke="var(--stroke-0, #A5A7E7)"/>
+<path id="Vector_2" d="M111.098 0V71.3L161.377 97.3667V0" stroke="var(--stroke-0, #A5A7E7)"/>
+<path id="Vector_3" d="M111.098 71.3L347.892 39.8667V0" stroke="var(--stroke-0, #A5A7E7)"/>
+<path id="Vector_4" d="M347.892 39.8667L398.981 67.4667V0" stroke="var(--stroke-0, #A5A7E7)"/>
+<path id="Vector_5" d="M111.098 71.2994L161.377 97.3661L398.981 67.4661" stroke="var(--stroke-0, #A5A7E7)"/>
+<path id="Vector_6" d="M351.136 124.967C356.812 90.4667 372.22 45.2333 416.011 0" stroke="var(--stroke-0, #A5A7E7)"/>
+<path id="Vector_7" d="M411.956 124.967C420.471 90.4667 450.881 45.2333 497.916 0" stroke="var(--stroke-0, #A5A7E7)"/>
+<path id="Vector_8" d="M453.314 124.967V30.6668L505.214 54.4335V124.967" stroke="var(--stroke-0, #A5A7E7)"/>
+<path id="Vector_9" d="M453.314 30.6667L519 21.4667" stroke="var(--stroke-0, #A5A7E7)"/>
+<path id="Vector_10" d="M453.314 30.6668L505.214 54.4335L519 52.1335" stroke="var(--stroke-0, #A5A7E7)"/>
+</g>
+<defs>
+<clipPath id="clip0_0_4">
+<rect width="519" height="138" fill="white"/>
+</clipPath>
+</defs>
+</svg>
