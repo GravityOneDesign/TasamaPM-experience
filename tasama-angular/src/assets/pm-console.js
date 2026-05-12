@@ -313,48 +313,114 @@ const timelineItems = [
 
 const projectQuickActions = [
   {
+    id: "project-plan",
     title: "Project plan",
     icon: "plan",
     page: "project-plan",
+    entry: "quick",
   },
   {
+    id: "wbs",
     title: "WBS",
     icon: "wbs",
     page: "wbs",
   },
   {
+    id: "stage-gate",
     title: "Stage gate",
     icon: "stageGate",
   },
   {
+    id: "change-request",
     title: "Change request",
     icon: "changeRequest",
+    page: "project-plan",
+    entry: "change-request",
   },
   {
+    id: "dependencies",
     title: "Dependencies",
     icon: "dependencies",
   },
   {
+    id: "resources",
     title: "Resources",
     icon: "resources",
   },
   {
+    id: "risks",
     title: "Risks",
     icon: "risks",
   },
   {
+    id: "issues",
     title: "Issues",
     icon: "issues",
   },
   {
+    id: "project-closure",
     title: "Project closure",
     icon: "closure",
+    page: "project-plan",
+    entry: "closure",
   },
   {
+    id: "lessons-learnt",
     title: "Lessons learnt",
     icon: "lessons",
   },
+  {
+    id: "benefits",
+    title: "Benefits",
+    icon: "benefit",
+  },
+  {
+    id: "management-products",
+    title: "Management products",
+    icon: "management",
+  },
+  {
+    id: "end-products",
+    title: "End products",
+    icon: "endProduct",
+  },
+  {
+    id: "milestones",
+    title: "Milestones",
+    icon: "milestone",
+  },
+  {
+    id: "reports",
+    title: "Reports",
+    icon: "list",
+    page: "project-plan",
+    entry: "reports",
+  },
+  {
+    id: "action-board",
+    title: "Action board",
+    icon: "columns",
+    page: "workspace",
+    view: "board",
+  },
+  {
+    id: "calendar",
+    title: "Calendar",
+    icon: "calendar",
+    page: "workspace",
+    view: "calendar",
+  },
+  {
+    id: "project-rooms",
+    title: "Project rooms",
+    icon: "building",
+    page: "workspaces",
+  },
 ];
+
+const QUICK_LINK_PIN_LIMIT = 9;
+const QUICK_LINK_STORAGE_KEY = "tasama.quickLinks.pinned";
+const defaultPinnedQuickLinkIds = ["project-plan", "wbs"];
 
 const wbsProjectDetails = {
   "Vision 2030": {
@@ -880,6 +946,121 @@ const workspaceProjectCards = [
     draft: true,
     nextDue: "Plan not yet created",
     action: "Create",
+  },
+];
+
+const workspaceTableProjects = [
+  {
+    id: "UAE Research Map",
+    code: "ATRC-01",
+    title: "UAE Research Map",
+    stage: "Initiation",
+    status: "Alert",
+    statusTone: "amber",
+    trend: ["green", "amber", "amber"],
+    manager: "Muna Hassan",
+    managerInitials: "MH",
+    baselineStart: "01/15/2024",
+    baselineEnd: "06/12/2026",
+    budgetUsed: "$125K",
+    budgetTotal: "$320K",
+    priority: "high",
+  },
+  {
+    id: "Global Anti-Scam Taskforce",
+    code: "ATRC-02",
+    title: "Global Anti-Scam Taskforce",
+    stage: "Closure",
+    status: "On-Track",
+    statusTone: "green",
+    trend: ["green", "green", "amber"],
+    manager: "Sarah Ahmed",
+    managerInitials: "SA",
+    baselineStart: "03/22/2024",
+    baselineEnd: "03/22/2026",
+    budgetUsed: "$125K",
+    budgetTotal: "$320K",
+    priority: "normal",
+  },
+  {
+    id: "Counter Terrorism Operations",
+    code: "ATRC-03",
+    title: "Counter Terrorism Operations",
+    stage: "Execution",
+    status: "Off-Track",
+    statusTone: "red",
+    trend: ["amber", "red", "amber"],
+    manager: "Ahmed Hadi",
+    managerInitials: "AH",
+    baselineStart: "07/04/2023",
+    baselineEnd: "11/30/2025",
+    budgetUsed: "$125K",
+    budgetTotal: "$320K",
+    priority: "high",
+  },
+  {
+    id: "Vision 2030",
+    code: "ATRC-04",
+    title: "Vision 2030",
+    stage: "Execution",
+    status: "On-Track",
+    statusTone: "green",
+    trend: ["green", "green", "green"],
+    manager: "Muna Hassan",
+    managerInitials: "MH",
+    baselineStart: "02/01/2024",
+    baselineEnd: "10/30/2026",
+    budgetUsed: "$2.5M",
+    budgetTotal: "$4.3M",
+    priority: "normal",
+  },
+  {
+    id: "NEOM Integration",
+    code: "ATRC-05",
+    title: "NEOM Integration",
+    stage: "Planning",
+    status: "Alert",
+    statusTone: "amber",
+    trend: ["amber", "red", "green"],
+    manager: "Fatima Ali",
+    managerInitials: "FA",
+    baselineStart: "09/18/2024",
+    baselineEnd: "01/16/2027",
+    budgetUsed: "$3.1M",
+    budgetTotal: "$3.1M",
+    priority: "normal",
+  },
+  {
+    id: "Smart City Alpha",
+    code: "ATRC-06",
+    title: "Smart City Alpha",
+    stage: "Execution",
+    status: "On-Track",
+    statusTone: "green",
+    trend: ["green", "amber", "green"],
+    manager: "Khalid Omar",
+    managerInitials: "KO",
+    baselineStart: "04/08/2025",
+    baselineEnd: "12/15/2026",
+    budgetUsed: "$980K",
+    budgetTotal: "$1.7M",
+    priority: "normal",
+  },
+  {
+    id: "PMO Capability",
+    code: "ATRC-07",
+    title: "PMO Capability",
+    stage: "Initiation",
+    status: "Not Started",
+    statusTone: "blue",
+    trend: ["neutral", "neutral", "blue"],
+    manager: "Laila Noor",
+    managerInitials: "LN",
+    baselineStart: "05/20/2026",
+    baselineEnd: "02/28/2027",
+    budgetUsed: "$0",
+    budgetTotal: "$1.2M",
+    priority: "not-started",
   },
 ];
 
@@ -2063,6 +2244,19 @@ function icon(name) {
     edit: "pencil",
     info: "info",
     list: "list",
+    table: "table-2",
+    download: "download",
+    sliders: "sliders-horizontal",
+    pauseCircle: "circle-pause",
+    priority: "chevrons-up",
+    link: "link-2",
+    pin: "pin",
+    pinOff: "pin-off",
+    quickGrid: "layout-grid",
+    rocket: "rocket",
+    fileCheck: "file-check-2",
+    folderOpen: "folder-open",
+    route: "route",
   };
   return `<span class="icon" aria-hidden="true"><i data-lucide="${icons[name] || icons.grid}"></i></span>`;
 }
@@ -2394,6 +2588,140 @@ function WorkspaceProjectCard(project) {
   `;
 }
 
+function WorkspaceDisplayToggle() {
+  const views = [
+    ["table", "Table view", "table"],
+    ["cards", "Card view", "grid"],
+  ];
+
+  return `
+    <div class="pm-project-view-toggle" aria-label="Project display">
+      ${views
+        .map(
+          ([view, label, iconName]) => `
+            <button
+              class="${selectedWorkspaceDisplay === view ? "active" : ""}"
+              type="button"
+              aria-label="${label}"
+              aria-pressed="${selectedWorkspaceDisplay === view ? "true" : "false"}"
+              data-workspace-display="${view}"
+            >
+              ${icon(iconName)}
+            </button>
+          `
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function WorkspaceTableStats() {
+  const countStatus = (status) => workspaceTableProjects.filter((project) => project.status === status).length;
+  return [
+    { label: "All Projects", value: workspaceTableProjects.length, iconName: "folderOpen", tone: "brand" },
+    { label: "On-Track", value: countStatus("On-Track"), iconName: "check", tone: "green" },
+    { label: "Off-Track", value: countStatus("Off-Track"), iconName: "alert", tone: "red" },
+    { label: "Alert", value: countStatus("Alert"), iconName: "alert", tone: "amber" },
+    { label: "Not tracked", value: countStatus("Not tracked"), iconName: "eyeOff", tone: "neutral" },
+    { label: "Not Started", value: countStatus("Not Started"), iconName: "todo", tone: "blue" },
+  ];
+}
+
+function WorkspaceTableStatCard(item) {
+  return `
+    <article class="pm-project-table-stat ${item.tone}">
+      <span>${icon(item.iconName)}</span>
+      <div>
+        <small>${escapeHtml(item.label)}</small>
+        <strong>${item.value}</strong>
+      </div>
+    </article>
+  `;
+}
+
+function WorkspaceTableTrendDot(tone) {
+  const iconName = tone === "green" ? "check" : tone === "blue" ? "todo" : tone === "neutral" ? "status" : "alert";
+  return `<span class="pm-table-trend-dot ${tone}">${icon(iconName)}</span>`;
+}
+
+function WorkspaceProjectTableRow(project) {
+  const projectId = project.id || project.title;
+  const priorityIcon = project.priority === "high" ? "priority" : project.priority === "not-started" ? "pauseCircle" : "moreVertical";
+  const priorityLabel = project.priority === "high" ? "High priority" : project.priority === "not-started" ? "Not started" : "More actions";
+
+  return `
+    <tr>
+      <td class="pm-table-check-cell"><input type="checkbox" aria-label="Select ${escapeHtml(project.title)}" /></td>
+      <td class="pm-table-project-cell">
+        <button type="button" data-page-target="project-plan" data-project-id="${escapeHtml(projectId)}" data-plan-entry="quick">
+          <span>${escapeHtml(project.code)}</span>
+          <strong>${escapeHtml(project.title)}</strong>
+        </button>
+      </td>
+      <td><span class="pm-table-stage">${escapeHtml(project.stage)}</span></td>
+      <td>
+        <div class="pm-table-trend" aria-label="${escapeHtml(`${project.title} report status trend`)}">
+          ${(project.trend || []).map(WorkspaceTableTrendDot).join("")}
+        </div>
+      </td>
+      <td>
+        <span class="pm-table-manager">
+          <i>${escapeHtml(project.managerInitials)}</i>
+          ${escapeHtml(project.manager)}
+        </span>
+      </td>
+      <td>${escapeHtml(project.baselineStart)}</td>
+      <td>${escapeHtml(project.baselineEnd)}</td>
+      <td><span class="pm-table-budget"><strong>${escapeHtml(project.budgetUsed)}</strong><small>/ ${escapeHtml(project.budgetTotal)}</small></span></td>
+      <td class="pm-table-actions-cell">
+        <span class="pm-table-row-status ${project.statusTone}">${escapeHtml(project.status)}</span>
+        <button type="button" aria-label="${escapeHtml(priorityLabel)}">${icon(priorityIcon)}</button>
+      </td>
+    </tr>
+  `;
+}
+
+function WorkspaceProjectsTable() {
+  return `
+    <div class="pm-project-table-view">
+      <div class="pm-project-table-stats" aria-label="Project status summary">
+        ${WorkspaceTableStats().map(WorkspaceTableStatCard).join("")}
+      </div>
+      <div class="pm-project-table-toolbar">
+        <span>Items: ${workspaceTableProjects.length}</span>
+        <div>
+          <button class="pm-table-tool square" type="button" aria-label="Search projects">${icon("search")}</button>
+          <button class="pm-table-tool" type="button">${icon("filter")}<span>Filter</span></button>
+          <button class="pm-table-tool" type="button">${icon("sliders")}<span>Group by</span></button>
+          <button class="pm-table-tool" type="button">${icon("download")}<span>Export</span></button>
+          <button class="pm-table-add-project" type="button">${icon("plus")}<span>Add Project</span></button>
+          <button class="pm-table-tool square" type="button" aria-label="Table settings">${icon("settings")}</button>
+        </div>
+      </div>
+      <div class="pm-project-table-scroll" tabindex="0">
+        <table class="pm-project-table">
+          <thead>
+            <tr>
+              <th class="pm-table-check-cell"><input type="checkbox" aria-label="Select all projects" /></th>
+              <th>Project Name</th>
+              <th>Stage</th>
+              <th>Report Status Trend</th>
+              <th>Project Manager</th>
+              <th>Baseline Start Date</th>
+              <th>Baseline End Date</th>
+              <th>Budget Utilised</th>
+              <th aria-label="Row actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${workspaceTableProjects.map(WorkspaceProjectTableRow).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
 function WorkspacePortfolioHealth() {
   const items = [
     ["On track", "2", "50%", "green"],
@@ -2484,23 +2812,21 @@ function WorkspaceBudgetOverview() {
 }
 
 function WorkspacesPage() {
+  const isTableView = selectedWorkspaceDisplay === "table";
   return `
-    <section class="pm-projects-page" aria-label="PM Console projects">
+    <section class="pm-projects-page ${isTableView ? "table-mode" : "card-mode"}" aria-label="PM Console projects">
       <div class="pm-projects-board">
         <div class="pm-projects-title-row">
           <div>
-            <h1>My Projects</h1>
-            <p>Showing all 4 projects</p>
+            <h1>Workspaces</h1>
+            <p>Showing all ${workspaceTableProjects.length} projects</p>
           </div>
           <div class="pm-projects-controls">
             <label class="pm-project-search">
               ${icon("search")}
               <input type="search" aria-label="Search for projects" placeholder="Search for projects" />
             </label>
-            <div class="pm-project-view-toggle" aria-label="Project display">
-              <button class="active" type="button" aria-label="Grid view">${icon("grid")}</button>
-              <button type="button" aria-label="List view">${icon("list")}</button>
-            </div>
+            ${WorkspaceDisplayToggle()}
             <label class="pm-project-select">
               <select aria-label="Project filter">
                 <option>All projects</option>
@@ -2510,9 +2836,13 @@ function WorkspacesPage() {
             <button class="pm-project-filter" type="button" aria-label="Filter projects">${icon("filter")}</button>
           </div>
         </div>
-        <div class="pm-project-card-grid">
-          ${workspaceProjectCards.map(WorkspaceProjectCard).join("")}
-        </div>
+        ${
+          isTableView
+            ? WorkspaceProjectsTable()
+            : `<div class="pm-project-card-grid">
+                ${workspaceProjectCards.map(WorkspaceProjectCard).join("")}
+              </div>`
+        }
       </div>
     </section>
   `;
@@ -2693,6 +3023,7 @@ function WorkspaceSearch(selectedView) {
   const placeholders = {
     board: "Search actions",
     calendar: "Search calendar",
+    pm101: "Search PM 101",
     stages: "Search stages",
   };
   return `
@@ -2704,7 +3035,7 @@ function WorkspaceSearch(selectedView) {
 }
 
 function WorkspaceTabs(selectedView) {
-  const actionsActive = selectedView === "board" || selectedView === "calendar";
+  const actionsActive = selectedView === "board" || selectedView === "calendar" || selectedView === "pm101";
   return `
     <div class="workspace-tabs" role="tablist" aria-label="Workspace view" data-tour-target="workspace-tabs">
       <button class="${actionsActive ? "active" : ""}" type="button" data-view-target="calendar" aria-selected="${actionsActive}">
@@ -2720,11 +3051,14 @@ function WorkspaceTabs(selectedView) {
 function ActionViewSwitch(selectedView) {
   return `
     <div class="action-view-switch" role="tablist" aria-label="Actions view format">
+      <button class="${selectedView === "board" ? "active" : ""}" type="button" data-view-target="board" aria-selected="${selectedView === "board"}">
+        ${icon("columns")} Board
+      </button>
       <button class="${selectedView === "calendar" ? "active" : ""}" type="button" data-view-target="calendar" aria-selected="${selectedView === "calendar"}">
         ${icon("calendar")} Calendar
       </button>
-      <button class="${selectedView === "board" ? "active" : ""}" type="button" data-view-target="board" aria-selected="${selectedView === "board"}">
-        ${icon("columns")} Board
+      <button class="${selectedView === "pm101" ? "active" : ""}" type="button" data-view-target="pm101" aria-selected="${selectedView === "pm101"}">
+        ${icon("book")} PM 101
       </button>
     </div>
   `;
@@ -2928,6 +3262,121 @@ function StagesView(selectedProject, selectedView) {
   `;
 }
 
+const pm101Steps = [
+  {
+    title: "Project assigned",
+    body: "You’ll receive a PMO assignment notification.",
+    iconName: "rocket",
+    decor: "burst",
+  },
+  {
+    title: "Build project plan",
+    body: "Set scope, timeline, risks, and dependencies.",
+    iconName: "folderOpen",
+    decor: "rings",
+  },
+  {
+    title: "Submit for approval",
+    body: "Send your baseline for PMO review and endorsement.",
+    iconName: "fileCheck",
+    decor: "plus",
+  },
+  {
+    title: "Manage delivery",
+    body: "Track milestones, issues, and dependencies.",
+    iconName: "route",
+    decor: "loops",
+  },
+  {
+    title: "Report progress",
+    body: "Submit PSRs and maintain delivery health.",
+    iconName: "chart",
+    decor: "hex",
+  },
+];
+
+function PM101Decor(type) {
+  const shapes = {
+    burst: `
+      <svg viewBox="0 0 120 120" fill="none">
+        ${Array.from({ length: 18 }, (_, index) => {
+          const angle = (index * 20 * Math.PI) / 180;
+          const x1 = 60 + Math.cos(angle) * 8;
+          const y1 = 60 + Math.sin(angle) * 8;
+          const x2 = 60 + Math.cos(angle) * 48;
+          const y2 = 60 + Math.sin(angle) * 48;
+          return `<path d="M${x1.toFixed(1)} ${y1.toFixed(1)}L${x2.toFixed(1)} ${y2.toFixed(1)}" />`;
+        }).join("")}
+      </svg>
+    `,
+    rings: `
+      <svg viewBox="0 0 120 120" fill="none">
+        <path d="M18 73c26-18 58-18 84 0" />
+        <path d="M18 85c26-18 58-18 84 0" />
+        <path d="M18 97c26-18 58-18 84 0" />
+        <path d="M18 73c26 18 58 18 84 0" />
+        <path d="M18 85c26 18 58 18 84 0" />
+      </svg>
+    `,
+    plus: `
+      <svg viewBox="0 0 120 120" fill="none">
+        ${Array.from({ length: 15 }, (_, index) => {
+          const col = index % 5;
+          const row = Math.floor(index / 5);
+          const x = 24 + col * 18;
+          const y = 35 + row * 18;
+          return `<path d="M${x - 4} ${y}h8M${x} ${y - 4}v8" />`;
+        }).join("")}
+      </svg>
+    `,
+    loops: `
+      <svg viewBox="0 0 120 120" fill="none">
+        <ellipse cx="42" cy="70" rx="15" ry="36" />
+        <ellipse cx="66" cy="70" rx="15" ry="36" />
+        <ellipse cx="90" cy="70" rx="15" ry="36" />
+      </svg>
+    `,
+    hex: `
+      <svg viewBox="0 0 120 120" fill="none">
+        <path d="M26 42l16-9 16 9v18l-16 9-16-9z" />
+        <path d="M58 42l16-9 16 9v18l-16 9-16-9z" />
+        <path d="M42 69l16-9 16 9v18l-16 9-16-9z" />
+        <path d="M74 69l16-9 16 9v18l-16 9-16-9z" />
+      </svg>
+    `,
+  };
+  return `<span class="pm101-decor pm101-decor-${type}" aria-hidden="true">${shapes[type] || shapes.burst}</span>`;
+}
+
+function PM101View(selectedView) {
+  return `
+    <div class="pm101-view ${selectedView === "pm101" ? "" : "is-hidden"}" data-work-view="pm101">
+      <div class="pm101-flow" aria-label="PM 101 project delivery flow">
+        <svg class="pm101-connector" viewBox="0 0 1000 160" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M88 44 L278 124 L500 44 L722 124 L912 44" />
+        </svg>
+        <ol class="pm101-step-list">
+          ${pm101Steps
+            .map(
+              (step, index) => `
+                <li class="pm101-step ${index % 2 ? "is-lower" : "is-upper"}">
+                  <span class="pm101-step-number">${index + 1}</span>
+                  <article class="pm101-card">
+                    <span class="pm101-card-icon">${icon(step.iconName)}</span>
+                    <strong>${escapeHtml(step.title)}</strong>
+                    <p>${escapeHtml(step.body)}</p>
+                    ${PM101Decor(step.decor)}
+                  </article>
+                </li>
+              `
+            )
+            .join("")}
+        </ol>
+      </div>
+    </div>
+  `;
+}
+
 function WorkspacePanel(selectedProject, selectedView, selectedRange, selectedBoardFilter, selectedCalendarMonth) {
   const workspaceTitle = isAllProjects(selectedProject)
     ? "Operational Workspace"
@@ -2955,6 +3404,7 @@ function WorkspacePanel(selectedProject, selectedView, selectedRange, selectedBo
       <div class="workspace-body">
         ${BoardView(selectedProject, selectedView, selectedBoardFilter)}
         ${CalendarView(selectedProject, selectedView, selectedBoardFilter, selectedCalendarMonth)}
+        ${PM101View(selectedView)}
         ${StagesView(selectedProject, selectedView)}
       </div>
     </section>
@@ -3022,6 +3472,7 @@ function ReportTrend(trend, report = null) {
               data-report-project="${escapeHtml(report?.project || "All projects")}"
               data-report-interval="${escapeHtml(point.label)}"
               data-report-status="${escapeHtml(reportVisualStatus(point.status).label)}"
+              data-report-tone="${escapeHtml(reportStatusTone(point.status))}"
               data-report-detail="${escapeHtml(reportStatusDetail(point, firstVisibleIndex + index))}"
               data-report-cadence="${escapeHtml(report?.cadence || "Portfolio")}"
               data-report-next="${escapeHtml(report?.nextDue || "Mixed")}"
@@ -3083,26 +3534,162 @@ function ReportWidget(selectedProject) {
   `;
 }
 
-function QuickLinks(selectedProject) {
+function normalizePinnedQuickLinks(ids = pinnedQuickLinkIds) {
+  const seen = new Set();
+  return ids
+    .filter((id) => projectQuickActions.some((action) => action.id === id))
+    .filter((id) => {
+      if (seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    })
+    .slice(0, QUICK_LINK_PIN_LIMIT);
+}
+
+function loadPinnedQuickLinks() {
+  try {
+    const stored = window.localStorage.getItem(QUICK_LINK_STORAGE_KEY);
+    if (!stored) return normalizePinnedQuickLinks(defaultPinnedQuickLinkIds);
+    const parsed = JSON.parse(stored);
+    return normalizePinnedQuickLinks(Array.isArray(parsed) ? parsed : defaultPinnedQuickLinkIds);
+  } catch {
+    return normalizePinnedQuickLinks(defaultPinnedQuickLinkIds);
+  }
+}
+
+function persistPinnedQuickLinks() {
+  try {
+    window.localStorage.setItem(QUICK_LINK_STORAGE_KEY, JSON.stringify(normalizePinnedQuickLinks(pinnedQuickLinkIds)));
+  } catch {
+    // Storage can be unavailable in hardened browsers; the in-memory state still works.
+  }
+}
+
+function quickLinkPinnedIds() {
+  return quickLinksOverlayOpen && quickLinksDraftPinnedIds ? quickLinksDraftPinnedIds : pinnedQuickLinkIds;
+}
+
+function quickActionById(id) {
+  return projectQuickActions.find((action) => action.id === id);
+}
+
+function quickActionsFromIds(ids) {
+  return normalizePinnedQuickLinks(ids)
+    .map(quickActionById)
+    .filter(Boolean);
+}
+
+function quickActionAttributes(action) {
+  const attrs = [];
+  if (action.page) attrs.push(`data-page-target="${escapeHtml(action.page)}"`);
+  if (action.entry) attrs.push(`data-plan-entry="${escapeHtml(action.entry)}"`);
+  if (action.view) attrs.push(`data-workspace-view="${escapeHtml(action.view)}"`);
+  return attrs.join(" ");
+}
+
+function QuickLinkCard(action, selectedProject, options = {}) {
+  const pinnedIds = options.pinnedIds || quickLinkPinnedIds();
+  const isPinned = pinnedIds.includes(action.id);
+  const pinMode = isPinned ? "unpin" : "pin";
+  const pinLabel = `${isPinned ? "Unpin" : "Pin"} ${action.title}`;
+  const cardMode = options.overlay ? "overlay" : "compact";
   return `
-    <section class="side-card context-card quick-actions-card">
+    <article class="quick-action quick-link-card ${isPinned ? "is-pinned" : ""} ${options.ghost ? "is-ghost" : ""}" data-quick-link-id="${escapeHtml(action.id)}" data-quick-card-mode="${cardMode}">
+      <button class="quick-action-main" type="button" aria-label="${escapeHtml(`${action.title} for ${projectName(selectedProject)}`)}" ${quickActionAttributes(action)}>
+        <span class="quick-action-icon">${icon(action.icon)}</span>
+        <span class="quick-action-label">${escapeHtml(action.title)}</span>
+      </button>
+      <button class="quick-pin-button" type="button" data-quick-pin="${escapeHtml(action.id)}" data-quick-pin-action="${pinMode}" aria-label="${escapeHtml(pinLabel)}" title="${escapeHtml(pinLabel)}">
+        ${icon(isPinned ? "pinOff" : "pin")}
+      </button>
+    </article>
+  `;
+}
+
+function QuickLinks(selectedProject) {
+  const pinnedIds = normalizePinnedQuickLinks();
+  const pinnedActions = quickActionsFromIds(pinnedIds);
+  const previewSlots = Math.max(0, QUICK_LINK_PIN_LIMIT - pinnedActions.length);
+  const unpinnedPreview = projectQuickActions.filter((action) => !pinnedIds.includes(action.id)).slice(0, previewSlots);
+
+  return `
+    <section class="side-card context-card quick-actions-card" aria-label="Quick links">
       <div class="quick-card-head">
         <h2>Quick links</h2>
         <p>${escapeHtml(projectName(selectedProject))} shortcuts</p>
       </div>
       <div class="quick-action-list">
-        ${projectQuickActions
-          .map(
-            ({ title, icon: iconName, page }) => `
-              <button class="quick-action" type="button" aria-label="${escapeHtml(`${title} for ${projectName(selectedProject)}`)}" ${page ? `data-page-target="${escapeHtml(page)}"` : ""}>
-                <span class="quick-action-icon">${icon(iconName)}</span>
-                <span class="quick-action-label">${title}</span>
-              </button>
-            `
-          )
-          .join("")}
+        ${
+          pinnedActions.length
+            ? `<div class="quick-action-grid quick-action-pinned-grid">
+                ${pinnedActions.map((action) => QuickLinkCard(action, selectedProject, { pinnedIds })).join("")}
+              </div>`
+            : ""
+        }
+        ${pinnedActions.length && unpinnedPreview.length ? `<span class="quick-action-divider" aria-hidden="true"></span>` : ""}
+        <div class="quick-action-grid">
+          ${unpinnedPreview.map((action) => QuickLinkCard(action, selectedProject, { pinnedIds })).join("")}
+          <button class="quick-action quick-action-view-all" type="button" data-quick-links-open aria-label="View all quick links">
+            <span class="quick-action-view-icon">${icon("quickGrid")}</span>
+            <span>View all</span>
+          </button>
+        </div>
       </div>
     </section>
+  `;
+}
+
+function QuickLinksOverlay(selectedProject) {
+  if (!quickLinksOverlayOpen) return "";
+  const draftPinnedIds = normalizePinnedQuickLinks(quickLinksDraftPinnedIds || pinnedQuickLinkIds);
+  const pinnedActions = quickActionsFromIds(draftPinnedIds);
+  return `
+    <div class="quick-links-modal-shell" role="presentation">
+      <button class="quick-links-modal-backdrop" type="button" data-quick-links-close aria-label="Close quick links"></button>
+      <section class="quick-links-modal" role="dialog" aria-modal="true" aria-labelledby="quick-links-modal-title">
+        <header class="quick-links-modal-head">
+          <div class="quick-links-modal-title">
+            ${icon("link")}
+            <h2 id="quick-links-modal-title">Quick links <span>(${escapeHtml(projectName(selectedProject))} shortcuts)</span></h2>
+          </div>
+          <button class="quick-links-close" type="button" data-quick-links-close aria-label="Close quick links">${icon("close")}</button>
+        </header>
+
+        <div class="quick-links-modal-body">
+          <div class="quick-links-intro">
+            <h3>Click to open</h3>
+            <p>Showing all ${projectQuickActions.length} quick links</p>
+          </div>
+
+          <section class="quick-links-pinned-panel" aria-label="Pinned quick links">
+            <p>Pinned quick links (${draftPinnedIds.length}/${QUICK_LINK_PIN_LIMIT} pinned)</p>
+            <span class="quick-links-pinned-mark" aria-hidden="true">${icon("pin")}</span>
+            <div class="quick-links-modal-grid">
+              ${pinnedActions.map((action) => QuickLinkCard(action, selectedProject, { overlay: true, pinnedIds: draftPinnedIds })).join("")}
+            </div>
+          </section>
+
+          <div class="quick-links-all-grid">
+            ${projectQuickActions.map((action) => QuickLinkCard(action, selectedProject, { overlay: true, pinnedIds: draftPinnedIds })).join("")}
+          </div>
+        </div>
+
+        <footer class="quick-links-modal-actions">
+          <button class="quick-links-secondary" type="button" data-quick-links-close>Cancel</button>
+          <button class="quick-links-primary" type="button" data-quick-links-save>Save changes</button>
+        </footer>
+      </section>
+    </div>
+  `;
+}
+
+function QuickLinksToast() {
+  if (!quickLinksToast) return "";
+  return `
+    <div class="quick-links-toast" role="status" aria-live="polite">
+      ${icon("alert")}
+      <span>${escapeHtml(quickLinksToast)}</span>
+    </div>
   `;
 }
 
@@ -3110,16 +3697,17 @@ function ProjectScopeHero(project, options = {}) {
   const details = projectPlaygroundDetails[project] || projectPlaygroundDetails["Vision 2030"];
   const planStatus = options.planStatus || "Endorsed";
   const planTone = options.planTone || "purple";
-  const showModeTabs = Boolean(options.showModeTabs);
+  const isCardHero = Boolean(options.cardHero);
+  const isCompactCardHero = Boolean(options.compactCardHero);
+  const title = `${project}${options.titleSuffix || ""}`;
 
   return `
-    <header class="project-plan-hero plan-builder-hero project-scope-hero ${showModeTabs ? "has-inline-mode" : ""}">
+    <header class="project-plan-hero plan-builder-hero project-scope-hero ${isCardHero ? "project-plan-card-hero" : ""} ${isCompactCardHero ? "project-plan-compact-hero" : ""}">
       <img class="project-plan-hero-art" src="./assets/workspace-line-art.svg" alt="" aria-hidden="true" />
       <div class="project-plan-hero-inner">
         <div class="project-plan-summary">
           <div class="project-plan-title plan-builder-title">
-            <h1>${escapeHtml(project)}</h1>
-            <span>Category</span>
+            <h1>${escapeHtml(title)}</h1>
           </div>
           <div class="project-plan-meta">
             <span>Stage: <b class="blue">${escapeHtml(details.stage)}</b></span>
@@ -3127,18 +3715,44 @@ function ProjectScopeHero(project, options = {}) {
             <span>Plan: <b class="${escapeHtml(planTone)}">${escapeHtml(planStatus)}</b></span>
           </div>
         </div>
-        ${showModeTabs ? ProjectModeTabs("project-plan", { inline: true }) : ""}
+        ${options.showModeTabs ? ProjectModeTabs("project-plan", { inline: true, activeEntry: options.activeEntry || "quick" }) : ""}
       </div>
     </header>
   `;
 }
 
+function ProjectPlanFloatingActions(planProject) {
+  const actions = [
+    { label: "Report", iconName: "plan", attrs: `data-report-create="${escapeHtml(planProject)}"` },
+    { label: "Change request", iconName: "changeRequest", attrs: "" },
+    { label: "Closure", iconName: "closure", attrs: "" },
+  ];
+
+  return `
+    <nav class="project-floating-actions" aria-label="Project quick actions">
+      ${actions
+        .map(
+          ({ label, iconName, attrs }) => `
+            <button class="project-floating-action" type="button" ${attrs} aria-label="${escapeHtml(label)}">
+              <span class="project-floating-action-icon">${icon(iconName)}</span>
+              <span class="project-floating-action-label">${escapeHtml(label)}</span>
+            </button>
+          `
+        )
+        .join("")}
+    </nav>
+  `;
+}
+
 function ProjectModeTabs(activePage, options = {}) {
   const inline = Boolean(options.inline);
+  const activeEntry = options.activeEntry || "quick";
   const tabs = inline
     ? [
-        { label: "Project Plan", page: "project-plan", entry: "quick" },
-        { label: "Report", page: null },
+        { label: "Project Plan", page: "project-plan", entry: "quick", icon: "checklist" },
+        { label: "Reports", page: "project-plan", entry: "reports", icon: "list" },
+        { label: "Change Request", page: "project-plan", entry: "change-request", icon: "list" },
+        { label: "Closure", page: "project-plan", entry: "closure", icon: "list" },
       ]
     : [
         { label: "Project Plan", page: "project-plan", entry: "quick" },
@@ -3151,11 +3765,15 @@ function ProjectModeTabs(activePage, options = {}) {
       <div class="plan-builder-mode-toggle project-mode-toggle">
         ${tabs
           .map(
-            ({ label, page, entry }) => `
-              <button class="${page === activePage ? "active" : ""}" type="button" ${page ? `data-page-target="${page}"` : ""} ${entry ? `data-plan-entry="${entry}"` : ""}>
+            ({ label, page, entry, icon: tabIcon }) => {
+              const isActive = inline && entry ? entry === activeEntry : page === activePage;
+              return `
+              <button class="${isActive ? "active" : ""}" type="button" ${page ? `data-page-target="${page}"` : ""} ${entry ? `data-plan-entry="${entry}"` : ""}>
+                ${inline && tabIcon ? icon(tabIcon) : ""}
                 ${escapeHtml(label)}
               </button>
-            `
+            `;
+            }
           )
           .join("")}
       </div>
@@ -3163,9 +3781,10 @@ function ProjectModeTabs(activePage, options = {}) {
   `;
 }
 
-function ProjectPlanContentModeToggle() {
+function ProjectPlanContentModeToggle(sectionTitle = "") {
   return `
-    <div class="project-plan-content-modebar" aria-label="Project plan detail mode">
+    <div class="project-plan-content-modebar ${sectionTitle ? "has-section-title" : ""}" aria-label="Project plan detail mode">
+      ${sectionTitle ? `<h2>${escapeHtml(sectionTitle)}</h2>` : ""}
       <div class="project-plan-detail-toggle" role="tablist" aria-label="Project plan detail mode">
         <button class="${projectPlanDetailMode === "simple" ? "active" : ""}" type="button" role="tab" aria-selected="${projectPlanDetailMode === "simple"}" data-plan-detail-mode="simple">Simple</button>
         <button class="${projectPlanDetailMode === "detailed" ? "active" : ""}" type="button" role="tab" aria-selected="${projectPlanDetailMode === "detailed"}" data-plan-detail-mode="detailed">Detailed</button>
@@ -3191,6 +3810,11 @@ const projectPlanSectionOrder = [
 
 const projectPlanDetailedPrimarySections = ["Project Setup", "Overview", "Schedule & Scope", "Budget", "Benefits", "Risk", "Resource"];
 const projectPlanDetailedOnlySections = projectPlanSectionOrder.filter((section) => !projectPlanDetailedPrimarySections.includes(section));
+const projectPlanReportSections = ["Overview", "Schedule & Scope", "Budget", "Benefits", "Risk", "Issues", "Resource", "Dependency"];
+const projectPlanWorkspaceEntries = {
+  "change-request": { title: "Change Request", aria: "change request" },
+  closure: { title: "Closure", aria: "closure" },
+};
 
 const projectPlanFieldMatrix = [
   { section: "Project Setup", field: "Project name", mandatory: true, simple: true, intermediate: true, detailed: true, type: "text", value: "UAE Research Map" },
@@ -3253,6 +3877,135 @@ const projectPlanFieldMatrix = [
   { section: "Miscellaneous", field: "Commentary of admins", simple: false, intermediate: false, detailed: true, type: "textarea", value: "" },
 ].map((field) => ({ ...field, id: slugifyPlanField(`${field.section}-${field.field}`), mandatory: Boolean(field.mandatory) }));
 
+const projectPlanSimpleFieldOrder = [
+  "Project name",
+  "Category",
+  "Business Unit",
+  "Project Manager",
+  "PMO Contact",
+  "Opportunity or Problem Statement",
+  "Outcome",
+  "AI component",
+  "Baseline Start date",
+  "Baseline End date",
+  "In Scope",
+  "CAPEX Baseline (FY)",
+  "OPEX Baseline (FY)",
+  "Risks Register",
+];
+
+const projectPlanSectionFieldGroups = {
+  "Project Setup": [
+    {
+      title: "Project identity",
+      description: "Core setup fields used to classify and route the project plan.",
+      fields: ["Project name", "Description", "Category", "Project Source", "Is the Project Mandatory", "Portfolio / Program", "Governance Board(s)/Forum(s)"],
+    },
+    {
+      title: "Ownership and governance",
+      description: "People and forums accountable for delivery, change, and PMO coordination.",
+      fields: ["Business Unit", "Project Initiator", "Project Director", "Project Manager", "Senior User", "Delivery Manager", "PMO Contact", "Change Manager", "Senior Supplier"],
+    },
+  ],
+  Overview: [
+    {
+      title: "Case for change",
+      description: "Why this project exists and what it is expected to achieve.",
+      fields: ["Opportunity or Problem Statement", "Business Drivers", "Driver for change / Analysis undertaken", "Outcome", "AI component"],
+    },
+    {
+      title: "Strategic alignment",
+      description: "Objectives, capabilities, and services linked to the plan.",
+      fields: ["Project Alignment (Objectives)", "Link Capabilities", "Link Services"],
+    },
+  ],
+  "Schedule & Scope": [
+    {
+      title: "Dates and stage",
+      description: "Baseline, forecast, and lifecycle position.",
+      fields: ["Baseline Start date", "Baseline End date", "Forecast Start date", "Forecast End date", "Stages"],
+    },
+    {
+      title: "Scope and delivery products",
+      description: "Milestones, boundaries, deliverables, management products, and WBS.",
+      fields: ["Milestones", "In Scope", "Out of Scope", "End Product (Deliverables)", "Management Product", "Detailed WBS"],
+    },
+  ],
+  Budget: [
+    {
+      title: "Baseline and forecast",
+      description: "Financial baseline and current forecast by funding type.",
+      fields: ["CAPEX Baseline (FY)", "OPEX Baseline (FY)", "CAPEX Forecast (FY)", "OPEX Forecast (FY)"],
+    },
+    {
+      title: "Funding and controls",
+      description: "Funding source, monthly phasing, and budget governance rules.",
+      fields: ["Funding Sources", "Monthly Budget Detail", "Budget Rules"],
+    },
+  ],
+  Benefits: [
+    {
+      title: "Benefits register",
+      description: "Benefits, ownership, and realization status.",
+      fields: ["Benefits Register"],
+    },
+  ],
+  Risk: [
+    {
+      title: "Risk register",
+      description: "Threats, ownership, and current exposure.",
+      fields: ["Risks Register"],
+    },
+  ],
+  Issues: [
+    {
+      title: "Issues register",
+      description: "Open issues and decisions that need active management.",
+      fields: ["Issues Register"],
+    },
+  ],
+  "Change Impact": [
+    {
+      title: "Change impact assessment",
+      description: "Operational impact, audience readiness, and adoption ownership.",
+      fields: ["Change Impact Assessment"],
+    },
+  ],
+  "Related Links": [
+    {
+      title: "Documents and links",
+      description: "Evidence, reference documents, and supporting URLs.",
+      fields: ["Related Links / Documents"],
+    },
+  ],
+  Resource: [
+    {
+      title: "Resource plan",
+      description: "Roles, owners, and planned allocation.",
+      fields: ["Resource Plan"],
+    },
+  ],
+  Dependency: [
+    {
+      title: "Project dependencies",
+      description: "Upstream and downstream project relationships.",
+      fields: ["Predecessor Project(s)", "Successor Project(s)"],
+    },
+  ],
+  Miscellaneous: [
+    {
+      title: "Legacy pressure",
+      description: "Legacy system, ICT, and maintenance considerations.",
+      fields: ["Old and Unsupportable Systems", "High Maintenance Cost", "Out of Scope (legacy)", "ICT Component"],
+    },
+    {
+      title: "Assurance tracking",
+      description: "Compliance review counts, recommendations, and admin commentary.",
+      fields: ["Number of Assurance/Compliance Reviews Completed", "Number of Recommendations Open", "Number of Recommendations Closed", "Commentary of admins"],
+    },
+  ],
+};
+
 function slugifyPlanField(value) {
   return value
     .toLowerCase()
@@ -3269,20 +4022,81 @@ function isProjectPlanDetailedOnlyField(field) {
   return field.detailed && !field.intermediate;
 }
 
-function ProjectPlanQuickPage(planProject) {
+function ProjectPlanReportNav(activeSection) {
+  return `
+    <aside class="project-plan-sections plan-builder-nav quick-plan-nav matrix-plan-nav project-report-nav" aria-label="Report sections">
+      ${projectPlanReportSections
+        .map(
+          (section) => `
+            <button class="${section === activeSection ? "active" : ""}" type="button" data-plan-report-section="${escapeHtml(section)}">
+              <span>${escapeHtml(section)}</span>
+            </button>
+          `
+        )
+        .join("")}
+    </aside>
+  `;
+}
+
+function ProjectPlanReportPage(planProject) {
+  const activeSection = projectPlanReportSections.includes(projectPlanReportActiveSection) ? projectPlanReportActiveSection : projectPlanReportSections[0];
+  return `
+    <section class="project-plan-page plan-builder-page has-project-modebar report-plan-mode" aria-label="${escapeHtml(`${planProject} reporting`)}">
+      <div class="project-plan-card-frame project-report-card-frame">
+        ${ProjectScopeHero(planProject, { cardHero: true, showModeTabs: true, activeEntry: "reports", titleSuffix: " - Reporting" })}
+        <div class="project-plan-shell plan-builder-shell quick-plan-shell project-report-shell">
+          ${ProjectPlanReportNav(activeSection)}
+          <main class="project-plan-content plan-builder-workspace quick-plan-workspace project-report-workspace">
+            <section class="project-report-surface" aria-label="${escapeHtml(`${activeSection} report workspace`)}">
+              <article class="project-report-placeholder-card" aria-label="${escapeHtml(`${activeSection} report content`)}"></article>
+            </section>
+          </main>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function ProjectPlanSecondaryWorkspacePage(planProject, entryPoint) {
+  const entry = projectPlanWorkspaceEntries[entryPoint] || projectPlanWorkspaceEntries["change-request"];
+  return `
+    <section class="project-plan-page plan-builder-page has-project-modebar report-plan-mode" aria-label="${escapeHtml(`${planProject} ${entry.aria}`)}">
+      <div class="project-plan-card-frame project-report-card-frame project-secondary-card-frame">
+        ${ProjectScopeHero(planProject, { cardHero: true, showModeTabs: true, activeEntry: entryPoint, titleSuffix: ` - ${entry.title}` })}
+        <div class="project-plan-shell plan-builder-shell quick-plan-shell project-secondary-shell">
+          <main class="project-plan-content plan-builder-workspace quick-plan-workspace project-report-workspace project-secondary-workspace">
+            <section class="project-report-surface" aria-label="${escapeHtml(`${entry.title} workspace`)}">
+              <article class="project-report-placeholder-card" aria-label="${escapeHtml(`${entry.title} content`)}"></article>
+            </section>
+          </main>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function ProjectPlanQuickPage(planProject, entryPoint = "quick") {
+  if (entryPoint === "reports") {
+    return ProjectPlanReportPage(planProject);
+  }
+  if (projectPlanWorkspaceEntries[entryPoint]) {
+    return ProjectPlanSecondaryWorkspacePage(planProject, entryPoint);
+  }
   const isSimple = projectPlanDetailMode === "simple";
   const activeSection = projectPlanActiveDetailedSection();
   return `
     <section class="project-plan-page plan-builder-page has-project-modebar ${isSimple ? "simple-plan-mode" : "detailed-plan-mode"}" aria-label="${escapeHtml(`${planProject} project plan`)}">
-      ${ProjectScopeHero(planProject, { showModeTabs: true })}
-      <div class="project-plan-shell plan-builder-shell quick-plan-shell ${isSimple ? "simple-plan-shell" : "detailed-plan-shell"}">
-        ${isSimple ? "" : ProjectPlanDetailedNav(activeSection)}
-        <main class="project-plan-content plan-builder-workspace quick-plan-workspace ${isSimple ? "simple-plan-workspace" : "detailed-plan-workspace"}">
-          ${ProjectPlanContentModeToggle()}
-          <div class="plan-builder-main quick-plan-main project-plan-matrix-main">
-            ${isSimple ? ProjectPlanSimpleContent() : ProjectPlanDetailedContent(activeSection)}
-          </div>
-        </main>
+      <div class="project-plan-card-frame">
+        ${ProjectScopeHero(planProject, { cardHero: true, showModeTabs: true, activeEntry: "quick" })}
+        <div class="project-plan-shell plan-builder-shell quick-plan-shell ${isSimple ? "simple-plan-shell" : "detailed-plan-shell"}">
+          ${isSimple ? "" : ProjectPlanDetailedNav(activeSection)}
+          <main class="project-plan-content plan-builder-workspace quick-plan-workspace ${isSimple ? "simple-plan-workspace" : "detailed-plan-workspace"}">
+            ${ProjectPlanContentModeToggle(isSimple ? "Project Plan" : activeSection)}
+            <div class="plan-builder-main quick-plan-main project-plan-matrix-main">
+              ${isSimple ? ProjectPlanSimpleContent() : ProjectPlanDetailedContent(activeSection)}
+            </div>
+          </main>
+        </div>
       </div>
     </section>
   `;
@@ -3336,8 +4150,8 @@ function ProjectPlanDetailedNav(activeSection) {
 }
 
 function ProjectPlanSimpleContent() {
-  const fields = projectPlanFieldMatrix.filter((field) => field.simple);
-  const fieldMap = new Map(fields.map((field) => [field.field, field]));
+  const simpleFieldNames = new Set(projectPlanSimpleFieldOrder);
+  const fieldMap = new Map(projectPlanFieldMatrix.filter((field) => simpleFieldNames.has(field.field)).map((field) => [field.field, field]));
   const simpleGroups = [
     {
       title: "Project identity",
@@ -3373,24 +4187,22 @@ function ProjectPlanSimpleContent() {
 
   return `
     <section class="project-plan-form-card plan-builder-card project-plan-matrix-card simple-plan-card">
-      <div class="project-overview-head project-plan-matrix-head">
-        <h2>Build the project plan in five clear steps</h2>
-        <p>Start with the fields PMO needs first. Detailed registers can be refined after the plan is endorsed.</p>
-      </div>
       <div class="simple-plan-sections">
         ${simpleGroups
           .map((group) => {
             const groupFields = group.fields.map((fieldName) => fieldMap.get(fieldName)).filter(Boolean);
             return `
-              <article class="simple-plan-section-card">
-                <header>
-                  <span class="simple-plan-section-icon">${icon(group.icon)}</span>
-                  <div>
-                    <h3>${escapeHtml(group.title)}</h3>
-                    <p>${escapeHtml(group.description)}</p>
-                  </div>
-                </header>
-                <div class="simple-plan-section-fields">
+              <article class="matrix-field-group simple-plan-section-card simple-field-card">
+                <div class="simple-field-card-head">
+                  <span class="matrix-field-group-copy">
+                    <strong>${escapeHtml(group.title)}</strong>
+                    <small>${escapeHtml(group.description)}</small>
+                  </span>
+                  <span class="matrix-field-group-meta" aria-label="${groupFields.length} fields">
+                    <b>${groupFields.length}</b>
+                  </span>
+                </div>
+                <div class="matrix-field-group-grid simple-plan-section-fields">
                   ${groupFields.map((field) => ProjectPlanFieldControl(field, { simple: true })).join("")}
                 </div>
               </article>
@@ -3400,6 +4212,55 @@ function ProjectPlanSimpleContent() {
       </div>
     </section>
   `;
+}
+
+function ProjectPlanFieldGroupList(section, fields, options = {}) {
+  const groups = projectPlanFieldGroupsForSection(section, fields);
+  return groups
+    .map(
+      (group) => `
+        <details class="matrix-field-group ${options.detailedOnly ? "detailed-only" : ""}" open>
+          <summary>
+            <span class="matrix-field-group-copy">
+              <strong>${escapeHtml(group.title)}</strong>
+              <small>${escapeHtml(group.description)}</small>
+            </span>
+            <span class="matrix-field-group-meta">
+              <b>${group.fields.length}</b>
+              ${icon("down")}
+            </span>
+          </summary>
+          <div class="matrix-field-group-grid">
+            ${group.fields.map((field) => ProjectPlanFieldControl(field, options)).join("")}
+          </div>
+        </details>
+      `
+    )
+    .join("");
+}
+
+function projectPlanFieldGroupsForSection(section, fields) {
+  if (!fields.length) return [];
+  const availableFields = new Map(fields.map((field) => [field.field, field]));
+  const usedFields = new Set();
+  const groups = (projectPlanSectionFieldGroups[section] || [])
+    .map((group) => {
+      const groupFields = group.fields
+        .map((fieldName) => availableFields.get(fieldName))
+        .filter(Boolean);
+      groupFields.forEach((field) => usedFields.add(field.field));
+      return { ...group, fields: groupFields };
+    })
+    .filter((group) => group.fields.length);
+  const remainingFields = fields.filter((field) => !usedFields.has(field.field));
+  if (remainingFields.length) {
+    groups.push({
+      title: "Additional fields",
+      description: "Other fields retained from the project plan matrix.",
+      fields: remainingFields,
+    });
+  }
+  return groups;
 }
 
 function ProjectPlanDetailedContent(section) {
@@ -3426,21 +4287,16 @@ function ProjectPlanDetailedContent(section) {
       ${
         expanded
           ? `<div class="matrix-hidden-fields is-expanded">
-              ${visibleHiddenFields.map((field) => ProjectPlanFieldControl(field, { detailedOnly: true })).join("")}
+              ${ProjectPlanFieldGroupList(section, visibleHiddenFields, { detailedOnly: true })}
             </div>`
           : ""
       }`
     : "";
 
   return `
-    <section class="project-plan-form-card plan-builder-card project-plan-matrix-card detailed-plan-card">
-      <div class="project-overview-head project-plan-matrix-head">
-        <span>${isDetailedOnlySection ? "Detailed section" : "Detailed"}</span>
-        <h2>${escapeHtml(section)}</h2>
-        <p>${escapeHtml(projectPlanSectionDescription(section, upfrontFields.length, hiddenFields.length, isDetailedOnlySection))}</p>
-      </div>
+    <section class="project-plan-form-card plan-builder-card project-plan-matrix-card detailed-plan-card" data-project-plan-matrix-scroll>
       <div class="project-plan-section-fields">
-        ${upfrontFields.map((field) => ProjectPlanFieldControl(field)).join("")}
+        ${ProjectPlanFieldGroupList(section, upfrontFields)}
         ${hiddenFieldAccordion}
       </div>
     </section>
@@ -3541,7 +4397,7 @@ function ProjectPlanFieldControl(field, options = {}) {
   }
 
   if (field.type === "table") {
-    if (options.simple) {
+    if (options.compactRegister) {
       return ProjectPlanCompactRegisterField(field, label, classes);
     }
     return ProjectPlanRegisterField(field, label, classes);
@@ -3556,40 +4412,42 @@ function ProjectPlanFieldControl(field, options = {}) {
 }
 
 function ProjectPlanCompactRegisterField(field, label, classes) {
-  const row = projectPlanRegisterRows(field)[0];
+  const config = projectPlanTableConfig(field);
+  const row = config.rows[0] || [field.value || field.field, "Draft"];
+  const meta = row.slice(1, 3).filter(Boolean).join(" · ");
   return `
     <article class="${classes} simple-register-field">
       <div class="simple-register-copy">
         ${label}
-        <strong>${escapeHtml(row.name)}</strong>
-        <small>${escapeHtml(row.owner)} · ${escapeHtml(row.status)}</small>
+        <strong>${escapeHtml(row[0])}</strong>
+        <small>${escapeHtml(meta || config.description)}</small>
       </div>
-      <button type="button">${icon("plus")} Add item</button>
+      <button type="button">${icon("plus")} ${escapeHtml(config.action)}</button>
     </article>
   `;
 }
 
 function ProjectPlanRegisterField(field, label, classes) {
-  const rows = projectPlanRegisterRows(field);
+  const config = projectPlanTableConfig(field);
+  const columnClass = `columns-${Math.min(config.columns.length, 5)}`;
   return `
     <article class="${classes}">
       <div class="matrix-register-head">
-        ${label}
-        <button type="button">${icon("plus")} Add</button>
+        <div>
+          ${label}
+          <small>${escapeHtml(config.description)}</small>
+        </div>
+        <button type="button">${icon("plus")} ${escapeHtml(config.action)}</button>
       </div>
       <div class="matrix-register-table" role="table" aria-label="${escapeHtml(field.field)}">
-        <div class="matrix-register-row head" role="row">
-          <span>Name</span>
-          <span>Owner</span>
-          <span>Status</span>
+        <div class="matrix-register-row head ${columnClass}" role="row">
+          ${config.columns.map((column) => `<span>${escapeHtml(column)}</span>`).join("")}
         </div>
-        ${rows
+        ${config.rows
           .map(
             (row) => `
-              <div class="matrix-register-row" role="row">
-                <span>${escapeHtml(row.name)}</span>
-                <span>${escapeHtml(row.owner)}</span>
-                <span><b>${escapeHtml(row.status)}</b></span>
+              <div class="matrix-register-row ${columnClass}" role="row">
+                ${row.map((cell, index) => `<span>${index === row.length - 1 ? `<b>${escapeHtml(cell)}</b>` : escapeHtml(cell)}</span>`).join("")}
               </div>
             `
           )
@@ -3599,24 +4457,132 @@ function ProjectPlanRegisterField(field, label, classes) {
   `;
 }
 
-function projectPlanRegisterRows(field) {
-  const name = field.value || field.field;
-  if (field.field.includes("Budget")) {
-    return [{ name, owner: "Finance", status: "Draft" }];
-  }
-  if (field.field.includes("Risk")) {
-    return [{ name, owner: "PMO", status: "Open" }];
-  }
-  if (field.field.includes("Milestone")) {
-    return [{ name, owner: "Project Manager", status: "Planned" }];
-  }
-  if (field.field.includes("Resource")) {
-    return [{ name, owner: "Muna Hassan", status: "Planned" }];
-  }
-  if (field.field.includes("Dependencies") || field.section === "Dependency") {
-    return [{ name, owner: "PMO", status: "Tracking" }];
-  }
-  return [{ name, owner: "Project Manager", status: "Draft" }];
+function projectPlanTableConfig(field) {
+  const tableConfigs = {
+    "Business Drivers": {
+      action: "Add driver",
+      description: "Business trigger, source, and priority.",
+      columns: ["Driver", "Source", "Priority"],
+      rows: [[field.value || "Strategic research visibility", "Strategy", "High"]],
+    },
+    Outcome: {
+      action: "Add outcome",
+      description: "Measurable outcomes expected from the project.",
+      columns: ["Outcome", "Measure", "Status"],
+      rows: [[field.value || "Reduce fragmentation in research efforts", "Discovery coverage", "Draft"]],
+    },
+    "Project Alignment (Objectives)": {
+      action: "Add objective",
+      description: "Strategic and project objectives linked to the plan.",
+      columns: ["Objective", "Level", "Status"],
+      rows: [[field.value || "Boost regional sustainability and growth through partnerships and investment", "Strategic", "Linked"]],
+    },
+    "Link Capabilities": {
+      action: "Link capability",
+      description: "Business capabilities affected by the project.",
+      columns: ["Capability", "Owner", "Status"],
+      rows: [[field.value || "Regulatory Assurance", "Strategy", "Linked"]],
+    },
+    "Link Services": {
+      action: "Link service",
+      description: "Service mapping connected to the selected capabilities.",
+      columns: ["Service group", "Value stream", "Service", "Status"],
+      rows: [["Corporate Services", "Procure to Pay", field.value || "Material Master Maintenance", "Linked"]],
+    },
+    Milestones: {
+      action: "Add milestone",
+      description: "Milestone, owner, and planned due date.",
+      columns: ["Milestone", "Owner", "Due date", "Status"],
+      rows: [[field.value || "Initiation gate", "Project Manager", "2026-06-12", "Planned"]],
+    },
+    "End Product (Deliverables)": {
+      action: "Add deliverable",
+      description: "End deliverables produced by the project.",
+      columns: ["Deliverable", "Owner", "Status"],
+      rows: [[field.value || "Research capability map", "Delivery Office", "Draft"]],
+    },
+    "Management Product": {
+      action: "Add product",
+      description: "Management products required for governance.",
+      columns: ["Product", "Owner", "Status"],
+      rows: [[field.value || "Project initiation documentation", "PMO", "Draft"]],
+    },
+    "Detailed WBS": {
+      action: "Add WBS item",
+      description: "Work packages and delivery ownership.",
+      columns: ["Work package", "Owner", "Status"],
+      rows: [[field.value || "Discovery and data model", "Project Manager", "Planned"]],
+    },
+    "Funding Sources": {
+      action: "Add source",
+      description: "Funding source and allocation details.",
+      columns: ["Source", "Type", "Amount"],
+      rows: [[field.value || "Innovation fund", "CAPEX", "SAR 1.2M"]],
+    },
+    "Monthly Budget Detail": {
+      action: "Add month",
+      description: "Monthly CAPEX and OPEX phasing.",
+      columns: ["Month", "CAPEX", "OPEX", "Status"],
+      rows: [[field.value || "Monthly phasing", "SAR 120K", "SAR 42K", "Draft"]],
+    },
+    "Benefits Register": {
+      action: "Add benefit",
+      description: "Benefit, owner, and realization status.",
+      columns: ["Benefit", "Owner", "Realization"],
+      rows: [[field.value || "Improved research discovery", "Research Office", "Planned"]],
+    },
+    "Risks Register": {
+      action: "Add risk",
+      description: "Risk, owner, and current exposure.",
+      columns: ["Risk", "Owner", "Rating"],
+      rows: [[field.value || "Stakeholder data quality", "PMO", "High"]],
+    },
+    "Issues Register": {
+      action: "Add issue",
+      description: "Issue, owner, and decision status.",
+      columns: ["Issue", "Owner", "Status"],
+      rows: [[field.value || "Open PMO decisions", "PMO", "Open"]],
+    },
+    "Change Impact Assessment": {
+      action: "Add impact",
+      description: "Impacted audience and readiness.",
+      columns: ["Impact area", "Owner", "Readiness"],
+      rows: [[field.value || "Process adoption impact", "Change team", "Assessing"]],
+    },
+    "Related Links / Documents": {
+      action: "Add link",
+      description: "Project evidence and supporting documents.",
+      columns: ["Document", "Type", "Status"],
+      rows: [[field.value || "Research source pack", "Reference", "Linked"]],
+    },
+    "Resource Plan": {
+      action: "Add resource",
+      description: "Role, named owner, and allocation.",
+      columns: ["Role", "Owner", "Allocation"],
+      rows: [[field.value || "PM, analyst, data steward", "Muna Hassan", "Planned"]],
+    },
+    "Predecessor Project(s)": {
+      action: "Add predecessor",
+      description: "Upstream project dependency.",
+      columns: ["Project", "Relationship", "Status"],
+      rows: [[field.value || "Data source onboarding", "Predecessor", "Tracking"]],
+    },
+    "Successor Project(s)": {
+      action: "Add successor",
+      description: "Downstream project dependency.",
+      columns: ["Project", "Relationship", "Status"],
+      rows: [[field.value || "Research portal rollout", "Successor", "Planned"]],
+    },
+  };
+
+  return (
+    tableConfigs[field.field] || {
+      action: "Add item",
+      description: "Register item, owner, and current status.",
+      columns: ["Name", "Owner", "Status"],
+      rows: [[field.value || field.field, "Project Manager", "Draft"]],
+    }
+  );
 }
 
 function projectPlanPlaceholder(field) {
@@ -3919,7 +4885,7 @@ function ProjectPlanPage(selectedProject, entryPoint = "quick") {
   const isQuickLinkPlan = entryPoint !== "onboarding";
 
   if (isQuickLinkPlan) {
-    return ProjectPlanQuickPage(planProject);
+    return ProjectPlanQuickPage(planProject, entryPoint);
   }
 
   const onboardingSections = [
@@ -3988,7 +4954,7 @@ function ProjectPlanPage(selectedProject, entryPoint = "quick") {
     <section class="project-plan-page plan-builder-page ${isQuickLinkPlan ? "has-project-modebar" : ""}" aria-label="${escapeHtml(`${planProject} project plan`)}">
       ${ProjectScopeHero(
         planProject,
-        isQuickLinkPlan ? { showModeTabs: true } : { planStatus: "Draft", planTone: "draft" }
+        isQuickLinkPlan ? {} : { planStatus: "Draft", planTone: "draft" }
       )}
 
       <div class="project-plan-shell plan-builder-shell ${isQuickLinkPlan ? "quick-plan-shell" : ""}">
@@ -4751,6 +5717,8 @@ function App(
     ${ReportComposerDrawer(selectedReportProject)}
     ${PlaygroundDrawer(selectedPlaygroundDrawer)}
     ${NotificationPanel(notificationPanelOpen)}
+    ${QuickLinksOverlay(selectedProject)}
+    ${QuickLinksToast()}
     ${GuidedTourOverlay()}
   `;
 }
@@ -4765,6 +5733,7 @@ let selectedAiInsightIndex = 0;
 let selectedWbsSearch = "";
 let selectedWbsViewBy = "months";
 let selectedWbsZoom = 1;
+let selectedWorkspaceDisplay = "table";
 let selectedStageGate = null;
 let selectedReportProject = null;
 let selectedPlaygroundDrawer = null;
@@ -4772,7 +5741,13 @@ let projectPlanDetailMode = "simple";
 let projectPlanActiveSection = "Overview";
 let projectPlanSectionsExpanded = false;
 let projectPlanExpandedFieldSections = {};
+let projectPlanReportActiveSection = "Overview";
 let notificationPanelOpen = false;
+let pinnedQuickLinkIds = loadPinnedQuickLinks();
+let quickLinksOverlayOpen = false;
+let quickLinksDraftPinnedIds = null;
+let quickLinksToast = null;
+let quickLinksToastTimer = null;
 let guidedTourActive = false;
 let guidedTourStep = 0;
 let guidedTourExitMode = null;
@@ -4822,8 +5797,10 @@ function renderApp() {
   );
   initLucideIcons();
   initPageNavigation();
+  initQuickLinks();
   initProjectSwitch();
   initWorkspaceSwitch();
+  initWorkspaceDisplaySwitch();
   initAiInsightsWidget();
   initBoardFilter();
   initCalendarNavigation();
@@ -4855,12 +5832,16 @@ function enterFrontDoor(projectId = "all", startTour = false, mode = "assigned",
   projectPlanEntryPoint = "quick";
   selectedProject = projectId;
   selectedView = "calendar";
+  selectedWorkspaceDisplay = "table";
   selectedBoardFilter = "all";
   selectedStageGate = null;
   selectedReportProject = null;
   selectedPlaygroundDrawer = null;
+  quickLinksOverlayOpen = false;
+  quickLinksDraftPinnedIds = null;
   projectPlanDetailMode = "simple";
   projectPlanActiveSection = "Overview";
+  projectPlanReportActiveSection = "Overview";
   projectPlanSectionsExpanded = false;
   projectPlanExpandedFieldSections = {};
   notificationPanelOpen = false;
@@ -4909,6 +5890,7 @@ function completeGuidedTour() {
     selectedPlaygroundDrawer = null;
     projectPlanDetailMode = "simple";
     projectPlanActiveSection = "Overview";
+    projectPlanReportActiveSection = "Overview";
     projectPlanSectionsExpanded = false;
     projectPlanExpandedFieldSections = {};
     notificationPanelOpen = false;
@@ -4999,6 +5981,7 @@ function initPmoAssignmentPreview() {
     selectedReportProject = null;
     selectedPlaygroundDrawer = null;
     notificationPanelOpen = false;
+    closeQuickLinksOverlay();
     renderApp();
   });
 }
@@ -5026,6 +6009,15 @@ function initProjectPlanMatrix() {
     });
   });
 
+  document.querySelectorAll("[data-plan-report-section]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const section = button.dataset.planReportSection;
+      if (!section) return;
+      projectPlanReportActiveSection = section;
+      renderApp();
+    });
+  });
+
   document.querySelector("[data-plan-show-more-sections]")?.addEventListener("click", () => {
     projectPlanSectionsExpanded = !projectPlanSectionsExpanded;
     if (!projectPlanSectionsExpanded && projectPlanDetailedOnlySections.includes(projectPlanActiveSection)) {
@@ -5038,11 +6030,19 @@ function initProjectPlanMatrix() {
     button.addEventListener("click", () => {
       const section = button.dataset.planShowMoreFields;
       if (!section) return;
+      const scroller = button.closest("[data-project-plan-matrix-scroll]");
+      const scrollTop = scroller ? scroller.scrollTop : 0;
       projectPlanExpandedFieldSections = {
         ...projectPlanExpandedFieldSections,
         [section]: !projectPlanExpandedFieldSections[section],
       };
       renderApp();
+      requestAnimationFrame(() => {
+        const nextScroller = document.querySelector("[data-project-plan-matrix-scroll]");
+        if (nextScroller) {
+          nextScroller.scrollTop = scrollTop;
+        }
+      });
     });
   });
 }
@@ -5054,10 +6054,14 @@ function initPageNavigation() {
       if (button.dataset.projectId) {
         selectedProject = button.dataset.projectId;
       }
+      if (button.dataset.workspaceView) {
+        selectedView = button.dataset.workspaceView;
+      }
       if (targetPage === "project-plan") {
         projectPlanEntryPoint = button.dataset.planEntry || (button.closest(".quick-action-list") ? "quick" : "onboarding");
         projectPlanDetailMode = "simple";
         projectPlanActiveSection = "Overview";
+        projectPlanReportActiveSection = "Overview";
         projectPlanSectionsExpanded = false;
         projectPlanExpandedFieldSections = {};
       }
@@ -5094,6 +6098,7 @@ function initPageNavigation() {
       selectedReportProject = null;
       selectedPlaygroundDrawer = null;
       notificationPanelOpen = false;
+      closeQuickLinksOverlay();
       renderApp();
     });
   });
@@ -5108,6 +6113,7 @@ function initProjectSwitch() {
       selectedReportProject = null;
       selectedPlaygroundDrawer = null;
       playgroundFullscreen = false;
+      closeQuickLinksOverlay();
       renderApp();
     });
   });
@@ -5120,6 +6126,18 @@ function initWorkspaceSwitch() {
       selectedStageGate = null;
       selectedReportProject = null;
       selectedPlaygroundDrawer = null;
+      closeQuickLinksOverlay();
+      renderApp();
+    });
+  });
+}
+
+function initWorkspaceDisplaySwitch() {
+  document.querySelectorAll("[data-workspace-display]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const display = button.dataset.workspaceDisplay;
+      if (!display || display === selectedWorkspaceDisplay) return;
+      selectedWorkspaceDisplay = display;
       renderApp();
     });
   });
@@ -5205,16 +6223,23 @@ function showCalendarPopover(trigger) {
     </div>
   `;
   popover.classList.add("is-visible");
-  popover.classList.remove("is-below");
+  popover.classList.remove("is-below", "is-side");
   popover.setAttribute("aria-hidden", "false");
 
   const rect = trigger.getBoundingClientRect();
   const width = popover.offsetWidth;
   const height = popover.offsetHeight;
-  const left = Math.min(Math.max(12, rect.left + rect.width / 2 - width / 2), window.innerWidth - width - 12);
+  const sideLeft = rect.left - width - 14;
+  let left = Math.min(Math.max(12, rect.left + rect.width / 2 - width / 2), window.innerWidth - width - 12);
   let top = rect.top - height - 10;
 
-  if (top < 12) {
+  if (rect.left > window.innerWidth * 0.62 && sideLeft > 12) {
+    left = sideLeft;
+    top = Math.min(Math.max(12, rect.top + rect.height / 2 - height / 2), window.innerHeight - height - 12);
+    popover.classList.add("is-side");
+  }
+
+  if (!popover.classList.contains("is-side") && top < 12) {
     top = rect.bottom + 10;
     popover.classList.add("is-below");
   }
@@ -5244,16 +6269,26 @@ function reportTrendPopover() {
 
 function showReportTrendPopover(trigger) {
   const popover = reportTrendPopover();
+  const tone = trigger.dataset.reportTone || "neutral";
+  popover.classList.remove("on-track", "alert", "off-track", "neutral");
+  popover.classList.add(tone);
   popover.innerHTML = `
+    <div class="report-popover-accent" aria-hidden="true"></div>
     <div class="report-popover-head">
-      <strong>${escapeHtml(trigger.dataset.reportProject)}</strong>
-      <span>${escapeHtml(trigger.dataset.reportStatus)}</span>
+      <div>
+        <span class="report-popover-kicker">Status report</span>
+        <strong>${escapeHtml(trigger.dataset.reportProject)}</strong>
+      </div>
+      <span class="report-popover-status"><i></i>${escapeHtml(trigger.dataset.reportStatus)}</span>
     </div>
-    <p>${escapeHtml(trigger.dataset.reportInterval)} reporting interval</p>
+    <div class="report-popover-period">
+      <span>${escapeHtml(trigger.dataset.reportInterval)}</span>
+      <small>Reporting interval</small>
+    </div>
     <div class="report-popover-meta">
-      <span>${escapeHtml(trigger.dataset.reportDetail)}</span>
-      <span>${escapeHtml(trigger.dataset.reportCadence)} cadence</span>
-      <span>Next due ${escapeHtml(trigger.dataset.reportNext)}</span>
+      <span><small>Update</small><strong>${escapeHtml(trigger.dataset.reportDetail)}</strong></span>
+      <span><small>Cadence</small><strong>${escapeHtml(trigger.dataset.reportCadence)}</strong></span>
+      <span><small>Next due</small><strong>${escapeHtml(trigger.dataset.reportNext)}</strong></span>
     </div>
   `;
   popover.classList.add("is-visible");
@@ -5278,7 +6313,7 @@ function showReportTrendPopover(trigger) {
 function hideReportTrendPopover() {
   const popover = document.querySelector(".report-trend-popover");
   if (!popover) return;
-  popover.classList.remove("is-visible", "is-below");
+  popover.classList.remove("is-visible", "is-below", "is-side");
   popover.setAttribute("aria-hidden", "true");
 }
 
@@ -5810,6 +6845,8 @@ function initNotificationPanel() {
       selectedStageGate = null;
       selectedReportProject = null;
       selectedPlaygroundDrawer = null;
+      quickLinksOverlayOpen = false;
+      quickLinksDraftPinnedIds = null;
       renderApp();
     });
   });
@@ -5822,12 +6859,89 @@ function initNotificationPanel() {
   });
 }
 
+function showQuickLinksToast(message) {
+  quickLinksToast = message;
+  if (quickLinksToastTimer) {
+    window.clearTimeout(quickLinksToastTimer);
+  }
+  quickLinksToastTimer = window.setTimeout(() => {
+    quickLinksToast = null;
+    quickLinksToastTimer = null;
+    renderApp();
+  }, 3200);
+}
+
+function setQuickLinkPinned(id, shouldPin) {
+  const currentIds = normalizePinnedQuickLinks(quickLinksOverlayOpen && quickLinksDraftPinnedIds ? quickLinksDraftPinnedIds : pinnedQuickLinkIds);
+  if (shouldPin && currentIds.includes(id)) return true;
+  if (!shouldPin && !currentIds.includes(id)) return true;
+  if (shouldPin && currentIds.length >= QUICK_LINK_PIN_LIMIT) {
+    showQuickLinksToast(`You can pin up to ${QUICK_LINK_PIN_LIMIT} quick links because View all uses the last slot.`);
+    return false;
+  }
+
+  const nextIds = shouldPin ? [...currentIds, id] : currentIds.filter((pinnedId) => pinnedId !== id);
+  if (quickLinksOverlayOpen) {
+    quickLinksDraftPinnedIds = normalizePinnedQuickLinks(nextIds);
+  } else {
+    pinnedQuickLinkIds = normalizePinnedQuickLinks(nextIds);
+    persistPinnedQuickLinks();
+  }
+  return true;
+}
+
+function closeQuickLinksOverlay() {
+  quickLinksOverlayOpen = false;
+  quickLinksDraftPinnedIds = null;
+}
+
+function initQuickLinks() {
+  document.querySelectorAll("[data-quick-links-open]").forEach((button) => {
+    button.addEventListener("click", () => {
+      quickLinksOverlayOpen = true;
+      quickLinksDraftPinnedIds = normalizePinnedQuickLinks(pinnedQuickLinkIds);
+      notificationPanelOpen = false;
+      selectedStageGate = null;
+      selectedReportProject = null;
+      selectedPlaygroundDrawer = null;
+      renderApp();
+    });
+  });
+
+  document.querySelectorAll("[data-quick-links-close]").forEach((button) => {
+    button.addEventListener("click", () => {
+      closeQuickLinksOverlay();
+      renderApp();
+    });
+  });
+
+  document.querySelector("[data-quick-links-save]")?.addEventListener("click", () => {
+    pinnedQuickLinkIds = normalizePinnedQuickLinks(quickLinksDraftPinnedIds || pinnedQuickLinkIds);
+    persistPinnedQuickLinks();
+    closeQuickLinksOverlay();
+    renderApp();
+  });
+
+  document.querySelectorAll("[data-quick-pin]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const id = button.dataset.quickPin;
+      if (!id) return;
+      const shouldPin = button.dataset.quickPinAction === "pin";
+      setQuickLinkPinned(id, shouldPin);
+      renderApp();
+    });
+  });
+}
+
 const tasamaConsoleKeydownHandler = (event) => {
-  if (event.key !== "Escape" || (!notificationPanelOpen && !selectedReportProject && !selectedStageGate && !selectedPlaygroundDrawer)) return;
+  if (event.key !== "Escape" || (!notificationPanelOpen && !selectedReportProject && !selectedStageGate && !selectedPlaygroundDrawer && !quickLinksOverlayOpen)) return;
   notificationPanelOpen = false;
   selectedReportProject = null;
   selectedStageGate = null;
   selectedPlaygroundDrawer = null;
+  closeQuickLinksOverlay();
   renderApp();
 };
 
@@ -5835,14 +6949,20 @@ document.addEventListener("keydown", tasamaConsoleKeydownHandler);
 
 renderApp();
 
+
     tasamaConsoleCleanup = () => {
       clearAiInsightsTimer();
+      if (quickLinksToastTimer) {
+        window.clearTimeout(quickLinksToastTimer);
+        quickLinksToastTimer = null;
+      }
       document.removeEventListener("keydown", tasamaConsoleKeydownHandler);
       const root = document.getElementById("app");
       if (root) root.innerHTML = "";
     };
 
     return tasamaConsoleCleanup;
+
   },
 };
 })();
