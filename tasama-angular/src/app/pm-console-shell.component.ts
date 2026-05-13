@@ -99,6 +99,7 @@ type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
         [frontDoorMode]="frontDoorMode"
         [pmoAssignmentReady]="pmoAssignmentReady"
         [guidedTourActive]="guidedTourActive"
+        [guidedTourExitMode]="guidedTourExitMode"
         (consoleStateChange)="applyContentState($event)"
       />
       <app-pm-console-notifications [open]="notificationPanelOpen" (closePanel)="closeNotifications()" />
@@ -133,6 +134,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   notificationPanelOpen = false;
   pmoAssignmentReady = false;
   guidedTourActive = false;
+  guidedTourExitMode: string | null = null;
   private iconsHydrated = false;
 
   constructor(
@@ -158,6 +160,8 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     this.selectedView = (this.initialState.selectedView as WorkspaceView) || 'calendar';
     this.frontDoorMode = this.initialState.frontDoorMode || 'assigned';
     this.guidedTourActive = Boolean(this.initialState.guidedTourActive);
+    this.guidedTourExitMode = this.initialState.guidedTourExitMode ?? null;
+    this.pmoAssignmentReady = Boolean(this.initialState.pmoAssignmentReady);
   }
 
   ngAfterViewChecked(): void {
@@ -209,8 +213,15 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     this.selectedPage = (state.selectedPage as ConsolePage) || this.selectedPage;
     this.selectedView = (state.selectedView as WorkspaceView) || this.selectedView;
     this.frontDoorMode = state.frontDoorMode || this.frontDoorMode;
-    this.pmoAssignmentReady = Boolean(state.pmoAssignmentReady);
-    this.guidedTourActive = Boolean(state.guidedTourActive);
+    if ('pmoAssignmentReady' in state) {
+      this.pmoAssignmentReady = Boolean(state.pmoAssignmentReady);
+    }
+    if ('guidedTourActive' in state) {
+      this.guidedTourActive = Boolean(state.guidedTourActive);
+    }
+    if ('guidedTourExitMode' in state) {
+      this.guidedTourExitMode = state.guidedTourExitMode ?? null;
+    }
     this.markShellChanged();
   }
 

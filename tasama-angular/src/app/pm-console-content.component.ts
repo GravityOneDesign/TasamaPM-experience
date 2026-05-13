@@ -1,4 +1,17 @@
-import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  AfterViewChecked,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostListener,
+  Input,
+  OnChanges,
+  OnDestroy,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PmConsoleIconService } from './pm-console-icon.service';
 import { PmConsoleMountOptions } from './pm-console.types';
@@ -79,6 +92,38 @@ interface SimplePlanTableConfig {
   description: string;
   columns: string[];
   rows: string[][];
+}
+
+interface ProjectPlanField {
+  id: string;
+  section: string;
+  field: string;
+  value: string;
+  type: string;
+  simple: boolean;
+  intermediate: boolean;
+  detailed: boolean;
+  mandatory?: boolean;
+  options?: string[];
+}
+
+interface ProjectPlanFieldGroup {
+  title: string;
+  description: string;
+  fields: ProjectPlanField[];
+}
+
+interface ProjectPlanFieldGroupConfig {
+  title: string;
+  description: string;
+  fields: string[];
+}
+
+interface GuidedTourStep {
+  target: string;
+  title: string;
+  body: string;
+  daily: string;
 }
 
 const iconMap: Record<string, string> = {
@@ -168,6 +213,42 @@ const projectQuickActions: QuickAction[] = [
   { id: 'project-rooms', title: 'Project rooms', icon: 'building', page: 'workspaces' },
 ];
 
+const unassignedJourneySteps = [
+  {
+    title: 'Project assigned',
+    body: 'You’ll receive a PMO assignment notification.',
+    icon: 'bell',
+  },
+  {
+    title: 'Build project plan',
+    body: 'Set scope, timeline, risks, and dependencies.',
+    icon: 'plan',
+  },
+  {
+    title: 'Submit for approval',
+    body: 'Send your baseline for PMO review and endorsement.',
+    icon: 'stageGate',
+  },
+  {
+    title: 'Manage delivery',
+    body: 'Track milestones, issues, and dependencies.',
+    icon: 'playground',
+  },
+  {
+    title: 'Report progress',
+    body: 'Submit PSRs and maintain delivery health.',
+    icon: 'chart',
+  },
+];
+
+const firstAssignedProject = {
+  id: 'UAE Research Map',
+  name: 'UAE Research Map',
+  stage: 'Initiation',
+  owner: 'Muna Hassan',
+  planDue: 'Jun 12',
+};
+
 const workspaceTableProjects: ProjectRow[] = [
   { id: 'UAE Research Map', code: 'ATRC-01', title: 'UAE Research Map', stage: 'Initiation', status: 'Alert', statusTone: 'amber', trend: ['green', 'amber', 'amber'], manager: 'Muna Hassan', managerInitials: 'MH', baselineStart: '01/15/2024', baselineEnd: '06/12/2026', budgetUsed: '$125K', budgetTotal: '$320K', priority: 'high' },
   { id: 'Global Anti-Scam Taskforce', code: 'ATRC-02', title: 'Global Anti-Scam Taskforce', stage: 'Closure', status: 'On-Track', statusTone: 'green', trend: ['green', 'green', 'amber'], manager: 'Sarah Ahmed', managerInitials: 'SA', baselineStart: '03/22/2024', baselineEnd: '03/22/2026', budgetUsed: '$125K', budgetTotal: '$320K', priority: 'normal' },
@@ -199,6 +280,150 @@ const boardFilters: BoardFilter[] = [
   { id: 'benefit', label: 'Benefits', icon: 'benefit' },
   { id: 'milestone', label: 'Milestones', icon: 'milestone' },
   { id: 'task', label: 'Tasks', icon: 'checklist' },
+];
+
+const projectPlanFieldMatrix: ProjectPlanField[] = [
+  { section: 'Project Setup', field: 'Project name', mandatory: true, simple: true, intermediate: true, detailed: true, type: 'text', value: 'UAE Research Map' },
+  { section: 'Project Setup', field: 'Description', simple: false, intermediate: true, detailed: true, type: 'textarea', value: 'A centralized map for national research capabilities, partners, and funding touchpoints.' },
+  { section: 'Project Setup', field: 'Category', simple: true, intermediate: true, detailed: true, type: 'select', value: 'Research & Development', options: ['Research & Development', 'Digital Transformation', 'Operations', 'Compliance'] },
+  { section: 'Project Setup', field: 'Project Source', simple: false, intermediate: false, detailed: true, type: 'select', value: 'Strategic plan', options: ['Strategic plan', 'Audit finding', 'PMO request', 'Business unit request'] },
+  { section: 'Project Setup', field: 'Is the Project Mandatory', simple: false, intermediate: true, detailed: true, type: 'boolean', value: 'No' },
+  { section: 'Project Setup', field: 'Portfolio / Program', simple: false, intermediate: true, detailed: true, type: 'select', value: 'Innovation portfolio', options: ['Innovation portfolio', 'Digital services', 'Corporate services', 'Standalone'] },
+  { section: 'Project Setup', field: 'Governance Board(s)/Forum(s)', simple: false, intermediate: false, detailed: true, type: 'text', value: 'PMO Steering Forum' },
+  { section: 'Project Setup', field: 'Business Unit', simple: true, intermediate: true, detailed: true, type: 'select', value: 'Research Office', options: ['Research Office', 'Strategy', 'Corporate Services', 'Technology'] },
+  { section: 'Project Setup', field: 'Project Initiator', simple: false, intermediate: false, detailed: true, type: 'text', value: 'Research Strategy Team' },
+  { section: 'Project Setup', field: 'Project Director', simple: false, intermediate: true, detailed: true, type: 'text', value: 'Muna Hassan' },
+  { section: 'Project Setup', field: 'Project Manager', simple: true, intermediate: true, detailed: true, type: 'text', value: 'Muna Hassan' },
+  { section: 'Project Setup', field: 'Senior User', simple: false, intermediate: true, detailed: true, type: 'text', value: 'Research Leads Forum' },
+  { section: 'Project Setup', field: 'Delivery Manager', simple: false, intermediate: false, detailed: true, type: 'text', value: 'Delivery Office' },
+  { section: 'Project Setup', field: 'PMO Contact', mandatory: true, simple: true, intermediate: true, detailed: true, type: 'text', value: 'PMO Desk' },
+  { section: 'Project Setup', field: 'Change Manager', simple: false, intermediate: true, detailed: true, type: 'text', value: 'Change team' },
+  { section: 'Project Setup', field: 'Senior Supplier', simple: false, intermediate: false, detailed: true, type: 'text', value: 'TBD' },
+  { section: 'Overview', field: 'Opportunity or Problem Statement', simple: true, intermediate: true, detailed: true, type: 'textarea', value: 'The UAE’s research ecosystem is fragmented and lacks a centralized, up-to-date platform to efficiently discover, connect, and leverage national R&D capabilities.' },
+  { section: 'Overview', field: 'Business Drivers', simple: false, intermediate: true, detailed: true, type: 'table', value: 'Strategic research visibility' },
+  { section: 'Overview', field: 'Driver for change / Analysis undertaken', simple: false, intermediate: false, detailed: true, type: 'textarea', value: 'Stakeholder mapping and portfolio reporting gaps indicate a need for a single research capability index.' },
+  { section: 'Overview', field: 'Outcome', simple: true, intermediate: true, detailed: true, type: 'table', value: 'Reduce fragmentation in research efforts' },
+  { section: 'Overview', field: 'Project Alignment (Objectives)', simple: false, intermediate: true, detailed: true, type: 'table', value: 'Boost regional sustainability and growth through partnerships and investment' },
+  { section: 'Overview', field: 'Link Capabilities', simple: false, intermediate: false, detailed: true, type: 'table', value: 'Regulatory Assurance' },
+  { section: 'Overview', field: 'Link Services', simple: false, intermediate: false, detailed: true, type: 'table', value: 'Material Master Maintenance' },
+  { section: 'Overview', field: 'AI component', mandatory: true, simple: true, intermediate: true, detailed: true, type: 'boolean', value: 'No' },
+  { section: 'Schedule & Scope', field: 'Baseline Start date', simple: true, intermediate: true, detailed: true, type: 'date', value: '2026-05-01' },
+  { section: 'Schedule & Scope', field: 'Baseline End date', simple: true, intermediate: true, detailed: true, type: 'date', value: '2026-12-31' },
+  { section: 'Schedule & Scope', field: 'Forecast Start date', simple: false, intermediate: true, detailed: true, type: 'date', value: '2026-05-08' },
+  { section: 'Schedule & Scope', field: 'Forecast End date', simple: false, intermediate: true, detailed: true, type: 'date', value: '2026-12-31' },
+  { section: 'Schedule & Scope', field: 'Milestones', simple: false, intermediate: true, detailed: true, type: 'table', value: 'Initiation gate' },
+  { section: 'Schedule & Scope', field: 'Stages', simple: false, intermediate: false, detailed: true, type: 'select', value: 'Initiation', options: ['Initiation', 'Planning', 'Execution', 'Closure'] },
+  { section: 'Schedule & Scope', field: 'In Scope', simple: true, intermediate: true, detailed: true, type: 'textarea', value: 'Research entities, universities, government stakeholders, industry partners, funding bodies, and R&D capability records.' },
+  { section: 'Schedule & Scope', field: 'Out of Scope', simple: false, intermediate: false, detailed: true, type: 'textarea', value: 'Procurement execution, detailed grant administration, and non-research capability catalogues.' },
+  { section: 'Schedule & Scope', field: 'End Product (Deliverables)', simple: false, intermediate: false, detailed: true, type: 'table', value: 'Research capability map' },
+  { section: 'Schedule & Scope', field: 'Management Product', simple: false, intermediate: false, detailed: true, type: 'table', value: 'Project initiation documentation' },
+  { section: 'Schedule & Scope', field: 'Detailed WBS', simple: false, intermediate: false, detailed: true, type: 'table', value: 'Discovery and data model' },
+  { section: 'Budget', field: 'CAPEX Baseline (FY)', simple: true, intermediate: true, detailed: true, type: 'money', value: '1,200,000' },
+  { section: 'Budget', field: 'OPEX Baseline (FY)', simple: true, intermediate: true, detailed: true, type: 'money', value: '420,000' },
+  { section: 'Budget', field: 'CAPEX Forecast (FY)', simple: false, intermediate: true, detailed: true, type: 'money', value: '1,180,000' },
+  { section: 'Budget', field: 'OPEX Forecast (FY)', simple: false, intermediate: true, detailed: true, type: 'money', value: '435,000' },
+  { section: 'Budget', field: 'Funding Sources', simple: false, intermediate: false, detailed: true, type: 'table', value: 'Innovation fund' },
+  { section: 'Budget', field: 'Monthly Budget Detail', simple: false, intermediate: false, detailed: true, type: 'table', value: 'Monthly phasing' },
+  { section: 'Budget', field: 'Budget Rules', simple: false, intermediate: false, detailed: true, type: 'textarea', value: 'Budget revisions require PMO review and sponsor approval before baseline changes are accepted.' },
+  { section: 'Benefits', field: 'Benefits Register', simple: false, intermediate: true, detailed: true, type: 'table', value: 'Improved research discovery' },
+  { section: 'Risk', field: 'Risks Register', simple: true, intermediate: true, detailed: true, type: 'table', value: 'Stakeholder data quality' },
+  { section: 'Issues', field: 'Issues Register', simple: false, intermediate: false, detailed: true, type: 'table', value: 'Open PMO decisions' },
+  { section: 'Change Impact', field: 'Change Impact Assessment', simple: false, intermediate: false, detailed: true, type: 'table', value: 'Process adoption impact' },
+  { section: 'Related Links', field: 'Related Links / Documents', simple: false, intermediate: false, detailed: true, type: 'table', value: 'Research source pack' },
+  { section: 'Resource', field: 'Resource Plan', simple: false, intermediate: true, detailed: true, type: 'table', value: 'PM, analyst, data steward' },
+  { section: 'Dependency', field: 'Predecessor Project(s)', simple: false, intermediate: false, detailed: true, type: 'table', value: 'Data source onboarding' },
+  { section: 'Dependency', field: 'Successor Project(s)', simple: false, intermediate: false, detailed: true, type: 'table', value: 'Research portal rollout' },
+  { section: 'Miscellaneous', field: 'Old and Unsupportable Systems', simple: false, intermediate: false, detailed: true, type: 'boolean', value: 'No' },
+  { section: 'Miscellaneous', field: 'High Maintenance Cost', simple: false, intermediate: false, detailed: true, type: 'boolean', value: 'No' },
+  { section: 'Miscellaneous', field: 'Out of Scope (legacy)', simple: false, intermediate: false, detailed: true, type: 'textarea', value: '' },
+  { section: 'Miscellaneous', field: 'ICT Component', simple: false, intermediate: false, detailed: true, type: 'boolean', value: 'Yes' },
+  { section: 'Miscellaneous', field: 'Number of Assurance/Compliance Reviews Completed', simple: false, intermediate: false, detailed: true, type: 'number', value: '0' },
+  { section: 'Miscellaneous', field: 'Number of Recommendations Open', simple: false, intermediate: false, detailed: true, type: 'number', value: '0' },
+  { section: 'Miscellaneous', field: 'Number of Recommendations Closed', simple: false, intermediate: false, detailed: true, type: 'number', value: '0' },
+  { section: 'Miscellaneous', field: 'Commentary of admins', simple: false, intermediate: false, detailed: true, type: 'textarea', value: '' },
+].map((field) => ({ ...field, id: slugifyPlanField(`${field.section}-${field.field}`), mandatory: Boolean(field.mandatory) }));
+
+const projectPlanSectionFieldGroups: Record<string, ProjectPlanFieldGroupConfig[]> = {
+  'Project Setup': [
+    { title: 'Project identity', description: 'Core setup fields used to classify and route the project plan.', fields: ['Project name', 'Description', 'Category', 'Project Source', 'Is the Project Mandatory', 'Portfolio / Program', 'Governance Board(s)/Forum(s)'] },
+    { title: 'Ownership and governance', description: 'People and forums accountable for delivery, change, and PMO coordination.', fields: ['Business Unit', 'Project Initiator', 'Project Director', 'Project Manager', 'Senior User', 'Delivery Manager', 'PMO Contact', 'Change Manager', 'Senior Supplier'] },
+  ],
+  Overview: [
+    { title: 'Case for change', description: 'Why this project exists and what it is expected to achieve.', fields: ['Opportunity or Problem Statement', 'Business Drivers', 'Driver for change / Analysis undertaken', 'Outcome', 'AI component'] },
+    { title: 'Strategic alignment', description: 'Objectives, capabilities, and services linked to the plan.', fields: ['Project Alignment (Objectives)', 'Link Capabilities', 'Link Services'] },
+  ],
+  'Schedule & Scope': [
+    { title: 'Dates and stage', description: 'Baseline, forecast, and lifecycle position.', fields: ['Baseline Start date', 'Baseline End date', 'Forecast Start date', 'Forecast End date', 'Stages'] },
+    { title: 'Scope and delivery products', description: 'Milestones, boundaries, deliverables, management products, and WBS.', fields: ['Milestones', 'In Scope', 'Out of Scope', 'End Product (Deliverables)', 'Management Product', 'Detailed WBS'] },
+  ],
+  Budget: [
+    { title: 'Baseline and forecast', description: 'Financial baseline and current forecast by funding type.', fields: ['CAPEX Baseline (FY)', 'OPEX Baseline (FY)', 'CAPEX Forecast (FY)', 'OPEX Forecast (FY)'] },
+    { title: 'Funding and controls', description: 'Funding source, monthly phasing, and budget governance rules.', fields: ['Funding Sources', 'Monthly Budget Detail', 'Budget Rules'] },
+  ],
+  Benefits: [{ title: 'Benefits register', description: 'Benefits, ownership, and realization status.', fields: ['Benefits Register'] }],
+  Risk: [{ title: 'Risk register', description: 'Threats, ownership, and current exposure.', fields: ['Risks Register'] }],
+  Issues: [{ title: 'Issues register', description: 'Open issues and decisions that need active management.', fields: ['Issues Register'] }],
+  'Change Impact': [{ title: 'Change impact assessment', description: 'Operational impact, audience readiness, and adoption ownership.', fields: ['Change Impact Assessment'] }],
+  'Related Links': [{ title: 'Documents and links', description: 'Evidence, reference documents, and supporting URLs.', fields: ['Related Links / Documents'] }],
+  Resource: [{ title: 'Resource plan', description: 'Roles, owners, and planned allocation.', fields: ['Resource Plan'] }],
+  Dependency: [{ title: 'Project dependencies', description: 'Upstream and downstream project relationships.', fields: ['Predecessor Project(s)', 'Successor Project(s)'] }],
+  Miscellaneous: [
+    { title: 'Legacy pressure', description: 'Legacy system, ICT, and maintenance considerations.', fields: ['Old and Unsupportable Systems', 'High Maintenance Cost', 'Out of Scope (legacy)', 'ICT Component'] },
+    { title: 'Assurance tracking', description: 'Compliance review counts, recommendations, and admin commentary.', fields: ['Number of Assurance/Compliance Reviews Completed', 'Number of Recommendations Open', 'Number of Recommendations Closed', 'Commentary of admins'] },
+  ],
+};
+
+function slugifyPlanField(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+const guidedTourSteps: GuidedTourStep[] = [
+  {
+    target: 'project-switch',
+    title: 'Choose your working scope',
+    body: 'Start with all assigned projects for a portfolio scan, then switch into a single project when you need detail.',
+    daily: 'Daily PM move: check what needs attention across every project before going deep.',
+  },
+  {
+    target: 'frontdoor-actions',
+    title: 'Open the right workspace quickly',
+    body: 'Use Workspaces for project rooms and Learning Hub for playbooks, templates, and governance guidance.',
+    daily: 'Use these when you need context before acting on a dependency, risk, or stage gate.',
+  },
+  {
+    target: 'workspace-tabs',
+    title: 'Move between work and lifecycle views',
+    body: 'Actions is your day-to-day board. Stages shows where each project sits in its lifecycle and what gate evidence is needed.',
+    daily: 'Start in Actions, then use Stages when a gate submission is due.',
+  },
+  {
+    target: 'action-board',
+    title: 'Clear the daily action board',
+    body: 'Overdue, this week, and upcoming lanes organize what needs your attention. Filters help isolate reports, risks, benefits, and dependencies.',
+    daily: 'Work left to right: overdue first, this week next, upcoming last.',
+  },
+  {
+    target: 'create-psr',
+    title: 'Create or update a PSR',
+    body: 'Report actions open the PSR drawer where you update status, scope, trends, commentary, and reportable evidence.',
+    daily: 'When the weekly report is due, open the PSR, review the sections, save the draft, and submit when ready.',
+  },
+  {
+    target: 'right-report-widget',
+    title: 'Watch reporting trends',
+    body: 'The reporting widget shows recent PSR signals and gives you a fast create action for each project.',
+    daily: 'Use it to spot off-track reports before they become escalations.',
+  },
+  {
+    target: 'side-navigation',
+    title: 'Navigate the PM console',
+    body: 'The left rail keeps core spaces one click away: workspace, rooms, reports, messages, help, and logout.',
+    daily: 'Use it when you need to leave the front door without losing the project context.',
+  },
 ];
 
 const timelineItems = [
@@ -650,16 +875,116 @@ const defaultPinnedQuickLinkIds = ['project-plan', 'wbs'];
                       } @else {
                         <section class="project-plan-form-card plan-builder-card project-plan-matrix-card detailed-plan-card">
                           <div class="project-plan-section-fields">
-                            <details class="matrix-field-group" open>
-                              <summary><span class="matrix-field-group-copy"><strong>{{ activeProjectPlanGroup.title }}</strong><small>{{ activeProjectPlanGroup.body }}</small></span><span class="matrix-field-group-meta"><b>{{ activeProjectPlanGroup.fields.length }}</b><span class="icon"><i data-lucide="chevron-down"></i></span></span></summary>
-                              <div class="matrix-field-group-grid">
-                                @for (field of activeProjectPlanGroup.fields; track field.label) {
-                                  <label class="matrix-field" [class.wide]="field.wide" [class.matrix-field-textarea]="field.kind === 'textarea'"><span class="matrix-field-label">{{ field.label }}</span>
-                                    @if (field.kind === 'textarea') { <textarea [value]="field.value"></textarea> } @else { <input [type]="field.kind || 'text'" [value]="field.value" /> }
-                                  </label>
-                                }
-                              </div>
-                            </details>
+                            @for (group of activeProjectPlanVisibleGroups; track group.title) {
+                              <details class="matrix-field-group" open>
+                                <summary><span class="matrix-field-group-copy"><strong>{{ group.title }}</strong><small>{{ group.description }}</small></span><span class="matrix-field-group-meta"><b>{{ group.fields.length }}</b><span class="icon"><i data-lucide="chevron-down"></i></span></span></summary>
+                                <div class="matrix-field-group-grid">
+                                  @for (field of group.fields; track field.id) {
+                                    @if (field.type === 'table') {
+                                      <article class="matrix-field matrix-field-table wide">
+                                        <div class="matrix-register-head">
+                                          <div><span class="matrix-field-label">{{ field.field }} @if (field.mandatory) { <b>*</b> }</span><small>{{ simplePlanTableConfig(field).description }}</small></div>
+                                          <button type="button"><span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>{{ simplePlanTableConfig(field).action }}</button>
+                                        </div>
+                                        <div class="matrix-register-table" role="table" [attr.aria-label]="field.field">
+                                          <div class="matrix-register-row head" [class.columns-2]="simplePlanTableConfig(field).columns.length === 2" [class.columns-3]="simplePlanTableConfig(field).columns.length === 3" [class.columns-4]="simplePlanTableConfig(field).columns.length === 4" [class.columns-5]="simplePlanTableConfig(field).columns.length >= 5" role="row">
+                                            @for (column of simplePlanTableConfig(field).columns; track column) { <span>{{ column }}</span> }
+                                          </div>
+                                          @for (row of simplePlanTableConfig(field).rows; track row[0]) {
+                                            <div class="matrix-register-row" [class.columns-2]="simplePlanTableConfig(field).columns.length === 2" [class.columns-3]="simplePlanTableConfig(field).columns.length === 3" [class.columns-4]="simplePlanTableConfig(field).columns.length === 4" [class.columns-5]="simplePlanTableConfig(field).columns.length >= 5" role="row">
+                                              @for (cell of row; track $index) { <span>@if ($index === row.length - 1) { <b>{{ cell }}</b> } @else { <ng-container>{{ cell }}</ng-container> }</span> }
+                                            </div>
+                                          }
+                                        </div>
+                                      </article>
+                                    } @else if (field.type === 'boolean') {
+                                      <div class="matrix-field matrix-field-boolean">
+                                        <span class="matrix-field-label">{{ field.field }} @if (field.mandatory) { <b>*</b> }</span>
+                                        <div class="matrix-boolean" role="radiogroup" [attr.aria-label]="field.field">
+                                          <label><input type="radio" [name]="field.id" [checked]="field.value === 'Yes'" /> <span>Yes</span></label>
+                                          <label><input type="radio" [name]="field.id" [checked]="field.value !== 'Yes'" /> <span>No</span></label>
+                                        </div>
+                                      </div>
+                                    } @else if (field.type === 'select') {
+                                      <label class="matrix-field matrix-field-select"><span class="matrix-field-label">{{ field.field }} @if (field.mandatory) { <b>*</b> }</span>
+                                        <span class="matrix-select-wrap">
+                                          <select [attr.aria-label]="field.field">
+                                            @for (option of field.options || [field.value]; track option) { <option [selected]="option === field.value">{{ option }}</option> }
+                                          </select>
+                                          <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                                        </span>
+                                      </label>
+                                    } @else if (field.type === 'money') {
+                                      <label class="matrix-field matrix-field-money"><span class="matrix-field-label">{{ field.field }} @if (field.mandatory) { <b>*</b> }</span><span class="matrix-money-wrap"><small>SAR</small><input type="text" [value]="field.value" [attr.aria-label]="field.field" /></span></label>
+                                    } @else {
+                                      <label class="matrix-field matrix-field-{{ field.type }}" [class.wide]="field.type === 'textarea'"><span class="matrix-field-label">{{ field.field }} @if (field.mandatory) { <b>*</b> }</span>
+                                        @if (field.type === 'textarea') { <textarea [value]="field.value" [attr.aria-label]="field.field"></textarea> } @else { <input [type]="field.type || 'text'" [value]="field.value" [attr.aria-label]="field.field" /> }
+                                      </label>
+                                    }
+                                  }
+                                </div>
+                              </details>
+                            }
+                            @if (activeProjectPlanHiddenFields.length) {
+                              <button class="matrix-show-fields" [class.is-expanded]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection)" type="button" (click)="toggleProjectPlanFieldSection(projectPlanActiveSection)" [attr.aria-expanded]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection)">
+                                <span class="matrix-show-fields-copy"><strong>Additional detailed fields ({{ activeProjectPlanHiddenFields.length }})</strong><small>{{ activeProjectPlanHiddenFieldPreview }}</small></span>
+                                <span class="matrix-show-fields-indicator" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection) ? 'minus' : 'plus'"></i></span></span>
+                              </button>
+                              @if (isProjectPlanFieldSectionExpanded(projectPlanActiveSection)) {
+                                <div class="matrix-hidden-fields is-expanded">
+                                  @for (group of activeProjectPlanHiddenGroups; track group.title) {
+                                    <details class="matrix-field-group detailed-only" open>
+                                      <summary><span class="matrix-field-group-copy"><strong>{{ group.title }}</strong><small>{{ group.description }}</small></span><span class="matrix-field-group-meta"><b>{{ group.fields.length }}</b><span class="icon"><i data-lucide="chevron-down"></i></span></span></summary>
+                                      <div class="matrix-field-group-grid">
+                                        @for (field of group.fields; track field.id) {
+                                          @if (field.type === 'table') {
+                                            <article class="matrix-field matrix-field-table wide">
+                                              <div class="matrix-register-head">
+                                                <div><span class="matrix-field-label">{{ field.field }} <small>Detailed only</small> @if (field.mandatory) { <b>*</b> }</span><small>{{ simplePlanTableConfig(field).description }}</small></div>
+                                                <button type="button"><span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>{{ simplePlanTableConfig(field).action }}</button>
+                                              </div>
+                                              <div class="matrix-register-table" role="table" [attr.aria-label]="field.field">
+                                                <div class="matrix-register-row head" [class.columns-2]="simplePlanTableConfig(field).columns.length === 2" [class.columns-3]="simplePlanTableConfig(field).columns.length === 3" [class.columns-4]="simplePlanTableConfig(field).columns.length === 4" [class.columns-5]="simplePlanTableConfig(field).columns.length >= 5" role="row">
+                                                  @for (column of simplePlanTableConfig(field).columns; track column) { <span>{{ column }}</span> }
+                                                </div>
+                                                @for (row of simplePlanTableConfig(field).rows; track row[0]) {
+                                                  <div class="matrix-register-row" [class.columns-2]="simplePlanTableConfig(field).columns.length === 2" [class.columns-3]="simplePlanTableConfig(field).columns.length === 3" [class.columns-4]="simplePlanTableConfig(field).columns.length === 4" [class.columns-5]="simplePlanTableConfig(field).columns.length >= 5" role="row">
+                                                    @for (cell of row; track $index) { <span>@if ($index === row.length - 1) { <b>{{ cell }}</b> } @else { <ng-container>{{ cell }}</ng-container> }</span> }
+                                                  </div>
+                                                }
+                                              </div>
+                                            </article>
+                                          } @else if (field.type === 'boolean') {
+                                            <div class="matrix-field matrix-field-boolean">
+                                              <span class="matrix-field-label">{{ field.field }} <small>Detailed only</small> @if (field.mandatory) { <b>*</b> }</span>
+                                              <div class="matrix-boolean" role="radiogroup" [attr.aria-label]="field.field">
+                                                <label><input type="radio" [name]="field.id" [checked]="field.value === 'Yes'" /> <span>Yes</span></label>
+                                                <label><input type="radio" [name]="field.id" [checked]="field.value !== 'Yes'" /> <span>No</span></label>
+                                              </div>
+                                            </div>
+                                          } @else if (field.type === 'select') {
+                                            <label class="matrix-field matrix-field-select"><span class="matrix-field-label">{{ field.field }} <small>Detailed only</small> @if (field.mandatory) { <b>*</b> }</span>
+                                              <span class="matrix-select-wrap">
+                                                <select [attr.aria-label]="field.field">
+                                                  @for (option of field.options || [field.value]; track option) { <option [selected]="option === field.value">{{ option }}</option> }
+                                                </select>
+                                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                                              </span>
+                                            </label>
+                                          } @else if (field.type === 'money') {
+                                            <label class="matrix-field matrix-field-money"><span class="matrix-field-label">{{ field.field }} <small>Detailed only</small> @if (field.mandatory) { <b>*</b> }</span><span class="matrix-money-wrap"><small>SAR</small><input type="text" [value]="field.value" [attr.aria-label]="field.field" /></span></label>
+                                          } @else {
+                                            <label class="matrix-field matrix-field-{{ field.type }}" [class.wide]="field.type === 'textarea'"><span class="matrix-field-label">{{ field.field }} <small>Detailed only</small> @if (field.mandatory) { <b>*</b> }</span>
+                                              @if (field.type === 'textarea') { <textarea [value]="field.value" [attr.aria-label]="field.field"></textarea> } @else { <input [type]="field.type || 'text'" [value]="field.value" [attr.aria-label]="field.field" /> }
+                                            </label>
+                                          }
+                                        }
+                                      </div>
+                                    </details>
+                                  }
+                                </div>
+                              }
+                            }
                           </div>
                         </section>
                       }
@@ -715,7 +1040,65 @@ const defaultPinnedQuickLinkIds = ['project-plan', 'wbs'];
         }
         @default {
           @if (frontDoorMode === 'unassigned') {
-            <section class="unassigned-frontdoor" aria-label="No projects assigned yet"><div class="unassigned-hero"><div class="unassigned-hero-copy"><span class="unassigned-kicker">New PM workspace</span><h1>Welcome to your PM front door</h1><p>No projects have been assigned to you yet. We’ll notify you when PMO assigns one.</p><button class="unassigned-status-pill" type="button" (click)="assignFirstProject()"><span class="icon" aria-hidden="true"><i data-lucide="bell"></i></span><span>Waiting for PMO assignment</span></button></div></div></section>
+            <section class="unassigned-frontdoor" [class.assignment-ready]="pmoAssignmentReady" [attr.aria-label]="pmoAssignmentReady ? 'Project assigned' : 'No projects assigned yet'">
+              <div class="unassigned-hero">
+                <div class="unassigned-hero-copy">
+                  <span class="unassigned-kicker">{{ pmoAssignmentReady ? 'PMO assignment received' : 'New PM workspace' }}</span>
+                  <h1>{{ pmoAssignmentReady ? 'Your first project is ready to plan' : 'Welcome to your PM front door' }}</h1>
+                  <p>{{ pmoAssignmentReady ? pmoAssignmentMessage : noAssignmentMessage }}</p>
+                  <button class="unassigned-status-pill" [class.is-ready]="pmoAssignmentReady" type="button" (click)="handleAssignmentPrimaryAction()" [attr.aria-label]="pmoAssignmentReady ? 'Create project plan' : 'Simulate PMO project assignment'">
+                    <span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(pmoAssignmentReady ? 'plan' : 'bell')"></i></span>
+                    <span>{{ pmoAssignmentReady ? 'Create project plan' : 'Waiting for PMO assignment' }}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="unassigned-layout">
+                <section class="unassigned-card journey-card">
+                  <div class="journey-overview">
+                    <div class="unassigned-section-head journey-heading">
+                      <span>What happens next</span>
+                      <h2>Your project management journey</h2>
+                      <p>From assignment to regular reporting, these are the steps you will work through in TASAMA.</p>
+                    </div>
+                    <div class="journey-status-panel">
+                      <span class="journey-status-icon">
+                        <span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(pmoAssignmentReady ? 'plan' : 'bell')"></i></span>
+                      </span>
+                      <div>
+                        <small>Current state</small>
+                        <strong>{{ pmoAssignmentReady ? firstAssignedProject.name : 'Awaiting first assignment' }}</strong>
+                        <p>{{ pmoAssignmentReady ? 'Build the baseline plan, then send it for PMO review.' : 'Your workspace is ready. PMO assignment will unlock project planning.' }}</p>
+                      </div>
+                      <button class="journey-status-action" [class.is-ready]="pmoAssignmentReady" type="button" (click)="handleAssignmentPrimaryAction()">
+                        <span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(pmoAssignmentReady ? 'plan' : 'bell')"></i></span>
+                        <span>{{ pmoAssignmentReady ? 'Create project plan' : 'Waiting for PMO assignment' }}</span>
+                      </button>
+                    </div>
+                  </div>
+                  <ol class="journey-map">
+                    @for (step of unassignedJourneySteps; track step.title; let index = $index) {
+                      <li [class.is-complete]="pmoAssignmentReady && index === 0" [class.is-current]="pmoAssignmentReady && index === 1">
+                        <div class="journey-step-head">
+                          <span class="journey-step-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(step.icon)"></i></span></span>
+                          <small>{{ stepNumber(index) }}</small>
+                        </div>
+                        <div class="journey-step-copy">
+                          <strong>{{ step.title }}</strong>
+                          <p>{{ step.body }}</p>
+                          @if (pmoAssignmentReady && index === 1) {
+                            <button class="journey-plan-cta" type="button" (click)="openAssignedProjectPlan()">
+                              <span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName('plan')"></i></span>
+                              <span>Create project plan</span>
+                            </button>
+                          }
+                        </div>
+                      </li>
+                    }
+                  </ol>
+                </section>
+              </div>
+            </section>
           } @else {
             <div class="content-grid">
               <div class="left-column">
@@ -734,7 +1117,7 @@ const defaultPinnedQuickLinkIds = ['project-plan', 'wbs'];
                   <div class="workspace-body">
                     <div class="board-view" [class.is-hidden]="selectedView !== 'board'" data-work-view="board" data-tour-target="action-board">
                       <div class="board-filter" aria-label="Action board filters"><span>Show</span><details class="work-filter-dropdown"><summary [attr.aria-label]="'Filter actions by ' + selectedBoardFilterOption.label"><span class="work-filter-selected-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(selectedBoardFilterOption.icon)"></i></span></span><span>{{ selectedBoardFilterOption.label }}</span><strong>{{ countForFilter(selectedBoardFilterOption) }}</strong><span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span></summary><div class="work-filter-menu" role="menu">@for (filter of boardFilters; track filter.id) { <button [class.active]="selectedBoardFilter === filter.id" type="button" role="menuitemradio" [attr.aria-checked]="selectedBoardFilter === filter.id" (click)="setBoardFilter(filter.id, $event)"><span class="work-filter-option-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(filter.icon)"></i></span></span><span>{{ filter.label }}</span><strong>{{ countForFilter(filter) }}</strong></button> }</div></details></div>
-                      <div class="kanban-board">@for (column of visibleBoardColumns; track column.column) { <section class="kanban-column {{ column.tone }}"><header><div><span class="board-column-icon {{ column.tone }}"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="boardColumnIcon(column.column)"></i></span></span><h3>{{ column.column }}</h3></div><strong>{{ column.items.length }}</strong></header><div class="task-stack">@for (item of column.items; track item.title) { <article class="task-card {{ taskCardClass(item.type) }}" [attr.data-card-kind]="filterKind(item.type)"><div class="task-top"><span>{{ item.type }}</span></div><h3>{{ item.title }}</h3><p>{{ item.project }}</p><div class="task-bottom"><span class="avatar-sm">{{ item.owner }}</span><small>{{ item.meta }}</small><button class="task-action" type="button" (click)="handleTaskAction(item)"><span>{{ item.cta }}</span><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></button></div></article> } @empty { <div class="empty-column">No {{ selectedBoardFilterOption.label.toLowerCase() }} in this lane.</div> }</div></section> }</div>
+                      <div class="kanban-board">@for (column of visibleBoardColumns; track column.column) { <section class="kanban-column {{ column.tone }}"><header><div><span class="board-column-icon {{ column.tone }}"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="boardColumnIcon(column.column)"></i></span></span><h3>{{ column.column }}</h3></div><strong>{{ column.items.length }}</strong></header><div class="task-stack">@for (item of column.items; track item.title) { <article class="task-card {{ taskCardClass(item.type) }}" [attr.data-card-kind]="filterKind(item.type)"><div class="task-top"><span>{{ item.type }}</span></div><h3>{{ item.title }}</h3><p>{{ item.project }}</p><div class="task-bottom"><span class="avatar-sm">{{ item.owner }}</span><small>{{ item.meta }}</small><button class="task-action" type="button" [attr.data-tour-target]="filterKind(item.type) === 'report' ? 'create-psr' : null" (click)="handleTaskAction(item)"><span>{{ item.cta }}</span><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></button></div></article> } @empty { <div class="empty-column">No {{ selectedBoardFilterOption.label.toLowerCase() }} in this lane.</div> }</div></section> }</div>
                     </div>
                     <div class="calendar-view" [class.is-hidden]="selectedView !== 'calendar'" data-work-view="calendar">
                       <div class="calendar-command-row"><div class="calendar-month-picker" aria-label="Calendar month navigation"><button class="calendar-nav-button" type="button" (click)="shiftMonth(-1)" aria-label="Previous month"><span class="icon" aria-hidden="true"><i data-lucide="chevron-left"></i></span></button><div class="calendar-month-copy"><strong>{{ calendarMonthLabel }}</strong><span>{{ visibleMonthItems.length }} item{{ visibleMonthItems.length === 1 ? '' : 's' }} this month</span></div><button class="calendar-nav-button" type="button" (click)="shiftMonth(1)" aria-label="Next month"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></button></div><div class="board-filter calendar-filter-bar" aria-label="Quick work filter"><span>Show</span><details class="work-filter-dropdown"><summary [attr.aria-label]="'Filter work by ' + selectedBoardFilterOption.label"><span class="work-filter-selected-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(selectedBoardFilterOption.icon)"></i></span></span><span>{{ selectedBoardFilterOption.label }}</span><strong>{{ countCalendarFilter(selectedBoardFilterOption) }}</strong><span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span></summary><div class="work-filter-menu" role="menu">@for (filter of boardFilters; track filter.id) { <button [class.active]="selectedBoardFilter === filter.id" type="button" role="menuitemradio" [attr.aria-checked]="selectedBoardFilter === filter.id" (click)="setBoardFilter(filter.id, $event)"><span class="work-filter-option-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(filter.icon)"></i></span></span><span>{{ filter.label }}</span><strong>{{ countCalendarFilter(filter) }}</strong></button> }</div></details></div></div>
@@ -1014,32 +1397,54 @@ const defaultPinnedQuickLinkIds = ['project-plan', 'wbs'];
     }
 
     @if (guidedTourActive) {
-      <div class="guided-tour-overlay" data-tour-overlay data-tour-target-name="frontdoor-actions" role="dialog" aria-modal="true" aria-label="Guided tour">
-        <span class="guided-tour-spotlight" data-tour-spotlight></span>
-        <article class="guided-tour-card" data-tour-card>
-          <span class="guided-tour-kicker">Guided tour · 1 of 7</span>
-          <h2>Your PM front door</h2>
-          <p>Use Workspaces for project rooms and Learning Hub for playbooks, templates, and governance guidance.</p>
-          <div class="guided-tour-actions"><button class="guided-tour-secondary" type="button" (click)="guidedTourActive = false">Skip</button><button class="guided-tour-primary" type="button" (click)="guidedTourActive = false">Next</button></div>
-        </article>
+      @let step = activeGuidedTourStep;
+      <div class="guided-tour-overlay" data-tour-overlay [attr.data-tour-target-name]="step.target" aria-live="polite">
+        <div class="guided-tour-shade" aria-hidden="true"></div>
+        <div class="guided-tour-spotlight" data-tour-spotlight aria-hidden="true"></div>
+        <section class="guided-tour-card" data-tour-card role="dialog" aria-modal="true" [attr.aria-label]="step.title">
+          <button class="guided-tour-close" type="button" (click)="completeGuidedTour()" aria-label="End guided tour">
+            <span class="icon" aria-hidden="true"><i data-lucide="x"></i></span>
+          </button>
+          <span class="guided-tour-kicker">Guided tour · {{ guidedTourStep + 1 }} of {{ guidedTourSteps.length }}</span>
+          <h2>{{ step.title }}</h2>
+          <p>{{ step.body }}</p>
+          <div class="guided-tour-daily">
+            <strong>How a PM uses this</strong>
+            <span>{{ step.daily }}</span>
+          </div>
+          <div class="guided-tour-progress" aria-hidden="true">
+            @for (tourStep of guidedTourSteps; track tourStep.target; let index = $index) {
+              <span [class.active]="index === guidedTourStep"></span>
+            }
+          </div>
+          <div class="guided-tour-actions">
+            <button class="guided-tour-secondary" type="button" (click)="previousGuidedTourStep()" [disabled]="guidedTourStep === 0">Back</button>
+            <button class="guided-tour-secondary" type="button" (click)="completeGuidedTour()">Skip</button>
+            <button class="guided-tour-primary" type="button" (click)="nextGuidedTourStep()">{{ isLastGuidedTourStep ? 'Finish' : 'Next' }}</button>
+          </div>
+        </section>
       </div>
     }
   `,
 })
-export class PmConsoleContentComponent implements AfterViewChecked {
+export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, OnDestroy {
   @Input() selectedProject = 'all';
   @Input() selectedPage: ConsolePage = 'workspace';
   @Input() selectedView: WorkspaceView = 'calendar';
   @Input() frontDoorMode = 'assigned';
   @Input() pmoAssignmentReady = false;
   @Input() guidedTourActive = false;
+  @Input() guidedTourExitMode: string | null = null;
   @Output() readonly consoleStateChange = new EventEmitter<Partial<PmConsoleMountOptions>>();
 
   readonly workspaceTableProjects = workspaceTableProjects;
   readonly workspaceProjectCards = workspaceProjectCards;
   readonly projectQuickActions = projectQuickActions;
+  readonly unassignedJourneySteps = unassignedJourneySteps;
+  readonly firstAssignedProject = firstAssignedProject;
   readonly boardFilters = boardFilters;
   readonly pm101Steps = pm101Steps;
+  readonly guidedTourSteps = guidedTourSteps;
   readonly stageDefinitions = stageDefinitions;
   readonly quickLinkPinLimit = QUICK_LINK_PIN_LIMIT;
   readonly primaryProjectPlanSections = ['Project Setup', 'Overview', 'Schedule & Scope', 'Budget', 'Benefits', 'Risk', 'Resource'];
@@ -1156,13 +1561,17 @@ export class PmConsoleContentComponent implements AfterViewChecked {
   projectPlanDetailMode: ProjectPlanDetailMode = 'simple';
   projectPlanActiveSection = 'Overview';
   projectPlanSectionsExpanded = false;
+  projectPlanExpandedFieldSections: Record<string, boolean> = {};
+  guidedTourStep = 0;
 
   private iconsHydrated = false;
   private quickLinksToastTimer: number | null = null;
+  private guidedTourFrame: number | null = null;
 
   constructor(
     private readonly iconsService: PmConsoleIconService,
     private readonly changeDetector: ChangeDetectorRef,
+    private readonly elementRef: ElementRef<HTMLElement>,
   ) {}
 
   get isAllProjects(): boolean {
@@ -1186,6 +1595,29 @@ export class PmConsoleContentComponent implements AfterViewChecked {
     return this.projectPlanGroupForSection(this.projectPlanActiveSection);
   }
 
+  get activeProjectPlanVisibleGroups(): ProjectPlanFieldGroup[] {
+    return this.projectPlanFieldGroupsForSection(this.projectPlanActiveSection, this.activeProjectPlanVisibleFields);
+  }
+
+  get activeProjectPlanHiddenGroups(): ProjectPlanFieldGroup[] {
+    return this.projectPlanFieldGroupsForSection(this.projectPlanActiveSection, this.activeProjectPlanHiddenFields);
+  }
+
+  get activeProjectPlanHiddenFields(): ProjectPlanField[] {
+    if (this.isProjectPlanDetailedOnlySection(this.projectPlanActiveSection)) return [];
+    return this.projectPlanFieldsForSection(this.projectPlanActiveSection).filter((field) => this.isProjectPlanDetailedOnlyField(field));
+  }
+
+  get activeProjectPlanHiddenFieldPreview(): string {
+    return this.activeProjectPlanHiddenFields.map((field) => field.field).join(', ');
+  }
+
+  get activeProjectPlanVisibleFields(): ProjectPlanField[] {
+    const fields = this.projectPlanFieldsForSection(this.projectPlanActiveSection);
+    if (this.isProjectPlanDetailedOnlySection(this.projectPlanActiveSection)) return fields;
+    return fields.filter((field) => field.intermediate);
+  }
+
   get projectPlanEntryLabel(): string {
     if (this.projectPlanEntry === 'change-request') return 'Change Request';
     if (this.projectPlanEntry === 'closure') return 'Closure';
@@ -1199,6 +1631,22 @@ export class PmConsoleContentComponent implements AfterViewChecked {
 
   get workspaceSearchPlaceholder(): string {
     return this.selectedView === 'pm101' ? 'Search PM 101' : this.selectedView === 'board' ? 'Search actions' : 'Search calendar';
+  }
+
+  get noAssignmentMessage(): string {
+    return 'No projects have been assigned to you yet. We’ll notify you when PMO assigns one. Meanwhile, here is what this workspace will help you do once your project is ready.';
+  }
+
+  get pmoAssignmentMessage(): string {
+    return `PMO assigned ${firstAssignedProject.name} to your workspace. Start with the project plan, then submit it for review before delivery tracking begins.`;
+  }
+
+  get activeGuidedTourStep(): GuidedTourStep {
+    return guidedTourSteps[this.guidedTourStep] || guidedTourSteps[0];
+  }
+
+  get isLastGuidedTourStep(): boolean {
+    return this.guidedTourStep >= guidedTourSteps.length - 1;
   }
 
   get workspaceStats(): Array<{ label: string; value: number; icon: string; tone: string }> {
@@ -1329,7 +1777,48 @@ export class PmConsoleContentComponent implements AfterViewChecked {
     return this.stageGateContext(this.selectedStageGateKey);
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if ('guidedTourActive' in changes) {
+      if (this.guidedTourActive) {
+        this.guidedTourStep = 0;
+        this.prepareGuidedTourTarget();
+        this.scheduleGuidedTourPosition();
+      } else {
+        this.guidedTourStep = 0;
+      }
+      this.iconsHydrated = false;
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.guidedTourFrame !== null) {
+      window.cancelAnimationFrame(this.guidedTourFrame);
+      this.guidedTourFrame = null;
+    }
+    if (this.quickLinksToastTimer !== null) {
+      window.clearTimeout(this.quickLinksToastTimer);
+      this.quickLinksToastTimer = null;
+    }
+  }
+
+  @HostListener('window:resize')
+  handleWindowResize(): void {
+    if (this.guidedTourActive) {
+      this.scheduleGuidedTourPosition();
+    }
+  }
+
+  @HostListener('window:keydown.escape')
+  handleEscapeKey(): void {
+    if (this.guidedTourActive) {
+      this.completeGuidedTour();
+    }
+  }
+
   ngAfterViewChecked(): void {
+    if (this.guidedTourActive) {
+      this.scheduleGuidedTourPosition();
+    }
     if (this.iconsHydrated) return;
     this.refreshIcons();
   }
@@ -1341,6 +1830,70 @@ export class PmConsoleContentComponent implements AfterViewChecked {
 
   iconName(name: string): string {
     return iconMap[name] || iconMap['grid'];
+  }
+
+  stepNumber(index: number): string {
+    return String(index + 1).padStart(2, '0');
+  }
+
+  nextGuidedTourStep(): void {
+    if (this.isLastGuidedTourStep) {
+      this.completeGuidedTour();
+      return;
+    }
+    this.showGuidedTourStep(this.guidedTourStep + 1);
+  }
+
+  previousGuidedTourStep(): void {
+    this.showGuidedTourStep(this.guidedTourStep - 1);
+  }
+
+  completeGuidedTour(): void {
+    this.guidedTourActive = false;
+    this.guidedTourStep = 0;
+
+    if (this.guidedTourExitMode === 'unassigned') {
+      this.frontDoorMode = 'unassigned';
+      this.pmoAssignmentReady = false;
+      this.selectedPage = 'workspace';
+      this.selectedProject = 'all';
+      this.selectedView = 'calendar';
+      this.selectedBoardFilter = 'all';
+      this.activeReportProject = null;
+      this.selectedStageGateKey = null;
+      this.projectPlanEntry = 'quick';
+      this.projectPlanDetailMode = 'simple';
+      this.projectPlanActiveSection = 'Overview';
+      this.projectPlanSectionsExpanded = false;
+      this.projectPlanExpandedFieldSections = {};
+    }
+
+    this.guidedTourExitMode = null;
+    this.emitState();
+  }
+
+  handleAssignmentPrimaryAction(): void {
+    if (this.pmoAssignmentReady) {
+      this.openAssignedProjectPlan();
+      return;
+    }
+    this.assignFirstProject();
+  }
+
+  openAssignedProjectPlan(): void {
+    this.frontDoorMode = 'assigned';
+    this.pmoAssignmentReady = true;
+    this.selectedProject = firstAssignedProject.id;
+    this.selectedPage = 'project-plan';
+    this.selectedView = 'calendar';
+    this.projectPlanEntry = 'quick';
+    this.projectPlanDetailMode = 'simple';
+    this.projectPlanActiveSection = 'Overview';
+    this.projectPlanSectionsExpanded = false;
+    this.projectPlanExpandedFieldSections = {};
+    this.activeReportProject = null;
+    this.selectedStageGateKey = null;
+    this.emitState();
   }
 
   trendIcon(tone: string): string {
@@ -1368,6 +1921,7 @@ export class PmConsoleContentComponent implements AfterViewChecked {
   setProjectPlanEntry(entry: ProjectPlanEntry): void {
     this.projectPlanEntry = entry;
     this.projectPlanActiveSection = 'Overview';
+    this.projectPlanExpandedFieldSections = {};
     this.iconsHydrated = false;
   }
 
@@ -1381,8 +1935,23 @@ export class PmConsoleContentComponent implements AfterViewChecked {
     this.iconsHydrated = false;
   }
 
+  isProjectPlanFieldSectionExpanded(section: string): boolean {
+    return Boolean(this.projectPlanExpandedFieldSections[section]);
+  }
+
+  toggleProjectPlanFieldSection(section: string): void {
+    this.projectPlanExpandedFieldSections = {
+      ...this.projectPlanExpandedFieldSections,
+      [section]: !this.projectPlanExpandedFieldSections[section],
+    };
+    this.iconsHydrated = false;
+  }
+
   toggleProjectPlanSections(): void {
     this.projectPlanSectionsExpanded = !this.projectPlanSectionsExpanded;
+    if (!this.projectPlanSectionsExpanded && this.additionalProjectPlanSections.includes(this.projectPlanActiveSection)) {
+      this.projectPlanActiveSection = 'Overview';
+    }
     this.iconsHydrated = false;
   }
 
@@ -1401,6 +1970,7 @@ export class PmConsoleContentComponent implements AfterViewChecked {
     if (page === 'project-plan') {
       this.projectPlanEntry = projectPlanEntry;
       this.projectPlanActiveSection = 'Overview';
+      this.projectPlanExpandedFieldSections = {};
     }
     if ((page === 'project-plan' || page === 'wbs' || page === 'playground') && this.isAllProjects) {
       this.selectedProject = 'Vision 2030';
@@ -1415,6 +1985,7 @@ export class PmConsoleContentComponent implements AfterViewChecked {
     this.selectedPage = 'project-plan';
     this.projectPlanEntry = 'quick';
     this.projectPlanActiveSection = 'Overview';
+    this.projectPlanExpandedFieldSections = {};
     this.emitState();
   }
 
@@ -1518,9 +2089,12 @@ export class PmConsoleContentComponent implements AfterViewChecked {
   }
 
   assignFirstProject(): void {
-    this.frontDoorMode = 'assigned';
     this.pmoAssignmentReady = true;
-    this.selectedProject = 'UAE Research Map';
+    this.frontDoorMode = 'unassigned';
+    this.selectedProject = firstAssignedProject.id;
+    this.selectedPage = 'workspace';
+    this.activeReportProject = null;
+    this.selectedStageGateKey = null;
     this.emitState();
   }
 
@@ -1618,13 +2192,80 @@ export class PmConsoleContentComponent implements AfterViewChecked {
     return report.dueLabel === 'Overdue 5 days' ? 'Overdue by 5 days' : report.dueLabel;
   }
 
-  simplePlanTableConfig(field: SimplePlanField): SimplePlanTableConfig {
+  simplePlanTableConfig(field: SimplePlanField | ProjectPlanField): SimplePlanTableConfig {
+    const fieldName = 'field' in field ? field.field : field.label;
     const configs: Record<string, SimplePlanTableConfig> = {
+      'Business Drivers': {
+        action: 'Add driver',
+        description: 'Business trigger, source, and priority.',
+        columns: ['Driver', 'Source', 'Priority'],
+        rows: [[field.value || 'Strategic research visibility', 'Strategy', 'High']],
+      },
       Outcome: {
         action: 'Add outcome',
         description: 'Measurable outcomes expected from the project.',
         columns: ['Outcome', 'Measure', 'Status'],
         rows: [[field.value || 'Reduce fragmentation in research efforts', 'Discovery coverage', 'Draft']],
+      },
+      'Project Alignment (Objectives)': {
+        action: 'Add objective',
+        description: 'Strategic and project objectives linked to the plan.',
+        columns: ['Objective', 'Level', 'Status'],
+        rows: [[field.value || 'Boost regional sustainability and growth through partnerships and investment', 'Strategic', 'Linked']],
+      },
+      'Link Capabilities': {
+        action: 'Link capability',
+        description: 'Business capabilities affected by the project.',
+        columns: ['Capability', 'Owner', 'Status'],
+        rows: [[field.value || 'Regulatory Assurance', 'Strategy', 'Linked']],
+      },
+      'Link Services': {
+        action: 'Link service',
+        description: 'Service mapping connected to the selected capabilities.',
+        columns: ['Service group', 'Value stream', 'Service', 'Status'],
+        rows: [['Corporate Services', 'Procure to Pay', field.value || 'Material Master Maintenance', 'Linked']],
+      },
+      Milestones: {
+        action: 'Add milestone',
+        description: 'Milestone, owner, and planned due date.',
+        columns: ['Milestone', 'Owner', 'Due date', 'Status'],
+        rows: [[field.value || 'Initiation gate', 'Project Manager', '2026-06-12', 'Planned']],
+      },
+      'End Product (Deliverables)': {
+        action: 'Add deliverable',
+        description: 'End deliverables produced by the project.',
+        columns: ['Deliverable', 'Owner', 'Status'],
+        rows: [[field.value || 'Research capability map', 'Delivery Office', 'Draft']],
+      },
+      'Management Product': {
+        action: 'Add product',
+        description: 'Management products required for governance.',
+        columns: ['Product', 'Owner', 'Status'],
+        rows: [[field.value || 'Project initiation documentation', 'PMO', 'Draft']],
+      },
+      'Detailed WBS': {
+        action: 'Add WBS item',
+        description: 'Work packages and delivery ownership.',
+        columns: ['Work package', 'Owner', 'Status'],
+        rows: [[field.value || 'Discovery and data model', 'Project Manager', 'Planned']],
+      },
+      'Funding Sources': {
+        action: 'Add source',
+        description: 'Funding source and allocation details.',
+        columns: ['Source', 'Type', 'Amount'],
+        rows: [[field.value || 'Innovation fund', 'CAPEX', 'SAR 1.2M']],
+      },
+      'Monthly Budget Detail': {
+        action: 'Add month',
+        description: 'Monthly CAPEX and OPEX phasing.',
+        columns: ['Month', 'CAPEX', 'OPEX', 'Status'],
+        rows: [[field.value || 'Monthly phasing', 'SAR 120K', 'SAR 42K', 'Draft']],
+      },
+      'Benefits Register': {
+        action: 'Add benefit',
+        description: 'Benefit, owner, and realization status.',
+        columns: ['Benefit', 'Owner', 'Realization'],
+        rows: [[field.value || 'Improved research discovery', 'Research Office', 'Planned']],
       },
       'Risks Register': {
         action: 'Add risk',
@@ -1632,14 +2273,133 @@ export class PmConsoleContentComponent implements AfterViewChecked {
         columns: ['Risk', 'Owner', 'Rating'],
         rows: [[field.value || 'Stakeholder data quality', 'PMO', 'High']],
       },
+      'Issues Register': {
+        action: 'Add issue',
+        description: 'Issue, owner, and decision status.',
+        columns: ['Issue', 'Owner', 'Status'],
+        rows: [[field.value || 'Open PMO decisions', 'PMO', 'Open']],
+      },
+      'Change Impact Assessment': {
+        action: 'Add impact',
+        description: 'Impacted audience and readiness.',
+        columns: ['Impact area', 'Owner', 'Readiness'],
+        rows: [[field.value || 'Process adoption impact', 'Change team', 'Assessing']],
+      },
+      'Related Links / Documents': {
+        action: 'Add link',
+        description: 'Project evidence and supporting documents.',
+        columns: ['Document', 'Type', 'Status'],
+        rows: [[field.value || 'Research source pack', 'Reference', 'Linked']],
+      },
+      'Resource Plan': {
+        action: 'Add resource',
+        description: 'Role, named owner, and allocation.',
+        columns: ['Role', 'Owner', 'Allocation'],
+        rows: [[field.value || 'PM, analyst, data steward', 'Muna Hassan', 'Planned']],
+      },
+      'Predecessor Project(s)': {
+        action: 'Add predecessor',
+        description: 'Upstream project dependency.',
+        columns: ['Project', 'Relationship', 'Status'],
+        rows: [[field.value || 'Data source onboarding', 'Predecessor', 'Tracking']],
+      },
+      'Successor Project(s)': {
+        action: 'Add successor',
+        description: 'Downstream project dependency.',
+        columns: ['Project', 'Relationship', 'Status'],
+        rows: [[field.value || 'Research portal rollout', 'Successor', 'Planned']],
+      },
     };
 
-    return configs[field.label] || {
+    return configs[fieldName] || {
       action: 'Add item',
       description: 'Register item, owner, and current status.',
       columns: ['Name', 'Owner', 'Status'],
-      rows: [[field.value || field.label, 'Project Manager', 'Draft']],
+      rows: [[field.value || fieldName, 'Project Manager', 'Draft']],
     };
+  }
+
+  private showGuidedTourStep(index: number): void {
+    this.guidedTourStep = Math.min(Math.max(index, 0), guidedTourSteps.length - 1);
+    this.prepareGuidedTourTarget();
+    this.iconsHydrated = false;
+    this.scheduleGuidedTourPosition();
+    this.changeDetector.markForCheck();
+  }
+
+  private prepareGuidedTourTarget(): void {
+    const target = this.activeGuidedTourStep.target;
+    if (target === 'action-board' || target === 'create-psr') {
+      this.selectedPage = 'workspace';
+      this.selectedView = 'board';
+    }
+    if (target === 'frontdoor-actions' || target === 'workspace-tabs' || target === 'right-report-widget') {
+      this.selectedPage = 'workspace';
+    }
+  }
+
+  private scheduleGuidedTourPosition(): void {
+    if (this.guidedTourFrame !== null) return;
+    this.guidedTourFrame = window.requestAnimationFrame(() => {
+      this.guidedTourFrame = null;
+      this.positionGuidedTour();
+    });
+  }
+
+  private positionGuidedTour(): void {
+    const doc = this.elementRef.nativeElement.ownerDocument;
+    const overlay = doc.querySelector<HTMLElement>('[data-tour-overlay]');
+    if (!overlay) return;
+
+    const targetName = overlay.dataset['tourTargetName'];
+    let target = targetName ? doc.querySelector<HTMLElement>(`[data-tour-target="${targetName}"]`) : null;
+    target = target || doc.querySelector<HTMLElement>('.app-canvas');
+    if (!target) return;
+
+    let rect = target.getBoundingClientRect();
+    if (rect.width < 4 || rect.height < 4) {
+      target = doc.querySelector<HTMLElement>('.app-canvas') || target;
+      rect = target.getBoundingClientRect();
+    }
+
+    const spotlight = overlay.querySelector<HTMLElement>('[data-tour-spotlight]');
+    const card = overlay.querySelector<HTMLElement>('[data-tour-card]');
+    if (!spotlight || !card) return;
+
+    const padding = 8;
+    const isRailTour = targetName === 'side-navigation';
+    const railWidth = Math.min(rect.width, 68);
+    const x = isRailTour
+      ? Math.max(8, rect.left + Math.max(0, (rect.width - railWidth) / 2) - padding)
+      : Math.max(8, rect.left - padding);
+    const y = isRailTour ? Math.max(8, rect.top + 8) : Math.max(8, rect.top - padding);
+    const width = isRailTour
+      ? Math.min(window.innerWidth - x - 8, railWidth + padding * 2)
+      : Math.min(window.innerWidth - x - 8, rect.width + padding * 2);
+    const height = isRailTour
+      ? Math.min(window.innerHeight - y - 8, rect.height - 16)
+      : Math.min(window.innerHeight - y - 8, rect.height + padding * 2);
+
+    spotlight.style.left = `${Math.round(x)}px`;
+    spotlight.style.top = `${Math.round(y)}px`;
+    spotlight.style.width = `${Math.round(width)}px`;
+    spotlight.style.height = `${Math.round(height)}px`;
+
+    const cardWidth = card.offsetWidth || 330;
+    const cardHeight = card.offsetHeight || 270;
+    let cardX = isRailTour ? x + width + 24 : rect.right + 18;
+    if (cardX + cardWidth > window.innerWidth - 18) {
+      cardX = rect.left - cardWidth - 18;
+    }
+    if (cardX < 18) {
+      cardX = Math.max(18, Math.min(window.innerWidth - cardWidth - 18, rect.left + rect.width / 2 - cardWidth / 2));
+    }
+
+    const cardY = isRailTour
+      ? Math.max(96, Math.min(window.innerHeight - cardHeight - 18, rect.top + 24))
+      : Math.max(84, Math.min(window.innerHeight - cardHeight - 18, rect.top));
+    card.style.left = `${Math.round(cardX)}px`;
+    card.style.top = `${Math.round(cardY)}px`;
   }
 
   private stageGateContext(key: string | null): StageGateContext | null {
@@ -1675,6 +2435,42 @@ export class PmConsoleContentComponent implements AfterViewChecked {
 
   private projectPlanEntryFromAction(entry: string | undefined): ProjectPlanEntry {
     return entry === 'reports' || entry === 'change-request' || entry === 'closure' ? entry : 'quick';
+  }
+
+  private projectPlanFieldsForSection(section: string): ProjectPlanField[] {
+    return projectPlanFieldMatrix.filter((field) => field.section === section && field.detailed);
+  }
+
+  private isProjectPlanDetailedOnlyField(field: ProjectPlanField): boolean {
+    return field.detailed && !field.intermediate;
+  }
+
+  private isProjectPlanDetailedOnlySection(section: string): boolean {
+    return this.additionalProjectPlanSections.includes(section);
+  }
+
+  private projectPlanFieldGroupsForSection(section: string, fields: ProjectPlanField[]): ProjectPlanFieldGroup[] {
+    if (!fields.length) return [];
+    const availableFields = new Map(fields.map((field) => [field.field, field]));
+    const usedFields = new Set<string>();
+    const groups = (projectPlanSectionFieldGroups[section] || [])
+      .map((group) => {
+        const groupFields = group.fields
+          .map((fieldName) => availableFields.get(fieldName))
+          .filter((field): field is ProjectPlanField => Boolean(field));
+        groupFields.forEach((field) => usedFields.add(field.field));
+        return { title: group.title, description: group.description, fields: groupFields };
+      })
+      .filter((group) => group.fields.length);
+    const remainingFields = fields.filter((field) => !usedFields.has(field.field));
+    if (remainingFields.length) {
+      groups.push({
+        title: 'Additional fields',
+        description: 'Other fields retained from the project plan matrix.',
+        fields: remainingFields,
+      });
+    }
+    return groups;
   }
 
   private projectPlanGroupForSection(section: string): SimplePlanSection {
@@ -1772,6 +2568,7 @@ export class PmConsoleContentComponent implements AfterViewChecked {
       frontDoorMode: this.frontDoorMode,
       pmoAssignmentReady: this.pmoAssignmentReady,
       guidedTourActive: this.guidedTourActive,
+      guidedTourExitMode: this.guidedTourExitMode,
     });
   }
 
