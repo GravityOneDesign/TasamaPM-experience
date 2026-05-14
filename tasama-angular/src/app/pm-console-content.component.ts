@@ -18,6 +18,7 @@ import { PmConsoleMountOptions } from './pm-console.types';
 
 type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground';
 type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
+type ActionWorkspaceView = 'board' | 'calendar';
 type WorkspaceDisplay = 'table' | 'cards';
 type WorkspaceRegister = 'projects' | 'benefits' | 'risks';
 type ProjectPlanEntry = 'quick' | 'reports' | 'change-request' | 'closure';
@@ -178,6 +179,8 @@ interface ProjectPlanField {
   detailed: boolean;
   mandatory?: boolean;
   options?: string[];
+  placeholder?: string;
+  description?: string;
 }
 
 interface ProjectPlanFieldGroup {
@@ -190,6 +193,236 @@ interface ProjectPlanFieldGroupConfig {
   title: string;
   description: string;
   fields: string[];
+}
+
+type DependencyRegisterKey = 'predecessor' | 'successor';
+
+interface DependencyRegisterRow {
+  id: string;
+  project: string;
+  impact: string;
+  dependentProduct: string;
+  baselineStart: string;
+  baselineEnd: string;
+  projectManager: string;
+  nature: string;
+  status: string;
+}
+
+interface DependencyRegisterDraft {
+  project: string;
+  impact: string;
+  dependentProduct: string;
+  baselineStart: string;
+  baselineEnd: string;
+  projectManager: string;
+  nature: string;
+}
+
+interface DependencyRegisterConfig {
+  key: DependencyRegisterKey;
+  fieldName: string;
+  title: string;
+  description: string;
+  actionLabel: string;
+  emptyTitle: string;
+  emptyBody: string;
+  projectPlaceholder: string;
+  impactPlaceholder: string;
+  dependentProductPlaceholder: string;
+  projectOptions: string[];
+  impactOptions: string[];
+  dependentProductOptions: string[];
+  rows: DependencyRegisterRow[];
+  draft: DependencyRegisterDraft;
+}
+
+interface IssuePlanRow {
+  id: string;
+  issueType: string;
+  criticality: string;
+  issue: string;
+  description: string;
+  resolution: string;
+  status: string;
+  owner: string;
+  dateRaised: string;
+  dueDate: string;
+  dateClosed: string;
+}
+
+interface IssuePlanDraft {
+  issueType: string;
+  criticality: string;
+  issue: string;
+  description: string;
+  resolution: string;
+  status: string;
+  owner: string;
+  dateRaised: string;
+  dueDate: string;
+  dateClosed: string;
+}
+
+interface IssuePlanConfig {
+  fieldName: string;
+  title: string;
+  description: string;
+  actionLabel: string;
+  emptyTitle: string;
+  emptyBody: string;
+  issueTypePlaceholder: string;
+  ownerPlaceholder: string;
+  issueTypeOptions: string[];
+  criticalityOptions: string[];
+  statusOptions: string[];
+  ownerOptions: string[];
+  rows: IssuePlanRow[];
+  draft: IssuePlanDraft;
+}
+
+interface ChangeImpactRow {
+  id: string;
+  category: string;
+  stakeholder: string;
+  level: string;
+  comment: string;
+  strategies: string[];
+}
+
+interface ChangeImpactDraft {
+  category: string;
+  stakeholder: string;
+  level: string;
+  comment: string;
+  strategyInput: string;
+  strategies: string[];
+}
+
+type ChangeImpactDraftField = 'category' | 'stakeholder' | 'level' | 'comment' | 'strategyInput';
+
+interface ChangeImpactConfig {
+  fieldName: string;
+  title: string;
+  description: string;
+  actionLabel: string;
+  emptyTitle: string;
+  emptyBody: string;
+  categoryPlaceholder: string;
+  stakeholderPlaceholder: string;
+  levelPlaceholder: string;
+  strategyPlaceholder: string;
+  categoryOptions: string[];
+  stakeholderOptions: string[];
+  levelOptions: string[];
+  rows: ChangeImpactRow[];
+  draft: ChangeImpactDraft;
+}
+
+interface RelatedLinkRow {
+  id: string;
+  name: string;
+  description: string;
+  documentLink: string;
+}
+
+interface RelatedLinkDraft {
+  name: string;
+  description: string;
+  documentLink: string;
+}
+
+interface RelatedLinkConfig {
+  fieldName: string;
+  title: string;
+  description: string;
+  actionLabel: string;
+  emptyTitle: string;
+  emptyBody: string;
+  namePlaceholder: string;
+  descriptionPlaceholder: string;
+  documentPlaceholder: string;
+  rows: RelatedLinkRow[];
+  draft: RelatedLinkDraft;
+}
+
+interface ResourcePlanRow {
+  id: string;
+  resource: string;
+  resourceType: string;
+  impact: string;
+  businessUnit: string;
+  fteCount: string;
+  baselineStart: string;
+  baselineEnd: string;
+  comments: string;
+}
+
+interface ResourcePlanDraft {
+  resource: string;
+  resourceType: string;
+  impact: string;
+  businessUnit: string;
+  fteCount: string;
+  baselineStart: string;
+  baselineEnd: string;
+  comments: string;
+}
+
+interface ResourcePlanConfig {
+  fieldName: string;
+  title: string;
+  description: string;
+  actionLabel: string;
+  emptyTitle: string;
+  emptyBody: string;
+  resourcePlaceholder: string;
+  resourceTypePlaceholder: string;
+  impactPlaceholder: string;
+  businessUnitPlaceholder: string;
+  ftePlaceholder: string;
+  resourceOptions: string[];
+  resourceTypeOptions: string[];
+  impactOptions: string[];
+  businessUnitOptions: string[];
+  rows: ResourcePlanRow[];
+  draft: ResourcePlanDraft;
+}
+
+interface BenefitPlanRow {
+  id: string;
+  benefitType: string;
+  category: string;
+  benefitName: string;
+  description: string;
+  owner: string;
+  realizationDate: string;
+}
+
+interface BenefitPlanDraft {
+  benefitType: string;
+  category: string;
+  benefitName: string;
+  description: string;
+  owner: string;
+  realizationDate: string;
+}
+
+interface BenefitPlanConfig {
+  fieldName: string;
+  title: string;
+  description: string;
+  actionLabel: string;
+  emptyTitle: string;
+  emptyBody: string;
+  benefitTypePlaceholder: string;
+  benefitCategoryPlaceholder: string;
+  ownerPlaceholder: string;
+  benefitTypeOptions: string[];
+  benefitCategoryOptions: string[];
+  ownerOptions: string[];
+  rows: BenefitPlanRow[];
+  draft: BenefitPlanDraft;
 }
 
 interface GuidedTourStep {
@@ -427,14 +660,115 @@ const projectPlanFieldMatrix: ProjectPlanField[] = [
   { section: 'Resource', field: 'Resource Plan', simple: false, intermediate: true, detailed: true, type: 'table', value: 'PM, analyst, data steward' },
   { section: 'Dependency', field: 'Predecessor Project(s)', simple: false, intermediate: false, detailed: true, type: 'table', value: 'Data source onboarding' },
   { section: 'Dependency', field: 'Successor Project(s)', simple: false, intermediate: false, detailed: true, type: 'table', value: 'Research portal rollout' },
-  { section: 'Miscellaneous', field: 'Old and Unsupportable Systems', simple: false, intermediate: false, detailed: true, type: 'boolean', value: 'No' },
-  { section: 'Miscellaneous', field: 'High Maintenance Cost', simple: false, intermediate: false, detailed: true, type: 'boolean', value: 'No' },
-  { section: 'Miscellaneous', field: 'Out of Scope (legacy)', simple: false, intermediate: false, detailed: true, type: 'textarea', value: '' },
-  { section: 'Miscellaneous', field: 'ICT Component', simple: false, intermediate: false, detailed: true, type: 'boolean', value: 'Yes' },
-  { section: 'Miscellaneous', field: 'Number of Assurance/Compliance Reviews Completed', simple: false, intermediate: false, detailed: true, type: 'number', value: '0' },
-  { section: 'Miscellaneous', field: 'Number of Recommendations Open', simple: false, intermediate: false, detailed: true, type: 'number', value: '0' },
-  { section: 'Miscellaneous', field: 'Number of Recommendations Closed', simple: false, intermediate: false, detailed: true, type: 'number', value: '0' },
-  { section: 'Miscellaneous', field: 'Commentary of admins', simple: false, intermediate: false, detailed: true, type: 'textarea', value: '' },
+  {
+    section: 'Miscellaneous',
+    field: 'Old and Unsupportable Systems',
+    simple: false,
+    intermediate: false,
+    detailed: true,
+    type: 'number',
+    value: '5',
+    placeholder: '0',
+    description: 'Capture the count or score for unsupported legacy systems affecting delivery.',
+  },
+  {
+    section: 'Miscellaneous',
+    field: 'High Maintenance Cost',
+    simple: false,
+    intermediate: false,
+    detailed: true,
+    type: 'number',
+    value: '6',
+    placeholder: '0',
+    description: 'Record the count or score of cost-heavy systems that need ongoing support.',
+  },
+  {
+    section: 'Miscellaneous',
+    field: 'Out of Scope (legacy)',
+    simple: false,
+    intermediate: false,
+    detailed: true,
+    type: 'textarea',
+    value: '7',
+    placeholder: 'Add legacy exclusions or supporting context',
+    description: 'Use when legacy work is intentionally excluded from this plan.',
+  },
+  {
+    section: 'Miscellaneous',
+    field: 'ICT Component',
+    simple: false,
+    intermediate: false,
+    detailed: true,
+    type: 'boolean',
+    value: 'Yes',
+    description: 'Flag whether this plan includes an ICT component.',
+  },
+  {
+    section: 'Miscellaneous',
+    field: 'Number of Assurance/Compliance Reviews Completed',
+    simple: false,
+    intermediate: false,
+    detailed: true,
+    type: 'number',
+    value: '',
+    placeholder: '0',
+    description: 'Completed assurance or compliance reviews linked to the project.',
+  },
+  {
+    section: 'Miscellaneous',
+    field: 'Number of Recommendations Open',
+    simple: false,
+    intermediate: false,
+    detailed: true,
+    type: 'number',
+    value: '',
+    placeholder: '0',
+    description: 'Outstanding assurance recommendations still open for follow-up.',
+  },
+  {
+    section: 'Miscellaneous',
+    field: 'Number of Recommendations Closed',
+    simple: false,
+    intermediate: false,
+    detailed: true,
+    type: 'number',
+    value: '',
+    placeholder: '0',
+    description: 'Recommendations fully closed out and verified.',
+  },
+  {
+    section: 'Miscellaneous',
+    field: 'ADEO Status',
+    simple: false,
+    intermediate: false,
+    detailed: true,
+    type: 'choice',
+    value: 'Not Tracked',
+    options: ['On Track', 'Alert', 'Off Track', 'Not Tracked', 'NA'],
+    description: 'Use when ADEO tracking applies to the project.',
+  },
+  {
+    section: 'Miscellaneous',
+    field: 'Commentary of admins',
+    simple: false,
+    intermediate: false,
+    detailed: true,
+    type: 'textarea',
+    value: '',
+    placeholder: 'Add admin notes or clarifications',
+    description: 'Space for PMO or admin-only commentary.',
+  },
+  {
+    section: 'Miscellaneous',
+    field: 'Number of Grants submitted',
+    simple: false,
+    intermediate: false,
+    detailed: true,
+    type: 'number',
+    value: '',
+    placeholder: '0',
+    description: 'Track grant submissions when the project uses grant-led delivery.',
+  },
 ].map((field) => ({ ...field, id: slugifyPlanField(`${field.section}-${field.field}`), mandatory: Boolean(field.mandatory) }));
 
 const projectPlanSectionFieldGroups: Record<string, ProjectPlanFieldGroupConfig[]> = {
@@ -462,9 +796,213 @@ const projectPlanSectionFieldGroups: Record<string, ProjectPlanFieldGroupConfig[
   Resource: [{ title: 'Resource plan', description: 'Roles, owners, and planned allocation.', fields: ['Resource Plan'] }],
   Dependency: [{ title: 'Project dependencies', description: 'Upstream and downstream project relationships.', fields: ['Predecessor Project(s)', 'Successor Project(s)'] }],
   Miscellaneous: [
-    { title: 'Legacy pressure', description: 'Legacy system, ICT, and maintenance considerations.', fields: ['Old and Unsupportable Systems', 'High Maintenance Cost', 'Out of Scope (legacy)', 'ICT Component'] },
-    { title: 'Assurance tracking', description: 'Compliance review counts, recommendations, and admin commentary.', fields: ['Number of Assurance/Compliance Reviews Completed', 'Number of Recommendations Open', 'Number of Recommendations Closed', 'Commentary of admins'] },
+    {
+      title: 'Legacy pressure',
+      description: 'Legacy system, ICT, and maintenance considerations that only matter when the project needs extra context.',
+      fields: ['Old and Unsupportable Systems', 'High Maintenance Cost', 'Out of Scope (legacy)', 'ICT Component'],
+    },
+    {
+      title: 'Assurance tracking',
+      description: 'Assurance counts, ADEO status, grants, and admin commentary used for extended reporting.',
+      fields: [
+        'Number of Assurance/Compliance Reviews Completed',
+        'Number of Recommendations Open',
+        'Number of Recommendations Closed',
+        'ADEO Status',
+        'Commentary of admins',
+        'Number of Grants submitted',
+      ],
+    },
   ],
+};
+
+const dependencyRegisterConfigs: Record<DependencyRegisterKey, DependencyRegisterConfig> = {
+  predecessor: {
+    key: 'predecessor',
+    fieldName: 'Predecessor Project(s)',
+    title: 'Predecessor dependencies',
+    description: 'Projects that must land first before this plan can move safely.',
+    actionLabel: 'Add predecessor',
+    emptyTitle: 'No predecessor dependencies yet',
+    emptyBody: 'Track upstream projects, baseline timing, and impact once another initiative becomes a delivery blocker for this work.',
+    projectPlaceholder: 'Select predecessor project',
+    impactPlaceholder: 'Select predecessor impact',
+    dependentProductPlaceholder: 'Select dependent product',
+    projectOptions: ['Data source onboarding', 'Integration readiness', 'Commercial approval track', 'Grant intake refresh'],
+    impactOptions: ['Quality & timing risk', 'Schedule dependency', 'Resource dependency', 'Compliance dependency'],
+    dependentProductOptions: ['Capability data model', 'Discovery pack', 'Portal readiness plan', 'Governance checkpoint'],
+    rows: [
+      {
+        id: 'dependency-predecessor-1',
+        project: 'Data source onboarding',
+        impact: 'Quality & timing risk',
+        dependentProduct: 'Capability data model',
+        baselineStart: '02 Mar 2026',
+        baselineEnd: '17 Apr 2026',
+        projectManager: 'Muna Hassan',
+        nature: 'Foundational data onboarding must finish before discovery, capability mapping, and quality reviews can begin.',
+        status: 'Tracking',
+      },
+    ],
+    draft: {
+      project: '',
+      impact: '',
+      dependentProduct: '',
+      baselineStart: '',
+      baselineEnd: '',
+      projectManager: '',
+      nature: '',
+    },
+  },
+  successor: {
+    key: 'successor',
+    fieldName: 'Successor Project(s)',
+    title: 'Successor dependencies',
+    description: 'Downstream projects or products that depend on this plan finishing well.',
+    actionLabel: 'Add successor',
+    emptyTitle: 'No successor dependencies yet',
+    emptyBody: 'Use this area for follow-on projects, downstream products, or handoffs that should start after this plan closes its work.',
+    projectPlaceholder: 'Select successor project',
+    impactPlaceholder: 'Select successor impact',
+    dependentProductPlaceholder: 'Select dependent product',
+    projectOptions: ['Research portal rollout', 'Partner activation wave', 'Grant reporting release', 'Service handoff sprint'],
+    impactOptions: ['Delivery sequencing', 'Adoption dependency', 'Benefits dependency', 'Readiness dependency'],
+    dependentProductOptions: ['Research portal rollout', 'Partner enablement pack', 'Grant reporting dashboard', 'Service transition plan'],
+    rows: [],
+    draft: {
+      project: '',
+      impact: '',
+      dependentProduct: '',
+      baselineStart: '',
+      baselineEnd: '',
+      projectManager: '',
+      nature: '',
+    },
+  },
+};
+
+const changeImpactConfig: ChangeImpactConfig = {
+  fieldName: 'Change Impact Assessment',
+  title: 'Change impact register',
+  description: 'Capture which audience is affected, how strong the impact is, and the adoption response needed before delivery friction appears.',
+  actionLabel: 'Add change impact',
+  emptyTitle: 'No change impacts captured yet',
+  emptyBody: 'When a process, stakeholder group, or operating model will feel this project, log it here so change planning starts before the impact turns into delivery churn.',
+  categoryPlaceholder: 'Select change impact category',
+  stakeholderPlaceholder: 'Select stakeholder impacted',
+  levelPlaceholder: 'Select level of impact',
+  strategyPlaceholder: 'Type a change strategy',
+  categoryOptions: ['Process change', 'Technology change', 'Policy or governance', 'People and roles', 'Data and reporting'],
+  stakeholderOptions: ['PMO and leadership', 'Project delivery team', 'Business users', 'Shared services', 'External partners'],
+  levelOptions: ['High', 'Medium', 'Low'],
+  rows: [],
+  draft: {
+    category: '',
+    stakeholder: '',
+    level: '',
+    comment: '',
+    strategyInput: '',
+    strategies: [],
+  },
+};
+
+const relatedLinkConfig: RelatedLinkConfig = {
+  fieldName: 'Related Links / Documents',
+  title: 'Documents and links',
+  description: 'Keep the project evidence pack, source links, and supporting references in one easy-to-open list.',
+  actionLabel: 'Add related link',
+  emptyTitle: 'No related links added yet',
+  emptyBody: 'Add source packs, approvals, trackers, or reference documents here so reviewers can open the right evidence without hunting across tools.',
+  namePlaceholder: 'Enter link name',
+  descriptionPlaceholder: 'Add description',
+  documentPlaceholder: 'Paste document link',
+  rows: [],
+  draft: {
+    name: '',
+    description: '',
+    documentLink: '',
+  },
+};
+
+const resourcePlanConfig: ResourcePlanConfig = {
+  fieldName: 'Resource Plan',
+  title: 'Resource plan',
+  description: 'People, sourcing, and FTE assumptions needed to deliver this project.',
+  actionLabel: 'Add resource',
+  emptyTitle: 'No resources added yet',
+  emptyBody: 'Start with the core role, business unit, and FTE need so planning and staffing conversations begin with a clear baseline.',
+  resourcePlaceholder: 'Select resource role',
+  resourceTypePlaceholder: 'Select resource type',
+  impactPlaceholder: 'Select impact level',
+  businessUnitPlaceholder: 'Select business unit',
+  ftePlaceholder: 'Type FTE count',
+  resourceOptions: ['Project Manager', 'Business Analyst', 'Data Steward', 'Delivery Lead', 'QA Analyst', 'Change Manager'],
+  resourceTypeOptions: ['Internal FTE', 'Shared resource', 'External vendor', 'Contractor'],
+  impactOptions: ['Critical', 'High', 'Medium', 'Low'],
+  businessUnitOptions: ['Research Office', 'Strategy', 'Technology', 'Corporate Services'],
+  rows: [],
+  draft: {
+    resource: '',
+    resourceType: '',
+    impact: '',
+    businessUnit: '',
+    fteCount: '',
+    baselineStart: '',
+    baselineEnd: '',
+    comments: '',
+  },
+};
+
+const benefitPlanConfig: BenefitPlanConfig = {
+  fieldName: 'Benefits Register',
+  title: 'Benefits register',
+  description: 'Capture the value this project is expected to create, who owns it, and when realization should be visible.',
+  actionLabel: 'Add benefit',
+  emptyTitle: 'No benefits captured yet',
+  emptyBody: 'Start with the first outcome this project should unlock. Add the benefit statement, owner, and realization timing so the team can track value as delivery moves forward.',
+  benefitTypePlaceholder: 'Select benefit type',
+  benefitCategoryPlaceholder: 'Select benefit category',
+  ownerPlaceholder: 'Select benefit owner',
+  benefitTypeOptions: ['Strategic benefit', 'Operational benefit', 'Financial benefit', 'Customer benefit', 'Compliance benefit'],
+  benefitCategoryOptions: ['Cost Avoidance', 'Efficiency Gain', 'Service Quality', 'Risk Reduction', 'Revenue Protection'],
+  ownerOptions: ['Research Leads Forum', 'PMO Desk', 'Fatima Ali', 'Muna Hassan', 'Delivery Office', 'Strategy Office'],
+  rows: [],
+  draft: {
+    benefitType: '',
+    category: 'Cost Avoidance',
+    benefitName: '',
+    description: '',
+    owner: '',
+    realizationDate: '',
+  },
+};
+
+const issuePlanConfig: IssuePlanConfig = {
+  fieldName: 'Issues Register',
+  title: 'Issues register',
+  description: 'Track blockers, open decisions, and delivery problems so ownership and next action are visible without opening another tool.',
+  actionLabel: 'Add issue',
+  emptyTitle: 'No issues logged yet',
+  emptyBody: 'When a blocker, dependency problem, or unresolved decision appears, capture it here so the team can assign ownership and drive a resolution before the plan slows down.',
+  issueTypePlaceholder: 'Select issue type',
+  ownerPlaceholder: 'Select owner',
+  issueTypeOptions: ['Scope issue', 'Schedule issue', 'Budget issue', 'Decision required', 'Dependency issue', 'Resource issue', 'Technical issue'],
+  criticalityOptions: ['Low', 'Medium', 'High', 'Critical'],
+  statusOptions: ['Open', 'In Progress', 'Pending Decision', 'Resolved', 'Closed'],
+  ownerOptions: ['PMO Desk', 'Muna Hassan', 'Fatima Ali', 'Khalid Omar', 'Delivery Office', 'Change team'],
+  rows: [],
+  draft: {
+    issueType: '',
+    criticality: 'Low',
+    issue: '',
+    description: '',
+    resolution: '',
+    status: 'Open',
+    owner: '',
+    dateRaised: '2026-05-14',
+    dueDate: '',
+    dateClosed: '',
+  },
 };
 
 function slugifyPlanField(value: string): string {
@@ -1197,114 +1735,583 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                 </div>
                               </article>
                             }
-                            @for (group of activeProjectPlanVisibleGroups; track group.title) {
-                              <details class="matrix-field-group" open>
-                                <summary><span class="matrix-field-group-copy"><strong>{{ group.title }}</strong><small>{{ group.description }}</small></span><span class="matrix-field-group-meta"><b>{{ group.fields.length }}</b><span class="icon"><i data-lucide="chevron-down"></i></span></span></summary>
-                                <div class="matrix-field-group-grid">
-                                  @for (field of group.fields; track field.id) {
-                                    @if (field.type === 'table') {
-                                      <article class="matrix-field matrix-field-table wide">
-                                        <div class="matrix-register-head">
-                                          <div><span class="matrix-field-label">{{ field.field }} @if (field.mandatory) { <b>*</b> }</span><small>{{ simplePlanTableConfig(field).description }}</small></div>
-                                          <button type="button"><span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>{{ simplePlanTableConfig(field).action }}</button>
+                            @if (projectPlanActiveSection === 'Benefits') {
+                              @let register = activeBenefitPlan;
+                              <section class="dependency-register-stack benefit-register-stack" aria-label="Benefits register">
+                                <article class="benefit-agent-banner" aria-label="Benefit agent">
+                                  <div class="benefit-agent-copy">
+                                    <span class="benefit-agent-eyebrow"><img src="./assets/ai-spark-star.svg" alt="" aria-hidden="true" />AI assisted</span>
+                                    <strong>Benefit Agent</strong>
+                                    <p>Turn the case for change for {{ scopedProjectName }} into first-pass benefit statements, owners, and realization timing before you refine the register manually.</p>
+                                  </div>
+                                  <div class="benefit-agent-highlights" aria-label="Benefit agent capabilities">
+                                    <span>Draft benefit statements</span>
+                                    <span>Suggest categories</span>
+                                    <span>Recommend owners</span>
+                                  </div>
+                                </article>
+
+                                <article class="dependency-register-card benefit-register-card">
+                                  <div class="dependency-register-head">
+                                    <div class="dependency-register-copy">
+                                      <span class="dependency-register-eyebrow">{{ register.fieldName }} <small>Benefit tracking</small></span>
+                                      <strong>{{ register.title }}</strong>
+                                      <small>{{ register.description }}</small>
+                                    </div>
+                                    <div class="dependency-register-actions">
+                                      <span class="dependency-register-count">{{ benefitCountLabel(register) }}</span>
+                                      @if (register.rows.length) {
+                                        <button class="dependency-register-add" type="button" (click)="openBenefitDrawer()">
+                                          <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>{{ register.actionLabel }}
+                                        </button>
+                                      }
+                                    </div>
+                                  </div>
+
+                                  @if (register.rows.length) {
+                                    <div class="dependency-register-table-shell benefit-register-table-shell">
+                                      <table class="dependency-register-table benefit-register-table" [attr.aria-label]="register.fieldName">
+                                        <thead>
+                                          <tr>
+                                            <th>Benefit</th>
+                                            <th>Type</th>
+                                            <th>Category</th>
+                                            <th>Owner</th>
+                                            <th>Realisation Date</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          @for (row of register.rows; track row.id) {
+                                            <tr>
+                                              <td class="dependency-register-primary">
+                                                <strong>{{ row.benefitName }}</strong>
+                                                <small>{{ row.description || 'No description added' }}</small>
+                                              </td>
+                                              <td><span class="benefit-register-type-pill">{{ row.benefitType }}</span></td>
+                                              <td><span class="benefit-register-category-pill">{{ row.category }}</span></td>
+                                              <td>{{ row.owner }}</td>
+                                              <td class="dependency-register-baseline benefit-register-realization">
+                                                <strong>{{ row.realizationDate }}</strong>
+                                                <small>Planned realization</small>
+                                              </td>
+                                            </tr>
+                                          }
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  } @else {
+                                    <div class="dependency-empty-state benefit-empty-state">
+                                      <img src="./assets/project-card-line-art.svg" alt="" aria-hidden="true" />
+                                      <div class="dependency-empty-state-copy">
+                                        <strong>{{ register.emptyTitle }}</strong>
+                                        <p>{{ register.emptyBody }}</p>
+                                        <div class="benefit-empty-state-actions">
+                                          <button class="dependency-register-add" type="button" (click)="openBenefitDrawer()">
+                                            <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>Add first benefit
+                                          </button>
+                                          <span class="benefit-empty-state-note">Use the Benefit Agent banner above when you want help framing the first draft before you save it.</span>
                                         </div>
-                                        <div class="matrix-register-table" role="table" [attr.aria-label]="field.field">
-                                          <div class="matrix-register-row head" [class.columns-2]="simplePlanTableConfig(field).columns.length === 2" [class.columns-3]="simplePlanTableConfig(field).columns.length === 3" [class.columns-4]="simplePlanTableConfig(field).columns.length === 4" [class.columns-5]="simplePlanTableConfig(field).columns.length >= 5" role="row">
-                                            @for (column of simplePlanTableConfig(field).columns; track column) { <span>{{ column }}</span> }
+                                      </div>
+                                    </div>
+                                  }
+                                </article>
+                              </section>
+                            } @else if (projectPlanActiveSection === 'Issues') {
+                              @let register = activeIssuePlan;
+                              <section class="dependency-register-stack issue-register-stack" aria-label="Issues register">
+                                <article class="dependency-register-card issue-register-card">
+                                  <div class="dependency-register-head">
+                                    <div class="dependency-register-copy">
+                                      <span class="dependency-register-eyebrow">{{ register.fieldName }}</span>
+                                      <strong>{{ register.title }}</strong>
+                                      <small>{{ register.description }}</small>
+                                    </div>
+                                    <div class="dependency-register-actions">
+                                      <span class="dependency-register-count">{{ issueCountLabel(register) }}</span>
+                                      <button class="dependency-register-add" type="button" (click)="openIssueDrawer()">
+                                        <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>{{ register.actionLabel }}
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  @if (register.rows.length) {
+                                    <div class="dependency-register-table-shell">
+                                      <table class="dependency-register-table issue-register-table" [attr.aria-label]="register.fieldName">
+                                        <thead>
+                                          <tr>
+                                            <th>Issue</th>
+                                            <th>Type</th>
+                                            <th>Criticality</th>
+                                            <th>Owner</th>
+                                            <th>Timeline</th>
+                                            <th>Status</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          @for (row of register.rows; track row.id) {
+                                            <tr>
+                                              <td class="dependency-register-primary">
+                                                <strong>{{ row.issue }}</strong>
+                                                <small>{{ row.description || row.resolution }}</small>
+                                              </td>
+                                              <td><span class="issue-register-type-pill">{{ row.issueType }}</span></td>
+                                              <td><span class="issue-register-criticality-pill {{ issueCriticalityTone(row.criticality) }}">{{ row.criticality }}</span></td>
+                                              <td>{{ row.owner }}</td>
+                                              <td class="dependency-register-baseline issue-register-timeline">
+                                                <strong>{{ row.dateRaised || 'Raised date TBD' }}</strong>
+                                                <small>{{ row.dueDate ? 'Due ' + row.dueDate : 'Due date TBD' }}</small>
+                                                @if (row.dateClosed) { <small>Closed {{ row.dateClosed }}</small> }
+                                              </td>
+                                              <td class="dependency-register-status"><span class="dependency-register-pill {{ issueStatusTone(row.status) }}">{{ row.status }}</span></td>
+                                            </tr>
+                                          }
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  } @else {
+                                    <div class="dependency-empty-state issue-empty-state">
+                                      <img src="./assets/project-card-line-art.svg" alt="" aria-hidden="true" />
+                                      <div class="dependency-empty-state-copy">
+                                        <strong>{{ register.emptyTitle }}</strong>
+                                        <p>{{ register.emptyBody }}</p>
+                                      </div>
+                                    </div>
+                                  }
+                                </article>
+                              </section>
+                            } @else if (projectPlanActiveSection === 'Related Links') {
+                              @let register = activeRelatedLinksRegister;
+                              <section class="dependency-register-stack" aria-label="Related links register">
+                                <article class="dependency-register-card">
+                                  <div class="dependency-register-head">
+                                    <div class="dependency-register-copy">
+                                      <span class="dependency-register-eyebrow">{{ register.fieldName }}</span>
+                                      <strong>{{ register.title }}</strong>
+                                      <small>{{ register.description }}</small>
+                                    </div>
+                                    <div class="dependency-register-actions">
+                                      <span class="dependency-register-count">{{ relatedLinksCountLabel(register) }}</span>
+                                      <button class="dependency-register-add" type="button" (click)="openRelatedLinksDrawer()">
+                                        <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>{{ register.actionLabel }}
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  @if (register.rows.length) {
+                                    <div class="dependency-register-table-shell">
+                                      <table class="dependency-register-table" [attr.aria-label]="register.fieldName">
+                                        <thead>
+                                          <tr>
+                                            <th>Name</th>
+                                            <th>Description</th>
+                                            <th>Document</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          @for (row of register.rows; track row.id) {
+                                            <tr>
+                                              <td class="dependency-register-primary">
+                                                <strong>{{ row.name }}</strong>
+                                                <small>Related document</small>
+                                              </td>
+                                              <td>{{ row.description || 'No description added' }}</td>
+                                              <td class="dependency-register-baseline related-links-register-access">
+                                                <strong><a [href]="relatedLinkHref(row.documentLink)" target="_blank" rel="noreferrer">Open document</a></strong>
+                                                <small>{{ row.documentLink }}</small>
+                                              </td>
+                                            </tr>
+                                          }
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  } @else {
+                                    <div class="dependency-empty-state">
+                                      <img src="./assets/project-card-line-art.svg" alt="" aria-hidden="true" />
+                                      <div class="dependency-empty-state-copy">
+                                        <strong>{{ register.emptyTitle }}</strong>
+                                        <p>{{ register.emptyBody }}</p>
+                                      </div>
+                                    </div>
+                                  }
+                                </article>
+                              </section>
+                            } @else if (projectPlanActiveSection === 'Resource') {
+                              @let register = activeResourcePlan;
+                              <section class="dependency-register-stack" aria-label="Resource plan">
+                                <article class="dependency-register-card">
+                                  <div class="dependency-register-head">
+                                    <div class="dependency-register-copy">
+                                      <span class="dependency-register-eyebrow">{{ register.fieldName }}</span>
+                                      <strong>{{ register.title }}</strong>
+                                      <small>{{ register.description }}</small>
+                                    </div>
+                                    <div class="dependency-register-actions">
+                                      <span class="dependency-register-count">{{ resourceCountLabel(register) }}</span>
+                                      <button class="dependency-register-add" type="button" (click)="openResourceDrawer()">
+                                        <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>{{ register.actionLabel }}
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  @if (register.rows.length) {
+                                    <div class="dependency-register-table-shell">
+                                      <table class="dependency-register-table" [attr.aria-label]="register.fieldName">
+                                        <thead>
+                                          <tr>
+                                            <th>Resource</th>
+                                            <th>Type</th>
+                                            <th>Impact</th>
+                                            <th>Business Unit</th>
+                                            <th>FTE</th>
+                                            <th>Timeline</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          @for (row of register.rows; track row.id) {
+                                            <tr>
+                                              <td class="dependency-register-primary">
+                                                <strong>{{ row.resource }}</strong>
+                                                <small>{{ row.comments || 'No comment added' }}</small>
+                                              </td>
+                                              <td>{{ row.resourceType }}</td>
+                                              <td>{{ row.impact }}</td>
+                                              <td>{{ row.businessUnit }}</td>
+                                              <td>{{ row.fteCount }}</td>
+                                              <td class="dependency-register-baseline">
+                                                <strong>{{ row.baselineStart || 'Start date TBD' }}</strong>
+                                                <small>{{ row.baselineEnd || 'End date TBD' }}</small>
+                                              </td>
+                                            </tr>
+                                          }
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  } @else {
+                                    <div class="dependency-empty-state">
+                                      <img src="./assets/project-card-line-art.svg" alt="" aria-hidden="true" />
+                                      <div class="dependency-empty-state-copy">
+                                        <strong>{{ register.emptyTitle }}</strong>
+                                        <p>{{ register.emptyBody }}</p>
+                                      </div>
+                                    </div>
+                                  }
+                                </article>
+                              </section>
+                            } @else if (projectPlanActiveSection === 'Change Impact') {
+                              @let register = changeImpactRegister;
+                              <section class="dependency-register-stack change-impact-register-stack" aria-label="Change impact register">
+                                <article class="dependency-register-card change-impact-register-card">
+                                  <div class="dependency-register-head change-impact-register-head">
+                                    <div class="dependency-register-copy">
+                                      <span class="dependency-register-eyebrow">{{ register.fieldName }}</span>
+                                      <strong>{{ register.title }}</strong>
+                                      <small>{{ register.description }}</small>
+                                    </div>
+                                    <div class="dependency-register-actions">
+                                      <span class="dependency-register-count">{{ changeImpactCountLabel(register) }}</span>
+                                      <button class="dependency-register-add" type="button" (click)="openChangeImpactDrawer()">
+                                        <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>{{ register.actionLabel }}
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  @if (register.rows.length) {
+                                    <div class="change-impact-card-list">
+                                      @for (row of register.rows; track row.id) {
+                                        <article class="change-impact-entry-card">
+                                          <div class="change-impact-entry-head">
+                                            <div class="change-impact-entry-title">
+                                              <span class="change-impact-entry-eyebrow">{{ row.category }}</span>
+                                              <strong>{{ row.stakeholder }}</strong>
+                                              <small>Stakeholder impacted</small>
+                                            </div>
+                                            <span class="change-impact-level-pill {{ changeImpactLevelTone(row.level) }}">{{ row.level }} impact</span>
                                           </div>
-                                          @for (row of simplePlanTableConfig(field).rows; track row[0]) {
-                                            <div class="matrix-register-row" [class.columns-2]="simplePlanTableConfig(field).columns.length === 2" [class.columns-3]="simplePlanTableConfig(field).columns.length === 3" [class.columns-4]="simplePlanTableConfig(field).columns.length === 4" [class.columns-5]="simplePlanTableConfig(field).columns.length >= 5" role="row">
-                                              @for (cell of row; track $index) { <span>@if ($index === row.length - 1) { <b>{{ cell }}</b> } @else { <ng-container>{{ cell }}</ng-container> }</span> }
+                                          @if (row.strategies.length) {
+                                            <div class="change-impact-strategy-list" aria-label="Change strategies">
+                                              @for (strategy of row.strategies; track strategy) {
+                                                <span class="change-impact-strategy-pill">{{ strategy }}</span>
+                                              }
                                             </div>
                                           }
-                                        </div>
-                                      </article>
-                                    } @else if (field.type === 'boolean') {
-                                      <div class="matrix-field matrix-field-boolean">
-                                        <span class="matrix-field-label">{{ field.field }} @if (field.mandatory) { <b>*</b> }</span>
-                                        <div class="matrix-boolean" role="radiogroup" [attr.aria-label]="field.field">
-                                          <label><input type="radio" [name]="field.id" [checked]="field.value === 'Yes'" /> <span>Yes</span></label>
-                                          <label><input type="radio" [name]="field.id" [checked]="field.value !== 'Yes'" /> <span>No</span></label>
-                                        </div>
+                                          <p class="change-impact-entry-comment" [class.is-empty]="!row.comment">{{ row.comment || 'No comment added for this impact yet.' }}</p>
+                                        </article>
+                                      }
+                                    </div>
+                                  } @else {
+                                    <div class="dependency-empty-state change-impact-empty-state">
+                                      <img src="./assets/project-card-line-art.svg" alt="" aria-hidden="true" />
+                                      <div class="dependency-empty-state-copy">
+                                        <strong>{{ register.emptyTitle }}</strong>
+                                        <p>{{ register.emptyBody }}</p>
                                       </div>
-                                    } @else if (field.type === 'select') {
-                                      <label class="matrix-field matrix-field-select"><span class="matrix-field-label">{{ field.field }} @if (field.mandatory) { <b>*</b> }</span>
-                                        <span class="matrix-select-wrap">
-                                          <select [attr.aria-label]="field.field">
-                                            @for (option of field.options || [field.value]; track option) { <option [selected]="option === field.value">{{ option }}</option> }
-                                          </select>
-                                          <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                                        </span>
-                                      </label>
-                                    } @else if (field.type === 'money') {
-                                      <label class="matrix-field matrix-field-money"><span class="matrix-field-label">{{ field.field }} @if (field.mandatory) { <b>*</b> }</span><span class="matrix-money-wrap"><small>SAR</small><input type="text" [value]="field.value" [attr.aria-label]="field.field" /></span></label>
+                                    </div>
+                                  }
+                                </article>
+                              </section>
+                            } @else if (projectPlanActiveSection === 'Dependency') {
+                              <section class="dependency-register-stack" aria-label="Dependency registers">
+                                @for (register of visibleDependencyRegisters; track register.key) {
+                                  <article class="dependency-register-card">
+                                    <div class="dependency-register-head">
+                                      <div class="dependency-register-copy">
+                                        <span class="dependency-register-eyebrow">{{ register.fieldName }}</span>
+                                        <strong>{{ register.title }}</strong>
+                                        <small>{{ register.description }}</small>
+                                      </div>
+                                      <div class="dependency-register-actions">
+                                        <span class="dependency-register-count">{{ dependencyCountLabel(register) }}</span>
+                                        <button class="dependency-register-add" type="button" (click)="openDependencyDrawer(register.key)">
+                                          <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>{{ register.actionLabel }}
+                                        </button>
+                                      </div>
+                                    </div>
+
+                                    @if (register.rows.length) {
+                                      <div class="dependency-register-table-shell">
+                                        <table class="dependency-register-table" [attr.aria-label]="register.fieldName">
+                                          <thead>
+                                            <tr>
+                                              <th>{{ register.fieldName }}</th>
+                                              <th>Impact</th>
+                                              <th>Dependent Product</th>
+                                              <th>Baseline</th>
+                                              <th>Project Manager</th>
+                                              <th>Status</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            @for (row of register.rows; track row.id) {
+                                              <tr>
+                                                <td class="dependency-register-primary">
+                                                  <strong>{{ row.project }}</strong>
+                                                  <small>{{ row.nature }}</small>
+                                                </td>
+                                                <td>{{ row.impact }}</td>
+                                                <td>{{ row.dependentProduct }}</td>
+                                                <td class="dependency-register-baseline">
+                                                  <strong>{{ row.baselineStart }}</strong>
+                                                  <small>{{ row.baselineEnd }}</small>
+                                                </td>
+                                                <td>{{ row.projectManager }}</td>
+                                                <td class="dependency-register-status"><span class="dependency-register-pill {{ dependencyStatusTone(row.status) }}">{{ row.status }}</span></td>
+                                              </tr>
+                                            }
+                                          </tbody>
+                                        </table>
+                                      </div>
                                     } @else {
-                                      <label class="matrix-field matrix-field-{{ field.type }}" [class.wide]="field.type === 'textarea'"><span class="matrix-field-label">{{ field.field }} @if (field.mandatory) { <b>*</b> }</span>
-                                        @if (field.type === 'textarea') { <textarea [value]="field.value" [attr.aria-label]="field.field"></textarea> } @else { <input [type]="field.type || 'text'" [value]="field.value" [attr.aria-label]="field.field" /> }
-                                      </label>
+                                      <div class="dependency-empty-state">
+                                        <img src="./assets/project-card-line-art.svg" alt="" aria-hidden="true" />
+                                        <div class="dependency-empty-state-copy">
+                                          <strong>{{ register.emptyTitle }}</strong>
+                                          <p>{{ register.emptyBody }}</p>
+                                        </div>
+                                      </div>
                                     }
-                                  }
-                                </div>
-                              </details>
-                            }
-                            @if (activeProjectPlanHiddenFields.length) {
-                              <button class="matrix-show-fields" [class.is-expanded]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection)" type="button" (click)="toggleProjectPlanFieldSection(projectPlanActiveSection)" [attr.aria-expanded]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection)">
-                                <span class="matrix-show-fields-copy"><strong>Additional detailed fields ({{ activeProjectPlanHiddenFields.length }})</strong><small>{{ activeProjectPlanHiddenFieldPreview }}</small></span>
-                                <span class="matrix-show-fields-indicator" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection) ? 'minus' : 'plus'"></i></span></span>
-                              </button>
-                              @if (isProjectPlanFieldSectionExpanded(projectPlanActiveSection)) {
-                                <div class="matrix-hidden-fields is-expanded">
-                                  @for (group of activeProjectPlanHiddenGroups; track group.title) {
-                                    <details class="matrix-field-group detailed-only" open>
-                                      <summary><span class="matrix-field-group-copy"><strong>{{ group.title }}</strong><small>{{ group.description }}</small></span><span class="matrix-field-group-meta"><b>{{ group.fields.length }}</b><span class="icon"><i data-lucide="chevron-down"></i></span></span></summary>
-                                      <div class="matrix-field-group-grid">
-                                        @for (field of group.fields; track field.id) {
-                                          @if (field.type === 'table') {
-                                            <article class="matrix-field matrix-field-table wide">
-                                              <div class="matrix-register-head">
-                                                <div><span class="matrix-field-label">{{ field.field }} <small>Detailed only</small> @if (field.mandatory) { <b>*</b> }</span><small>{{ simplePlanTableConfig(field).description }}</small></div>
-                                                <button type="button"><span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>{{ simplePlanTableConfig(field).action }}</button>
-                                              </div>
-                                              <div class="matrix-register-table" role="table" [attr.aria-label]="field.field">
-                                                <div class="matrix-register-row head" [class.columns-2]="simplePlanTableConfig(field).columns.length === 2" [class.columns-3]="simplePlanTableConfig(field).columns.length === 3" [class.columns-4]="simplePlanTableConfig(field).columns.length === 4" [class.columns-5]="simplePlanTableConfig(field).columns.length >= 5" role="row">
-                                                  @for (column of simplePlanTableConfig(field).columns; track column) { <span>{{ column }}</span> }
-                                                </div>
-                                                @for (row of simplePlanTableConfig(field).rows; track row[0]) {
-                                                  <div class="matrix-register-row" [class.columns-2]="simplePlanTableConfig(field).columns.length === 2" [class.columns-3]="simplePlanTableConfig(field).columns.length === 3" [class.columns-4]="simplePlanTableConfig(field).columns.length === 4" [class.columns-5]="simplePlanTableConfig(field).columns.length >= 5" role="row">
-                                                    @for (cell of row; track $index) { <span>@if ($index === row.length - 1) { <b>{{ cell }}</b> } @else { <ng-container>{{ cell }}</ng-container> }</span> }
-                                                  </div>
-                                                }
-                                              </div>
-                                            </article>
-                                          } @else if (field.type === 'boolean') {
-                                            <div class="matrix-field matrix-field-boolean">
-                                              <span class="matrix-field-label">{{ field.field }} <small>Detailed only</small> @if (field.mandatory) { <b>*</b> }</span>
-                                              <div class="matrix-boolean" role="radiogroup" [attr.aria-label]="field.field">
-                                                <label><input type="radio" [name]="field.id" [checked]="field.value === 'Yes'" /> <span>Yes</span></label>
-                                                <label><input type="radio" [name]="field.id" [checked]="field.value !== 'Yes'" /> <span>No</span></label>
+                                  </article>
+                                }
+                              </section>
+
+                              @if (activeProjectPlanHasVisibleFields && hiddenDependencyRegisters.length) {
+                                <button class="matrix-show-fields" [class.is-expanded]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection)" type="button" (click)="toggleProjectPlanFieldSection(projectPlanActiveSection)" [attr.aria-expanded]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection)">
+                                  <span class="matrix-show-fields-copy"><strong>{{ activeProjectPlanHiddenFieldButtonLabel }} ({{ hiddenDependencyRegisters.length }})</strong><small>{{ activeProjectPlanHiddenFieldPreview }}</small></span>
+                                  <span class="matrix-show-fields-indicator" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection) ? 'minus' : 'plus'"></i></span></span>
+                                </button>
+                                @if (isProjectPlanFieldSectionExpanded(projectPlanActiveSection)) {
+                                  <div class="matrix-hidden-fields is-expanded">
+                                    <section class="dependency-register-stack dependency-register-stack-hidden" aria-label="Additional dependency fields">
+                                      @for (register of hiddenDependencyRegisters; track register.key) {
+                                        <article class="dependency-register-card">
+                                          <div class="dependency-register-head">
+                                            <div class="dependency-register-copy">
+                                              <span class="dependency-register-eyebrow">{{ register.fieldName }} <small>Detailed only</small></span>
+                                              <strong>{{ register.title }}</strong>
+                                              <small>{{ register.description }}</small>
+                                            </div>
+                                            <div class="dependency-register-actions">
+                                              <span class="dependency-register-count">{{ dependencyCountLabel(register) }}</span>
+                                              <button class="dependency-register-add" type="button" (click)="openDependencyDrawer(register.key)">
+                                                <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>{{ register.actionLabel }}
+                                              </button>
+                                            </div>
+                                          </div>
+
+                                          @if (register.rows.length) {
+                                            <div class="dependency-register-table-shell">
+                                              <table class="dependency-register-table" [attr.aria-label]="register.fieldName">
+                                                <thead>
+                                                  <tr>
+                                                    <th>{{ register.fieldName }}</th>
+                                                    <th>Impact</th>
+                                                    <th>Dependent Product</th>
+                                                    <th>Baseline</th>
+                                                    <th>Project Manager</th>
+                                                    <th>Status</th>
+                                                  </tr>
+                                                </thead>
+                                                <tbody>
+                                                  @for (row of register.rows; track row.id) {
+                                                    <tr>
+                                                      <td class="dependency-register-primary">
+                                                        <strong>{{ row.project }}</strong>
+                                                        <small>{{ row.nature }}</small>
+                                                      </td>
+                                                      <td>{{ row.impact }}</td>
+                                                      <td>{{ row.dependentProduct }}</td>
+                                                      <td class="dependency-register-baseline">
+                                                        <strong>{{ row.baselineStart }}</strong>
+                                                        <small>{{ row.baselineEnd }}</small>
+                                                      </td>
+                                                      <td>{{ row.projectManager }}</td>
+                                                      <td class="dependency-register-status"><span class="dependency-register-pill {{ dependencyStatusTone(row.status) }}">{{ row.status }}</span></td>
+                                                    </tr>
+                                                  }
+                                                </tbody>
+                                              </table>
+                                            </div>
+                                          } @else {
+                                            <div class="dependency-empty-state">
+                                              <img src="./assets/project-card-line-art.svg" alt="" aria-hidden="true" />
+                                              <div class="dependency-empty-state-copy">
+                                                <strong>{{ register.emptyTitle }}</strong>
+                                                <p>{{ register.emptyBody }}</p>
                                               </div>
                                             </div>
-                                          } @else if (field.type === 'select') {
-                                            <label class="matrix-field matrix-field-select"><span class="matrix-field-label">{{ field.field }} <small>Detailed only</small> @if (field.mandatory) { <b>*</b> }</span>
-                                              <span class="matrix-select-wrap">
-                                                <select [attr.aria-label]="field.field">
-                                                  @for (option of field.options || [field.value]; track option) { <option [selected]="option === field.value">{{ option }}</option> }
-                                                </select>
-                                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                                              </span>
-                                            </label>
-                                          } @else if (field.type === 'money') {
-                                            <label class="matrix-field matrix-field-money"><span class="matrix-field-label">{{ field.field }} <small>Detailed only</small> @if (field.mandatory) { <b>*</b> }</span><span class="matrix-money-wrap"><small>SAR</small><input type="text" [value]="field.value" [attr.aria-label]="field.field" /></span></label>
-                                          } @else {
-                                            <label class="matrix-field matrix-field-{{ field.type }}" [class.wide]="field.type === 'textarea'"><span class="matrix-field-label">{{ field.field }} <small>Detailed only</small> @if (field.mandatory) { <b>*</b> }</span>
-                                              @if (field.type === 'textarea') { <textarea [value]="field.value" [attr.aria-label]="field.field"></textarea> } @else { <input [type]="field.type || 'text'" [value]="field.value" [attr.aria-label]="field.field" /> }
-                                            </label>
                                           }
-                                        }
-                                      </div>
-                                    </details>
-                                  }
-                                </div>
+                                        </article>
+                                      }
+                                    </section>
+                                  </div>
+                                }
+                              }
+                            } @else {
+                              @for (group of activeProjectPlanVisibleGroups; track group.title) {
+                                <details class="matrix-field-group" open>
+                                  <summary><span class="matrix-field-group-copy"><strong>{{ group.title }}</strong><small>{{ group.description }}</small></span><span class="matrix-field-group-meta"><b>{{ group.fields.length }}</b><span class="icon"><i data-lucide="chevron-down"></i></span></span></summary>
+                                  <div class="matrix-field-group-grid">
+                                    @for (field of group.fields; track field.id) {
+                                      @if (field.type === 'table') {
+                                        <article class="matrix-field matrix-field-table wide">
+                                          <div class="matrix-register-head">
+                                            <div><span class="matrix-field-label">{{ field.field }} @if (field.mandatory) { <b>*</b> }</span><small>{{ simplePlanTableConfig(field).description }}</small></div>
+                                            <button type="button"><span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>{{ simplePlanTableConfig(field).action }}</button>
+                                          </div>
+                                          <div class="matrix-register-table" role="table" [attr.aria-label]="field.field">
+                                            <div class="matrix-register-row head" [class.columns-2]="simplePlanTableConfig(field).columns.length === 2" [class.columns-3]="simplePlanTableConfig(field).columns.length === 3" [class.columns-4]="simplePlanTableConfig(field).columns.length === 4" [class.columns-5]="simplePlanTableConfig(field).columns.length >= 5" role="row">
+                                              @for (column of simplePlanTableConfig(field).columns; track column) { <span>{{ column }}</span> }
+                                            </div>
+                                            @for (row of simplePlanTableConfig(field).rows; track row[0]) {
+                                              <div class="matrix-register-row" [class.columns-2]="simplePlanTableConfig(field).columns.length === 2" [class.columns-3]="simplePlanTableConfig(field).columns.length === 3" [class.columns-4]="simplePlanTableConfig(field).columns.length === 4" [class.columns-5]="simplePlanTableConfig(field).columns.length >= 5" role="row">
+                                                @for (cell of row; track $index) { <span>@if ($index === row.length - 1) { <b>{{ cell }}</b> } @else { <ng-container>{{ cell }}</ng-container> }</span> }
+                                              </div>
+                                            }
+                                          </div>
+                                        </article>
+                                      } @else if (field.type === 'boolean' || field.type === 'choice') {
+                                        <div class="matrix-field matrix-field-boolean" [class.wide]="field.type === 'choice'">
+                                          <span class="matrix-field-label">{{ field.field }} @if (field.mandatory) { <b>*</b> }</span>
+                                          @if (field.description) { <small class="matrix-field-description">{{ field.description }}</small> }
+                                          <div class="matrix-boolean" role="radiogroup" [attr.aria-label]="field.field">
+                                            @for (option of projectPlanFieldOptions(field); track option) {
+                                              <label><input type="radio" [name]="field.id" [checked]="field.value === option" /> <span>{{ option }}</span></label>
+                                            }
+                                          </div>
+                                        </div>
+                                      } @else if (field.type === 'select') {
+                                        <label class="matrix-field matrix-field-select"><span class="matrix-field-label">{{ field.field }} @if (field.mandatory) { <b>*</b> }</span>
+                                          @if (field.description) { <small class="matrix-field-description">{{ field.description }}</small> }
+                                          <span class="matrix-select-wrap">
+                                            <select [attr.aria-label]="field.field">
+                                              @for (option of field.options || [field.value]; track option) { <option [selected]="option === field.value">{{ option }}</option> }
+                                            </select>
+                                            <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                                          </span>
+                                        </label>
+                                      } @else if (field.type === 'money') {
+                                        <label class="matrix-field matrix-field-money"><span class="matrix-field-label">{{ field.field }} @if (field.mandatory) { <b>*</b> }</span>
+                                          @if (field.description) { <small class="matrix-field-description">{{ field.description }}</small> }
+                                          <span class="matrix-money-wrap"><small>SAR</small><input type="text" [value]="field.value" [attr.aria-label]="field.field" [attr.placeholder]="field.placeholder || null" /></span>
+                                        </label>
+                                      } @else {
+                                        <label class="matrix-field matrix-field-{{ field.type }}" [class.wide]="field.type === 'textarea'"><span class="matrix-field-label">{{ field.field }} @if (field.mandatory) { <b>*</b> }</span>
+                                          @if (field.description) { <small class="matrix-field-description">{{ field.description }}</small> }
+                                          @if (field.type === 'textarea') { <textarea [value]="field.value" [attr.aria-label]="field.field" [attr.placeholder]="field.placeholder || null"></textarea> } @else { <input [type]="field.type || 'text'" [value]="field.value" [attr.aria-label]="field.field" [attr.placeholder]="field.placeholder || null" /> }
+                                        </label>
+                                      }
+                                    }
+                                  </div>
+                                </details>
+                              }
+                              @if (activeProjectPlanHasVisibleFields && activeProjectPlanHiddenFields.length) {
+                                <button class="matrix-show-fields" [class.is-expanded]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection)" type="button" (click)="toggleProjectPlanFieldSection(projectPlanActiveSection)" [attr.aria-expanded]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection)">
+                                  <span class="matrix-show-fields-copy"><strong>{{ activeProjectPlanHiddenFieldButtonLabel }} ({{ activeProjectPlanHiddenFields.length }})</strong><small>{{ activeProjectPlanHiddenFieldPreview }}</small></span>
+                                  <span class="matrix-show-fields-indicator" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection) ? 'minus' : 'plus'"></i></span></span>
+                                </button>
+                                @if (activeProjectPlanHasVisibleFields && isProjectPlanFieldSectionExpanded(projectPlanActiveSection)) {
+                                  <div class="matrix-hidden-fields is-expanded">
+                                    @for (group of activeProjectPlanHiddenGroups; track group.title) {
+                                      <section class="matrix-hidden-field-cluster">
+                                        <div class="matrix-hidden-field-cluster-head">
+                                          <span class="matrix-field-group-copy"><strong>{{ group.title }}</strong><small>{{ group.description }}</small></span>
+                                          <span class="matrix-field-group-meta"><b>{{ group.fields.length }}</b></span>
+                                        </div>
+                                        <div class="matrix-field-group-grid">
+                                          @for (field of group.fields; track field.id) {
+                                            @if (field.type === 'table') {
+                                              <article class="matrix-field matrix-field-table wide">
+                                                <div class="matrix-register-head">
+                                                  <div><span class="matrix-field-label">{{ field.field }} <small>Detailed only</small> @if (field.mandatory) { <b>*</b> }</span><small>{{ simplePlanTableConfig(field).description }}</small></div>
+                                                  <button type="button"><span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>{{ simplePlanTableConfig(field).action }}</button>
+                                                </div>
+                                                <div class="matrix-register-table" role="table" [attr.aria-label]="field.field">
+                                                  <div class="matrix-register-row head" [class.columns-2]="simplePlanTableConfig(field).columns.length === 2" [class.columns-3]="simplePlanTableConfig(field).columns.length === 3" [class.columns-4]="simplePlanTableConfig(field).columns.length === 4" [class.columns-5]="simplePlanTableConfig(field).columns.length >= 5" role="row">
+                                                    @for (column of simplePlanTableConfig(field).columns; track column) { <span>{{ column }}</span> }
+                                                  </div>
+                                                  @for (row of simplePlanTableConfig(field).rows; track row[0]) {
+                                                    <div class="matrix-register-row" [class.columns-2]="simplePlanTableConfig(field).columns.length === 2" [class.columns-3]="simplePlanTableConfig(field).columns.length === 3" [class.columns-4]="simplePlanTableConfig(field).columns.length === 4" [class.columns-5]="simplePlanTableConfig(field).columns.length >= 5" role="row">
+                                                      @for (cell of row; track $index) { <span>@if ($index === row.length - 1) { <b>{{ cell }}</b> } @else { <ng-container>{{ cell }}</ng-container> }</span> }
+                                                    </div>
+                                                  }
+                                                </div>
+                                              </article>
+                                            } @else if (field.type === 'boolean' || field.type === 'choice') {
+                                              <div class="matrix-field matrix-field-boolean" [class.wide]="field.type === 'choice'">
+                                                <span class="matrix-field-label">{{ field.field }} <small>Detailed only</small> @if (field.mandatory) { <b>*</b> }</span>
+                                                @if (field.description) { <small class="matrix-field-description">{{ field.description }}</small> }
+                                                <div class="matrix-boolean" role="radiogroup" [attr.aria-label]="field.field">
+                                                  @for (option of projectPlanFieldOptions(field); track option) {
+                                                    <label><input type="radio" [name]="field.id" [checked]="field.value === option" /> <span>{{ option }}</span></label>
+                                                  }
+                                                </div>
+                                              </div>
+                                            } @else if (field.type === 'select') {
+                                              <label class="matrix-field matrix-field-select"><span class="matrix-field-label">{{ field.field }} <small>Detailed only</small> @if (field.mandatory) { <b>*</b> }</span>
+                                                @if (field.description) { <small class="matrix-field-description">{{ field.description }}</small> }
+                                                <span class="matrix-select-wrap">
+                                                  <select [attr.aria-label]="field.field">
+                                                    @for (option of field.options || [field.value]; track option) { <option [selected]="option === field.value">{{ option }}</option> }
+                                                  </select>
+                                                  <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                                                </span>
+                                              </label>
+                                            } @else if (field.type === 'money') {
+                                              <label class="matrix-field matrix-field-money"><span class="matrix-field-label">{{ field.field }} <small>Detailed only</small> @if (field.mandatory) { <b>*</b> }</span>
+                                                @if (field.description) { <small class="matrix-field-description">{{ field.description }}</small> }
+                                                <span class="matrix-money-wrap"><small>SAR</small><input type="text" [value]="field.value" [attr.aria-label]="field.field" [attr.placeholder]="field.placeholder || null" /></span>
+                                              </label>
+                                            } @else {
+                                              <label class="matrix-field matrix-field-{{ field.type }}" [class.wide]="field.type === 'textarea'"><span class="matrix-field-label">{{ field.field }} <small>Detailed only</small> @if (field.mandatory) { <b>*</b> }</span>
+                                                @if (field.description) { <small class="matrix-field-description">{{ field.description }}</small> }
+                                                @if (field.type === 'textarea') { <textarea [value]="field.value" [attr.aria-label]="field.field" [attr.placeholder]="field.placeholder || null"></textarea> } @else { <input [type]="field.type || 'text'" [value]="field.value" [attr.aria-label]="field.field" [attr.placeholder]="field.placeholder || null" /> }
+                                              </label>
+                                            }
+                                          }
+                                        </div>
+                                      </section>
+                                    }
+                                  </div>
+                                }
                               }
                             }
                           </div>
@@ -1313,10 +2320,494 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                     </div>
                   </main>
                 </div>
-                @if (projectPlanDetailMode === 'simple') {
-                  <div class="project-plan-bottom-actions">
-                    <button class="project-plan-save-draft" type="button"><span class="icon" aria-hidden="true"><i data-lucide="save"></i></span>Save as draft</button>
-                    <button class="project-plan-submit" type="button"><span class="icon" aria-hidden="true"><i data-lucide="send"></i></span>Submit for approval</button>
+                @if (activeBenefitDrawer; as register) {
+                  <div class="dependency-drawer-shell" aria-hidden="false">
+                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close benefit drawer" (click)="closeBenefitDrawer()"></button>
+                    <aside class="dependency-drawer benefit-drawer" [attr.aria-label]="register.title">
+                      <form class="dependency-drawer-form benefit-drawer-form" (submit)="saveBenefitDrawer($event)">
+                        <div class="dependency-drawer-top benefit-drawer-top">
+                          <div class="dependency-drawer-title">
+                            <span class="dependency-register-eyebrow">{{ register.fieldName }} <small>AI ready</small></span>
+                            <h2>{{ register.title }}</h2>
+                            <p>{{ register.description }}</p>
+                          </div>
+                          <button class="drawer-close" type="button" aria-label="Close benefit drawer" (click)="closeBenefitDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
+                        </div>
+                        <div class="dependency-drawer-body benefit-drawer-body">
+                          <div class="dependency-drawer-summary">
+                            <span class="dependency-register-count">{{ benefitCountLabel(register) }}</span>
+                            <small>Capture the benefit statement first, then layer more evidence and realization commentary later through reporting.</small>
+                          </div>
+                          <div class="dependency-drawer-grid benefit-drawer-grid">
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Benefit Type</span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="register.draft.benefitType" (change)="updateBenefitDraft('benefitType', $any($event.target).value)" aria-label="Benefit Type">
+                                  <option value="" disabled>{{ register.benefitTypePlaceholder }}</option>
+                                  @for (option of register.benefitTypeOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Benefit Category</span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="register.draft.category" (change)="updateBenefitDraft('category', $any($event.target).value)" aria-label="Benefit Category">
+                                  <option value="" disabled>{{ register.benefitCategoryPlaceholder }}</option>
+                                  @for (option of register.benefitCategoryOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field dependency-drawer-field wide">
+                              <span class="matrix-field-label">Benefit Name <b>*</b></span>
+                              <input type="text" [value]="register.draft.benefitName" (input)="updateBenefitDraft('benefitName', $any($event.target).value)" aria-label="Benefit Name" placeholder="Enter benefit name" />
+                            </label>
+                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
+                              <span class="matrix-field-label">Description</span>
+                              <textarea [value]="register.draft.description" (input)="updateBenefitDraft('description', $any($event.target).value)" aria-label="Description" placeholder="Enter description"></textarea>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Benefit Owner</span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="register.draft.owner" (change)="updateBenefitDraft('owner', $any($event.target).value)" aria-label="Benefit Owner">
+                                  <option value="" disabled>{{ register.ownerPlaceholder }}</option>
+                                  @for (option of register.ownerOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field dependency-drawer-field">
+                              <span class="matrix-field-label">Realisation Date <b>*</b></span>
+                              <input type="date" [value]="register.draft.realizationDate" (input)="updateBenefitDraft('realizationDate', $any($event.target).value)" aria-label="Realisation Date" />
+                            </label>
+                          </div>
+                        </div>
+                        <div class="report-drawer-footer dependency-drawer-footer">
+                          <button class="report-secondary-button" type="button" (click)="closeBenefitDrawer()">Cancel</button>
+                          <button class="report-submit-button" type="submit" [disabled]="!canSaveBenefitDraft(register)">{{ register.actionLabel }}</button>
+                        </div>
+                      </form>
+                    </aside>
+                  </div>
+                }
+                @if (isIssueDrawerOpen) {
+                  @let register = activeIssuePlan;
+                  <div class="dependency-drawer-shell" aria-hidden="false">
+                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close issue drawer" (click)="closeIssueDrawer()"></button>
+                    <aside class="dependency-drawer issue-drawer" [attr.aria-label]="register.title">
+                      <form class="dependency-drawer-form issue-drawer-form" (submit)="saveIssueDrawer($event)">
+                        <div class="dependency-drawer-top issue-drawer-top">
+                          <div class="dependency-drawer-title">
+                            <span class="dependency-register-eyebrow">{{ register.fieldName }}</span>
+                            <h2>{{ register.title }}</h2>
+                            <p>{{ register.description }}</p>
+                          </div>
+                          <button class="drawer-close" type="button" aria-label="Close issue drawer" (click)="closeIssueDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
+                        </div>
+                        <div class="dependency-drawer-body issue-drawer-body">
+                          <div class="dependency-drawer-summary">
+                            <span class="dependency-register-count">{{ issueCountLabel(register) }}</span>
+                            <small>Capture the issue once with owner, dates, and the current resolution path so project reviews can see what still needs action.</small>
+                          </div>
+                          <div class="dependency-drawer-grid issue-drawer-grid">
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Issue Type <b>*</b></span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="register.draft.issueType" (change)="updateIssueDraft('issueType', $any($event.target).value)" aria-label="Issue Type">
+                                  <option value="" disabled>{{ register.issueTypePlaceholder }}</option>
+                                  @for (option of register.issueTypeOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Criticality</span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="register.draft.criticality" (change)="updateIssueDraft('criticality', $any($event.target).value)" aria-label="Criticality">
+                                  @for (option of register.criticalityOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
+                              <span class="matrix-field-label">Issue <b>*</b></span>
+                              <textarea [value]="register.draft.issue" (input)="updateIssueDraft('issue', $any($event.target).value)" aria-label="Issue" placeholder="Describe the issue or blocker"></textarea>
+                            </label>
+                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
+                              <span class="matrix-field-label">Description</span>
+                              <textarea [value]="register.draft.description" (input)="updateIssueDraft('description', $any($event.target).value)" aria-label="Description" placeholder="Add supporting context"></textarea>
+                            </label>
+                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
+                              <span class="matrix-field-label">Resolution <b>*</b></span>
+                              <textarea [value]="register.draft.resolution" (input)="updateIssueDraft('resolution', $any($event.target).value)" aria-label="Resolution" placeholder="Describe the current resolution path"></textarea>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Status <b>*</b></span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="register.draft.status" (change)="updateIssueDraft('status', $any($event.target).value)" aria-label="Status">
+                                  @for (option of register.statusOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Owner <b>*</b></span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="register.draft.owner" (change)="updateIssueDraft('owner', $any($event.target).value)" aria-label="Owner">
+                                  <option value="" disabled>{{ register.ownerPlaceholder }}</option>
+                                  @for (option of register.ownerOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field dependency-drawer-field">
+                              <span class="matrix-field-label">Date Raised <b>*</b></span>
+                              <input type="date" [value]="register.draft.dateRaised" (input)="updateIssueDraft('dateRaised', $any($event.target).value)" aria-label="Date Raised" />
+                            </label>
+                            <label class="matrix-field dependency-drawer-field">
+                              <span class="matrix-field-label">Due Date</span>
+                              <input type="date" [value]="register.draft.dueDate" (input)="updateIssueDraft('dueDate', $any($event.target).value)" aria-label="Due Date" />
+                            </label>
+                            <label class="matrix-field dependency-drawer-field">
+                              <span class="matrix-field-label">Date Closed</span>
+                              <input type="date" [value]="register.draft.dateClosed" (input)="updateIssueDraft('dateClosed', $any($event.target).value)" aria-label="Date Closed" />
+                            </label>
+                          </div>
+                        </div>
+                        <div class="report-drawer-footer dependency-drawer-footer">
+                          <button class="report-secondary-button" type="button" (click)="closeIssueDrawer()">Cancel</button>
+                          <button class="report-submit-button" type="submit" [disabled]="!canSaveIssueDraft(register)">{{ register.actionLabel }}</button>
+                        </div>
+                      </form>
+                    </aside>
+                  </div>
+                }
+                @if (isRelatedLinksDrawerOpen) {
+                  @let register = activeRelatedLinksRegister;
+                  <div class="dependency-drawer-shell" aria-hidden="false">
+                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close related links drawer" (click)="closeRelatedLinksDrawer()"></button>
+                    <aside class="dependency-drawer" [attr.aria-label]="register.title">
+                      <form class="dependency-drawer-form" (submit)="saveRelatedLinksDrawer($event)">
+                        <div class="dependency-drawer-top">
+                          <div class="dependency-drawer-title">
+                            <span class="dependency-register-eyebrow">{{ register.fieldName }}</span>
+                            <h2>{{ register.title }}</h2>
+                            <p>{{ register.description }}</p>
+                          </div>
+                          <button class="drawer-close" type="button" aria-label="Close related links drawer" (click)="closeRelatedLinksDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
+                        </div>
+                        <div class="dependency-drawer-body">
+                          <div class="dependency-drawer-summary">
+                            <span class="dependency-register-count">{{ relatedLinksCountLabel(register) }}</span>
+                            <small>Capture the document name, destination link, and a quick note once so reviewers can open evidence directly from this tab.</small>
+                          </div>
+                          <div class="dependency-drawer-grid">
+                            <label class="matrix-field dependency-drawer-field wide">
+                              <span class="matrix-field-label">Name <b>*</b></span>
+                              <input type="text" [value]="register.draft.name" (input)="updateRelatedLinksDraft('name', $any($event.target).value)" aria-label="Name" [attr.placeholder]="register.namePlaceholder" />
+                            </label>
+                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
+                              <span class="matrix-field-label">Description</span>
+                              <textarea [value]="register.draft.description" (input)="updateRelatedLinksDraft('description', $any($event.target).value)" aria-label="Description" [attr.placeholder]="register.descriptionPlaceholder"></textarea>
+                            </label>
+                            <label class="matrix-field dependency-drawer-field wide">
+                              <span class="matrix-field-label">Link To Document <b>*</b></span>
+                              <input type="text" [value]="register.draft.documentLink" (input)="updateRelatedLinksDraft('documentLink', $any($event.target).value)" aria-label="Link To Document" [attr.placeholder]="register.documentPlaceholder" />
+                            </label>
+                          </div>
+                        </div>
+                        <div class="report-drawer-footer dependency-drawer-footer">
+                          <button class="report-secondary-button" type="button" (click)="closeRelatedLinksDrawer()">Cancel</button>
+                          <button class="report-submit-button" type="submit" [disabled]="!canSaveRelatedLinksDraft(register)">{{ register.actionLabel }}</button>
+                        </div>
+                      </form>
+                    </aside>
+                  </div>
+                }
+                @if (isResourceDrawerOpen) {
+                  @let register = activeResourcePlan;
+                  <div class="dependency-drawer-shell" aria-hidden="false">
+                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close resource drawer" (click)="closeResourceDrawer()"></button>
+                    <aside class="dependency-drawer" [attr.aria-label]="register.title">
+                      <form class="dependency-drawer-form" (submit)="saveResourceDrawer($event)">
+                        <div class="dependency-drawer-top">
+                          <div class="dependency-drawer-title">
+                            <span class="dependency-register-eyebrow">{{ register.fieldName }}</span>
+                            <h2>{{ register.title }}</h2>
+                            <p>{{ register.description }}</p>
+                          </div>
+                          <button class="drawer-close" type="button" aria-label="Close resource drawer" (click)="closeResourceDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
+                        </div>
+                        <div class="dependency-drawer-body">
+                          <div class="dependency-drawer-summary">
+                            <span class="dependency-register-count">{{ resourceCountLabel(register) }}</span>
+                            <small>Capture the role, FTE demand, and timing once so resourcing can be reviewed directly from this section.</small>
+                          </div>
+                          <div class="dependency-drawer-grid">
+                            <label class="matrix-field matrix-field-select dependency-drawer-field wide">
+                              <span class="matrix-field-label">Resource <b>*</b></span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="register.draft.resource" (change)="updateResourceDraft('resource', $any($event.target).value)" aria-label="Resource">
+                                  <option value="" disabled>{{ register.resourcePlaceholder }}</option>
+                                  @for (option of register.resourceOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Resource type <b>*</b></span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="register.draft.resourceType" (change)="updateResourceDraft('resourceType', $any($event.target).value)" aria-label="Resource type">
+                                  <option value="" disabled>{{ register.resourceTypePlaceholder }}</option>
+                                  @for (option of register.resourceTypeOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Level of Impact <b>*</b></span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="register.draft.impact" (change)="updateResourceDraft('impact', $any($event.target).value)" aria-label="Level of Impact">
+                                  <option value="" disabled>{{ register.impactPlaceholder }}</option>
+                                  @for (option of register.impactOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Business Unit <b>*</b></span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="register.draft.businessUnit" (change)="updateResourceDraft('businessUnit', $any($event.target).value)" aria-label="Business Unit">
+                                  <option value="" disabled>{{ register.businessUnitPlaceholder }}</option>
+                                  @for (option of register.businessUnitOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field dependency-drawer-field">
+                              <span class="matrix-field-label">Resources (FTE Count) <b>*</b></span>
+                              <input type="text" [value]="register.draft.fteCount" (input)="updateResourceDraft('fteCount', $any($event.target).value)" aria-label="Resources" [attr.placeholder]="register.ftePlaceholder" />
+                            </label>
+                            <label class="matrix-field dependency-drawer-field">
+                              <span class="matrix-field-label">Baseline Start Date</span>
+                              <input type="date" [value]="register.draft.baselineStart" (input)="updateResourceDraft('baselineStart', $any($event.target).value)" aria-label="Baseline Start Date" />
+                            </label>
+                            <label class="matrix-field dependency-drawer-field">
+                              <span class="matrix-field-label">End Date</span>
+                              <input type="date" [value]="register.draft.baselineEnd" (input)="updateResourceDraft('baselineEnd', $any($event.target).value)" aria-label="End Date" />
+                            </label>
+                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
+                              <span class="matrix-field-label">Comments</span>
+                              <textarea [value]="register.draft.comments" (input)="updateResourceDraft('comments', $any($event.target).value)" aria-label="Comments" placeholder="Type comments here"></textarea>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="report-drawer-footer dependency-drawer-footer">
+                          <button class="report-secondary-button" type="button" (click)="closeResourceDrawer()">Cancel</button>
+                          <button class="report-submit-button" type="submit" [disabled]="!canSaveResourceDraft(register)">{{ register.actionLabel }}</button>
+                        </div>
+                      </form>
+                    </aside>
+                  </div>
+                }
+                @if (activeChangeImpactDrawer; as register) {
+                  <div class="dependency-drawer-shell change-impact-drawer-shell" aria-hidden="false">
+                    <button class="dependency-drawer-backdrop change-impact-drawer-backdrop" type="button" aria-label="Close change impact drawer" (click)="closeChangeImpactDrawer()"></button>
+                    <aside class="dependency-drawer change-impact-drawer" [attr.aria-label]="register.title">
+                      <form class="dependency-drawer-form change-impact-drawer-form" (submit)="saveChangeImpactDrawer($event)">
+                        <div class="dependency-drawer-top change-impact-drawer-top">
+                          <div class="dependency-drawer-title">
+                            <span class="dependency-register-eyebrow">{{ register.fieldName }}</span>
+                            <h2>{{ register.title }}</h2>
+                            <p>{{ register.description }}</p>
+                          </div>
+                          <button class="drawer-close" type="button" aria-label="Close change impact drawer" (click)="closeChangeImpactDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
+                        </div>
+                        <div class="dependency-drawer-body change-impact-drawer-body">
+                          <div class="dependency-drawer-summary">
+                            <span class="dependency-register-count">{{ changeImpactCountLabel(register) }}</span>
+                            <small>Capture the impacted audience, the level of disruption, and the first change strategy before adoption risk starts landing in delivery.</small>
+                          </div>
+                          <div class="dependency-drawer-grid change-impact-drawer-grid">
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Change Impact Category <b>*</b></span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="register.draft.category" (change)="updateChangeImpactDraft('category', $any($event.target).value)" aria-label="Change Impact Category">
+                                  <option value="" disabled>{{ register.categoryPlaceholder }}</option>
+                                  @for (option of register.categoryOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Stakeholder Impacted <b>*</b></span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="register.draft.stakeholder" (change)="updateChangeImpactDraft('stakeholder', $any($event.target).value)" aria-label="Stakeholder Impacted">
+                                  <option value="" disabled>{{ register.stakeholderPlaceholder }}</option>
+                                  @for (option of register.stakeholderOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Level of Impact <b>*</b></span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="register.draft.level" (change)="updateChangeImpactDraft('level', $any($event.target).value)" aria-label="Level of Impact">
+                                  <option value="" disabled>{{ register.levelPlaceholder }}</option>
+                                  @for (option of register.levelOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
+                              <span class="matrix-field-label">Comment</span>
+                              <small class="matrix-field-description">Add the business context, behavior shift, or delivery friction this impact is likely to create.</small>
+                              <textarea maxlength="3000" [value]="register.draft.comment" (input)="updateChangeImpactDraft('comment', $any($event.target).value)" aria-label="Comment" placeholder="Describe the impact in plain language"></textarea>
+                              <small class="change-impact-comment-count">{{ changeImpactCommentCharactersRemaining }} characters remaining</small>
+                            </label>
+                            <section class="change-impact-strategy-builder wide" aria-label="Change strategies">
+                              <div class="change-impact-strategy-head">
+                                <div>
+                                  <span class="matrix-field-label">Change Strategy</span>
+                                  <small class="matrix-field-description">Add the actions that will reduce the impact or prepare the audience.</small>
+                                </div>
+                              </div>
+                              <div class="change-impact-strategy-compose">
+                                <input type="text" [value]="register.draft.strategyInput" (input)="updateChangeImpactDraft('strategyInput', $any($event.target).value)" aria-label="Change Strategy" [attr.placeholder]="register.strategyPlaceholder" />
+                                <button class="change-impact-strategy-add" type="button" (click)="addChangeImpactStrategy()">Add strategy</button>
+                              </div>
+                              @if (register.draft.strategies.length) {
+                                <div class="change-impact-strategy-list is-editor" aria-label="Draft change strategies">
+                                  @for (strategy of register.draft.strategies; track strategy) {
+                                    <span class="change-impact-strategy-pill">
+                                      <span>{{ strategy }}</span>
+                                      <button type="button" aria-label="Remove strategy {{ strategy }}" (click)="removeChangeImpactStrategy(strategy)"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
+                                    </span>
+                                  }
+                                </div>
+                              } @else {
+                                <p class="change-impact-strategy-empty">No strategies added yet. Add the adoption, communication, or training response you want tracked with this impact.</p>
+                              }
+                            </section>
+                          </div>
+                        </div>
+                        <div class="report-drawer-footer dependency-drawer-footer">
+                          <button class="report-secondary-button" type="button" (click)="closeChangeImpactDrawer()">Cancel</button>
+                          <button class="report-submit-button" type="submit" [disabled]="!canSaveChangeImpactDraft(register)">{{ register.actionLabel }}</button>
+                        </div>
+                      </form>
+                    </aside>
+                  </div>
+                }
+                @if (activeDependencyRegister; as register) {
+                  <div class="dependency-drawer-shell" aria-hidden="false">
+                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close dependency drawer" (click)="closeDependencyDrawer()"></button>
+                    <aside class="dependency-drawer" [attr.aria-label]="register.title">
+                      <form class="dependency-drawer-form" (submit)="saveDependencyDrawer($event)">
+                        <div class="dependency-drawer-top">
+                          <div class="dependency-drawer-title">
+                            <span class="dependency-register-eyebrow">{{ register.fieldName }}</span>
+                            <h2>{{ register.title }}</h2>
+                            <p>{{ register.description }}</p>
+                          </div>
+                          <button class="drawer-close" type="button" aria-label="Close dependency drawer" (click)="closeDependencyDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
+                        </div>
+                        <div class="dependency-drawer-body">
+                          <div class="dependency-drawer-summary">
+                            <span class="dependency-register-count">{{ dependencyCountLabel(register) }}</span>
+                            <small>Add the relationship once, then manage it from the dependency table in this section.</small>
+                          </div>
+                          <div class="dependency-drawer-grid">
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">{{ register.key === 'predecessor' ? 'Predecessor Project' : 'Successor Project' }} <b>*</b></span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="register.draft.project" (change)="updateDependencyDraft('project', $any($event.target).value)" [attr.aria-label]="register.key === 'predecessor' ? 'Predecessor Project' : 'Successor Project'">
+                                  <option value="" disabled>{{ register.projectPlaceholder }}</option>
+                                  @for (option of register.projectOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Impact of Dependency <b>*</b></span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="register.draft.impact" (change)="updateDependencyDraft('impact', $any($event.target).value)" aria-label="Impact of Dependency">
+                                  <option value="" disabled>{{ register.impactPlaceholder }}</option>
+                                  @for (option of register.impactOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Dependent Product <b>*</b></span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="register.draft.dependentProduct" (change)="updateDependencyDraft('dependentProduct', $any($event.target).value)" aria-label="Dependent Product">
+                                  <option value="" disabled>{{ register.dependentProductPlaceholder }}</option>
+                                  @for (option of register.dependentProductOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field dependency-drawer-field">
+                              <span class="matrix-field-label">Project Manager <b>*</b></span>
+                              <input type="text" [value]="register.draft.projectManager" (input)="updateDependencyDraft('projectManager', $any($event.target).value)" aria-label="Project Manager" placeholder="Type project manager name" />
+                            </label>
+                            <label class="matrix-field dependency-drawer-field">
+                              <span class="matrix-field-label">Baseline Start Date <b>*</b></span>
+                              <input type="date" [value]="register.draft.baselineStart" (input)="updateDependencyDraft('baselineStart', $any($event.target).value)" aria-label="Baseline Start Date" />
+                            </label>
+                            <label class="matrix-field dependency-drawer-field">
+                              <span class="matrix-field-label">Baseline End Date <b>*</b></span>
+                              <input type="date" [value]="register.draft.baselineEnd" (input)="updateDependencyDraft('baselineEnd', $any($event.target).value)" aria-label="Baseline End Date" />
+                            </label>
+                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
+                              <span class="matrix-field-label">Nature of Dependency <b>*</b></span>
+                              <small class="matrix-field-description">Explain the handoff, blocker, or downstream reliance in plain language.</small>
+                              <textarea [value]="register.draft.nature" (input)="updateDependencyDraft('nature', $any($event.target).value)" aria-label="Nature of Dependency" placeholder="Describe how this dependency affects delivery"></textarea>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="report-drawer-footer dependency-drawer-footer">
+                          <button class="report-secondary-button" type="button" (click)="closeDependencyDrawer()">Cancel</button>
+                          <button class="report-submit-button" type="submit" [disabled]="!canSaveDependencyDraft(register)">{{ register.actionLabel }}</button>
+                        </div>
+                      </form>
+                    </aside>
                   </div>
                 }
               } @else if (projectPlanEntry === 'reports') {
@@ -1465,53 +2956,46 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                         </div>
                       </aside>
                     }
-                    @if (isPm101OnboardingWorkspaceFlow) {
-                      <div class="pm101-primary-tabs" role="tablist" aria-label="Workspace sections" data-tour-target="workspace-tabs">
-                        <button [class.active]="selectedView === 'pm101'" type="button" data-view-target="pm101" [attr.aria-selected]="selectedView === 'pm101'" (click)="setView('pm101')">
-                          <span class="icon" aria-hidden="true"><i data-lucide="book-open"></i></span>
-                          <span>PM101</span>
-                        </button>
-                        <button [class.active]="selectedView === 'calendar'" type="button" data-view-target="calendar" [attr.aria-selected]="selectedView === 'calendar'" (click)="setView('calendar')">
-                          <span class="icon" aria-hidden="true"><i data-lucide="calendar-days"></i></span>
-                          <span>Calendar</span>
-                        </button>
-                        <button [class.active]="selectedView === 'board'" type="button" data-view-target="board" [attr.aria-selected]="selectedView === 'board'" (click)="setView('board')">
-                          <span class="icon" aria-hidden="true"><i data-lucide="columns-3"></i></span>
-                          <span>Board</span>
-                        </button>
-                        <button [class.active]="selectedView === 'stages'" type="button" data-view-target="stages" [attr.aria-selected]="selectedView === 'stages'" (click)="setView('stages')">
-                          <span class="icon" aria-hidden="true"><i data-lucide="list-tree"></i></span>
-                          <span>Stages</span>
-                        </button>
-                      </div>
-                    } @else {
-                      <div class="workspace-tabs" role="tablist" aria-label="Workspace view" data-tour-target="workspace-tabs">
-                        <button
-                          [class.active]="selectedView !== 'stages'"
-                          type="button"
-                          data-view-target="actions"
-                          [attr.aria-selected]="selectedView !== 'stages'"
-                          (click)="setView(onboardingPm101Locked ? 'pm101' : 'calendar')"
-                        >
-                          <span class="icon" aria-hidden="true"><i data-lucide="check-square"></i></span>
-                          <span>Actions</span>
-                        </button>
-                        <button
-                          [class.active]="selectedView === 'stages'"
-                          [class.is-locked]="onboardingPm101Locked"
-                          type="button"
-                          data-view-target="stages"
-                          [attr.aria-selected]="selectedView === 'stages'"
-                          (click)="setView('stages')"
-                          [disabled]="onboardingPm101Locked"
-                          [attr.aria-disabled]="onboardingPm101Locked ? 'true' : null"
-                          [attr.title]="onboardingPm101Locked ? 'Available after PM 101 onboarding' : null"
-                        >
-                          <span class="icon" aria-hidden="true"><i data-lucide="list-tree"></i></span>
-                          <span>Stages</span>
-                        </button>
-                      </div>
-                    }
+                    <div class="workspace-tabs" role="tablist" aria-label="Workspace view" data-tour-target="workspace-tabs">
+                      <button
+                        [class.active]="isActionWorkspaceActive"
+                        [class.is-locked]="onboardingPm101Locked"
+                        type="button"
+                        data-view-target="actions"
+                        [attr.aria-selected]="isActionWorkspaceActive"
+                        (click)="setView(topActionWorkspaceView)"
+                        [disabled]="onboardingPm101Locked"
+                        [attr.aria-disabled]="onboardingPm101Locked ? 'true' : null"
+                        [attr.title]="onboardingPm101Locked ? 'Available after PM 101 onboarding' : null"
+                      >
+                        <span class="icon" aria-hidden="true"><i data-lucide="check-square"></i></span>
+                        <span>Actions</span>
+                      </button>
+                      <button
+                        [class.active]="selectedView === 'pm101'"
+                        type="button"
+                        data-view-target="pm101"
+                        [attr.aria-selected]="selectedView === 'pm101'"
+                        (click)="setView('pm101')"
+                      >
+                        <span class="icon" aria-hidden="true"><i data-lucide="book-open"></i></span>
+                        <span>PM101</span>
+                      </button>
+                      <button
+                        [class.active]="selectedView === 'stages'"
+                        [class.is-locked]="onboardingPm101Locked"
+                        type="button"
+                        data-view-target="stages"
+                        [attr.aria-selected]="selectedView === 'stages'"
+                        (click)="setView('stages')"
+                        [disabled]="onboardingPm101Locked"
+                        [attr.aria-disabled]="onboardingPm101Locked ? 'true' : null"
+                        [attr.title]="onboardingPm101Locked ? 'Available after PM 101 onboarding' : null"
+                      >
+                        <span class="icon" aria-hidden="true"><i data-lucide="list-tree"></i></span>
+                        <span>Stages</span>
+                      </button>
+                    </div>
                   </div>
                   @if (selectedView !== 'stages') {
                     <div class="workspace-control-row">
@@ -1519,19 +3003,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                         <span class="icon" aria-hidden="true"><i data-lucide="search"></i></span>
                         <input type="search" [attr.aria-label]="workspaceSearchPlaceholder" [placeholder]="workspaceSearchPlaceholder" />
                       </label>
-                      @if (isPm101OnboardingWorkspaceFlow) {
-                        <div class="action-view-switch pm101-ready-action-view-switch" role="tablist" aria-label="Actions view format">
-                          <button [class.active]="selectedView === 'pm101'" type="button" data-view-target="pm101" (click)="setView('pm101')">PM101</button>
-                          <button [class.active]="selectedView === 'board'" type="button" data-view-target="board" (click)="setView('board')">Board</button>
-                          <button [class.active]="selectedView === 'calendar'" type="button" data-view-target="calendar" (click)="setView('calendar')">Calendar</button>
-                        </div>
-                      } @else if (onboardingPm101Locked) {
-                        <div class="action-view-switch pm101-locked-action-view-switch" role="tablist" aria-label="Actions view format">
-                          <button [class.active]="selectedView === 'pm101'" type="button" data-view-target="pm101" (click)="setView('pm101')">PM101</button>
-                          <button [class.active]="selectedView === 'board'" type="button" data-view-target="board" (click)="setView('board')" disabled aria-disabled="true" title="Available after PM 101 onboarding">Board</button>
-                          <button [class.active]="selectedView === 'calendar'" type="button" data-view-target="calendar" (click)="setView('calendar')" disabled aria-disabled="true" title="Available after PM 101 onboarding">Calendar</button>
-                        </div>
-                      } @else {
+                      @if (isActionWorkspaceActive) {
                         <div class="action-view-switch" role="tablist" aria-label="Actions view format">
                           <button [class.active]="selectedView === 'board'" type="button" data-view-target="board" (click)="setView('board')">
                             <span class="icon" aria-hidden="true"><i data-lucide="columns-3"></i></span>
@@ -1540,10 +3012,6 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                           <button [class.active]="selectedView === 'calendar'" type="button" data-view-target="calendar" (click)="setView('calendar')">
                             <span class="icon" aria-hidden="true"><i data-lucide="calendar-days"></i></span>
                             <span>Calendar</span>
-                          </button>
-                          <button [class.active]="selectedView === 'pm101'" type="button" data-view-target="pm101" (click)="setView('pm101')">
-                            <span class="icon" aria-hidden="true"><i data-lucide="book-open"></i></span>
-                            <span>PM 101</span>
                           </button>
                         </div>
                       }
@@ -2109,9 +3577,50 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                         </section>
                       </section>
                     } @else {
-                      <section class="report-form-section report-area-section" [hidden]="activeReportSection !== area.label" role="tabpanel">
-                        <div class="report-section-head"><div><h3>{{ area.label }}</h3></div><span class="report-area-pill {{ area.tone }}">{{ area.status }}</span></div>
-                        <label class="report-form-field"><span>Update</span><textarea rows="2">{{ area.note }}</textarea></label>
+                      <section class="report-section-stack report-area-section" [hidden]="activeReportSection !== area.label" role="tabpanel">
+                        @let areaCard = detailedReportAreaCard(area);
+                        <article class="report-layout-card report-detail-overview-card {{ areaCard.tone }}">
+                          <div class="report-layout-card-head">
+                            <div>
+                              <h3>Overall Status</h3>
+                              <p>Define your project overall status.</p>
+                            </div>
+                            <strong class="report-layout-pill {{ areaCard.tone }}">{{ areaCard.status }}</strong>
+                          </div>
+
+                          <div class="report-layout-summary">
+                            <div class="report-layout-summary-box report-layout-status-box">
+                              <span class="report-layout-box-label">Status:</span>
+                              <div class="report-inline-status" role="radiogroup" [attr.aria-label]="area.label + ' overall status'">
+                                @for (option of reportStatusOptions; track option.label) {
+                                  <label class="{{ option.tone }}"><input type="radio" [attr.name]="areaCard.id + '-overall-status'" [checked]="isReportStatusSelected(option.value, areaCard.status)" /><span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(option.icon)"></i></span>{{ option.simpleLabel || option.label }}</span></label>
+                                }
+                              </div>
+                            </div>
+                            <div class="report-layout-summary-box report-layout-trend-box">
+                              <span class="report-layout-box-label">Overall Status Trend:</span>
+                              <strong><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span>{{ areaCard.trend }}</strong>
+                            </div>
+                            <div class="report-layout-summary-box report-layout-past-box">
+                              <span class="report-layout-box-label">Past reported statuses</span>
+                              <div class="report-status-timeline">
+                                @for (point of areaCard.timeline; track point.date) {
+                                  <span class="{{ point.tone }}" [title]="point.label"><i><span class="icon" aria-hidden="true"><i [attr.data-lucide]="trendIcon(point.tone)"></i></span></i><small>{{ point.date }}</small></span>
+                                }
+                              </div>
+                            </div>
+                          </div>
+
+                          <label class="report-layout-comment">
+                            <span>Comments</span>
+                            <textarea rows="4" maxlength="3000">{{ areaCard.comments }}</textarea>
+                          </label>
+                        </article>
+
+                        <section class="report-form-section">
+                          <div class="report-section-head"><div><h3>{{ area.label }}</h3></div><span class="report-area-pill {{ area.tone }}">{{ area.status }}</span></div>
+                          <label class="report-form-field"><span>Update</span><textarea rows="2">{{ area.note }}</textarea></label>
+                        </section>
                       </section>
                     }
                   }
@@ -2344,7 +3853,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       ],
     },
     {
-      title: 'First watch item',
+      title: 'Deliverables',
       body: 'Log the first risk PMO should see before endorsement.',
       icon: 'risks',
       fields: [
@@ -2382,6 +3891,30 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   activeReportProject: string | null = null;
   activeReportMode: ReportDetailMode = 'simple';
   selectedStageGateKey: string | null = null;
+  isBenefitDrawerOpen = false;
+  isIssueDrawerOpen = false;
+  isRelatedLinksDrawerOpen = false;
+  isResourceDrawerOpen = false;
+  isChangeImpactDrawerOpen = false;
+  activeDependencyRegisterKey: DependencyRegisterKey | null = null;
+  benefitPlanRows: BenefitPlanRow[] = benefitPlanConfig.rows.map((row) => ({ ...row }));
+  benefitPlanDraft: BenefitPlanDraft = { ...benefitPlanConfig.draft };
+  issuePlanRows: IssuePlanRow[] = issuePlanConfig.rows.map((row) => ({ ...row }));
+  issuePlanDraft: IssuePlanDraft = { ...issuePlanConfig.draft };
+  relatedLinkRows: RelatedLinkRow[] = relatedLinkConfig.rows.map((row) => ({ ...row }));
+  relatedLinkDraft: RelatedLinkDraft = { ...relatedLinkConfig.draft };
+  resourcePlanRows: ResourcePlanRow[] = resourcePlanConfig.rows.map((row) => ({ ...row }));
+  resourcePlanDraft: ResourcePlanDraft = { ...resourcePlanConfig.draft };
+  changeImpactRows: ChangeImpactRow[] = changeImpactConfig.rows.map((row) => ({ ...row, strategies: [...row.strategies] }));
+  changeImpactDraft: ChangeImpactDraft = { ...changeImpactConfig.draft, strategies: [...changeImpactConfig.draft.strategies] };
+  dependencyRegisterRows: Record<DependencyRegisterKey, DependencyRegisterRow[]> = {
+    predecessor: dependencyRegisterConfigs.predecessor.rows.map((row) => ({ ...row })),
+    successor: dependencyRegisterConfigs.successor.rows.map((row) => ({ ...row })),
+  };
+  dependencyRegisterDrafts: Record<DependencyRegisterKey, DependencyRegisterDraft> = {
+    predecessor: { ...dependencyRegisterConfigs.predecessor.draft },
+    successor: { ...dependencyRegisterConfigs.successor.draft },
+  };
   activeReportSection = 'Overview';
   projectPlanEntry: ProjectPlanEntry = 'quick';
   projectPlanDetailMode: ProjectPlanDetailMode = 'simple';
@@ -2391,6 +3924,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   guidedTourStep = 0;
 
   private iconsHydrated = false;
+  private lastActionWorkspaceView: ActionWorkspaceView = 'calendar';
   private quickLinksLayoutFrame: number | null = null;
   private quickLinksPagerBlockHeight = 0;
   private quickLinksToastTimer: number | null = null;
@@ -2438,19 +3972,101 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return this.projectPlanFieldGroupsForSection(this.projectPlanActiveSection, this.activeProjectPlanHiddenFields);
   }
 
+  get activeProjectPlanHasVisibleFields(): boolean {
+    return this.activeProjectPlanVisibleFields.length > 0;
+  }
+
   get activeProjectPlanHiddenFields(): ProjectPlanField[] {
-    if (this.isProjectPlanDetailedOnlySection(this.projectPlanActiveSection)) return [];
-    return this.projectPlanFieldsForSection(this.projectPlanActiveSection).filter((field) => this.isProjectPlanDetailedOnlyField(field));
+    if (!this.activeProjectPlanUsesIntermediateSplit) return [];
+    const fields = this.projectPlanFieldsForSection(this.projectPlanActiveSection);
+    return fields.filter((field) => this.isProjectPlanDetailedOnlyField(field));
   }
 
   get activeProjectPlanHiddenFieldPreview(): string {
-    return this.activeProjectPlanHiddenFields.map((field) => field.field).join(', ');
+    const labels = this.activeProjectPlanHiddenFields.map((field) => field.field);
+    if (labels.length <= 3) return labels.join(', ');
+    return `${labels.slice(0, 3).join(', ')} +${labels.length - 3} more`;
   }
 
   get activeProjectPlanVisibleFields(): ProjectPlanField[] {
     const fields = this.projectPlanFieldsForSection(this.projectPlanActiveSection);
+    if (!this.activeProjectPlanUsesIntermediateSplit) return fields;
     if (this.isProjectPlanDetailedOnlySection(this.projectPlanActiveSection)) return fields;
     return fields.filter((field) => field.intermediate);
+  }
+
+  get activeProjectPlanHiddenFieldButtonLabel(): string {
+    return this.activeProjectPlanHasVisibleFields ? 'Additional detailed fields' : 'Detailed fields';
+  }
+
+  get activeProjectPlanUsesIntermediateSplit(): boolean {
+    const fields = this.projectPlanFieldsForSection(this.projectPlanActiveSection);
+    return fields.some((field) => field.intermediate) && !this.isProjectPlanDetailedOnlySection(this.projectPlanActiveSection);
+  }
+
+  get activeBenefitPlan(): BenefitPlanConfig {
+    return {
+      ...benefitPlanConfig,
+      rows: this.benefitPlanRows,
+      draft: this.benefitPlanDraft,
+    };
+  }
+
+  get activeBenefitDrawer(): BenefitPlanConfig | null {
+    return this.isBenefitDrawerOpen ? this.activeBenefitPlan : null;
+  }
+
+  get activeIssuePlan(): IssuePlanConfig {
+    return {
+      ...issuePlanConfig,
+      rows: this.issuePlanRows,
+      draft: this.issuePlanDraft,
+    };
+  }
+
+  get activeIssueDrawer(): IssuePlanConfig | null {
+    return this.isIssueDrawerOpen ? this.activeIssuePlan : null;
+  }
+
+  get activeRelatedLinksRegister(): RelatedLinkConfig {
+    return {
+      ...relatedLinkConfig,
+      rows: this.relatedLinkRows,
+      draft: this.relatedLinkDraft,
+    };
+  }
+
+  get activeResourcePlan(): ResourcePlanConfig {
+    return {
+      ...resourcePlanConfig,
+      rows: this.resourcePlanRows,
+      draft: this.resourcePlanDraft,
+    };
+  }
+
+  get changeImpactRegister(): ChangeImpactConfig {
+    return this.changeImpactRegisterWithState();
+  }
+
+  get activeChangeImpactDrawer(): ChangeImpactConfig | null {
+    return this.isChangeImpactDrawerOpen ? this.changeImpactRegisterWithState() : null;
+  }
+
+  get changeImpactCommentCharactersRemaining(): number {
+    return Math.max(0, 3000 - this.changeImpactDraft.comment.length);
+  }
+
+  get visibleDependencyRegisters(): DependencyRegisterConfig[] {
+    return this.projectPlanFieldsToDependencyRegisters(this.activeProjectPlanVisibleFields);
+  }
+
+  get hiddenDependencyRegisters(): DependencyRegisterConfig[] {
+    return this.projectPlanFieldsToDependencyRegisters(this.activeProjectPlanHiddenFields);
+  }
+
+  get activeDependencyRegister(): DependencyRegisterConfig | null {
+    if (!this.activeDependencyRegisterKey) return null;
+    return this.dependencyRegisterWithState(this.activeDependencyRegisterKey);
   }
 
   get projectPlanEntryLabel(): string {
@@ -2470,8 +4086,18 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get workspaceSearchPlaceholder(): string {
-    if (this.onboardingPm101Locked || this.isPm101OnboardingWorkspaceFlow) return 'Search board';
-    return this.selectedView === 'pm101' ? 'Search PM 101' : this.selectedView === 'board' ? 'Search actions' : 'Search calendar';
+    if (this.selectedView === 'pm101') return 'Search PM 101';
+    if (this.selectedView === 'board') return 'Search actions';
+    if (this.selectedView === 'stages') return 'Search stages';
+    return 'Search calendar';
+  }
+
+  get isActionWorkspaceActive(): boolean {
+    return this.isActionWorkspaceView(this.selectedView);
+  }
+
+  get topActionWorkspaceView(): ActionWorkspaceView {
+    return this.isActionWorkspaceView(this.selectedView) ? this.selectedView : this.lastActionWorkspaceView;
   }
 
   get isPm101OnboardingWorkspaceFlow(): boolean {
@@ -2806,6 +4432,9 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    if ('selectedView' in changes) {
+      this.syncLastActionWorkspaceView(this.selectedView);
+    }
     if ('guidedTourActive' in changes) {
       if (this.guidedTourActive) {
         this.guidedTourStep = 0;
@@ -2861,6 +4490,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   handleEscapeKey(): void {
     if (this.workspaceColumnMenuOpen) {
       this.closeWorkspaceColumnMenu();
+      return;
+    }
+    if (this.isBenefitDrawerOpen || this.isIssueDrawerOpen || this.isRelatedLinksDrawerOpen || this.isResourceDrawerOpen || this.isChangeImpactDrawerOpen || this.activeDependencyRegister) {
+      this.closeProjectPlanDrawers();
       return;
     }
     if (this.guidedTourActive) {
@@ -3090,6 +4723,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   setProjectPlanEntry(entry: ProjectPlanEntry): void {
+    this.closeProjectPlanDrawers();
     this.projectPlanEntry = entry;
     this.projectPlanActiveSection = 'Overview';
     this.projectPlanExpandedFieldSections = {};
@@ -3097,11 +4731,13 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   setProjectPlanDetailMode(mode: ProjectPlanDetailMode): void {
+    if (mode !== 'detailed') this.closeProjectPlanDrawers();
     this.projectPlanDetailMode = mode;
     this.iconsHydrated = false;
   }
 
   setProjectPlanSection(section: string): void {
+    this.closeProjectPlanDrawers();
     this.projectPlanActiveSection = section;
     this.iconsHydrated = false;
   }
@@ -3121,6 +4757,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   toggleProjectPlanSections(): void {
     this.projectPlanSectionsExpanded = !this.projectPlanSectionsExpanded;
     if (!this.projectPlanSectionsExpanded && this.additionalProjectPlanSections.includes(this.projectPlanActiveSection)) {
+      this.closeProjectPlanDrawers();
       this.projectPlanActiveSection = 'Overview';
     }
     this.iconsHydrated = false;
@@ -3128,6 +4765,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   setView(view: WorkspaceView): void {
     if (this.isOnboardingPm101BlockedView(view)) return;
+    this.closeProjectPlanDrawers();
     this.closeReport();
     this.closeStageGate();
     this.selectedView = view;
@@ -3137,6 +4775,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   navigate(page: ConsolePage, projectPlanEntry: ProjectPlanEntry = 'quick'): void {
     if (this.onboardingPm101Locked && page === 'workspaces') return;
+    this.closeProjectPlanDrawers();
     this.closeReport();
     this.closeStageGate();
     this.selectedPage = page;
@@ -3152,6 +4791,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   openProject(projectId: string): void {
+    this.closeProjectPlanDrawers();
     this.closeReport();
     this.closeStageGate();
     this.selectedProject = projectId;
@@ -3163,6 +4803,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   openQuickAction(action: QuickAction): void {
+    this.closeProjectPlanDrawers();
     this.closeReport();
     this.closeStageGate();
     if (action.view && !this.isOnboardingPm101BlockedView(action.view)) this.selectedView = action.view;
@@ -3172,6 +4813,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   openReport(project: string): void {
+    this.closeProjectPlanDrawers();
     this.closeStageGate();
     this.activeReportProject = project;
     this.activeReportMode = 'simple';
@@ -3197,6 +4839,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   openStageGate(profile: StageProfile): void {
+    this.closeProjectPlanDrawers();
     this.closeReport();
     const currentStage = stageDefinitions[this.stageCurrentIndex(profile)] || stageDefinitions[0];
     this.selectedStageGateKey = this.stageGateKey(profile.project, currentStage.id);
@@ -3207,6 +4850,347 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     if (!this.selectedStageGateKey) return;
     this.selectedStageGateKey = null;
     this.iconsHydrated = false;
+  }
+
+  openBenefitDrawer(): void {
+    this.closeProjectPlanDrawers();
+    this.resetBenefitDraft();
+    this.isBenefitDrawerOpen = true;
+    this.iconsHydrated = false;
+  }
+
+  closeBenefitDrawer(): void {
+    if (!this.isBenefitDrawerOpen) return;
+    this.isBenefitDrawerOpen = false;
+    this.iconsHydrated = false;
+  }
+
+  saveBenefitDrawer(event: Event): void {
+    event.preventDefault();
+    const register = this.activeBenefitDrawer;
+    if (!register || !this.canSaveBenefitDraft(register)) return;
+
+    const draft = this.benefitPlanDraft;
+    const nextRow: BenefitPlanRow = {
+      id: `benefit-plan-${Date.now()}`,
+      benefitType: draft.benefitType.trim() || 'Strategic benefit',
+      category: draft.category.trim() || 'Cost Avoidance',
+      benefitName: draft.benefitName.trim(),
+      description: draft.description.trim(),
+      owner: draft.owner.trim() || 'Owner to confirm',
+      realizationDate: this.formatProjectPlanDate(draft.realizationDate),
+    };
+
+    this.benefitPlanRows = [...this.benefitPlanRows, nextRow];
+    this.resetBenefitDraft();
+    this.closeBenefitDrawer();
+  }
+
+  updateBenefitDraft(field: keyof BenefitPlanDraft, value: string): void {
+    this.benefitPlanDraft = {
+      ...this.benefitPlanDraft,
+      [field]: value,
+    };
+  }
+
+  canSaveBenefitDraft(register: BenefitPlanConfig | null): boolean {
+    if (!register) return false;
+    const draft = this.benefitPlanDraft;
+    return Boolean(draft.benefitName.trim() && draft.realizationDate.trim());
+  }
+
+  openIssueDrawer(): void {
+    this.closeProjectPlanDrawers();
+    this.resetIssueDraft();
+    this.isIssueDrawerOpen = true;
+    this.iconsHydrated = false;
+  }
+
+  closeIssueDrawer(): void {
+    if (!this.isIssueDrawerOpen) return;
+    this.isIssueDrawerOpen = false;
+    this.iconsHydrated = false;
+  }
+
+  saveIssueDrawer(event: Event): void {
+    event.preventDefault();
+    const register = this.activeIssueDrawer;
+    if (!register || !this.canSaveIssueDraft(register)) return;
+
+    const draft = this.issuePlanDraft;
+    const nextRow: IssuePlanRow = {
+      id: `issue-plan-${Date.now()}`,
+      issueType: draft.issueType.trim(),
+      criticality: draft.criticality.trim() || 'Low',
+      issue: draft.issue.trim(),
+      description: draft.description.trim(),
+      resolution: draft.resolution.trim(),
+      status: draft.status.trim() || 'Open',
+      owner: draft.owner.trim(),
+      dateRaised: this.formatProjectPlanDate(draft.dateRaised),
+      dueDate: this.formatProjectPlanDate(draft.dueDate),
+      dateClosed: this.formatProjectPlanDate(draft.dateClosed),
+    };
+
+    this.issuePlanRows = [...this.issuePlanRows, nextRow];
+    this.resetIssueDraft();
+    this.closeIssueDrawer();
+  }
+
+  updateIssueDraft(field: keyof IssuePlanDraft, value: string): void {
+    this.issuePlanDraft = {
+      ...this.issuePlanDraft,
+      [field]: value,
+    };
+  }
+
+  canSaveIssueDraft(register: IssuePlanConfig | null): boolean {
+    if (!register) return false;
+    const draft = this.issuePlanDraft;
+    return Boolean(
+      draft.issueType.trim() &&
+        draft.issue.trim() &&
+        draft.resolution.trim() &&
+        draft.status.trim() &&
+        draft.owner.trim() &&
+        draft.dateRaised.trim(),
+    );
+  }
+
+  openRelatedLinksDrawer(): void {
+    this.closeProjectPlanDrawers();
+    this.resetRelatedLinksDraft();
+    this.isRelatedLinksDrawerOpen = true;
+    this.iconsHydrated = false;
+  }
+
+  closeRelatedLinksDrawer(): void {
+    if (!this.isRelatedLinksDrawerOpen) return;
+    this.isRelatedLinksDrawerOpen = false;
+    this.iconsHydrated = false;
+  }
+
+  saveRelatedLinksDrawer(event: Event): void {
+    event.preventDefault();
+    const register = this.activeRelatedLinksRegister;
+    if (!this.canSaveRelatedLinksDraft(register)) return;
+
+    const draft = this.relatedLinkDraft;
+    const nextRow: RelatedLinkRow = {
+      id: `related-link-${Date.now()}`,
+      name: draft.name.trim(),
+      description: draft.description.trim(),
+      documentLink: draft.documentLink.trim(),
+    };
+
+    this.relatedLinkRows = [...this.relatedLinkRows, nextRow];
+    this.resetRelatedLinksDraft();
+    this.closeRelatedLinksDrawer();
+  }
+
+  updateRelatedLinksDraft(field: keyof RelatedLinkDraft, value: string): void {
+    this.relatedLinkDraft = {
+      ...this.relatedLinkDraft,
+      [field]: value,
+    };
+  }
+
+  canSaveRelatedLinksDraft(register: RelatedLinkConfig | null): boolean {
+    if (!register) return false;
+    const draft = this.relatedLinkDraft;
+    return Boolean(draft.name.trim() && draft.documentLink.trim());
+  }
+
+  relatedLinkHref(value: string): string {
+    const trimmed = value.trim();
+    if (!trimmed) return '#';
+    if (/^[a-z][a-z0-9+.-]*:/i.test(trimmed)) return trimmed;
+    if (trimmed.startsWith('//')) return `https:${trimmed}`;
+    return `https://${trimmed}`;
+  }
+
+  openResourceDrawer(): void {
+    this.closeProjectPlanDrawers();
+    this.resetResourcePlanDraft();
+    this.isResourceDrawerOpen = true;
+    this.iconsHydrated = false;
+  }
+
+  closeResourceDrawer(): void {
+    if (!this.isResourceDrawerOpen) return;
+    this.isResourceDrawerOpen = false;
+    this.iconsHydrated = false;
+  }
+
+  saveResourceDrawer(event: Event): void {
+    event.preventDefault();
+    const register = this.activeResourcePlan;
+    if (!this.canSaveResourceDraft(register)) return;
+
+    const draft = this.resourcePlanDraft;
+    const nextRow: ResourcePlanRow = {
+      id: `resource-${Date.now()}`,
+      resource: draft.resource.trim(),
+      resourceType: draft.resourceType.trim(),
+      impact: draft.impact.trim(),
+      businessUnit: draft.businessUnit.trim(),
+      fteCount: draft.fteCount.trim(),
+      baselineStart: this.formatResourcePlanDate(draft.baselineStart),
+      baselineEnd: this.formatResourcePlanDate(draft.baselineEnd),
+      comments: draft.comments.trim(),
+    };
+
+    this.resourcePlanRows = [...this.resourcePlanRows, nextRow];
+    this.resetResourcePlanDraft();
+    this.closeResourceDrawer();
+  }
+
+  updateResourceDraft(field: keyof ResourcePlanDraft, value: string): void {
+    this.resourcePlanDraft = {
+      ...this.resourcePlanDraft,
+      [field]: value,
+    };
+  }
+
+  canSaveResourceDraft(register: ResourcePlanConfig | null): boolean {
+    if (!register) return false;
+    const draft = this.resourcePlanDraft;
+    return Boolean(
+      draft.resource.trim() &&
+        draft.resourceType.trim() &&
+        draft.impact.trim() &&
+        draft.businessUnit.trim() &&
+        draft.fteCount.trim(),
+    );
+  }
+
+  openChangeImpactDrawer(): void {
+    this.closeProjectPlanDrawers();
+    this.resetChangeImpactDraft();
+    this.isChangeImpactDrawerOpen = true;
+    this.iconsHydrated = false;
+  }
+
+  closeChangeImpactDrawer(): void {
+    if (!this.isChangeImpactDrawerOpen) return;
+    this.isChangeImpactDrawerOpen = false;
+    this.iconsHydrated = false;
+  }
+
+  saveChangeImpactDrawer(event: Event): void {
+    event.preventDefault();
+    const register = this.activeChangeImpactDrawer;
+    if (!register || !this.canSaveChangeImpactDraft(register)) return;
+
+    const draft = this.changeImpactDraft;
+    const nextRow: ChangeImpactRow = {
+      id: `change-impact-${Date.now()}`,
+      category: draft.category.trim(),
+      stakeholder: draft.stakeholder.trim(),
+      level: draft.level.trim(),
+      comment: draft.comment.trim(),
+      strategies: draft.strategies.map((strategy) => strategy.trim()).filter(Boolean),
+    };
+
+    this.changeImpactRows = [...this.changeImpactRows, nextRow];
+    this.resetChangeImpactDraft();
+    this.closeChangeImpactDrawer();
+  }
+
+  updateChangeImpactDraft(field: ChangeImpactDraftField, value: string): void {
+    this.changeImpactDraft = {
+      ...this.changeImpactDraft,
+      [field]: value,
+    };
+  }
+
+  addChangeImpactStrategy(): void {
+    const nextStrategy = this.changeImpactDraft.strategyInput.trim();
+    if (!nextStrategy) return;
+    const exists = this.changeImpactDraft.strategies.some((strategy) => strategy.toLowerCase() === nextStrategy.toLowerCase());
+    this.changeImpactDraft = {
+      ...this.changeImpactDraft,
+      strategyInput: '',
+      strategies: exists ? [...this.changeImpactDraft.strategies] : [...this.changeImpactDraft.strategies, nextStrategy],
+    };
+  }
+
+  removeChangeImpactStrategy(strategyToRemove: string): void {
+    this.changeImpactDraft = {
+      ...this.changeImpactDraft,
+      strategies: this.changeImpactDraft.strategies.filter((strategy) => strategy !== strategyToRemove),
+    };
+  }
+
+  canSaveChangeImpactDraft(register: ChangeImpactConfig | null): boolean {
+    if (!register) return false;
+    const draft = this.changeImpactDraft;
+    return Boolean(draft.category.trim() && draft.stakeholder.trim() && draft.level.trim());
+  }
+
+  openDependencyDrawer(key: DependencyRegisterKey): void {
+    this.closeProjectPlanDrawers();
+    this.resetDependencyDraft(key);
+    this.activeDependencyRegisterKey = key;
+    this.iconsHydrated = false;
+  }
+
+  closeDependencyDrawer(): void {
+    if (!this.activeDependencyRegisterKey) return;
+    this.activeDependencyRegisterKey = null;
+    this.iconsHydrated = false;
+  }
+
+  saveDependencyDrawer(event: Event): void {
+    event.preventDefault();
+    const register = this.activeDependencyRegister;
+    if (!register || !this.canSaveDependencyDraft(register)) return;
+
+    const draft = this.dependencyRegisterDrafts[register.key];
+    const nextRow: DependencyRegisterRow = {
+      id: `dependency-${register.key}-${Date.now()}`,
+      project: draft.project.trim(),
+      impact: draft.impact.trim(),
+      dependentProduct: draft.dependentProduct.trim(),
+      baselineStart: this.formatDependencyDate(draft.baselineStart),
+      baselineEnd: this.formatDependencyDate(draft.baselineEnd),
+      projectManager: draft.projectManager.trim(),
+      nature: draft.nature.trim(),
+      status: register.key === 'predecessor' ? 'Tracking' : 'Planned',
+    };
+
+    this.dependencyRegisterRows = {
+      ...this.dependencyRegisterRows,
+      [register.key]: [...this.dependencyRegisterRows[register.key], nextRow],
+    };
+    this.resetDependencyDraft(register.key);
+    this.closeDependencyDrawer();
+  }
+
+  updateDependencyDraft(field: keyof DependencyRegisterDraft, value: string): void {
+    const key = this.activeDependencyRegisterKey;
+    if (!key) return;
+    this.dependencyRegisterDrafts = {
+      ...this.dependencyRegisterDrafts,
+      [key]: {
+        ...this.dependencyRegisterDrafts[key],
+        [field]: value,
+      },
+    };
+  }
+
+  canSaveDependencyDraft(register: DependencyRegisterConfig | null): boolean {
+    if (!register) return false;
+    const draft = this.dependencyRegisterDrafts[register.key];
+    return Boolean(
+      draft.project.trim() &&
+        draft.impact.trim() &&
+        draft.dependentProduct.trim() &&
+        draft.projectManager.trim() &&
+        draft.baselineStart.trim() &&
+        draft.baselineEnd.trim() &&
+        draft.nature.trim(),
+    );
   }
 
   submitStageGate(event: Event, status: StageGateStatus): void {
@@ -3506,6 +5490,19 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return 'Improving';
   }
 
+  detailedReportAreaCard(area: { label: string; status: string; tone: string; note: string }): ReportDrawerCard {
+    return {
+      id: slugifyPlanField(area.label),
+      title: area.label,
+      body: this.reportBodyForSection(area.label),
+      status: area.status,
+      tone: area.tone,
+      trend: this.reportTrendForTone(area.tone),
+      comments: area.note,
+      timeline: area.label === 'Scope' ? this.scopePastStatuses : this.reportTimelineForTone(area.tone),
+    };
+  }
+
   private reportTimelineForTone(tone: string): ReportTimelinePoint[] {
     const label = tone === 'red' ? 'Off track' : tone === 'amber' ? 'Alert/Discuss' : 'On track';
     return this.pastOverviewTrend.map((date) => ({ date, tone, label }));
@@ -3797,6 +5794,159 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return entry === 'reports' || entry === 'change-request' || entry === 'closure' ? entry : 'quick';
   }
 
+  projectPlanFieldOptions(field: ProjectPlanField): string[] {
+    if (field.type === 'boolean') return ['Yes', 'No'];
+    return field.options || [];
+  }
+
+  dependencyCountLabel(register: DependencyRegisterConfig): string {
+    return register.rows.length === 1 ? '1 record' : `${register.rows.length} records`;
+  }
+
+  benefitCountLabel(register: BenefitPlanConfig): string {
+    return register.rows.length === 1 ? '1 benefit' : `${register.rows.length} benefits`;
+  }
+
+  issueCountLabel(register: IssuePlanConfig): string {
+    return register.rows.length === 1 ? '1 issue' : `${register.rows.length} issues`;
+  }
+
+  changeImpactCountLabel(register: ChangeImpactConfig): string {
+    return register.rows.length === 1 ? '1 impact' : `${register.rows.length} impacts`;
+  }
+
+  relatedLinksCountLabel(register: RelatedLinkConfig): string {
+    return register.rows.length === 1 ? '1 link' : `${register.rows.length} links`;
+  }
+
+  resourceCountLabel(register: ResourcePlanConfig): string {
+    return register.rows.length === 1 ? '1 resource' : `${register.rows.length} resources`;
+  }
+
+  changeImpactLevelTone(level: string): string {
+    const normalized = level.toLowerCase();
+    if (normalized.includes('high')) return 'high';
+    if (normalized.includes('medium')) return 'medium';
+    if (normalized.includes('low')) return 'low';
+    return 'neutral';
+  }
+
+  issueCriticalityTone(level: string): string {
+    const normalized = level.toLowerCase();
+    if (normalized.includes('critical')) return 'critical';
+    if (normalized.includes('high')) return 'high';
+    if (normalized.includes('medium')) return 'medium';
+    if (normalized.includes('low')) return 'low';
+    return 'neutral';
+  }
+
+  issueStatusTone(status: string): string {
+    const normalized = status.toLowerCase();
+    if (normalized.includes('closed') || normalized.includes('resolved')) return 'success';
+    if (normalized.includes('progress')) return 'indigo';
+    if (normalized.includes('pending')) return 'amber';
+    if (normalized.includes('open')) return 'neutral';
+    return 'neutral';
+  }
+
+  dependencyStatusTone(status: string): string {
+    const normalized = status.toLowerCase();
+    if (normalized.includes('track')) return 'indigo';
+    if (normalized.includes('plan')) return 'neutral';
+    if (normalized.includes('risk') || normalized.includes('block')) return 'amber';
+    return 'neutral';
+  }
+
+  private projectPlanFieldsToDependencyRegisters(fields: ProjectPlanField[]): DependencyRegisterConfig[] {
+    const fieldToRegister: Partial<Record<string, DependencyRegisterConfig>> = {
+      'Predecessor Project(s)': dependencyRegisterConfigs.predecessor,
+      'Successor Project(s)': dependencyRegisterConfigs.successor,
+    };
+    return fields
+      .map((field) => fieldToRegister[field.field])
+      .map((register) => (register ? this.dependencyRegisterWithState(register.key) : null))
+      .filter((register): register is DependencyRegisterConfig => Boolean(register));
+  }
+
+  private dependencyRegisterWithState(key: DependencyRegisterKey): DependencyRegisterConfig {
+    const register = dependencyRegisterConfigs[key];
+    return {
+      ...register,
+      rows: this.dependencyRegisterRows[key],
+      draft: this.dependencyRegisterDrafts[key],
+    };
+  }
+
+  private resetDependencyDraft(key: DependencyRegisterKey): void {
+    this.dependencyRegisterDrafts = {
+      ...this.dependencyRegisterDrafts,
+      [key]: { ...dependencyRegisterConfigs[key].draft },
+    };
+  }
+
+  private resetBenefitDraft(): void {
+    this.benefitPlanDraft = { ...benefitPlanConfig.draft };
+  }
+
+  private resetIssueDraft(): void {
+    this.issuePlanDraft = { ...issuePlanConfig.draft };
+  }
+
+  private resetRelatedLinksDraft(): void {
+    this.relatedLinkDraft = { ...relatedLinkConfig.draft };
+  }
+
+  private changeImpactRegisterWithState(): ChangeImpactConfig {
+    return {
+      ...changeImpactConfig,
+      rows: this.changeImpactRows.map((row) => ({ ...row, strategies: [...row.strategies] })),
+      draft: { ...this.changeImpactDraft, strategies: [...this.changeImpactDraft.strategies] },
+    };
+  }
+
+  private resetChangeImpactDraft(): void {
+    this.changeImpactDraft = {
+      ...changeImpactConfig.draft,
+      strategies: [...changeImpactConfig.draft.strategies],
+    };
+  }
+
+  private formatProjectPlanDate(value: string): string {
+    if (!value) return '';
+    const dateOnlyMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const parsed = dateOnlyMatch
+      ? new Date(Date.UTC(Number(dateOnlyMatch[1]), Number(dateOnlyMatch[2]) - 1, Number(dateOnlyMatch[3])))
+      : new Date(value);
+    if (Number.isNaN(parsed.getTime())) return value;
+    return new Intl.DateTimeFormat('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'UTC',
+    }).format(parsed);
+  }
+
+  private formatDependencyDate(value: string): string {
+    return this.formatProjectPlanDate(value);
+  }
+
+  private resetResourcePlanDraft(): void {
+    this.resourcePlanDraft = { ...resourcePlanConfig.draft };
+  }
+
+  private formatResourcePlanDate(value: string): string {
+    return this.formatProjectPlanDate(value);
+  }
+
+  private closeProjectPlanDrawers(): void {
+    this.closeBenefitDrawer();
+    this.closeIssueDrawer();
+    this.closeRelatedLinksDrawer();
+    this.closeResourceDrawer();
+    this.closeChangeImpactDrawer();
+    this.closeDependencyDrawer();
+  }
+
   private projectPlanFieldsForSection(section: string): ProjectPlanField[] {
     return projectPlanFieldMatrix.filter((field) => field.section === section && field.detailed);
   }
@@ -3920,6 +6070,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   private emitState(): void {
+    this.syncLastActionWorkspaceView(this.selectedView);
     this.iconsHydrated = false;
     this.consoleStateChange.emit({
       projectId: this.selectedProject,
@@ -3935,6 +6086,15 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   private isOnboardingPm101BlockedView(view: WorkspaceView | undefined): boolean {
     return Boolean(this.onboardingPm101Locked && (view === 'board' || view === 'calendar' || view === 'stages'));
+  }
+
+  private isActionWorkspaceView(view: WorkspaceView): view is ActionWorkspaceView {
+    return view === 'board' || view === 'calendar';
+  }
+
+  private syncLastActionWorkspaceView(view: WorkspaceView): void {
+    if (!this.isActionWorkspaceView(view)) return;
+    this.lastActionWorkspaceView = view;
   }
 
   private loadPinnedQuickLinks(): string[] {

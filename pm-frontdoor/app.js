@@ -3279,14 +3279,21 @@ function WorkspaceSearch(selectedView) {
   `;
 }
 
+function isActionView(view) {
+  return view === "board" || view === "calendar";
+}
+
 function WorkspaceTabs(selectedView) {
-  const actionsActive = selectedView === "board" || selectedView === "calendar" || selectedView === "pm101";
-  const actionsTarget = onboardingPm101Locked ? "pm101" : "calendar";
+  const actionsActive = isActionView(selectedView);
+  const lockedActionAttrs = onboardingPm101Locked ? 'disabled aria-disabled="true" title="Available after PM 101 onboarding"' : "";
   const lockedStageAttrs = onboardingPm101Locked ? 'disabled aria-disabled="true" title="Available after PM 101 onboarding"' : "";
   return `
     <div class="workspace-tabs" role="tablist" aria-label="Workspace view" data-tour-target="workspace-tabs">
-      <button class="${actionsActive ? "active" : ""}" type="button" data-view-target="${actionsTarget}" aria-selected="${actionsActive}">
+      <button class="${actionsActive ? "active" : ""}" type="button" data-view-target="actions" aria-selected="${actionsActive}" ${lockedActionAttrs}>
         ${icon("checklist")} Actions
+      </button>
+      <button class="${selectedView === "pm101" ? "active" : ""}" type="button" data-view-target="pm101" aria-selected="${selectedView === "pm101"}">
+        ${icon("book")} PM101
       </button>
       <button class="${selectedView === "stages" ? "active" : ""}" type="button" data-view-target="stages" aria-selected="${selectedView === "stages"}" ${lockedStageAttrs}>
         ${icon("timeline")} Stages
@@ -3296,6 +3303,7 @@ function WorkspaceTabs(selectedView) {
 }
 
 function ActionViewSwitch(selectedView) {
+  if (!isActionView(selectedView)) return "";
   const lockedAttrs = onboardingPm101Locked ? 'disabled aria-disabled="true" title="Available after PM 101 onboarding"' : "";
   return `
     <div class="action-view-switch" role="tablist" aria-label="Actions view format">
@@ -3304,9 +3312,6 @@ function ActionViewSwitch(selectedView) {
       </button>
       <button class="${selectedView === "calendar" ? "active" : ""}" type="button" data-view-target="calendar" aria-selected="${selectedView === "calendar"}" ${lockedAttrs}>
         ${icon("calendar")} Calendar
-      </button>
-      <button class="${selectedView === "pm101" ? "active" : ""}" type="button" data-view-target="pm101" aria-selected="${selectedView === "pm101"}">
-        ${icon("book")} PM 101
       </button>
     </div>
   `;
@@ -4457,7 +4462,7 @@ function projectPlanSimpleGroups() {
       fields: ["CAPEX Baseline (FY)", "OPEX Baseline (FY)"],
     },
     {
-      title: "First watch item",
+      title: "Deliverables",
       icon: "risks",
       description: "Log the first risk PMO should see before endorsement.",
       fields: ["Risks Register"],
@@ -4510,7 +4515,25 @@ function ProjectPlanFieldGroupList(section, fields, options = {}) {
   const groups = projectPlanFieldGroupsForSection(section, fields);
   return groups
     .map(
-      (group) => `
+      (group) =>
+        options.flat
+          ? `
+        <section class="matrix-hidden-field-cluster">
+          <div class="matrix-hidden-field-cluster-head">
+            <span class="matrix-field-group-copy">
+              <strong>${escapeHtml(group.title)}</strong>
+              <small>${escapeHtml(group.description)}</small>
+            </span>
+            <span class="matrix-field-group-meta">
+              <b>${group.fields.length}</b>
+            </span>
+          </div>
+          <div class="matrix-field-group-grid">
+            ${group.fields.map((field) => ProjectPlanFieldControl(field, options)).join("")}
+          </div>
+        </section>
+      `
+          : `
         <details class="matrix-field-group ${options.detailedOnly ? "detailed-only" : ""}" open>
           <summary>
             <span class="matrix-field-group-copy">
@@ -4579,7 +4602,7 @@ function ProjectPlanDetailedContent(section) {
       ${
         expanded
           ? `<div class="matrix-hidden-fields is-expanded">
-              ${ProjectPlanFieldGroupList(section, visibleHiddenFields, { detailedOnly: true })}
+              ${ProjectPlanFieldGroupList(section, visibleHiddenFields, { detailedOnly: true, flat: true })}
             </div>`
           : ""
       }`
@@ -6039,6 +6062,7 @@ function App(
 let selectedProject = "all";
 let selectedPage = "workspace";
 let selectedView = "calendar";
+let lastActionView = "calendar";
 let selectedTimelineRange = "year";
 let selectedBoardFilter = "all";
 let selectedCalendarMonth = monthStart(new Date());
@@ -6086,6 +6110,9 @@ let activePlaygroundPan = null;
 
 function renderApp() {
   clearAiInsightsTimer();
+  if (isActionView(selectedView)) {
+    lastActionView = selectedView;
+  }
   document.querySelector(".calendar-detail-popover")?.classList.remove("is-visible");
   document.querySelector(".report-trend-popover")?.classList.remove("is-visible");
   if (onboardingActive) {
@@ -6469,8 +6496,9 @@ function initProjectSwitch() {
 function initWorkspaceSwitch() {
   document.querySelectorAll("[data-view-target]").forEach((button) => {
     button.addEventListener("click", () => {
-      if (onboardingPm101Locked && (button.dataset.viewTarget === "board" || button.dataset.viewTarget === "calendar" || button.dataset.viewTarget === "stages")) return;
-      selectedView = button.dataset.viewTarget;
+      const targetView = button.dataset.viewTarget === "actions" ? lastActionView : button.dataset.viewTarget;
+      if (onboardingPm101Locked && (targetView === "board" || targetView === "calendar" || targetView === "stages")) return;
+      selectedView = targetView;
       selectedStageGate = null;
       selectedReportProject = null;
       selectedPlaygroundDrawer = null;

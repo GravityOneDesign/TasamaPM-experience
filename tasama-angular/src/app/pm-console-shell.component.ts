@@ -10,6 +10,13 @@ interface ProjectOption {
   name: string;
 }
 
+interface RailItem {
+  icon: string;
+  label: string;
+  page?: ConsolePage;
+  home?: boolean;
+}
+
 type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground';
 type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
 const ONBOARDING_PM101_PROJECT_ID = 'all';
@@ -92,7 +99,7 @@ const ONBOARDING_PM101_PROJECT_ID = 'all';
               [disabled]="frontDoorMode === 'unassigned' && item.page !== 'workspace'"
               [attr.aria-disabled]="frontDoorMode === 'unassigned' && item.page !== 'workspace' ? 'true' : null"
               [attr.title]="frontDoorMode === 'unassigned' && item.page !== 'workspace' ? 'Available after PMO assigns a project' : null"
-              (click)="item.page && setPage(item.page)"
+              (click)="onRailItemClick(item)"
             >
               <span class="icon" aria-hidden="true"><i [attr.data-lucide]="item.icon"></i></span>
             </button>
@@ -133,9 +140,9 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     { id: 'PMO Capability', name: 'PMO Capability' },
   ];
 
-  readonly topRailItems = [
-    { icon: 'message-square-text', label: 'Project Register', page: 'workspaces' as ConsolePage },
-    { icon: 'layout-grid', label: 'Workspace', page: 'workspace' as ConsolePage },
+  readonly topRailItems: RailItem[] = [
+    { icon: 'house', label: 'Home', page: 'workspace', home: true },
+    { icon: 'layout-grid', label: 'Project Register', page: 'workspaces' },
     { icon: 'chart-column', label: 'Reports', page: undefined },
     { icon: 'building-2', label: 'Departments', page: undefined },
     { icon: 'circle-dollar-sign', label: 'Benefits', page: undefined },
@@ -218,6 +225,16 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     this.selectedView = this.onboardingPm101Locked ? 'pm101' : 'calendar';
     this.notificationPanelOpen = false;
     this.markShellChanged();
+  }
+
+  onRailItemClick(item: RailItem): void {
+    if (item.home) {
+      this.goHome();
+      return;
+    }
+    if (item.page) {
+      this.setPage(item.page);
+    }
   }
 
   toggleNotifications(): void {
