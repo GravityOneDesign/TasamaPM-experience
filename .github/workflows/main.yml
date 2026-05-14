@@ -2,8 +2,8 @@ name: sdz-tasama-design-ui
 
 on:
   push:
-    branches: [ main ]  # ✅ Auto deployment on push to main
-  workflow_dispatch:     # ✅ Manual trigger
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   sdz-tasama-design-ui:
@@ -24,25 +24,6 @@ jobs:
         npm install --legacy-peer-deps
         npm run build
 
-    - name: Prepare Deployment Package
-      run: |
-        mkdir build
-        # Copy pm-frontdoor static assets
-        cp -r pm-frontdoor build/
-        
-        # Copy built Angular files
-        if [ -d "tasama-angular/dist/tasama-angular/browser" ]; then
-          cp -r tasama-angular/dist/tasama-angular/browser build/tasama-angular
-        else
-          cp -r tasama-angular/dist/tasama-angular build/tasama-angular
-        fi
-        
-        # Create a root redirect to pm-frontdoor
-        echo '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/pm-frontdoor/"></head><body>Redirecting to <a href="/pm-frontdoor/">pm-frontdoor</a>...</body></html>' > build/index.html
-
-        # Create package.json to avoid EISDIR errors on Azure Linux App Service
-        echo '{"name":"tasama-ui","version":"1.0.0","scripts":{"start":"npx serve -s . -p 8080"}}' > build/package.json
-
     - name: Azure Login
       uses: azure/login@v2
       with:
@@ -58,4 +39,5 @@ jobs:
       uses: azure/webapps-deploy@v2
       with:
         app-name: sdz-tasama-pm-ui
-        package: build
+        # This deploys ONLY the contents of the Angular build folder to the root
+        package: tasama-angular/dist/tasama-angular/browser
