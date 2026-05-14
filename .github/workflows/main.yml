@@ -4,7 +4,7 @@ on:
   workflow_dispatch:   # ✅ only manual trigger
 
 jobs:
-  deploy-GravityEngage:
+  sdz-tasama-design-ui:
     runs-on: ubuntu-latest
 
     steps:
