@@ -8553,7 +8553,7 @@ p {
 }
 
 .report-drawer-body.report-drawer-body-detailed {
-  background: #ffffff;
+  background: #f7f7fc;
   gap: 0;
   padding: 0;
 }
@@ -8934,6 +8934,242 @@ p {
   color: #777777;
 }
 
+.report-detailed-shell {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  padding: 16px 24px;
+}
+
+.report-detailed-tab-panel {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.report-detailed-tab-panel[hidden] {
+  display: none !important;
+}
+
+.report-layout-card.report-detailed-summary-card {
+  background: #ffffff;
+  border: 1px solid #eeeeee;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(1, 10, 15, 0.08);
+  gap: 16px;
+  padding: 16px;
+}
+
+.report-layout-card.report-detailed-summary-card::before {
+  display: none;
+}
+
+.report-detail-record-section {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.report-detail-section-head {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.report-detail-section-head > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.report-detail-section-head strong,
+.report-detail-section-head span {
+  display: block;
+}
+
+.report-detail-section-head strong {
+  color: #0b0b0b;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.report-detail-section-head span {
+  color: #777777;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.report-detail-narrative-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 0;
+}
+
+.report-detail-narrative-grid .report-layout-field {
+  background: #ffffff;
+  border: 1px solid #eeeeee;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(1, 10, 15, 0.06);
+  padding: 16px;
+}
+
+.report-detail-record-list {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.report-detail-record-card {
+  --report-detail-item-accent: #22a06b;
+  background: #ffffff;
+  border: 1px solid #eeeeee;
+  border-left: 3px solid var(--report-detail-item-accent);
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(1, 10, 15, 0.06);
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  padding: 16px;
+}
+
+.report-detail-record-card.green {
+  --report-detail-item-accent: #22a06b;
+}
+
+.report-detail-record-card.amber {
+  --report-detail-item-accent: #f59e0b;
+}
+
+.report-detail-record-card.red {
+  --report-detail-item-accent: #dc2626;
+}
+
+.report-detail-record-head {
+  align-items: center;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  min-width: 0;
+}
+
+.report-detail-record-icon {
+  align-items: center;
+  background: rgba(16, 6, 159, 0.03);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(1, 10, 15, 0.08);
+  color: var(--brand);
+  display: inline-flex;
+  height: 40px;
+  justify-content: center;
+  width: 40px;
+}
+
+.report-detail-record-icon .icon {
+  height: 22px;
+  width: 22px;
+}
+
+.report-detail-record-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.report-detail-record-copy strong {
+  color: #0b0b0b;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  overflow-wrap: anywhere;
+}
+
+.report-detail-record-copy span,
+.report-detail-record-card > p {
+  color: #777777;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.report-detail-record-card > p {
+  color: #404040;
+}
+
+.report-detail-record-fields {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 0.8fr);
+  min-width: 0;
+}
+
+.report-detail-record-fields .scope-product-field > span:first-child {
+  color: #777777;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 15px;
+  margin-bottom: 4px;
+}
+
+.report-detail-record-fields input,
+.report-detail-record-fields select {
+  background: white;
+  border: 1px solid #dddddd;
+  border-radius: 8px;
+  box-sizing: border-box;
+  color: #2f2f2f;
+  font: inherit;
+  font-size: 12px;
+  height: 36px;
+  outline: 0;
+  padding: 0 10px;
+  width: 100%;
+}
+
+.report-detail-record-fields select {
+  appearance: none;
+  border: 0;
+  border-radius: 0;
+  flex: 1 1 auto;
+  height: auto;
+  padding: 0 10px 0 0;
+}
+
+.report-detail-record-card .report-layout-comment {
+  gap: 8px;
+}
+
+.report-detail-record-card .report-layout-comment textarea,
+.report-detail-narrative-grid .report-layout-field textarea {
+  border-color: #dddddd;
+  color: #2f2f2f;
+  font-size: 14px;
+  line-height: 20px;
+  min-height: 76px;
+  padding: 12px;
+}
+
+.report-detail-record-card .report-layout-comment textarea {
+  min-height: 64px;
+}
+
+.report-detail-record-card .report-layout-comment span,
+.report-detail-narrative-grid .report-layout-field span {
+  color: #2f2f2f;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.report-detail-narrative-grid .report-layout-field span small {
+  color: #777777;
+  font-size: 11px;
+  line-height: 15px;
+  margin-top: 2px;
+}
+
 .report-drawer-body-detailed .report-section-stack {
   gap: 14px;
   padding: 10px 16px 12px;
@@ -9225,16 +9461,16 @@ p {
 
 .report-section-nav {
   align-items: center;
-  background: rgba(255, 255, 255, 0.94);
+  background: #ffffff;
   border: 0;
-  border-bottom: 1px solid #f2f2f2;
+  border-bottom: 1px solid #dddddd;
   border-radius: 0;
   display: flex;
   flex: 0 0 auto;
-  gap: 18px;
-  min-height: 36px;
+  gap: 4px;
+  min-height: 52px;
   overflow-x: auto;
-  padding: 8px 16px 10px;
+  padding: 10px 24px;
   position: sticky;
   top: 0;
   z-index: 2;
@@ -9243,15 +9479,15 @@ p {
 .report-section-nav button {
   align-items: center;
   background: transparent;
-  border-radius: 7px;
-  color: #596273;
+  border-radius: 8px;
+  color: #404040;
   display: inline-flex;
   flex: 0 0 auto;
   font-size: 12px;
   font-weight: 500;
-  gap: 5px;
-  min-height: 24px;
-  padding: 4px 3px;
+  gap: 6px;
+  min-height: 32px;
+  padding: 8px 10px;
   white-space: nowrap;
   transition:
     background 160ms ease,
@@ -9260,15 +9496,14 @@ p {
 
 .report-section-nav button:hover,
 .report-section-nav button:focus-visible {
-  background: #f6f7fb;
-  color: #303645;
+  background: rgba(16, 6, 159, 0.05);
+  color: var(--brand);
   outline: 0;
 }
 
 .report-section-nav button.active {
   background: rgba(16, 6, 159, 0.08);
   color: var(--brand);
-  padding: 8px;
 }
 
 .report-section-name {
@@ -9281,10 +9516,10 @@ p {
   border-radius: 999px;
   display: inline-flex;
   flex: 0 0 auto;
-  height: 11px;
+  height: 12px;
   justify-content: center;
   position: relative;
-  width: 11px;
+  width: 12px;
 }
 
 .report-section-fill.complete {
@@ -10184,13 +10419,24 @@ p {
 }
 
 .scope-group-link {
-  background: transparent;
-  color: #596273;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #d3d3d3;
+  border-radius: 999px;
+  color: #404040;
+  display: inline-flex;
   flex: 0 0 auto;
-  font-size: 10.5px;
-  font-weight: 500;
-  line-height: 1.25;
-  padding: 5px 0;
+  font-size: 12px;
+  font-weight: 600;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 12px;
+  white-space: nowrap;
+}
+
+.scope-group-link .icon {
+  height: 14px;
+  width: 14px;
 }
 
 .scope-product-list {
@@ -10199,13 +10445,15 @@ p {
 }
 
 .scope-product-card {
-  background: #fbfcff;
-  border: 1px solid #e2e7f0;
-  border-radius: 9px;
+  background: #ffffff;
+  border: 1px solid #eeeeee;
+  border-left: 3px solid var(--brand);
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(1, 10, 15, 0.06);
   display: grid;
-  gap: 16px;
-  min-height: 157px;
-  padding: 11px 12px;
+  gap: 14px;
+  min-height: 0;
+  padding: 16px;
 }
 
 .scope-product-head {
@@ -10217,73 +10465,78 @@ p {
 
 .scope-product-title {
   align-items: center;
-  color: #303645;
+  color: #0b0b0b;
   display: inline-flex;
-  font-size: 11.5px;
+  font-size: 14px;
   font-weight: 600;
-  gap: 10px;
-  min-height: 20px;
+  gap: 12px;
+  min-height: 40px;
+  min-width: 0;
 }
 
 .scope-product-title strong {
-  color: #303645;
-  font-size: 11.5px;
+  color: #0b0b0b;
+  font-size: 14px;
   font-weight: 600;
-  line-height: 1.22;
+  line-height: 20px;
+  overflow-wrap: anywhere;
 }
 
 .scope-product-check {
   border: 1px solid #c7cedb;
-  border-radius: 3px;
+  border-radius: 8px;
   display: inline-flex;
-  flex: 0 0 13px;
-  height: 13px;
-  width: 13px;
+  flex: 0 0 40px;
+  height: 40px;
+  width: 40px;
 }
 
 .scope-product-icon {
   align-items: center;
-  background: #eef1f6;
-  border: 1px solid #e2e7f0;
-  border-radius: 999px;
-  color: #596273;
+  background: rgba(16, 6, 159, 0.03);
+  border: 0;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(1, 10, 15, 0.08);
+  color: var(--brand);
   display: inline-flex;
-  height: 20px;
+  flex: 0 0 40px;
+  height: 40px;
   justify-content: center;
-  width: 20px;
+  width: 40px;
 }
 
 .scope-product-icon .icon {
-  height: 12px;
-  width: 12px;
+  height: 22px;
+  width: 22px;
 }
 
 .scope-select-pill {
   align-items: center;
-  background: #e6edf9;
-  border-radius: 9px;
-  color: #3d3d3d;
+  background: rgba(16, 6, 159, 0.05);
+  border: 1px solid rgba(16, 6, 159, 0.1);
+  border-radius: 999px;
+  color: #404040;
   display: inline-flex;
   flex: 0 0 auto;
   gap: 8px;
-  min-height: 29px;
-  padding: 6px 8px;
+  min-height: 32px;
+  padding: 6px 10px;
 }
 
 .scope-select-pill span:last-child {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 600;
-  line-height: 1;
+  line-height: 16px;
 }
 
 .scope-select-pill-knob {
   background: #ffffff;
-  border: 1px solid #818692;
+  border: 1px solid #aaaaaa;
   border-radius: 999px;
   display: inline-flex;
-  flex: 0 0 17px;
-  height: 17px;
-  width: 17px;
+  flex: 0 0 16px;
+  height: 16px;
+  width: 16px;
 }
 
 .scope-product-grid {
@@ -10299,18 +10552,19 @@ p {
 
 .scope-product-grid small,
 .scope-product-controls label > span:first-child {
-  color: #596273;
-  font-size: 9.5px;
+  color: #777777;
+  font-size: 11px;
   font-weight: 500;
-  line-height: 1.2;
+  line-height: 15px;
   margin-bottom: 4px;
 }
 
 .scope-product-grid strong {
-  color: #303645;
-  font-size: 10.5px;
+  color: #2f2f2f;
+  font-size: 12px;
   font-weight: 500;
-  line-height: 1.3;
+  line-height: 16px;
+  overflow-wrap: anywhere;
 }
 
 .scope-product-field {
@@ -10322,17 +10576,17 @@ p {
 .scope-product-controls {
   display: grid;
   gap: 8px;
-  grid-template-columns: minmax(0, 231px) minmax(0, 192px) minmax(0, 192px) minmax(0, 179px);
+  grid-template-columns: minmax(0, 1.2fr) repeat(3, minmax(0, 1fr));
 }
 
 .scope-field-control {
   align-items: center;
   background: white;
-  border: 1px solid var(--line);
-  border-radius: 7px;
+  border: 1px solid #dddddd;
+  border-radius: 8px;
   box-sizing: border-box;
   display: inline-flex;
-  min-height: 31px;
+  min-height: 36px;
   min-width: 0;
   width: 100%;
 }
@@ -10351,15 +10605,15 @@ p {
 .scope-product-controls select,
 .scope-product-controls input {
   background: white;
-  border: 1px solid var(--line);
-  border-radius: 7px;
+  border: 1px solid #dddddd;
+  border-radius: 8px;
   box-sizing: border-box;
-  color: #303645;
+  color: #2f2f2f;
   font: inherit;
-  font-size: 10.5px;
-  height: 31px;
+  font-size: 12px;
+  height: 36px;
   outline: 0;
-  padding: 0 9px;
+  padding: 0 10px;
   width: 100%;
 }
 
@@ -10375,14 +10629,14 @@ p {
 .scope-percent-input {
   align-items: center;
   background: white;
-  border: 1px solid var(--line);
-  border-radius: 7px;
+  border: 1px solid #dddddd;
+  border-radius: 8px;
   box-sizing: border-box;
   display: grid;
   gap: 5px;
   grid-template-columns: minmax(0, 1fr) auto;
-  height: 31px;
-  padding: 0 9px;
+  height: 36px;
+  padding: 0 10px;
 }
 
 .scope-product-controls .scope-percent-input input {
@@ -10396,6 +10650,21 @@ p {
   color: #596273;
   font-size: 10.5px;
   line-height: 1.4;
+}
+
+.report-area-pill {
+  align-items: center;
+  border: 1px solid rgba(64, 64, 64, 0.2);
+  border-radius: 8px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 500;
+  justify-content: center;
+  line-height: 16px;
+  min-height: 24px;
+  padding: 3px 8px;
+  white-space: nowrap;
 }
 
 .report-area-pill.green {
@@ -21669,6 +21938,8 @@ p {
   .report-layout-summary,
   .report-simple-card-head,
   .report-simple-control-row,
+  .report-detail-narrative-grid,
+  .report-detail-record-fields,
   .report-layout-detail-grid,
   .simple-report-overview,
   .simple-report-controls,
@@ -21688,6 +21959,26 @@ p {
 
   .report-layout-card-head {
     flex-direction: column;
+  }
+
+  .report-detailed-shell {
+    padding: 14px 16px 16px;
+  }
+
+  .report-detail-section-head,
+  .report-detail-record-head,
+  .scope-product-head {
+    align-items: flex-start;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .report-detail-section-head,
+  .scope-product-head {
+    flex-direction: column;
+  }
+
+  .report-detail-record-head .report-area-pill {
+    justify-self: start;
   }
 
   .report-layout-pill {

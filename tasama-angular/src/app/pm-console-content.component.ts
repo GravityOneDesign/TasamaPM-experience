@@ -162,6 +162,19 @@ interface ReportDrawerCard {
   timeline: ReportTimelinePoint[];
 }
 
+interface ReportDetailItem {
+  title: string;
+  body: string;
+  icon: string;
+  status: string;
+  tone: string;
+  meta: string;
+  owner: string;
+  progressLabel: string;
+  progressValue: string;
+  comment: string;
+}
+
 interface SimplePlanTableConfig {
   action: string;
   description: string;
@@ -6145,102 +6158,69 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                   }
                 </nav>
 
-                <div class="report-section-stack">
-                  <div class="report-overview-group" [hidden]="activeReportSection !== 'Overview'" role="tabpanel">
-                    @let overviewCard = simpleReportOverviewCard;
-                    <article class="report-layout-card {{ overviewCard.tone }} report-detail-overview-card">
-                      <div class="report-layout-card-head">
-                        <div>
-                          <h3>{{ overviewCard.title }}</h3>
-                          <p>{{ overviewCard.body }}</p>
-                        </div>
-                        <strong class="report-layout-pill {{ overviewCard.tone }}">{{ overviewCard.status }}</strong>
-                      </div>
-
-                      <div class="report-layout-summary">
-                        <div class="report-layout-summary-box report-layout-status-box">
-                          <span class="report-layout-box-label">Status</span>
-                          <div class="report-inline-status" role="radiogroup" aria-label="Overall status">
-                            @for (option of reportStatusOptions; track option.label) {
-                              <label class="{{ option.tone }}"><input type="radio" name="overall-status" [checked]="isReportStatusSelected(option.value, overviewCard.status)" /><span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(option.icon)"></i></span>{{ option.simpleLabel || option.label }}</span></label>
+                <div class="report-detailed-shell">
+                  @for (card of detailedReportCards; track card.id) {
+                    <section class="report-detailed-tab-panel" [hidden]="activeReportSection !== card.title" role="tabpanel">
+                      <article class="report-layout-card report-simple-card report-detailed-summary-card {{ card.tone }}">
+                        <div class="report-simple-card-head">
+                          <div class="report-simple-title-area">
+                            <span class="report-simple-card-icon" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="iconName(card.icon)"></i></span></span>
+                            <div class="report-simple-section-title">
+                              <h3>{{ card.title === 'Overview' ? 'Overall Status' : card.title + ' Status' }}</h3>
+                              <span class="icon" aria-hidden="true"><i data-lucide="info"></i></span>
+                            </div>
+                          </div>
+                          <div class="report-simple-history" [attr.aria-label]="card.title + ' past statuses'">
+                            @for (point of card.timeline; track point.date) {
+                              <span class="{{ point.tone }}" [title]="point.label"><span class="report-simple-history-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="trendIcon(point.tone)"></i></span></span><small>{{ point.date }}</small></span>
                             }
                           </div>
                         </div>
-                        <div class="report-layout-summary-box report-layout-trend-box">
-                          <span class="report-layout-box-label">Overall Status Trend</span>
-                          <strong><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span>{{ overviewCard.trend }}</strong>
-                        </div>
-                        <div class="report-layout-summary-box report-layout-past-box">
-                          <span class="report-layout-box-label">Past Trend</span>
-                          <div class="report-status-timeline">
-                            @for (point of overviewCard.timeline; track point.date) {
-                              <span class="{{ point.tone }}" [title]="point.label"><i><span class="icon" aria-hidden="true"><i [attr.data-lucide]="trendIcon(point.tone)"></i></span></i><small>{{ point.date }}</small></span>
-                            }
+
+                        <div class="report-simple-control-row">
+                          <div class="report-simple-field">
+                            <span class="report-simple-field-label">Status<small>*</small></span>
+                            <div class="report-simple-status-control" role="radiogroup" [attr.aria-label]="card.title + ' detailed status'">
+                              @for (option of reportStatusOptions; track option.label) {
+                                <label class="{{ option.tone }}"><input type="radio" [attr.name]="'detailed-card-status-' + card.id" [checked]="isReportStatusSelected(option.value, card.status)" /><span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(option.icon)"></i></span>{{ option.simpleLabel || option.label }}</span></label>
+                              }
+                            </div>
+                          </div>
+                          <div class="report-simple-field">
+                            <span class="report-simple-field-label">Overall Status Trend</span>
+                            <div class="report-simple-trend-control" role="radiogroup" [attr.aria-label]="card.title + ' detailed trend'">
+                              @for (option of simpleReportTrendOptions; track option.value) {
+                                <label class="{{ option.tone }}"><input type="radio" [attr.name]="'detailed-card-trend-' + card.id" [checked]="isReportTrendSelected(option.value, card.trend)" /><span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="option.icon"></i></span>{{ option.label }}</span></label>
+                              }
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <label class="report-layout-comment">
-                        <span>Comments</span>
-                        <textarea rows="4" maxlength="3000"></textarea>
-                      </label>
-                    </article>
-
-                    <div class="report-detail-narratives">
-                      @for (field of detailedOverviewFields; track field.label) {
-                        <label class="report-layout-field">
-                          <span>{{ field.label }} @if (field.hint) { <small>{{ field.hint }}</small> }</span>
-                          <textarea [rows]="field.rows" maxlength="3000"></textarea>
+                        <label class="report-layout-comment">
+                          <span>Comments</span>
+                          <textarea rows="3" maxlength="3000" placeholder="Add the comments here..." [value]="card.comments"></textarea>
                         </label>
-                      }
-                    </div>
-                  </div>
+                      </article>
 
-                  @for (area of reportReviewAreas; track area.label) {
-                    @if (area.label === 'Scope') {
-                      <section class="report-area-section report-scope-section" [hidden]="activeReportSection !== area.label" role="tabpanel">
-                        <article class="report-layout-card report-detail-overview-card report-scope-overview-card red">
-                          <div class="report-layout-card-head">
-                            <div>
-                              <h3>Overall Status</h3>
-                              <p>Define your project overall status.</p>
-                            </div>
-                            <strong class="report-layout-pill {{ reportBadgeTone(area.status) }}">{{ area.status }}</strong>
+                      @if (card.title === 'Overview') {
+                        <section class="report-detail-record-section" aria-label="Overview narrative updates">
+                          <div class="report-detail-section-head">
+                            <div><strong>Narrative updates</strong><span>Capture the longer report text for this period.</span></div>
                           </div>
-
-                          <div class="report-layout-summary">
-                            <div class="report-layout-summary-box report-layout-status-box">
-                              <span class="report-layout-box-label">Status:</span>
-                              <div class="report-inline-status" role="radiogroup" aria-label="Scope overall status">
-                                @for (option of reportStatusOptions; track option.label) {
-                                  <label class="{{ option.tone }}"><input type="radio" name="scope-overall-status" [checked]="isReportStatusSelected(option.value, area.status)" /><span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(option.icon)"></i></span>{{ option.simpleLabel || option.label }}</span></label>
-                                }
-                              </div>
-                            </div>
-                            <div class="report-layout-summary-box report-layout-trend-box">
-                              <span class="report-layout-box-label">Overall Status Trend:</span>
-                              <strong><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span>{{ reportTrendForTone(area.tone) }}</strong>
-                            </div>
-                            <div class="report-layout-summary-box report-layout-past-box">
-                              <span class="report-layout-box-label">Past reported statuses</span>
-                              <div class="scope-status-timeline">
-                                @for (past of scopePastStatuses; track past.date) {
-                                  <span class="{{ past.tone }}" [title]="past.label"><i><span class="icon" aria-hidden="true"><i [attr.data-lucide]="trendIcon(past.tone)"></i></span></i><small>{{ past.date }}</small></span>
-                                }
-                              </div>
-                            </div>
+                          <div class="report-detail-narrative-grid">
+                            @for (field of detailedOverviewFields; track field.label) {
+                              <label class="report-layout-field">
+                                <span>{{ field.label }} @if (field.hint) { <small>{{ field.hint }}</small> }</span>
+                                <textarea [rows]="field.rows" maxlength="3000" [value]="field.value"></textarea>
+                              </label>
+                            }
                           </div>
-
-                          <label class="report-layout-comment">
-                            <span>Comments</span>
-                            <textarea rows="4" maxlength="3000"></textarea>
-                          </label>
-                        </article>
-
-                        <section class="scope-group-card scope-products-section" aria-label="Scope end products">
-                          <div class="scope-group-head">
-                            <div><strong>End Product</strong><span>{{ scopeProducts.length }} items</span></div>
-                            <button class="scope-group-link" type="button">Add to report</button>
+                        </section>
+                      } @else if (card.title === 'Scope') {
+                        <section class="report-detail-record-section report-detail-scope-section" aria-label="Scope end products">
+                          <div class="report-detail-section-head">
+                            <div><strong>End Product</strong><span>{{ scopeProducts.length }} items selected for this report.</span></div>
+                            <button class="scope-group-link" type="button"><span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>Add to report</button>
                           </div>
                           <div class="scope-product-list">
                             @for (product of scopeProducts; track product.title) {
@@ -6298,54 +6278,56 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                             }
                           </div>
                         </section>
-                      </section>
-                    } @else {
-                      <section class="report-section-stack report-area-section" [hidden]="activeReportSection !== area.label" role="tabpanel">
-                        @let areaCard = detailedReportAreaCard(area);
-                        <article class="report-layout-card report-detail-overview-card {{ areaCard.tone }}">
-                          <div class="report-layout-card-head">
-                            <div>
-                              <h3>Overall Status</h3>
-                              <p>Define your project overall status.</p>
-                            </div>
-                            <strong class="report-layout-pill {{ areaCard.tone }}">{{ areaCard.status }}</strong>
+                      } @else {
+                        <section class="report-detail-record-section" [attr.aria-label]="card.title + ' report items'">
+                          <div class="report-detail-section-head">
+                            <div><strong>{{ card.title }} details</strong><span>{{ card.body }}</span></div>
+                            <button class="scope-group-link" type="button"><span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>Add to report</button>
                           </div>
-
-                          <div class="report-layout-summary">
-                            <div class="report-layout-summary-box report-layout-status-box">
-                              <span class="report-layout-box-label">Status:</span>
-                              <div class="report-inline-status" role="radiogroup" [attr.aria-label]="area.label + ' overall status'">
-                                @for (option of reportStatusOptions; track option.label) {
-                                  <label class="{{ option.tone }}"><input type="radio" [attr.name]="areaCard.id + '-overall-status'" [checked]="isReportStatusSelected(option.value, areaCard.status)" /><span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(option.icon)"></i></span>{{ option.simpleLabel || option.label }}</span></label>
-                                }
-                              </div>
-                            </div>
-                            <div class="report-layout-summary-box report-layout-trend-box">
-                              <span class="report-layout-box-label">Overall Status Trend:</span>
-                              <strong><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span>{{ areaCard.trend }}</strong>
-                            </div>
-                            <div class="report-layout-summary-box report-layout-past-box">
-                              <span class="report-layout-box-label">Past reported statuses</span>
-                              <div class="report-status-timeline">
-                                @for (point of areaCard.timeline; track point.date) {
-                                  <span class="{{ point.tone }}" [title]="point.label"><i><span class="icon" aria-hidden="true"><i [attr.data-lucide]="trendIcon(point.tone)"></i></span></i><small>{{ point.date }}</small></span>
-                                }
-                              </div>
-                            </div>
+                          <div class="report-detail-record-list">
+                            @for (item of detailedReportItems(card.title); track item.title) {
+                              <article class="report-detail-record-card {{ item.tone }}">
+                                <div class="report-detail-record-head">
+                                  <span class="report-detail-record-icon" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="iconName(item.icon)"></i></span></span>
+                                  <div class="report-detail-record-copy">
+                                    <strong>{{ item.title }}</strong>
+                                    <span>{{ item.meta }}</span>
+                                  </div>
+                                  <span class="report-area-pill {{ item.tone }}">{{ item.status }}</span>
+                                </div>
+                                <p>{{ item.body }}</p>
+                                <div class="report-detail-record-fields">
+                                  <label class="scope-product-field scope-product-field-select">
+                                    <span>Report status</span>
+                                    <span class="scope-field-control scope-field-control-select">
+                                      <select [attr.aria-label]="'Report status for ' + item.title">
+                                        <option>{{ item.status }}</option>
+                                        <option>On track</option>
+                                        <option>Alert</option>
+                                        <option>Off track</option>
+                                      </select>
+                                      <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                                    </span>
+                                  </label>
+                                  <label class="scope-product-field">
+                                    <span>Owner</span>
+                                    <input type="text" [value]="item.owner" />
+                                  </label>
+                                  <label class="scope-product-field">
+                                    <span>{{ item.progressLabel }}</span>
+                                    <input type="text" [value]="item.progressValue" />
+                                  </label>
+                                </div>
+                                <label class="report-layout-comment">
+                                  <span>Comments</span>
+                                  <textarea rows="2" maxlength="3000" placeholder="Add the comments here..." [value]="item.comment"></textarea>
+                                </label>
+                              </article>
+                            }
                           </div>
-
-                          <label class="report-layout-comment">
-                            <span>Comments</span>
-                            <textarea rows="4" maxlength="3000">{{ areaCard.comments }}</textarea>
-                          </label>
-                        </article>
-
-                        <section class="report-form-section">
-                          <div class="report-section-head"><div><h3>{{ area.label }}</h3></div><span class="report-area-pill {{ area.tone }}">{{ area.status }}</span></div>
-                          <label class="report-form-field"><span>Update</span><textarea rows="2">{{ area.note }}</textarea></label>
                         </section>
-                      </section>
-                    }
+                      }
+                    </section>
                   }
                 </div>
               }
@@ -6532,6 +6514,190 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     { label: 'Resource', status: 'On track', note: 'Core team assigned', tone: 'green' },
     { label: 'Dependency', status: 'Alert', note: 'External owner to confirm', tone: 'amber' },
   ];
+  readonly detailedReportItemMap: Record<string, ReportDetailItem[]> = {
+    Schedule: [
+      {
+        title: 'Initiation stage gate',
+        body: 'Evidence pack and approval route for the current stage.',
+        icon: 'stageGate',
+        status: 'Alert',
+        tone: 'amber',
+        meta: 'Due 22 May 2026',
+        owner: 'PMO Desk',
+        progressLabel: 'Completion',
+        progressValue: '68%',
+        comment: 'Gate evidence is mostly ready. Sponsor confirmation is still pending.',
+      },
+      {
+        title: 'Product design milestone',
+        body: 'Design sign-off, user journey coverage, and acceptance checks.',
+        icon: 'milestone',
+        status: 'On track',
+        tone: 'green',
+        meta: 'Forecast 22 Sep 2026',
+        owner: 'Vikas Nagpal',
+        progressLabel: 'Completion',
+        progressValue: '42%',
+        comment: 'Design activities remain aligned to the current forecast.',
+      },
+    ],
+    Budget: [
+      {
+        title: 'FY 2026-2027 baseline',
+        body: 'Approved CAPEX and OPEX baseline for the active reporting year.',
+        icon: 'dollar',
+        status: 'On track',
+        tone: 'green',
+        meta: 'SAR 1.62M approved',
+        owner: 'Finance Office',
+        progressLabel: 'Variance',
+        progressValue: '0%',
+        comment: 'No variance to report against the approved baseline.',
+      },
+      {
+        title: 'Funding sources',
+        body: 'Confirmed and pending source lines backing this reporting period.',
+        icon: 'checklist',
+        status: 'Alert',
+        tone: 'amber',
+        meta: '1 pending approval',
+        owner: 'Corporate Finance',
+        progressLabel: 'Confirmed',
+        progressValue: '69%',
+        comment: 'Corporate co-funding approval remains the only open funding item.',
+      },
+    ],
+    Benefits: [
+      {
+        title: 'Research discovery benefit',
+        body: 'Improved ability to find capabilities, owners, and partnership routes.',
+        icon: 'benefitGraph',
+        status: 'Alert',
+        tone: 'amber',
+        meta: 'Owner response pending',
+        owner: 'Research Leads Forum',
+        progressLabel: 'Realization',
+        progressValue: '35%',
+        comment: 'Owner confirmation is needed before the benefit can be marked committed.',
+      },
+      {
+        title: 'Reduced duplicate intake',
+        body: 'Reusable intake records reduce repeated stakeholder discovery work.',
+        icon: 'benefit',
+        status: 'On track',
+        tone: 'green',
+        meta: 'Evidence drafted',
+        owner: 'PMO Desk',
+        progressLabel: 'Realization',
+        progressValue: '28%',
+        comment: 'Baseline measure has been drafted for PMO review.',
+      },
+    ],
+    Risks: [
+      {
+        title: 'Stakeholder data quality',
+        body: 'Capability and owner records may remain incomplete without source validation.',
+        icon: 'risks',
+        status: 'Off track',
+        tone: 'red',
+        meta: 'High exposure',
+        owner: 'Data Steward',
+        progressLabel: 'Mitigation',
+        progressValue: '22%',
+        comment: 'RAID refresh is required before this risk can move back to alert.',
+      },
+      {
+        title: 'Sponsor availability',
+        body: 'Steering decisions may slip if sponsor review windows compress.',
+        icon: 'bell',
+        status: 'Alert',
+        tone: 'amber',
+        meta: 'Review this week',
+        owner: 'Muna Hassan',
+        progressLabel: 'Mitigation',
+        progressValue: '54%',
+        comment: 'Backup reviewer identified; sponsor confirmation is still preferred.',
+      },
+    ],
+    Issues: [
+      {
+        title: 'Open PMO decision',
+        body: 'Clarify which evidence artefacts are mandatory for initiation approval.',
+        icon: 'issues',
+        status: 'On track',
+        tone: 'green',
+        meta: 'Decision due 16 May',
+        owner: 'PMO Desk',
+        progressLabel: 'Resolution',
+        progressValue: '60%',
+        comment: 'No blocker escalated; decision is tracking inside the PMO window.',
+      },
+      {
+        title: 'Access request queue',
+        body: 'Research partner access requests need final routing confirmation.',
+        icon: 'link',
+        status: 'Alert',
+        tone: 'amber',
+        meta: '3 requests queued',
+        owner: 'Delivery Office',
+        progressLabel: 'Resolution',
+        progressValue: '45%',
+        comment: 'Routing rule is drafted and waiting for stakeholder validation.',
+      },
+    ],
+    Resource: [
+      {
+        title: 'Core delivery team',
+        body: 'Project manager, analyst, and data steward coverage for the next period.',
+        icon: 'resources',
+        status: 'On track',
+        tone: 'green',
+        meta: '3 roles assigned',
+        owner: 'Muna Hassan',
+        progressLabel: 'Coverage',
+        progressValue: '100%',
+        comment: 'Core team remains assigned for the upcoming reporting period.',
+      },
+      {
+        title: 'Change support',
+        body: 'Part-time change support for stakeholder briefings and adoption planning.',
+        icon: 'changeRequest',
+        status: 'Alert',
+        tone: 'amber',
+        meta: '0.4 FTE requested',
+        owner: 'Change team',
+        progressLabel: 'Coverage',
+        progressValue: '40%',
+        comment: 'Shared resource approval is pending but not yet blocking delivery.',
+      },
+    ],
+    Dependency: [
+      {
+        title: 'Data source onboarding',
+        body: 'Upstream onboarding must finish before validation and discovery build-out.',
+        icon: 'dependencies',
+        status: 'Alert',
+        tone: 'amber',
+        meta: 'External owner',
+        owner: 'Muna Hassan',
+        progressLabel: 'Readiness',
+        progressValue: '48%',
+        comment: 'External owner needs to confirm the final source onboarding date.',
+      },
+      {
+        title: 'Research portal rollout',
+        body: 'Downstream rollout depends on capability data and service readiness.',
+        icon: 'route',
+        status: 'On track',
+        tone: 'green',
+        meta: 'Successor project',
+        owner: 'Delivery Office',
+        progressLabel: 'Readiness',
+        progressValue: '65%',
+        comment: 'Successor team is aligned to the current forecast.',
+      },
+    ],
+  };
   readonly planCards = [
     { title: 'Project setup', body: 'Core identifiers, baseline dates, and ownership.', icon: 'project' },
     { title: 'Scope and deliverables', body: 'Outputs, acceptance criteria, and management products.', icon: 'endProduct' },
@@ -9653,6 +9819,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       comments: area.note,
       timeline: area.label === 'Scope' ? this.scopePastStatuses : this.reportTimelineForTone(area.tone),
     };
+  }
+
+  detailedReportItems(section: string): ReportDetailItem[] {
+    return this.detailedReportItemMap[section] || [];
   }
 
   private reportTimelineForTone(tone: string): ReportTimelinePoint[] {
