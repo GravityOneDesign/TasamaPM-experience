@@ -6,6 +6,7 @@ export interface PmConsoleMountOptions {
   frontDoorMode?: string;
   guidedTourActive?: boolean;
   guidedTourExitMode?: string | null;
+  onboardingPm101Locked?: boolean;
   notificationPanelOpen?: boolean;
   pmoAssignmentReady?: boolean;
 }

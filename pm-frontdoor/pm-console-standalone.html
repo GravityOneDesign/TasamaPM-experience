@@ -1540,6 +1540,10 @@ p {
   min-height: 0;
 }
 
+.content-grid.pm101-locked-grid {
+  grid-template-columns: minmax(0, 1fr) 344px;
+}
+
 .unassigned-mode {
   background:
     linear-gradient(135deg, rgba(16, 6, 159, 0.06) 0%, rgba(37, 99, 235, 0.035) 42%, rgba(34, 160, 107, 0.055) 100%),
@@ -2216,6 +2220,10 @@ p {
   flex: 1 1 auto;
 }
 
+.pm101-locked-grid .left-column {
+  grid-column: 1;
+}
+
 .left-column {
   grid-column: 1;
   grid-row: 1;
@@ -2308,6 +2316,20 @@ p {
   transform: translateY(-1px);
 }
 
+.action-card:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+}
+
+.action-card:disabled:hover {
+  border-color: var(--card-stroke);
+  box-shadow:
+    0 1px 1px rgba(1, 10, 15, 0.04),
+    0 2px 4px rgba(1, 10, 15, 0.12);
+  transform: none;
+}
+
 .action-card:focus-visible {
   outline: 3px solid rgba(173, 220, 145, 0.35);
   outline-offset: 3px;
@@ -2396,6 +2418,13 @@ p {
   transform: translateX(2px);
 }
 
+.action-card:disabled .action-arrow,
+.action-card:disabled:hover .action-arrow {
+  background: #e7e9f1;
+  color: #969baa;
+  transform: none;
+}
+
 .action-card span {
   z-index: 1;
 }
@@ -2445,8 +2474,7 @@ p {
 }
 
 .pm-project-filter,
-.pm-project-icon-button,
-.pm-project-view-toggle button {
+.pm-project-icon-button {
   align-items: center;
   background: #ffffff;
   border: 1px solid #d3d3d3;
@@ -2484,7 +2512,9 @@ p {
 }
 
 .pm-projects-controls {
+  flex-wrap: wrap;
   gap: 8px;
+  justify-content: flex-end;
   min-width: 0;
 }
 
@@ -2525,19 +2555,32 @@ p {
 }
 
 .pm-project-view-toggle {
-  background: #f6f6fb;
-  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #e4e7ef;
+  border-radius: 9px;
   gap: 4px;
-  padding: 0;
+  padding: 4px;
 }
 
 .pm-project-view-toggle button {
-  border-color: transparent;
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: #596273;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 32px;
+  justify-content: center;
+  min-width: 32px;
+  padding: 0;
+  width: 32px;
 }
 
 .pm-project-view-toggle button.active {
-  border-color: rgba(16, 6, 159, 0.12);
-  color: var(--brand);
+  background: #f3f4f7;
+  border-color: #d7dce5;
+  box-shadow: none;
+  color: #2e3440;
 }
 
 .pm-project-select {
@@ -2674,6 +2717,7 @@ p {
   border: 1px solid #e3e5e9;
   border-radius: 8px;
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   justify-content: space-between;
   min-width: 0;
@@ -2691,9 +2735,14 @@ p {
 .pm-project-table-toolbar > div {
   align-items: center;
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   justify-content: flex-end;
   min-width: 0;
+}
+
+.pm-project-table-toolbar .pm-project-view-toggle {
+  margin-left: 4px;
 }
 
 .pm-table-tool,
@@ -3584,7 +3633,7 @@ p {
 
 .pm-budget-stats span {
   color: #777777;
-  font-family: "Inter", var(--font-family);
+  font-family: var(--font);
   font-size: 10px;
   font-weight: 500;
   line-height: 1.5;
@@ -3592,7 +3641,7 @@ p {
 
 .pm-budget-stats strong {
   color: #999999;
-  font-family: "Inter", var(--font-family);
+  font-family: var(--font);
   font-size: 10px;
   font-weight: 400;
   line-height: 1.5;
@@ -3620,7 +3669,7 @@ p {
 
 .pm-budget-ring span {
   color: #555555;
-  font-family: "Inter", var(--font-family);
+  font-family: var(--font);
   font-size: 16px;
   font-weight: 600;
   line-height: 1.5;
@@ -4504,6 +4553,67 @@ p {
   display: none;
 }
 
+.pm101-assignment-widget {
+  background: linear-gradient(105deg, rgba(8, 77, 173, 0.88) 0%, rgba(13, 4, 145, 0.88) 100%);
+  border-color: rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+  box-shadow: 0 18px 34px rgba(16, 6, 159, 0.18);
+  min-width: 340px;
+  padding: 16px;
+  right: 16px;
+  top: 29px;
+  width: min(465px, calc(100% - 452px));
+}
+
+.pm101-assignment-widget::before,
+.pm101-assignment-widget::after {
+  display: none;
+}
+
+.pm101-assignment-widget .ai-insight-main {
+  align-items: flex-start;
+  gap: 9px;
+}
+
+.pm101-assignment-widget .ai-insight-icon {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 18px;
+  color: #ffffff;
+  display: inline-flex;
+  flex: 0 0 32px;
+  height: 32px;
+  justify-content: center;
+  width: 32px;
+}
+
+.pm101-assignment-widget .ai-insight-icon .icon {
+  height: 15px;
+  width: 15px;
+}
+
+.pm101-assignment-widget .ai-insight-copy {
+  flex: 1 1 auto;
+}
+
+.pm101-assignment-widget .ai-insight-copy strong {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 20px;
+  max-width: none;
+  white-space: normal;
+}
+
+.pm101-assignment-widget .ai-insight-copy p {
+  color: rgba(255, 255, 255, 0.78);
+  display: block;
+  font-size: 12px;
+  line-height: 17.4px;
+  margin-top: 4px;
+}
+
 .workspace-tabs {
   align-items: center;
   bottom: 0;
@@ -4555,6 +4665,12 @@ p {
   position: absolute;
   right: 0;
   z-index: 1;
+}
+
+.workspace-tabs button:disabled {
+  color: #a2a7b4;
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .workspace-tabs .icon {
@@ -4783,6 +4899,12 @@ p {
   background: white;
   box-shadow: 0 1px 4px rgba(25, 33, 61, 0.08);
   color: var(--brand);
+}
+
+.action-view-switch button:disabled {
+  color: #a2a7b4;
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .action-view-switch .icon {
@@ -8408,8 +8530,8 @@ p {
 }
 
 .project-frontdoor .quick-actions-card {
-  flex: 0 0 auto;
-  min-height: 542px;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .quick-card-head {
@@ -8444,7 +8566,8 @@ p {
 .project-frontdoor .quick-actions-card {
   background: #ffffff;
   align-self: stretch;
-  min-height: 542px;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: hidden;
   padding: 15px;
   width: 100%;
@@ -8554,6 +8677,124 @@ p {
 .project-frontdoor .quick-action-icon .icon {
   height: 16px;
   width: 16px;
+}
+
+.pm101-locked-right {
+  gap: 16px;
+  overflow: hidden;
+}
+
+.pm101-locked-right .top-deck {
+  gap: 16px;
+}
+
+.pm101-locked-right .action-card {
+  flex-basis: 74px;
+  grid-template-columns: 48px minmax(0, 1fr) 32px;
+  min-height: 74px;
+  padding: 13px 17px 13px 13px;
+}
+
+.pm101-locked-right .action-icon {
+  height: 48px;
+  width: 48px;
+}
+
+.pm101-locked-right .action-icon img {
+  height: 28px;
+  width: 28px;
+}
+
+.pm101-locked-right .action-arrow {
+  height: 32px;
+  width: 32px;
+}
+
+.pm101-locked-right .action-arrow .icon {
+  height: 20px;
+  width: 20px;
+}
+
+.pm101-locked-right .action-copy strong {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.pm101-locked-right .action-copy small {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.pm101-locked-right .locked-empty-report-widget {
+  flex: 1 1 auto;
+  justify-content: flex-start;
+  padding: 16px;
+}
+
+.pm101-locked-right .locked-empty-report-widget .report-trend-list {
+  display: none;
+}
+
+.pm101-locked-right .quick-actions-card,
+.project-frontdoor.pm101-locked-right .quick-actions-card {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  padding: 12px;
+}
+
+.pm101-locked-right .quick-card-head h2 {
+  font-size: 15px;
+  line-height: 20px;
+}
+
+.pm101-locked-right .quick-action-list,
+.project-frontdoor.pm101-locked-right .quick-action-list {
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.pm101-locked-right .quick-action-grid {
+  gap: 8px;
+  grid-auto-rows: 54px;
+}
+
+.pm101-locked-right .quick-action,
+.project-frontdoor.pm101-locked-right .quick-action {
+  min-height: 54px;
+}
+
+.pm101-locked-right .quick-action-main {
+  gap: 5px;
+  min-height: 52px;
+  padding: 7px;
+}
+
+.pm101-locked-right .quick-action-icon {
+  height: 28px;
+  width: 28px;
+}
+
+.pm101-locked-right .quick-action-icon .icon,
+.project-frontdoor.pm101-locked-right .quick-action-icon .icon {
+  height: 15px;
+  width: 15px;
+}
+
+.pm101-locked-right .quick-action-label {
+  font-size: 11.5px;
+  line-height: 14px;
+}
+
+.pm101-locked-right .quick-pin-button {
+  height: 18px;
+  right: 5px;
+  top: 5px;
+  width: 18px;
+}
+
+.pm101-locked-right .quick-links-pager {
+  margin-top: 12px;
 }
 
 .quick-action-label {
@@ -14355,6 +14596,11 @@ p {
     width: min(520px, calc(100% - 410px));
   }
 
+  .pm101-assignment-widget {
+    min-width: 340px;
+    width: min(465px, calc(100% - 452px));
+  }
+
   .unassigned-canvas {
     overflow: auto;
   }
@@ -14785,6 +15031,15 @@ p {
     flex-direction: column;
   }
 
+  .pm-project-view-toggle {
+    width: 100%;
+  }
+
+  .pm-project-view-toggle button {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
   .pm-project-search,
   .pm-project-select {
     width: 100%;
@@ -14888,6 +15143,14 @@ p {
 
   .ai-insight-widget {
     display: none;
+  }
+
+  .pm101-assignment-widget {
+    display: grid;
+    min-width: 0;
+    right: 12px;
+    top: 14px;
+    width: min(360px, calc(100% - 24px));
   }
 
   .workspace-shell-actions {
@@ -16854,10 +17117,26 @@ function timelineDisplayRows(selectedProject) {
 }
 
 function stageProfile(projectId) {
-  return projectStageProfiles.find((profile) => profile.project === projectId);
+  const profile = projectStageProfiles.find((item) => item.project === projectId);
+  if (onboardingPm101Locked && projectId === firstAssignedProject.id) {
+    return {
+      ...(profile || {
+        project: firstAssignedProject.id,
+        gateDue: firstAssignedProject.planDue,
+        gateDone: 2,
+        gateTotal: 5,
+      }),
+      currentStage: 1,
+      tone: "amber",
+      checkpoint: "Project plan baseline and planning evidence",
+      checklist: ["Planning scope confirmed", "Schedule baseline drafted", "Budget assumptions captured", "RAID owners assigned", "Planning gate pack prepared"],
+    };
+  }
+  return profile;
 }
 
 function stageProfilesForSelection(selectedProject) {
+  if (onboardingPm101Locked) return [stageProfile(firstAssignedProject.id)].filter(Boolean);
   if (isAllProjects(selectedProject)) return assignedProjects().map((project) => stageProfile(project.id)).filter(Boolean);
   return [stageProfile(selectedProject)].filter(Boolean);
 }
@@ -17133,13 +17412,13 @@ function ReportComposerDrawer(selectedReportProject) {
           <strong>${icon("arrow")} ${escapeHtml(details.overallTrend)}</strong>
         </div>
         <div class="report-overview-past">
-          <span class="report-overview-label">Past Overview Trend</span>
-          <div class="report-past-trend">
-            ${pastOverviewTrend
+          <span class="report-overview-label">Past reported statuses</span>
+          <div class="scope-status-timeline">
+            ${scopePastStatuses
               .map(
-                (date) => `
-                  <span>
-                    ${icon("check")}
+                ([date, statusTone, label]) => `
+                  <span class="${statusTone}" title="${escapeHtml(label)}">
+                    <i>${icon(statusTone === "amber" ? "bell" : "close")}</i>
                     <small>${escapeHtml(date)}</small>
                   </span>
                 `
@@ -17153,22 +17432,6 @@ function ReportComposerDrawer(selectedReportProject) {
         <span class="report-editor-label">Comments</span>
         <textarea class="report-description-input" rows="4" maxlength="3000"></textarea>
       </label>
-
-      <div class="scope-panel scope-past-panel">
-        <span class="scope-panel-label">Past reported statuses</span>
-        <div class="scope-status-timeline">
-          ${scopePastStatuses
-            .map(
-              ([date, statusTone, label]) => `
-                <span class="${statusTone}" title="${escapeHtml(label)}">
-                  <i>${icon(statusTone === "amber" ? "bell" : "close")}</i>
-                  <small>${escapeHtml(date)}</small>
-                </span>
-              `
-            )
-            .join("")}
-        </div>
-      </div>
 
       <div class="scope-group-card">
         <div class="scope-group-head">
@@ -17445,8 +17708,10 @@ function initLucideIcons() {
 }
 
 function ProjectOptions(selectedProject, includeAll = true) {
-  return projects
-    .filter((project) => includeAll || !isAllProjects(project.id))
+  const availableProjects = onboardingPm101Locked
+    ? projects.filter((project) => project.id === "all")
+    : projects.filter((project) => includeAll || !isAllProjects(project.id));
+  return availableProjects
     .map(
       (project) => `
         <option value="${project.id}" ${project.id === selectedProject ? "selected" : ""}>${project.name}</option>
@@ -17486,12 +17751,14 @@ function AppHeader(selectedProject, notificationOpen = false, selectedPage = "wo
   const isPlayground = selectedPage === "playground";
   const isUnassigned = frontDoorMode === "unassigned";
   const isProjectScopedPage = isPlayground || selectedPage === "wbs" || selectedPage === "project-plan";
-  const headerProject = isPlayground ? playgroundProjectId(selectedProject) : selectedProject;
+  const headerProject = onboardingPm101Locked ? "all" : isPlayground ? playgroundProjectId(selectedProject) : selectedProject;
+  const homeProject = onboardingPm101Locked ? firstAssignedProject.id : "all";
+  const homeView = onboardingPm101Locked ? "pm101" : "calendar";
 
   return `
     <header class="app-header ${isUnassigned ? "unassigned-header" : ""}">
       <div class="brand-block">
-        <button class="brand-logo-button" type="button" data-page-target="workspace" data-project-id="all" data-workspace-view="calendar" aria-label="Go to home">
+        <button class="brand-logo-button" type="button" data-page-target="workspace" data-project-id="${escapeHtml(homeProject)}" data-workspace-view="${escapeHtml(homeView)}" aria-label="Go to home">
           <img class="brand-logo" src="./assets/tasama-small.svg" alt="Tasama" />
         </button>
         ${isUnassigned ? NoProjectSelector() : ProjectSelector(headerProject, !isProjectScopedPage)}
@@ -17658,10 +17925,10 @@ function Sidebar(selectedPage = "workspace", frontDoorMode = "assigned") {
   `;
 }
 
-function TopDeck() {
+function TopDeck(isPm101Locked = false) {
   return `
     <section class="top-deck" aria-label="PM front door actions" data-tour-target="frontdoor-actions">
-      <button class="action-card workspace-command" type="button" data-page-target="workspaces">
+      <button class="action-card workspace-command" type="button" data-page-target="workspaces" ${isPm101Locked ? 'disabled aria-disabled="true" title="Available after PM 101 onboarding"' : ""}>
         <span class="action-icon"><img src="./assets/workspace-card-box.svg" alt="" aria-hidden="true" /></span>
         <span class="action-copy">
           <strong>Workspaces</strong>
@@ -17763,8 +18030,8 @@ function WorkspaceProjectCard(project) {
 
 function WorkspaceDisplayToggle() {
   const views = [
-    ["table", "Table view", "table"],
     ["cards", "Card view", "grid"],
+    ["table", "List view", "list"],
   ];
 
   return `
@@ -17878,6 +18145,7 @@ function WorkspaceProjectsTable() {
           <button class="pm-table-tool" type="button">${icon("filter")}<span>Filter</span></button>
           <button class="pm-table-tool" type="button">${icon("sliders")}<span>Group by</span></button>
           <button class="pm-table-tool" type="button">${icon("download")}<span>Export</span></button>
+          ${WorkspaceDisplayToggle()}
           <button class="pm-table-add-project" type="button">${icon("plus")}<span>Add Project</span></button>
           <button class="pm-table-tool square" type="button" aria-label="Table settings">${icon("settings")}</button>
         </div>
@@ -18010,7 +18278,6 @@ function WorkspacesPage() {
               ${icon("search")}
               <input type="search" aria-label="Search for projects" placeholder="Search for projects" />
             </label>
-            ${WorkspaceDisplayToggle()}
             <label class="pm-project-select">
               <select aria-label="Project filter">
                 <option>All projects</option>
@@ -18018,6 +18285,7 @@ function WorkspacesPage() {
               ${icon("down")}
             </label>
             <button class="pm-project-filter" type="button" aria-label="Filter projects">${icon("filter")}</button>
+            ${!isTableView ? WorkspaceDisplayToggle() : ""}
           </div>
         </div>
         ${
@@ -18091,6 +18359,20 @@ function WorkFilter(selectedFilter, items, className = "") {
 }
 
 function AIInsightsWidget() {
+  if (onboardingPm101Locked) {
+    return `
+      <aside class="ai-insight-widget pm101-assignment-widget" aria-label="PM 101 onboarding status">
+        <div class="ai-insight-main">
+          <span class="ai-insight-icon">${icon("bell")}</span>
+          <div class="ai-insight-copy">
+            <strong>Awaiting first assignment</strong>
+            <p>Your workspace is ready. PMO assignment will unlock project planning.</p>
+          </div>
+        </div>
+      </aside>
+    `;
+  }
+
   const insightCount = aiWorkspaceInsights.length;
   const insight = aiWorkspaceInsights[((selectedAiInsightIndex % insightCount) + insightCount) % insightCount];
 
@@ -18220,12 +18502,14 @@ function WorkspaceSearch(selectedView) {
 
 function WorkspaceTabs(selectedView) {
   const actionsActive = selectedView === "board" || selectedView === "calendar" || selectedView === "pm101";
+  const actionsTarget = onboardingPm101Locked ? "pm101" : "calendar";
+  const lockedStageAttrs = onboardingPm101Locked ? 'disabled aria-disabled="true" title="Available after PM 101 onboarding"' : "";
   return `
     <div class="workspace-tabs" role="tablist" aria-label="Workspace view" data-tour-target="workspace-tabs">
-      <button class="${actionsActive ? "active" : ""}" type="button" data-view-target="calendar" aria-selected="${actionsActive}">
+      <button class="${actionsActive ? "active" : ""}" type="button" data-view-target="${actionsTarget}" aria-selected="${actionsActive}">
         ${icon("checklist")} Actions
       </button>
-      <button class="${selectedView === "stages" ? "active" : ""}" type="button" data-view-target="stages" aria-selected="${selectedView === "stages"}">
+      <button class="${selectedView === "stages" ? "active" : ""}" type="button" data-view-target="stages" aria-selected="${selectedView === "stages"}" ${lockedStageAttrs}>
         ${icon("timeline")} Stages
       </button>
     </div>
@@ -18233,12 +18517,13 @@ function WorkspaceTabs(selectedView) {
 }
 
 function ActionViewSwitch(selectedView) {
+  const lockedAttrs = onboardingPm101Locked ? 'disabled aria-disabled="true" title="Available after PM 101 onboarding"' : "";
   return `
     <div class="action-view-switch" role="tablist" aria-label="Actions view format">
-      <button class="${selectedView === "board" ? "active" : ""}" type="button" data-view-target="board" aria-selected="${selectedView === "board"}">
+      <button class="${selectedView === "board" ? "active" : ""}" type="button" data-view-target="board" aria-selected="${selectedView === "board"}" ${lockedAttrs}>
         ${icon("columns")} Board
       </button>
-      <button class="${selectedView === "calendar" ? "active" : ""}" type="button" data-view-target="calendar" aria-selected="${selectedView === "calendar"}">
+      <button class="${selectedView === "calendar" ? "active" : ""}" type="button" data-view-target="calendar" aria-selected="${selectedView === "calendar"}" ${lockedAttrs}>
         ${icon("calendar")} Calendar
       </button>
       <button class="${selectedView === "pm101" ? "active" : ""}" type="button" data-view-target="pm101" aria-selected="${selectedView === "pm101"}">
@@ -18517,12 +18802,14 @@ function PM101View(selectedView) {
 }
 
 function WorkspacePanel(selectedProject, selectedView, selectedRange, selectedBoardFilter, selectedCalendarMonth) {
-  const workspaceTitle = isAllProjects(selectedProject)
+  const workspaceTitle = onboardingPm101Locked
+    ? "Operational Workspace"
+    : isAllProjects(selectedProject)
     ? "Operational Workspace"
     : `${projectName(selectedProject)} | Operational Workspace`;
 
   return `
-    <section class="workspace-panel ${isAllProjects(selectedProject) ? "" : "project-workspace-panel"}">
+    <section class="workspace-panel ${!isAllProjects(selectedProject) && !onboardingPm101Locked ? "project-workspace-panel" : ""} ${onboardingPm101Locked ? "pm101-locked-workspace" : ""}">
       <div class="workspace-shell-head">
         <div class="workspace-title">
           <h2>${escapeHtml(workspaceTitle)}</h2>
@@ -18748,7 +19035,7 @@ function quickLinksOrderedActions() {
 }
 
 function quickLinksTotalPages() {
-  return Math.max(1, Math.ceil(quickLinksOrderedActions().length / QUICK_LINK_PAGE_SIZE));
+  return Math.max(1, Math.ceil(quickLinksOrderedActions().length / quickLinksPageSize));
 }
 
 function quickLinksPageIndex() {
@@ -18756,8 +19043,8 @@ function quickLinksPageIndex() {
 }
 
 function quickLinksPageActions() {
-  const start = quickLinksPageIndex() * QUICK_LINK_PAGE_SIZE;
-  return quickLinksOrderedActions().slice(start, start + QUICK_LINK_PAGE_SIZE);
+  const start = quickLinksPageIndex() * quickLinksPageSize;
+  return quickLinksOrderedActions().slice(start, start + quickLinksPageSize);
 }
 
 function QuickLinks(selectedProject) {
@@ -18773,6 +19060,7 @@ function QuickLinks(selectedProject) {
         <div class="quick-action-grid">
           ${quickLinksPageActions().map((action) => QuickLinkCard(action, selectedProject, { pinnedIds })).join("")}
         </div>
+        ${totalPages > 1 ? `
         <div class="quick-links-pager" aria-label="Quick links pages">
           <button class="quick-links-page-button" type="button" data-quick-links-page-shift="-1" ${currentPage === 0 ? "disabled" : ""} aria-label="Previous quick links page">
             <span class="icon" aria-hidden="true"><i data-lucide="arrow-left"></i></span>
@@ -18783,7 +19071,7 @@ function QuickLinks(selectedProject) {
           <button class="quick-links-page-button" type="button" data-quick-links-page-shift="1" ${currentPage >= totalPages - 1 ? "disabled" : ""} aria-label="Next quick links page">
             <span class="icon" aria-hidden="true"><i data-lucide="arrow-right"></i></span>
           </button>
-        </div>
+        </div>` : ""}
       </div>
     </section>
   `;
@@ -18914,8 +19202,8 @@ const projectPlanSectionOrder = [
   "Miscellaneous",
 ];
 
-const projectPlanDetailedPrimarySections = ["Project Setup", "Overview", "Schedule & Scope", "Budget", "Benefits", "Risk", "Resource"];
-const projectPlanDetailedOnlySections = projectPlanSectionOrder.filter((section) => !projectPlanDetailedPrimarySections.includes(section));
+const projectPlanDetailedPrimarySections = ["Overview", "Schedule & Scope", "Budget", "Benefits", "Risk", "Resource"];
+const projectPlanDetailedOnlySections = projectPlanSectionOrder.filter((section) => section !== "Project Setup" && !projectPlanDetailedPrimarySections.includes(section));
 const projectPlanReportSections = ["Overview", "Schedule & Scope", "Budget", "Benefits", "Risk", "Issues", "Resource", "Dependency"];
 const projectPlanWorkspaceEntries = {
   "change-request": { title: "Change Request", aria: "change request" },
@@ -19363,10 +19651,8 @@ function ProjectPlanDetailedNav(activeSection) {
   `;
 }
 
-function ProjectPlanSimpleContent() {
-  const simpleFieldNames = new Set(projectPlanSimpleFieldOrder);
-  const fieldMap = new Map(projectPlanFieldMatrix.filter((field) => simpleFieldNames.has(field.field)).map((field) => [field.field, field]));
-  const simpleGroups = [
+function projectPlanSimpleGroups() {
+  return [
     {
       title: "Project identity",
       icon: "project",
@@ -19398,31 +19684,44 @@ function ProjectPlanSimpleContent() {
       fields: ["Risks Register"],
     },
   ];
+}
+
+function ProjectPlanSimpleGroupCard(group, fieldMap) {
+  const groupFields = group.fields.map((fieldName) => fieldMap.get(fieldName)).filter(Boolean);
+  return `
+    <article class="matrix-field-group simple-plan-section-card simple-field-card">
+      <div class="simple-field-card-head">
+        <span class="matrix-field-group-copy">
+          <strong>${escapeHtml(group.title)}</strong>
+          <small>${escapeHtml(group.description)}</small>
+        </span>
+        <span class="matrix-field-group-meta" aria-label="${groupFields.length} fields">
+          <b>${groupFields.length}</b>
+        </span>
+      </div>
+      <div class="matrix-field-group-grid simple-plan-section-fields">
+        ${groupFields.map((field) => ProjectPlanFieldControl(field, { simple: true })).join("")}
+      </div>
+    </article>
+  `;
+}
+
+function ProjectPlanOverviewIdentityCard() {
+  const simpleFieldNames = new Set(projectPlanSimpleFieldOrder);
+  const fieldMap = new Map(projectPlanFieldMatrix.filter((field) => simpleFieldNames.has(field.field)).map((field) => [field.field, field]));
+  const identityGroup = projectPlanSimpleGroups()[0];
+  return ProjectPlanSimpleGroupCard(identityGroup, fieldMap);
+}
+
+function ProjectPlanSimpleContent() {
+  const simpleFieldNames = new Set(projectPlanSimpleFieldOrder);
+  const fieldMap = new Map(projectPlanFieldMatrix.filter((field) => simpleFieldNames.has(field.field)).map((field) => [field.field, field]));
+  const simpleGroups = projectPlanSimpleGroups();
 
   return `
     <section class="project-plan-form-card plan-builder-card project-plan-matrix-card simple-plan-card">
       <div class="simple-plan-sections">
-        ${simpleGroups
-          .map((group) => {
-            const groupFields = group.fields.map((fieldName) => fieldMap.get(fieldName)).filter(Boolean);
-            return `
-              <article class="matrix-field-group simple-plan-section-card simple-field-card">
-                <div class="simple-field-card-head">
-                  <span class="matrix-field-group-copy">
-                    <strong>${escapeHtml(group.title)}</strong>
-                    <small>${escapeHtml(group.description)}</small>
-                  </span>
-                  <span class="matrix-field-group-meta" aria-label="${groupFields.length} fields">
-                    <b>${groupFields.length}</b>
-                  </span>
-                </div>
-                <div class="matrix-field-group-grid simple-plan-section-fields">
-                  ${groupFields.map((field) => ProjectPlanFieldControl(field, { simple: true })).join("")}
-                </div>
-              </article>
-            `;
-          })
-          .join("")}
+        ${simpleGroups.map((group) => ProjectPlanSimpleGroupCard(group, fieldMap)).join("")}
       </div>
     </section>
   `;
@@ -19510,6 +19809,7 @@ function ProjectPlanDetailedContent(section) {
   return `
     <section class="project-plan-form-card plan-builder-card project-plan-matrix-card detailed-plan-card" data-project-plan-matrix-scroll>
       <div class="project-plan-section-fields">
+        ${section === "Overview" ? ProjectPlanOverviewIdentityCard() : ""}
         ${ProjectPlanFieldGroupList(section, upfrontFields)}
         ${hiddenFieldAccordion}
       </div>
@@ -19804,10 +20104,31 @@ function projectPlanPlaceholder(field) {
   return `Enter ${field.field.toLowerCase()}`;
 }
 
+function LockedEmptyReportWidget() {
+  return `
+    <section class="side-card report-widget locked-empty-report-widget" data-tour-target="right-report-widget">
+      <div class="report-widget-head">
+        <div>
+          <h2>Project report trend</h2>
+          <small>Last 3 PSR statuses</small>
+        </div>
+      </div>
+      <div class="report-trend-list" aria-hidden="true"></div>
+    </section>
+  `;
+}
+
 function RightRail(selectedProject) {
+  if (onboardingPm101Locked) {
+    return `
+      ${TopDeck(true)}
+      ${LockedEmptyReportWidget()}
+    `;
+  }
+
   if (isAllProjects(selectedProject)) {
     return `
-      ${TopDeck()}
+      ${TopDeck(onboardingPm101Locked)}
       ${ReportWidget(selectedProject)}
     `;
   }
@@ -20904,7 +21225,7 @@ function App(
     <div class="modern-shell ${isPlayground ? "playground-mode" : ""} ${isWbs ? "wbs-mode" : ""} ${isProjectPlan ? "project-plan-mode" : ""} ${isUnassigned ? "unassigned-mode" : ""}">
       ${AppHeader(selectedProject, notificationPanelOpen, selectedPage, frontDoorMode)}
       ${Sidebar(selectedPage, frontDoorMode)}
-      <main class="app-canvas ${isPlayground ? "playground-canvas" : ""} ${isWbs ? "wbs-canvas" : ""} ${isProjectPlan ? "project-plan-canvas" : ""} ${isWorkspaces ? "workspaces-canvas" : ""} ${isUnassigned ? "unassigned-canvas" : ""}">
+      <main class="app-canvas ${isPlayground ? "playground-canvas" : ""} ${isWbs ? "wbs-canvas" : ""} ${isProjectPlan ? "project-plan-canvas" : ""} ${isWorkspaces ? "workspaces-canvas" : ""} ${isUnassigned ? "unassigned-canvas" : ""} ${onboardingPm101Locked ? "pm101-locked-canvas" : ""}">
         ${
           isUnassigned
             ? UnassignedFrontDoor()
@@ -20916,11 +21237,11 @@ function App(
                 ? ProjectPlanPage(selectedProject, projectPlanEntryPoint)
                 : isWorkspaces
                   ? WorkspacesPage()
-                : `<div class="content-grid">
+                : `<div class="content-grid ${onboardingPm101Locked ? "pm101-locked-grid" : ""}">
                 <div class="left-column">
                   ${WorkspacePanel(selectedProject, selectedView, selectedRange, selectedBoardFilter, selectedCalendarMonth)}
                 </div>
-                <div class="right-column ${isAllProjects(selectedProject) ? "portfolio-frontdoor" : "project-frontdoor"}">
+                <div class="right-column ${isAllProjects(selectedProject) || onboardingPm101Locked ? "portfolio-frontdoor" : "project-frontdoor"} ${onboardingPm101Locked ? "pm101-locked-right" : ""}">
                   ${RightRail(selectedProject)}
                 </div>
               </div>`
@@ -20958,11 +21279,15 @@ let projectPlanReportActiveSection = "Overview";
 let notificationPanelOpen = false;
 let pinnedQuickLinkIds = loadPinnedQuickLinks();
 let quickLinksPage = 0;
+let quickLinksPageSize = QUICK_LINK_PAGE_SIZE;
 let quickLinksToast = null;
 let quickLinksToastTimer = null;
+let quickLinksLayoutFrame = null;
+let quickLinksPagerBlockHeight = 0;
 let guidedTourActive = false;
 let guidedTourStep = 0;
 let guidedTourExitMode = null;
+let onboardingPm101Locked = false;
 let frontDoorMode = "assigned";
 let pmoAssignmentReady = false;
 let projectPlanEntryPoint = "quick";
@@ -21027,6 +21352,7 @@ function renderApp() {
   initNotificationPanel();
   initPmoAssignmentPreview();
   initGuidedTour();
+  scheduleQuickLinksLayoutSync();
 }
 
 function clearAiInsightsTimer() {
@@ -21050,6 +21376,7 @@ function enterFrontDoor(projectId = "all", startTour = false, mode = "assigned",
   onboardingActive = false;
   frontDoorMode = mode;
   pmoAssignmentReady = false;
+  onboardingPm101Locked = false;
   selectedPage = "workspace";
   projectPlanEntryPoint = "quick";
   selectedProject = projectId;
@@ -21090,7 +21417,7 @@ function initOnboardingPage() {
   document.querySelectorAll("[data-onboarding-finish]").forEach((button) => {
     button.addEventListener("click", () => {
       const startsTour = button.dataset.onboardingFinish === "tour";
-      enterFrontDoor(startsTour ? "all" : "Vision 2030", startsTour, "assigned", startsTour ? "unassigned" : null);
+      enterFrontDoor(startsTour ? "all" : "Vision 2030", startsTour, "assigned", startsTour ? "pm101-lock" : null);
     });
   });
 }
@@ -21101,10 +21428,29 @@ function completeGuidedTour() {
   if (guidedTourExitMode === "unassigned") {
     frontDoorMode = "unassigned";
     pmoAssignmentReady = false;
+    onboardingPm101Locked = false;
     selectedPage = "workspace";
     projectPlanEntryPoint = "quick";
     selectedProject = "all";
     selectedView = "calendar";
+    selectedBoardFilter = "all";
+    selectedStageGate = null;
+    selectedReportProject = null;
+    selectedPlaygroundDrawer = null;
+    projectPlanDetailMode = "simple";
+    projectPlanActiveSection = "Overview";
+    projectPlanReportActiveSection = "Overview";
+    projectPlanSectionsExpanded = false;
+    projectPlanExpandedFieldSections = {};
+    notificationPanelOpen = false;
+  } else if (guidedTourExitMode === "pm101-lock") {
+    frontDoorMode = "assigned";
+    pmoAssignmentReady = false;
+    onboardingPm101Locked = true;
+    selectedPage = "workspace";
+    projectPlanEntryPoint = "quick";
+    selectedProject = firstAssignedProject.id;
+    selectedView = "pm101";
     selectedBoardFilter = "all";
     selectedStageGate = null;
     selectedReportProject = null;
@@ -21272,10 +21618,10 @@ function initPageNavigation() {
     button.addEventListener("click", () => {
       const targetPage = button.dataset.pageTarget;
       if (button.dataset.projectId) {
-        selectedProject = button.dataset.projectId;
+        selectedProject = onboardingPm101Locked ? firstAssignedProject.id : button.dataset.projectId;
       }
       if (button.dataset.workspaceView) {
-        selectedView = button.dataset.workspaceView;
+        selectedView = onboardingPm101Locked && (button.dataset.workspaceView === "board" || button.dataset.workspaceView === "calendar") ? "pm101" : button.dataset.workspaceView;
       }
       if (targetPage === "project-plan") {
         projectPlanEntryPoint = button.dataset.planEntry || (button.closest(".quick-action-list") ? "quick" : "onboarding");
@@ -21285,6 +21631,7 @@ function initPageNavigation() {
         projectPlanSectionsExpanded = false;
         projectPlanExpandedFieldSections = {};
       }
+      if (onboardingPm101Locked && targetPage === "workspaces") return;
       if (frontDoorMode === "unassigned" && targetPage !== "workspace") {
         if (pmoAssignmentReady && targetPage === "project-plan") {
           frontDoorMode = "assigned";
@@ -21327,7 +21674,7 @@ function initProjectSwitch() {
   const selects = document.querySelectorAll("[data-project-select]");
   selects.forEach((select) => {
     select.addEventListener("change", (event) => {
-      selectedProject = event.target.value;
+      selectedProject = onboardingPm101Locked ? firstAssignedProject.id : event.target.value;
       selectedStageGate = null;
       selectedReportProject = null;
       selectedPlaygroundDrawer = null;
@@ -21340,6 +21687,7 @@ function initProjectSwitch() {
 function initWorkspaceSwitch() {
   document.querySelectorAll("[data-view-target]").forEach((button) => {
     button.addEventListener("click", () => {
+      if (onboardingPm101Locked && (button.dataset.viewTarget === "board" || button.dataset.viewTarget === "calendar" || button.dataset.viewTarget === "stages")) return;
       selectedView = button.dataset.viewTarget;
       selectedStageGate = null;
       selectedReportProject = null;
@@ -22104,6 +22452,75 @@ function showQuickLinksToast(message) {
   }, 3200);
 }
 
+function scheduleQuickLinksLayoutSync() {
+  if (quickLinksLayoutFrame !== null) return;
+  quickLinksLayoutFrame = window.requestAnimationFrame(() => {
+    quickLinksLayoutFrame = null;
+    syncQuickLinksPageSize();
+  });
+}
+
+function syncQuickLinksPageSize() {
+  const quickLinksList = document.querySelector(".quick-actions-card .quick-action-list");
+  const quickLinksGrid = quickLinksList?.querySelector(".quick-action-grid");
+  const quickLinkCards = quickLinksGrid?.querySelectorAll(".quick-link-card");
+
+  if (!quickLinksList || !quickLinksGrid || !quickLinkCards?.length) {
+    quickLinksPageSize = QUICK_LINK_PAGE_SIZE;
+    return;
+  }
+
+  const firstCard = quickLinkCards[0];
+  const rowHeight = firstCard.getBoundingClientRect().height || firstCard.offsetHeight;
+  const listHeight = quickLinksList.clientHeight;
+  if (!rowHeight || !listHeight) return;
+
+  const gridStyles = window.getComputedStyle(quickLinksGrid);
+  const rowGap = Number.parseFloat(gridStyles.rowGap || gridStyles.gap || "0") || 0;
+  const columns = quickLinksGridColumnCount(quickLinkCards);
+  const pager = quickLinksList.querySelector(".quick-links-pager");
+  const pagerMarginTop = pager ? Number.parseFloat(window.getComputedStyle(pager).marginTop || "0") || 0 : 0;
+  const pagerBlockHeight = pager ? pager.offsetHeight + pagerMarginTop : quickLinksPagerBlockHeight;
+
+  if (pager && pagerBlockHeight > 0) {
+    quickLinksPagerBlockHeight = pagerBlockHeight;
+  }
+
+  const totalActions = quickLinksOrderedActions().length;
+  const maxWithoutPager = quickLinksCapacity(listHeight, rowHeight, rowGap, columns);
+  let nextPageSize = maxWithoutPager;
+
+  if (totalActions > nextPageSize) {
+    const availableGridHeight = Math.max(listHeight - pagerBlockHeight, rowHeight);
+    const maxWithPager = quickLinksCapacity(availableGridHeight, rowHeight, rowGap, columns);
+    nextPageSize = maxWithPager;
+  }
+
+  if (nextPageSize === quickLinksPageSize) return;
+
+  const currentStart = quickLinksPageIndex() * quickLinksPageSize;
+  quickLinksPageSize = nextPageSize;
+  quickLinksPage = Math.min(Math.floor(currentStart / quickLinksPageSize), quickLinksTotalPages() - 1);
+  renderApp();
+}
+
+function quickLinksCapacity(availableHeight, rowHeight, rowGap, columns) {
+  const safeColumns = Math.max(1, columns);
+  const safeHeight = Math.max(availableHeight, rowHeight);
+  const rows = Math.max(1, Math.floor((safeHeight + rowGap) / (rowHeight + rowGap)));
+  return rows * safeColumns;
+}
+
+function quickLinksGridColumnCount(cards) {
+  const firstTop = cards[0]?.offsetTop ?? 0;
+  let columns = 0;
+  for (const card of cards) {
+    if (Math.abs(card.offsetTop - firstTop) > 1) break;
+    columns += 1;
+  }
+  return Math.max(1, columns);
+}
+
 function setQuickLinkPinned(id, shouldPin) {
   const currentIds = normalizePinnedQuickLinks(pinnedQuickLinkIds);
   if (shouldPin && currentIds.includes(id)) return true;
@@ -22149,6 +22566,10 @@ document.addEventListener("keydown", (event) => {
   selectedStageGate = null;
   selectedPlaygroundDrawer = null;
   renderApp();
+});
+
+window.addEventListener("resize", () => {
+  scheduleQuickLinksLayoutSync();
 });
 
 renderApp();

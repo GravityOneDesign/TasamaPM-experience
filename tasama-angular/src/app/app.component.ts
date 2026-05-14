@@ -53,7 +53,7 @@ export class AppComponent {
       selectedView: 'calendar',
       frontDoorMode: 'assigned',
       guidedTourActive: true,
-      guidedTourExitMode: 'unassigned',
+      guidedTourExitMode: 'pm101-lock',
     });
   }
 

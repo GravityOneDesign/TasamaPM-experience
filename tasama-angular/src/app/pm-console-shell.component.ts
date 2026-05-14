@@ -12,6 +12,7 @@ interface ProjectOption {
 
 type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground';
 type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
+const ONBOARDING_PM101_PROJECT_ID = 'all';
 
 @Component({
   selector: 'app-pm-console-shell',
@@ -20,7 +21,7 @@ type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="modern-shell" [class.playground-mode]="selectedPage === 'playground'" [class.wbs-mode]="selectedPage === 'wbs'" [class.project-plan-mode]="selectedPage === 'project-plan'" [class.unassigned-mode]="frontDoorMode === 'unassigned'">
-      <header class="app-header" [class.unassigned-header]="frontDoorMode === 'unassigned'">
+      <header class="app-header" [class.unassigned-header]="frontDoorMode === 'unassigned'" [class.workspaces-header]="usesConsoleHeader">
         <div class="brand-block">
           <button
             class="brand-logo-button"
@@ -30,6 +31,11 @@ type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
           >
             <img class="brand-logo" src="./assets/tasama-small.svg" alt="Tasama" />
           </button>
+
+          @if (usesConsoleHeader) {
+            <span class="brand-divider" aria-hidden="true"></span>
+            <span class="brand-title">PM Console</span>
+          }
 
           @if (frontDoorMode === 'unassigned') {
             <div class="project-switch no-project-switch" [class.is-ready]="pmoAssignmentReady" [attr.aria-label]="pmoAssignmentReady ? 'Project assigned' : 'No assigned projects'">
@@ -55,6 +61,12 @@ type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
         </div>
 
         <div class="header-actions">
+          @if (usesConsoleHeader) {
+            <label class="search-box global-console-search">
+              <span class="icon" aria-hidden="true"><i data-lucide="search"></i></span>
+              <input type="search" aria-label="Search documents, people, or departments" placeholder="Search documents, people, or departments..." />
+            </label>
+          }
           <button class="round-button" type="button" aria-label="Theme">
             <span class="icon" aria-hidden="true"><i data-lucide="sun"></i></span>
           </button>
@@ -100,6 +112,7 @@ type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
         [pmoAssignmentReady]="pmoAssignmentReady"
         [guidedTourActive]="guidedTourActive"
         [guidedTourExitMode]="guidedTourExitMode"
+        [onboardingPm101Locked]="onboardingPm101Locked"
         (consoleStateChange)="applyContentState($event)"
       />
       <app-pm-console-notifications [open]="notificationPanelOpen" (closePanel)="closeNotifications()" />
@@ -121,10 +134,13 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   ];
 
   readonly topRailItems = [
-    { icon: 'house', label: 'Workspace', page: 'workspace' as ConsolePage },
-    { icon: 'layout-grid', label: 'Rooms', page: undefined },
+    { icon: 'message-square-text', label: 'Project Register', page: 'workspaces' as ConsolePage },
+    { icon: 'layout-grid', label: 'Workspace', page: 'workspace' as ConsolePage },
     { icon: 'chart-column', label: 'Reports', page: undefined },
-    { icon: 'message-square-text', label: 'Messages', page: undefined },
+    { icon: 'building-2', label: 'Departments', page: undefined },
+    { icon: 'circle-dollar-sign', label: 'Benefits', page: undefined },
+    { icon: 'user-round', label: 'People', page: undefined },
+    { icon: 'settings', label: 'Settings', page: undefined },
   ];
 
   selectedProject = 'all';
@@ -135,6 +151,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   pmoAssignmentReady = false;
   guidedTourActive = false;
   guidedTourExitMode: string | null = null;
+  onboardingPm101Locked = false;
   private iconsHydrated = false;
 
   constructor(
@@ -146,11 +163,17 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     return this.selectedPage === 'playground' || this.selectedPage === 'wbs' || this.selectedPage === 'project-plan';
   }
 
+  get usesConsoleHeader(): boolean {
+    return this.frontDoorMode !== 'unassigned' && (this.selectedPage === 'workspace' || this.selectedPage === 'workspaces');
+  }
+
   get headerProject(): string {
+    if (this.onboardingPm101Locked) return 'all';
     return this.selectedPage === 'playground' && this.selectedProject === 'all' ? 'Vision 2030' : this.selectedProject;
   }
 
   get visibleProjects(): ProjectOption[] {
+    if (this.onboardingPm101Locked) return this.projects.filter((project) => project.id === 'all');
     return this.isProjectScopedPage ? this.projects.filter((project) => project.id !== 'all') : this.projects;
   }
 
@@ -162,6 +185,11 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     this.guidedTourActive = Boolean(this.initialState.guidedTourActive);
     this.guidedTourExitMode = this.initialState.guidedTourExitMode ?? null;
     this.pmoAssignmentReady = Boolean(this.initialState.pmoAssignmentReady);
+    this.onboardingPm101Locked = Boolean(this.initialState.onboardingPm101Locked);
+    if (this.onboardingPm101Locked) {
+      this.selectedProject = ONBOARDING_PM101_PROJECT_ID;
+      this.selectedView = 'pm101';
+    }
   }
 
   ngAfterViewChecked(): void {
@@ -171,7 +199,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   }
 
   selectProject(value: string): void {
-    this.selectedProject = value;
+    this.selectedProject = this.onboardingPm101Locked ? ONBOARDING_PM101_PROJECT_ID : value;
     this.markShellChanged();
   }
 
@@ -185,9 +213,9 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   }
 
   goHome(): void {
-    this.selectedProject = 'all';
+    this.selectedProject = this.onboardingPm101Locked ? ONBOARDING_PM101_PROJECT_ID : 'all';
     this.selectedPage = 'workspace';
-    this.selectedView = 'calendar';
+    this.selectedView = this.onboardingPm101Locked ? 'pm101' : 'calendar';
     this.notificationPanelOpen = false;
     this.markShellChanged();
   }
@@ -205,7 +233,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
 
   isRailActive(page: ConsolePage | undefined): boolean {
     if (!page) return false;
-    return page === this.selectedPage || (page === 'workspace' && ['workspaces', 'wbs', 'project-plan'].includes(this.selectedPage));
+    return page === this.selectedPage || (page === 'workspaces' && ['wbs', 'project-plan'].includes(this.selectedPage));
   }
 
   applyContentState(state: Partial<PmConsoleMountOptions>): void {
@@ -221,6 +249,9 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     }
     if ('guidedTourExitMode' in state) {
       this.guidedTourExitMode = state.guidedTourExitMode ?? null;
+    }
+    if ('onboardingPm101Locked' in state) {
+      this.onboardingPm101Locked = Boolean(state.onboardingPm101Locked);
     }
     this.markShellChanged();
   }

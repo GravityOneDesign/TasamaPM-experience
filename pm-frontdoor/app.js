@@ -1056,6 +1056,23 @@ const workspaceTableProjects = [
   },
 ];
 
+const benefitRegisterRows = [
+  { id: "BEN-01", benefit: "Improve research capability discovery", project: "UAE Research Map", owner: "Research Leads Forum", targetDate: "10/15/2026", measure: "350 researchers onboarded", realization: "In realization", realizationTone: "amber", status: "On Track", statusTone: "green" },
+  { id: "BEN-02", benefit: "Reduce duplicate funding calls", project: "Vision 2030", owner: "PMO Desk", targetDate: "09/30/2026", measure: "18% duplicate reduction", realization: "Validating", realizationTone: "amber", status: "On Track", statusTone: "green" },
+  { id: "BEN-03", benefit: "Accelerate sponsor approvals", project: "NEOM Integration", owner: "Fatima Ali", targetDate: "07/15/2026", measure: "25% cycle-time reduction", realization: "Planned", realizationTone: "blue", status: "Attention", statusTone: "amber" },
+  { id: "BEN-04", benefit: "Increase cross-border taskforce coordination", project: "Global Anti-Scam Taskforce", owner: "Sarah Ahmed", targetDate: "03/01/2026", measure: "4 joint operating protocols signed", realization: "Realized", realizationTone: "green", status: "Realized", statusTone: "green" },
+  { id: "BEN-05", benefit: "Lift PMO adoption maturity", project: "PMO Capability", owner: "Laila Noor", targetDate: "12/18/2026", measure: "80% workflow adoption", realization: "Planned", realizationTone: "blue", status: "Not Started", statusTone: "blue" },
+  { id: "BEN-06", benefit: "Improve predictive operations response", project: "Smart City Alpha", owner: "Khalid Omar", targetDate: "11/30/2026", measure: "15-minute faster dispatch time", realization: "In realization", realizationTone: "amber", status: "On Track", statusTone: "green" },
+];
+
+const riskRegisterRows = [
+  { id: "RSK-01", risk: "Stakeholder data quality may delay baseline", project: "UAE Research Map", owner: "Muna Hassan", mitigation: "Run a cleansing sprint and confirm source owners before sign-off.", reviewDate: "05/08/2026", exposure: "Medium", exposureTone: "amber", status: "Monitoring", statusTone: "amber" },
+  { id: "RSK-02", risk: "Commercial overrun on integration scope", project: "NEOM Integration", owner: "Fatima Ali", mitigation: "Rebaseline the contract package and secure finance approval this week.", reviewDate: "05/10/2026", exposure: "Critical", exposureTone: "red", status: "Escalated", statusTone: "red" },
+  { id: "RSK-03", risk: "Vendor dependency slippage affects delivery dates", project: "Smart City Alpha", owner: "Khalid Omar", mitigation: "Add recovery buffer and enforce a dual-supplier checkpoint.", reviewDate: "05/06/2026", exposure: "High", exposureTone: "red", status: "Active", statusTone: "amber" },
+  { id: "RSK-04", risk: "Stage-gate evidence pack may miss the forum cutoff", project: "Vision 2030", owner: "PMO Desk", mitigation: "Prepare the evidence pack early and assign an approval fallback.", reviewDate: "05/11/2026", exposure: "Medium", exposureTone: "amber", status: "Active", statusTone: "amber" },
+  { id: "RSK-05", risk: "Benefits owner response is not yet confirmed", project: "PMO Capability", owner: "Laila Noor", mitigation: "Follow up weekly with a named fallback approver in the forum.", reviewDate: "05/09/2026", exposure: "Low", exposureTone: "blue", status: "Watching", statusTone: "blue" },
+];
+
 const workspaceTrendRows = [
   { project: "UAE Research Map", statuses: ["red", "amber", "green"] },
   { project: "Global Anti-Scam Taskforce", statuses: ["green", "green", "amber"] },
@@ -1673,10 +1690,26 @@ function timelineDisplayRows(selectedProject) {
 }
 
 function stageProfile(projectId) {
-  return projectStageProfiles.find((profile) => profile.project === projectId);
+  const profile = projectStageProfiles.find((item) => item.project === projectId);
+  if (onboardingPm101Locked && projectId === firstAssignedProject.id) {
+    return {
+      ...(profile || {
+        project: firstAssignedProject.id,
+        gateDue: firstAssignedProject.planDue,
+        gateDone: 2,
+        gateTotal: 5,
+      }),
+      currentStage: 1,
+      tone: "amber",
+      checkpoint: "Project plan baseline and planning evidence",
+      checklist: ["Planning scope confirmed", "Schedule baseline drafted", "Budget assumptions captured", "RAID owners assigned", "Planning gate pack prepared"],
+    };
+  }
+  return profile;
 }
 
 function stageProfilesForSelection(selectedProject) {
+  if (onboardingPm101Locked) return [stageProfile(firstAssignedProject.id)].filter(Boolean);
   if (isAllProjects(selectedProject)) return assignedProjects().map((project) => stageProfile(project.id)).filter(Boolean);
   return [stageProfile(selectedProject)].filter(Boolean);
 }
@@ -1952,13 +1985,13 @@ function ReportComposerDrawer(selectedReportProject) {
           <strong>${icon("arrow")} ${escapeHtml(details.overallTrend)}</strong>
         </div>
         <div class="report-overview-past">
-          <span class="report-overview-label">Past Overview Trend</span>
-          <div class="report-past-trend">
-            ${pastOverviewTrend
+          <span class="report-overview-label">Past reported statuses</span>
+          <div class="scope-status-timeline">
+            ${scopePastStatuses
               .map(
-                (date) => `
-                  <span>
-                    ${icon("check")}
+                ([date, statusTone, label]) => `
+                  <span class="${statusTone}" title="${escapeHtml(label)}">
+                    <i>${icon(statusTone === "amber" ? "bell" : "close")}</i>
                     <small>${escapeHtml(date)}</small>
                   </span>
                 `
@@ -1972,22 +2005,6 @@ function ReportComposerDrawer(selectedReportProject) {
         <span class="report-editor-label">Comments</span>
         <textarea class="report-description-input" rows="4" maxlength="3000"></textarea>
       </label>
-
-      <div class="scope-panel scope-past-panel">
-        <span class="scope-panel-label">Past reported statuses</span>
-        <div class="scope-status-timeline">
-          ${scopePastStatuses
-            .map(
-              ([date, statusTone, label]) => `
-                <span class="${statusTone}" title="${escapeHtml(label)}">
-                  <i>${icon(statusTone === "amber" ? "bell" : "close")}</i>
-                  <small>${escapeHtml(date)}</small>
-                </span>
-              `
-            )
-            .join("")}
-        </div>
-      </div>
 
       <div class="scope-group-card">
         <div class="scope-group-head">
@@ -2264,8 +2281,10 @@ function initLucideIcons() {
 }
 
 function ProjectOptions(selectedProject, includeAll = true) {
-  return projects
-    .filter((project) => includeAll || !isAllProjects(project.id))
+  const availableProjects = onboardingPm101Locked
+    ? projects.filter((project) => project.id === "all")
+    : projects.filter((project) => includeAll || !isAllProjects(project.id));
+  return availableProjects
     .map(
       (project) => `
         <option value="${project.id}" ${project.id === selectedProject ? "selected" : ""}>${project.name}</option>
@@ -2305,12 +2324,14 @@ function AppHeader(selectedProject, notificationOpen = false, selectedPage = "wo
   const isPlayground = selectedPage === "playground";
   const isUnassigned = frontDoorMode === "unassigned";
   const isProjectScopedPage = isPlayground || selectedPage === "wbs" || selectedPage === "project-plan";
-  const headerProject = isPlayground ? playgroundProjectId(selectedProject) : selectedProject;
+  const headerProject = onboardingPm101Locked ? "all" : isPlayground ? playgroundProjectId(selectedProject) : selectedProject;
+  const homeProject = onboardingPm101Locked ? firstAssignedProject.id : "all";
+  const homeView = onboardingPm101Locked ? "pm101" : "calendar";
 
   return `
     <header class="app-header ${isUnassigned ? "unassigned-header" : ""}">
       <div class="brand-block">
-        <button class="brand-logo-button" type="button" data-page-target="workspace" data-project-id="all" data-workspace-view="calendar" aria-label="Go to home">
+        <button class="brand-logo-button" type="button" data-page-target="workspace" data-project-id="${escapeHtml(homeProject)}" data-workspace-view="${escapeHtml(homeView)}" aria-label="Go to home">
           <img class="brand-logo" src="./assets/tasama-small.svg" alt="Tasama" />
         </button>
         ${isUnassigned ? NoProjectSelector() : ProjectSelector(headerProject, !isProjectScopedPage)}
@@ -2477,10 +2498,10 @@ function Sidebar(selectedPage = "workspace", frontDoorMode = "assigned") {
   `;
 }
 
-function TopDeck() {
+function TopDeck(isPm101Locked = false) {
   return `
     <section class="top-deck" aria-label="PM front door actions" data-tour-target="frontdoor-actions">
-      <button class="action-card workspace-command" type="button" data-page-target="workspaces">
+      <button class="action-card workspace-command" type="button" data-page-target="workspaces" ${isPm101Locked ? 'disabled aria-disabled="true" title="Available after PM 101 onboarding"' : ""}>
         <span class="action-icon"><img src="./assets/workspace-card-box.svg" alt="" aria-hidden="true" /></span>
         <span class="action-copy">
           <strong>Workspaces</strong>
@@ -2582,8 +2603,8 @@ function WorkspaceProjectCard(project) {
 
 function WorkspaceDisplayToggle() {
   const views = [
-    ["table", "Table view", "table"],
     ["cards", "Card view", "grid"],
+    ["table", "List view", "list"],
   ];
 
   return `
@@ -2605,6 +2626,71 @@ function WorkspaceDisplayToggle() {
         .join("")}
     </div>
   `;
+}
+
+function visibleBenefitRegisterRows() {
+  return isAllProjects(selectedProject) ? benefitRegisterRows : benefitRegisterRows.filter((row) => row.project === selectedProject);
+}
+
+function visibleRiskRegisterRows() {
+  return isAllProjects(selectedProject) ? riskRegisterRows : riskRegisterRows.filter((row) => row.project === selectedProject);
+}
+
+function WorkspaceRegisterTabs() {
+  const tabs = [
+    { id: "projects", label: "Project Register", iconName: "folderOpen", count: workspaceTableProjects.length },
+    { id: "benefits", label: "Benefit Register", iconName: "benefit", count: visibleBenefitRegisterRows().length },
+    { id: "risks", label: "Risk Register", iconName: "risks", count: visibleRiskRegisterRows().length },
+  ];
+
+  return `
+    <div class="pm-register-tabs" role="tablist" aria-label="Workspace registers">
+      ${tabs
+        .map(
+          (tab) => `
+            <button
+              class="pm-register-tab ${selectedWorkspaceRegister === tab.id ? "active" : ""}"
+              type="button"
+              role="tab"
+              aria-selected="${selectedWorkspaceRegister === tab.id ? "true" : "false"}"
+              data-workspace-register="${tab.id}"
+            >
+              <span class="pm-register-tab-icon">${icon(tab.iconName)}</span>
+              <span class="pm-register-tab-copy">
+                <strong>${escapeHtml(tab.label)}</strong>
+                <small>${tab.count} records</small>
+              </span>
+            </button>
+          `
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function workspaceRegisterMeta() {
+  if (selectedWorkspaceRegister === "benefits") {
+    return {
+      ariaLabel: "PM Console benefit register",
+      subtitle: `Tracking ${visibleBenefitRegisterRows().length} benefit records across the workspace`,
+      searchLabel: "Search benefits",
+      filterLabel: "All benefits",
+    };
+  }
+  if (selectedWorkspaceRegister === "risks") {
+    return {
+      ariaLabel: "PM Console risk register",
+      subtitle: `Monitoring ${visibleRiskRegisterRows().length} active risk records across the workspace`,
+      searchLabel: "Search risks",
+      filterLabel: "All risks",
+    };
+  }
+  return {
+    ariaLabel: "PM Console project register",
+    subtitle: `Showing all ${workspaceTableProjects.length} projects`,
+    searchLabel: "Search for projects",
+    filterLabel: "All projects",
+  };
 }
 
 function WorkspaceTableStats() {
@@ -2629,6 +2715,32 @@ function WorkspaceTableStatCard(item) {
       </div>
     </article>
   `;
+}
+
+function BenefitRegisterStats() {
+  const rows = visibleBenefitRegisterRows();
+  const countRealization = (realization) => rows.filter((row) => row.realization === realization).length;
+  const countStatus = (status) => rows.filter((row) => row.status === status).length;
+  return [
+    { label: "All Benefits", value: rows.length, iconName: "benefit", tone: "brand" },
+    { label: "Realized", value: countRealization("Realized"), iconName: "check", tone: "green" },
+    { label: "In Realization", value: countRealization("In realization"), iconName: "timeline", tone: "blue" },
+    { label: "Planned", value: countRealization("Planned"), iconName: "pauseCircle", tone: "neutral" },
+    { label: "Attention", value: countStatus("Attention"), iconName: "alert", tone: "amber" },
+  ];
+}
+
+function RiskRegisterStats() {
+  const rows = visibleRiskRegisterRows();
+  const countExposure = (exposure) => rows.filter((row) => row.exposure === exposure).length;
+  const countStatus = (status) => rows.filter((row) => row.status === status).length;
+  return [
+    { label: "All Risks", value: rows.length, iconName: "risks", tone: "brand" },
+    { label: "Critical", value: countExposure("Critical"), iconName: "alert", tone: "red" },
+    { label: "High", value: countExposure("High"), iconName: "trendUp", tone: "amber" },
+    { label: "Medium", value: countExposure("Medium"), iconName: "eyeOff", tone: "neutral" },
+    { label: "Escalated", value: countStatus("Escalated"), iconName: "bell", tone: "red" },
+  ];
 }
 
 function WorkspaceTableTrendDot(tone) {
@@ -2697,6 +2809,7 @@ function WorkspaceProjectsTable() {
           <button class="pm-table-tool" type="button">${icon("filter")}<span>Filter</span></button>
           <button class="pm-table-tool" type="button">${icon("sliders")}<span>Group by</span></button>
           <button class="pm-table-tool" type="button">${icon("download")}<span>Export</span></button>
+          ${WorkspaceDisplayToggle()}
           <button class="pm-table-add-project" type="button">${icon("plus")}<span>Add Project</span></button>
           <button class="pm-table-tool square" type="button" aria-label="Table settings">${icon("settings")}</button>
         </div>
@@ -2718,6 +2831,114 @@ function WorkspaceProjectsTable() {
           </thead>
           <tbody>
             ${workspaceTableProjects.map(WorkspaceProjectTableRow).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function BenefitRegisterTableRow(row) {
+  return `
+    <tr>
+      <td><span class="pm-table-code">${escapeHtml(row.id)}</span></td>
+      <td class="pm-table-detail-cell"><strong>${escapeHtml(row.benefit)}</strong></td>
+      <td>${escapeHtml(row.project)}</td>
+      <td>${escapeHtml(row.owner)}</td>
+      <td>${escapeHtml(row.targetDate)}</td>
+      <td class="pm-table-detail-cell">${escapeHtml(row.measure)}</td>
+      <td><span class="pm-table-row-status ${row.realizationTone}">${escapeHtml(row.realization)}</span></td>
+      <td class="pm-table-status-cell"><span class="pm-table-row-status ${row.statusTone}">${escapeHtml(row.status)}</span></td>
+    </tr>
+  `;
+}
+
+function WorkspaceBenefitsTable() {
+  const rows = visibleBenefitRegisterRows();
+  return `
+    <div class="pm-project-table-view">
+      <div class="pm-project-table-stats" aria-label="Benefit register summary">
+        ${BenefitRegisterStats().map(WorkspaceTableStatCard).join("")}
+      </div>
+      <div class="pm-project-table-toolbar">
+        <span>Items: ${rows.length}</span>
+        <div>
+          <button class="pm-table-tool square" type="button" aria-label="Search benefits">${icon("search")}</button>
+          <button class="pm-table-tool" type="button">${icon("filter")}<span>Filter</span></button>
+          <button class="pm-table-tool" type="button">${icon("download")}<span>Export</span></button>
+          <button class="pm-table-add-project" type="button">${icon("plus")}<span>Add Benefit</span></button>
+        </div>
+      </div>
+      <div class="pm-project-table-scroll" tabindex="0">
+        <table class="pm-project-table pm-register-table">
+          <thead>
+            <tr>
+              <th>Benefit ID</th>
+              <th>Benefit</th>
+              <th>Linked Project</th>
+              <th>Owner</th>
+              <th>Target Date</th>
+              <th>KPI / Measure</th>
+              <th>Realization</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(BenefitRegisterTableRow).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function RiskRegisterTableRow(row) {
+  return `
+    <tr>
+      <td><span class="pm-table-code">${escapeHtml(row.id)}</span></td>
+      <td class="pm-table-detail-cell"><strong>${escapeHtml(row.risk)}</strong></td>
+      <td>${escapeHtml(row.project)}</td>
+      <td>${escapeHtml(row.owner)}</td>
+      <td class="pm-table-detail-cell">${escapeHtml(row.mitigation)}</td>
+      <td>${escapeHtml(row.reviewDate)}</td>
+      <td><span class="pm-table-row-status ${row.exposureTone}">${escapeHtml(row.exposure)}</span></td>
+      <td class="pm-table-status-cell"><span class="pm-table-row-status ${row.statusTone}">${escapeHtml(row.status)}</span></td>
+    </tr>
+  `;
+}
+
+function WorkspaceRisksTable() {
+  const rows = visibleRiskRegisterRows();
+  return `
+    <div class="pm-project-table-view">
+      <div class="pm-project-table-stats" aria-label="Risk register summary">
+        ${RiskRegisterStats().map(WorkspaceTableStatCard).join("")}
+      </div>
+      <div class="pm-project-table-toolbar">
+        <span>Items: ${rows.length}</span>
+        <div>
+          <button class="pm-table-tool square" type="button" aria-label="Search risks">${icon("search")}</button>
+          <button class="pm-table-tool" type="button">${icon("filter")}<span>Filter</span></button>
+          <button class="pm-table-tool" type="button">${icon("download")}<span>Export</span></button>
+          <button class="pm-table-add-project" type="button">${icon("plus")}<span>Add Risk</span></button>
+        </div>
+      </div>
+      <div class="pm-project-table-scroll" tabindex="0">
+        <table class="pm-project-table pm-register-table">
+          <thead>
+            <tr>
+              <th>Risk ID</th>
+              <th>Risk</th>
+              <th>Linked Project</th>
+              <th>Owner</th>
+              <th>Mitigation</th>
+              <th>Last Review</th>
+              <th>Exposure</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(RiskRegisterTableRow).join("")}
           </tbody>
         </table>
       </div>
@@ -2815,36 +3036,43 @@ function WorkspaceBudgetOverview() {
 }
 
 function WorkspacesPage() {
-  const isTableView = selectedWorkspaceDisplay === "table";
+  const isProjectRegister = selectedWorkspaceRegister === "projects";
+  const isTableView = !isProjectRegister || selectedWorkspaceDisplay === "table";
+  const registerMeta = workspaceRegisterMeta();
   return `
-    <section class="pm-projects-page ${isTableView ? "table-mode" : "card-mode"}" aria-label="PM Console projects">
+    <section class="pm-projects-page ${isTableView ? "table-mode" : "card-mode"}" aria-label="${escapeHtml(registerMeta.ariaLabel)}">
       <div class="pm-projects-board">
         <div class="pm-projects-title-row">
           <div>
             <h1>Workspaces</h1>
-            <p>Showing all ${workspaceTableProjects.length} projects</p>
+            <p>${escapeHtml(registerMeta.subtitle)}</p>
           </div>
           <div class="pm-projects-controls">
             <label class="pm-project-search">
               ${icon("search")}
-              <input type="search" aria-label="Search for projects" placeholder="Search for projects" />
+              <input type="search" aria-label="${escapeHtml(registerMeta.searchLabel)}" placeholder="${escapeHtml(registerMeta.searchLabel)}" />
             </label>
-            ${WorkspaceDisplayToggle()}
             <label class="pm-project-select">
-              <select aria-label="Project filter">
-                <option>All projects</option>
+              <select aria-label="${escapeHtml(registerMeta.filterLabel)}">
+                <option>${escapeHtml(registerMeta.filterLabel)}</option>
               </select>
               ${icon("down")}
             </label>
-            <button class="pm-project-filter" type="button" aria-label="Filter projects">${icon("filter")}</button>
+            <button class="pm-project-filter" type="button" aria-label="${escapeHtml(registerMeta.filterLabel)}">${icon("filter")}</button>
+            ${isProjectRegister && !isTableView ? WorkspaceDisplayToggle() : ""}
           </div>
         </div>
+        ${WorkspaceRegisterTabs()}
         ${
-          isTableView
+          isProjectRegister && isTableView
             ? WorkspaceProjectsTable()
-            : `<div class="pm-project-card-grid">
+            : isProjectRegister
+            ? `<div class="pm-project-card-grid">
                 ${workspaceProjectCards.map(WorkspaceProjectCard).join("")}
               </div>`
+            : selectedWorkspaceRegister === "benefits"
+            ? WorkspaceBenefitsTable()
+            : WorkspaceRisksTable()
         }
       </div>
     </section>
@@ -2910,6 +3138,20 @@ function WorkFilter(selectedFilter, items, className = "") {
 }
 
 function AIInsightsWidget() {
+  if (onboardingPm101Locked) {
+    return `
+      <aside class="ai-insight-widget pm101-assignment-widget" aria-label="PM 101 onboarding status">
+        <div class="ai-insight-main">
+          <span class="ai-insight-icon">${icon("bell")}</span>
+          <div class="ai-insight-copy">
+            <strong>Awaiting first assignment</strong>
+            <p>Your workspace is ready. PMO assignment will unlock project planning.</p>
+          </div>
+        </div>
+      </aside>
+    `;
+  }
+
   const insightCount = aiWorkspaceInsights.length;
   const insight = aiWorkspaceInsights[((selectedAiInsightIndex % insightCount) + insightCount) % insightCount];
 
@@ -3039,12 +3281,14 @@ function WorkspaceSearch(selectedView) {
 
 function WorkspaceTabs(selectedView) {
   const actionsActive = selectedView === "board" || selectedView === "calendar" || selectedView === "pm101";
+  const actionsTarget = onboardingPm101Locked ? "pm101" : "calendar";
+  const lockedStageAttrs = onboardingPm101Locked ? 'disabled aria-disabled="true" title="Available after PM 101 onboarding"' : "";
   return `
     <div class="workspace-tabs" role="tablist" aria-label="Workspace view" data-tour-target="workspace-tabs">
-      <button class="${actionsActive ? "active" : ""}" type="button" data-view-target="calendar" aria-selected="${actionsActive}">
+      <button class="${actionsActive ? "active" : ""}" type="button" data-view-target="${actionsTarget}" aria-selected="${actionsActive}">
         ${icon("checklist")} Actions
       </button>
-      <button class="${selectedView === "stages" ? "active" : ""}" type="button" data-view-target="stages" aria-selected="${selectedView === "stages"}">
+      <button class="${selectedView === "stages" ? "active" : ""}" type="button" data-view-target="stages" aria-selected="${selectedView === "stages"}" ${lockedStageAttrs}>
         ${icon("timeline")} Stages
       </button>
     </div>
@@ -3052,12 +3296,13 @@ function WorkspaceTabs(selectedView) {
 }
 
 function ActionViewSwitch(selectedView) {
+  const lockedAttrs = onboardingPm101Locked ? 'disabled aria-disabled="true" title="Available after PM 101 onboarding"' : "";
   return `
     <div class="action-view-switch" role="tablist" aria-label="Actions view format">
-      <button class="${selectedView === "board" ? "active" : ""}" type="button" data-view-target="board" aria-selected="${selectedView === "board"}">
+      <button class="${selectedView === "board" ? "active" : ""}" type="button" data-view-target="board" aria-selected="${selectedView === "board"}" ${lockedAttrs}>
         ${icon("columns")} Board
       </button>
-      <button class="${selectedView === "calendar" ? "active" : ""}" type="button" data-view-target="calendar" aria-selected="${selectedView === "calendar"}">
+      <button class="${selectedView === "calendar" ? "active" : ""}" type="button" data-view-target="calendar" aria-selected="${selectedView === "calendar"}" ${lockedAttrs}>
         ${icon("calendar")} Calendar
       </button>
       <button class="${selectedView === "pm101" ? "active" : ""}" type="button" data-view-target="pm101" aria-selected="${selectedView === "pm101"}">
@@ -3336,12 +3581,14 @@ function PM101View(selectedView) {
 }
 
 function WorkspacePanel(selectedProject, selectedView, selectedRange, selectedBoardFilter, selectedCalendarMonth) {
-  const workspaceTitle = isAllProjects(selectedProject)
+  const workspaceTitle = onboardingPm101Locked
+    ? "Operational Workspace"
+    : isAllProjects(selectedProject)
     ? "Operational Workspace"
     : `${projectName(selectedProject)} | Operational Workspace`;
 
   return `
-    <section class="workspace-panel ${isAllProjects(selectedProject) ? "" : "project-workspace-panel"}">
+    <section class="workspace-panel ${!isAllProjects(selectedProject) && !onboardingPm101Locked ? "project-workspace-panel" : ""} ${onboardingPm101Locked ? "pm101-locked-workspace" : ""}">
       <div class="workspace-shell-head">
         <div class="workspace-title">
           <h2>${escapeHtml(workspaceTitle)}</h2>
@@ -3567,7 +3814,7 @@ function quickLinksOrderedActions() {
 }
 
 function quickLinksTotalPages() {
-  return Math.max(1, Math.ceil(quickLinksOrderedActions().length / QUICK_LINK_PAGE_SIZE));
+  return Math.max(1, Math.ceil(quickLinksOrderedActions().length / quickLinksPageSize));
 }
 
 function quickLinksPageIndex() {
@@ -3575,8 +3822,8 @@ function quickLinksPageIndex() {
 }
 
 function quickLinksPageActions() {
-  const start = quickLinksPageIndex() * QUICK_LINK_PAGE_SIZE;
-  return quickLinksOrderedActions().slice(start, start + QUICK_LINK_PAGE_SIZE);
+  const start = quickLinksPageIndex() * quickLinksPageSize;
+  return quickLinksOrderedActions().slice(start, start + quickLinksPageSize);
 }
 
 function QuickLinks(selectedProject) {
@@ -3592,6 +3839,7 @@ function QuickLinks(selectedProject) {
         <div class="quick-action-grid">
           ${quickLinksPageActions().map((action) => QuickLinkCard(action, selectedProject, { pinnedIds })).join("")}
         </div>
+        ${totalPages > 1 ? `
         <div class="quick-links-pager" aria-label="Quick links pages">
           <button class="quick-links-page-button" type="button" data-quick-links-page-shift="-1" ${currentPage === 0 ? "disabled" : ""} aria-label="Previous quick links page">
             <span class="icon" aria-hidden="true"><i data-lucide="arrow-left"></i></span>
@@ -3602,7 +3850,7 @@ function QuickLinks(selectedProject) {
           <button class="quick-links-page-button" type="button" data-quick-links-page-shift="1" ${currentPage >= totalPages - 1 ? "disabled" : ""} aria-label="Next quick links page">
             <span class="icon" aria-hidden="true"><i data-lucide="arrow-right"></i></span>
           </button>
-        </div>
+        </div>` : ""}
       </div>
     </section>
   `;
@@ -3733,8 +3981,8 @@ const projectPlanSectionOrder = [
   "Miscellaneous",
 ];
 
-const projectPlanDetailedPrimarySections = ["Project Setup", "Overview", "Schedule & Scope", "Budget", "Benefits", "Risk", "Resource"];
-const projectPlanDetailedOnlySections = projectPlanSectionOrder.filter((section) => !projectPlanDetailedPrimarySections.includes(section));
+const projectPlanDetailedPrimarySections = ["Overview", "Schedule & Scope", "Budget", "Benefits", "Risk", "Resource"];
+const projectPlanDetailedOnlySections = projectPlanSectionOrder.filter((section) => section !== "Project Setup" && !projectPlanDetailedPrimarySections.includes(section));
 const projectPlanReportSections = ["Overview", "Schedule & Scope", "Budget", "Benefits", "Risk", "Issues", "Resource", "Dependency"];
 const projectPlanWorkspaceEntries = {
   "change-request": { title: "Change Request", aria: "change request" },
@@ -4182,10 +4430,8 @@ function ProjectPlanDetailedNav(activeSection) {
   `;
 }
 
-function ProjectPlanSimpleContent() {
-  const simpleFieldNames = new Set(projectPlanSimpleFieldOrder);
-  const fieldMap = new Map(projectPlanFieldMatrix.filter((field) => simpleFieldNames.has(field.field)).map((field) => [field.field, field]));
-  const simpleGroups = [
+function projectPlanSimpleGroups() {
+  return [
     {
       title: "Project identity",
       icon: "project",
@@ -4217,31 +4463,44 @@ function ProjectPlanSimpleContent() {
       fields: ["Risks Register"],
     },
   ];
+}
+
+function ProjectPlanSimpleGroupCard(group, fieldMap) {
+  const groupFields = group.fields.map((fieldName) => fieldMap.get(fieldName)).filter(Boolean);
+  return `
+    <article class="matrix-field-group simple-plan-section-card simple-field-card">
+      <div class="simple-field-card-head">
+        <span class="matrix-field-group-copy">
+          <strong>${escapeHtml(group.title)}</strong>
+          <small>${escapeHtml(group.description)}</small>
+        </span>
+        <span class="matrix-field-group-meta" aria-label="${groupFields.length} fields">
+          <b>${groupFields.length}</b>
+        </span>
+      </div>
+      <div class="matrix-field-group-grid simple-plan-section-fields">
+        ${groupFields.map((field) => ProjectPlanFieldControl(field, { simple: true })).join("")}
+      </div>
+    </article>
+  `;
+}
+
+function ProjectPlanOverviewIdentityCard() {
+  const simpleFieldNames = new Set(projectPlanSimpleFieldOrder);
+  const fieldMap = new Map(projectPlanFieldMatrix.filter((field) => simpleFieldNames.has(field.field)).map((field) => [field.field, field]));
+  const identityGroup = projectPlanSimpleGroups()[0];
+  return ProjectPlanSimpleGroupCard(identityGroup, fieldMap);
+}
+
+function ProjectPlanSimpleContent() {
+  const simpleFieldNames = new Set(projectPlanSimpleFieldOrder);
+  const fieldMap = new Map(projectPlanFieldMatrix.filter((field) => simpleFieldNames.has(field.field)).map((field) => [field.field, field]));
+  const simpleGroups = projectPlanSimpleGroups();
 
   return `
     <section class="project-plan-form-card plan-builder-card project-plan-matrix-card simple-plan-card">
       <div class="simple-plan-sections">
-        ${simpleGroups
-          .map((group) => {
-            const groupFields = group.fields.map((fieldName) => fieldMap.get(fieldName)).filter(Boolean);
-            return `
-              <article class="matrix-field-group simple-plan-section-card simple-field-card">
-                <div class="simple-field-card-head">
-                  <span class="matrix-field-group-copy">
-                    <strong>${escapeHtml(group.title)}</strong>
-                    <small>${escapeHtml(group.description)}</small>
-                  </span>
-                  <span class="matrix-field-group-meta" aria-label="${groupFields.length} fields">
-                    <b>${groupFields.length}</b>
-                  </span>
-                </div>
-                <div class="matrix-field-group-grid simple-plan-section-fields">
-                  ${groupFields.map((field) => ProjectPlanFieldControl(field, { simple: true })).join("")}
-                </div>
-              </article>
-            `;
-          })
-          .join("")}
+        ${simpleGroups.map((group) => ProjectPlanSimpleGroupCard(group, fieldMap)).join("")}
       </div>
     </section>
   `;
@@ -4329,6 +4588,7 @@ function ProjectPlanDetailedContent(section) {
   return `
     <section class="project-plan-form-card plan-builder-card project-plan-matrix-card detailed-plan-card" data-project-plan-matrix-scroll>
       <div class="project-plan-section-fields">
+        ${section === "Overview" ? ProjectPlanOverviewIdentityCard() : ""}
         ${ProjectPlanFieldGroupList(section, upfrontFields)}
         ${hiddenFieldAccordion}
       </div>
@@ -4623,10 +4883,31 @@ function projectPlanPlaceholder(field) {
   return `Enter ${field.field.toLowerCase()}`;
 }
 
+function LockedEmptyReportWidget() {
+  return `
+    <section class="side-card report-widget locked-empty-report-widget" data-tour-target="right-report-widget">
+      <div class="report-widget-head">
+        <div>
+          <h2>Project report trend</h2>
+          <small>Last 3 PSR statuses</small>
+        </div>
+      </div>
+      <div class="report-trend-list" aria-hidden="true"></div>
+    </section>
+  `;
+}
+
 function RightRail(selectedProject) {
+  if (onboardingPm101Locked) {
+    return `
+      ${TopDeck(true)}
+      ${LockedEmptyReportWidget()}
+    `;
+  }
+
   if (isAllProjects(selectedProject)) {
     return `
-      ${TopDeck()}
+      ${TopDeck(onboardingPm101Locked)}
       ${ReportWidget(selectedProject)}
     `;
   }
@@ -5723,7 +6004,7 @@ function App(
     <div class="modern-shell ${isPlayground ? "playground-mode" : ""} ${isWbs ? "wbs-mode" : ""} ${isProjectPlan ? "project-plan-mode" : ""} ${isUnassigned ? "unassigned-mode" : ""}">
       ${AppHeader(selectedProject, notificationPanelOpen, selectedPage, frontDoorMode)}
       ${Sidebar(selectedPage, frontDoorMode)}
-      <main class="app-canvas ${isPlayground ? "playground-canvas" : ""} ${isWbs ? "wbs-canvas" : ""} ${isProjectPlan ? "project-plan-canvas" : ""} ${isWorkspaces ? "workspaces-canvas" : ""} ${isUnassigned ? "unassigned-canvas" : ""}">
+      <main class="app-canvas ${isPlayground ? "playground-canvas" : ""} ${isWbs ? "wbs-canvas" : ""} ${isProjectPlan ? "project-plan-canvas" : ""} ${isWorkspaces ? "workspaces-canvas" : ""} ${isUnassigned ? "unassigned-canvas" : ""} ${onboardingPm101Locked ? "pm101-locked-canvas" : ""}">
         ${
           isUnassigned
             ? UnassignedFrontDoor()
@@ -5735,11 +6016,11 @@ function App(
                 ? ProjectPlanPage(selectedProject, projectPlanEntryPoint)
                 : isWorkspaces
                   ? WorkspacesPage()
-                : `<div class="content-grid">
+                : `<div class="content-grid ${onboardingPm101Locked ? "pm101-locked-grid" : ""}">
                 <div class="left-column">
                   ${WorkspacePanel(selectedProject, selectedView, selectedRange, selectedBoardFilter, selectedCalendarMonth)}
                 </div>
-                <div class="right-column ${isAllProjects(selectedProject) ? "portfolio-frontdoor" : "project-frontdoor"}">
+                <div class="right-column ${isAllProjects(selectedProject) || onboardingPm101Locked ? "portfolio-frontdoor" : "project-frontdoor"} ${onboardingPm101Locked ? "pm101-locked-right" : ""}">
                   ${RightRail(selectedProject)}
                 </div>
               </div>`
@@ -5766,6 +6047,7 @@ let selectedWbsSearch = "";
 let selectedWbsViewBy = "months";
 let selectedWbsZoom = 1;
 let selectedWorkspaceDisplay = "table";
+let selectedWorkspaceRegister = "projects";
 let selectedStageGate = null;
 let selectedReportProject = null;
 let selectedPlaygroundDrawer = null;
@@ -5777,11 +6059,15 @@ let projectPlanReportActiveSection = "Overview";
 let notificationPanelOpen = false;
 let pinnedQuickLinkIds = loadPinnedQuickLinks();
 let quickLinksPage = 0;
+let quickLinksPageSize = QUICK_LINK_PAGE_SIZE;
 let quickLinksToast = null;
 let quickLinksToastTimer = null;
+let quickLinksLayoutFrame = null;
+let quickLinksPagerBlockHeight = 0;
 let guidedTourActive = false;
 let guidedTourStep = 0;
 let guidedTourExitMode = null;
+let onboardingPm101Locked = false;
 let frontDoorMode = "assigned";
 let pmoAssignmentReady = false;
 let projectPlanEntryPoint = "quick";
@@ -5832,6 +6118,7 @@ function renderApp() {
   initProjectSwitch();
   initWorkspaceSwitch();
   initWorkspaceDisplaySwitch();
+  initWorkspaceRegisterSwitch();
   initAiInsightsWidget();
   initBoardFilter();
   initCalendarNavigation();
@@ -5846,6 +6133,7 @@ function renderApp() {
   initNotificationPanel();
   initPmoAssignmentPreview();
   initGuidedTour();
+  scheduleQuickLinksLayoutSync();
 }
 
 function clearAiInsightsTimer() {
@@ -5869,11 +6157,13 @@ function enterFrontDoor(projectId = "all", startTour = false, mode = "assigned",
   onboardingActive = false;
   frontDoorMode = mode;
   pmoAssignmentReady = false;
+  onboardingPm101Locked = false;
   selectedPage = "workspace";
   projectPlanEntryPoint = "quick";
   selectedProject = projectId;
   selectedView = "calendar";
   selectedWorkspaceDisplay = "table";
+  selectedWorkspaceRegister = "projects";
   selectedBoardFilter = "all";
   selectedStageGate = null;
   selectedReportProject = null;
@@ -5909,7 +6199,7 @@ function initOnboardingPage() {
   document.querySelectorAll("[data-onboarding-finish]").forEach((button) => {
     button.addEventListener("click", () => {
       const startsTour = button.dataset.onboardingFinish === "tour";
-      enterFrontDoor(startsTour ? "all" : "Vision 2030", startsTour, "assigned", startsTour ? "unassigned" : null);
+      enterFrontDoor(startsTour ? "all" : "Vision 2030", startsTour, "assigned", startsTour ? "pm101-lock" : null);
     });
   });
 }
@@ -5920,10 +6210,29 @@ function completeGuidedTour() {
   if (guidedTourExitMode === "unassigned") {
     frontDoorMode = "unassigned";
     pmoAssignmentReady = false;
+    onboardingPm101Locked = false;
     selectedPage = "workspace";
     projectPlanEntryPoint = "quick";
     selectedProject = "all";
     selectedView = "calendar";
+    selectedBoardFilter = "all";
+    selectedStageGate = null;
+    selectedReportProject = null;
+    selectedPlaygroundDrawer = null;
+    projectPlanDetailMode = "simple";
+    projectPlanActiveSection = "Overview";
+    projectPlanReportActiveSection = "Overview";
+    projectPlanSectionsExpanded = false;
+    projectPlanExpandedFieldSections = {};
+    notificationPanelOpen = false;
+  } else if (guidedTourExitMode === "pm101-lock") {
+    frontDoorMode = "assigned";
+    pmoAssignmentReady = false;
+    onboardingPm101Locked = true;
+    selectedPage = "workspace";
+    projectPlanEntryPoint = "quick";
+    selectedProject = firstAssignedProject.id;
+    selectedView = "pm101";
     selectedBoardFilter = "all";
     selectedStageGate = null;
     selectedReportProject = null;
@@ -6091,10 +6400,10 @@ function initPageNavigation() {
     button.addEventListener("click", () => {
       const targetPage = button.dataset.pageTarget;
       if (button.dataset.projectId) {
-        selectedProject = button.dataset.projectId;
+        selectedProject = onboardingPm101Locked ? firstAssignedProject.id : button.dataset.projectId;
       }
       if (button.dataset.workspaceView) {
-        selectedView = button.dataset.workspaceView;
+        selectedView = onboardingPm101Locked && (button.dataset.workspaceView === "board" || button.dataset.workspaceView === "calendar") ? "pm101" : button.dataset.workspaceView;
       }
       if (targetPage === "project-plan") {
         projectPlanEntryPoint = button.dataset.planEntry || (button.closest(".quick-action-list") ? "quick" : "onboarding");
@@ -6104,6 +6413,7 @@ function initPageNavigation() {
         projectPlanSectionsExpanded = false;
         projectPlanExpandedFieldSections = {};
       }
+      if (onboardingPm101Locked && targetPage === "workspaces") return;
       if (frontDoorMode === "unassigned" && targetPage !== "workspace") {
         if (pmoAssignmentReady && targetPage === "project-plan") {
           frontDoorMode = "assigned";
@@ -6146,7 +6456,7 @@ function initProjectSwitch() {
   const selects = document.querySelectorAll("[data-project-select]");
   selects.forEach((select) => {
     select.addEventListener("change", (event) => {
-      selectedProject = event.target.value;
+      selectedProject = onboardingPm101Locked ? firstAssignedProject.id : event.target.value;
       selectedStageGate = null;
       selectedReportProject = null;
       selectedPlaygroundDrawer = null;
@@ -6159,6 +6469,7 @@ function initProjectSwitch() {
 function initWorkspaceSwitch() {
   document.querySelectorAll("[data-view-target]").forEach((button) => {
     button.addEventListener("click", () => {
+      if (onboardingPm101Locked && (button.dataset.viewTarget === "board" || button.dataset.viewTarget === "calendar" || button.dataset.viewTarget === "stages")) return;
       selectedView = button.dataset.viewTarget;
       selectedStageGate = null;
       selectedReportProject = null;
@@ -6174,6 +6485,17 @@ function initWorkspaceDisplaySwitch() {
       const display = button.dataset.workspaceDisplay;
       if (!display || display === selectedWorkspaceDisplay) return;
       selectedWorkspaceDisplay = display;
+      renderApp();
+    });
+  });
+}
+
+function initWorkspaceRegisterSwitch() {
+  document.querySelectorAll("[data-workspace-register]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const register = button.dataset.workspaceRegister;
+      if (!register || register === selectedWorkspaceRegister) return;
+      selectedWorkspaceRegister = register;
       renderApp();
     });
   });
@@ -6923,6 +7245,75 @@ function showQuickLinksToast(message) {
   }, 3200);
 }
 
+function scheduleQuickLinksLayoutSync() {
+  if (quickLinksLayoutFrame !== null) return;
+  quickLinksLayoutFrame = window.requestAnimationFrame(() => {
+    quickLinksLayoutFrame = null;
+    syncQuickLinksPageSize();
+  });
+}
+
+function syncQuickLinksPageSize() {
+  const quickLinksList = document.querySelector(".quick-actions-card .quick-action-list");
+  const quickLinksGrid = quickLinksList?.querySelector(".quick-action-grid");
+  const quickLinkCards = quickLinksGrid?.querySelectorAll(".quick-link-card");
+
+  if (!quickLinksList || !quickLinksGrid || !quickLinkCards?.length) {
+    quickLinksPageSize = QUICK_LINK_PAGE_SIZE;
+    return;
+  }
+
+  const firstCard = quickLinkCards[0];
+  const rowHeight = firstCard.getBoundingClientRect().height || firstCard.offsetHeight;
+  const listHeight = quickLinksList.clientHeight;
+  if (!rowHeight || !listHeight) return;
+
+  const gridStyles = window.getComputedStyle(quickLinksGrid);
+  const rowGap = Number.parseFloat(gridStyles.rowGap || gridStyles.gap || "0") || 0;
+  const columns = quickLinksGridColumnCount(quickLinkCards);
+  const pager = quickLinksList.querySelector(".quick-links-pager");
+  const pagerMarginTop = pager ? Number.parseFloat(window.getComputedStyle(pager).marginTop || "0") || 0 : 0;
+  const pagerBlockHeight = pager ? pager.offsetHeight + pagerMarginTop : quickLinksPagerBlockHeight;
+
+  if (pager && pagerBlockHeight > 0) {
+    quickLinksPagerBlockHeight = pagerBlockHeight;
+  }
+
+  const totalActions = quickLinksOrderedActions().length;
+  const maxWithoutPager = quickLinksCapacity(listHeight, rowHeight, rowGap, columns);
+  let nextPageSize = maxWithoutPager;
+
+  if (totalActions > nextPageSize) {
+    const availableGridHeight = Math.max(listHeight - pagerBlockHeight, rowHeight);
+    const maxWithPager = quickLinksCapacity(availableGridHeight, rowHeight, rowGap, columns);
+    nextPageSize = maxWithPager;
+  }
+
+  if (nextPageSize === quickLinksPageSize) return;
+
+  const currentStart = quickLinksPageIndex() * quickLinksPageSize;
+  quickLinksPageSize = nextPageSize;
+  quickLinksPage = Math.min(Math.floor(currentStart / quickLinksPageSize), quickLinksTotalPages() - 1);
+  renderApp();
+}
+
+function quickLinksCapacity(availableHeight, rowHeight, rowGap, columns) {
+  const safeColumns = Math.max(1, columns);
+  const safeHeight = Math.max(availableHeight, rowHeight);
+  const rows = Math.max(1, Math.floor((safeHeight + rowGap) / (rowHeight + rowGap)));
+  return rows * safeColumns;
+}
+
+function quickLinksGridColumnCount(cards) {
+  const firstTop = cards[0]?.offsetTop ?? 0;
+  let columns = 0;
+  for (const card of cards) {
+    if (Math.abs(card.offsetTop - firstTop) > 1) break;
+    columns += 1;
+  }
+  return Math.max(1, columns);
+}
+
 function setQuickLinkPinned(id, shouldPin) {
   const currentIds = normalizePinnedQuickLinks(pinnedQuickLinkIds);
   if (shouldPin && currentIds.includes(id)) return true;
@@ -6968,6 +7359,10 @@ document.addEventListener("keydown", (event) => {
   selectedStageGate = null;
   selectedPlaygroundDrawer = null;
   renderApp();
+});
+
+window.addEventListener("resize", () => {
+  scheduleQuickLinksLayoutSync();
 });
 
 renderApp();

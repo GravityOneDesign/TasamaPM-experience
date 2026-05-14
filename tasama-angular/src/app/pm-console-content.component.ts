@@ -19,8 +19,12 @@ import { PmConsoleMountOptions } from './pm-console.types';
 type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground';
 type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
 type WorkspaceDisplay = 'table' | 'cards';
+type WorkspaceRegister = 'projects' | 'benefits' | 'risks';
 type ProjectPlanEntry = 'quick' | 'reports' | 'change-request' | 'closure';
 type ProjectPlanDetailMode = 'simple' | 'detailed';
+type ReportDetailMode = 'simple' | 'detailed';
+type WorkspaceTableColumnId = 'project' | 'stage' | 'trend' | 'manager' | 'baselineStart' | 'baselineEnd' | 'budget' | 'status';
+type WorkspaceTableColumnMotionState = 'visible' | 'entering' | 'exiting';
 
 interface QuickAction {
   id: string;
@@ -54,6 +58,51 @@ interface ProjectRow {
   priority: string;
 }
 
+interface WorkspaceRegisterTab {
+  id: WorkspaceRegister;
+  label: string;
+  icon: string;
+  count: number;
+}
+
+interface WorkspaceRegisterStat {
+  label: string;
+  value: number;
+  icon: string;
+  tone: string;
+}
+
+interface BenefitRegisterRow {
+  id: string;
+  benefit: string;
+  project: string;
+  owner: string;
+  targetDate: string;
+  measure: string;
+  realization: string;
+  realizationTone: string;
+  status: string;
+  statusTone: string;
+}
+
+interface RiskRegisterRow {
+  id: string;
+  risk: string;
+  project: string;
+  owner: string;
+  mitigation: string;
+  reviewDate: string;
+  exposure: string;
+  exposureTone: string;
+  status: string;
+  statusTone: string;
+}
+
+interface WorkspaceTableColumn {
+  id: WorkspaceTableColumnId;
+  label: string;
+}
+
 interface ReportCreationDetail {
   intervalStart: string;
   intervalEnd: string;
@@ -85,6 +134,30 @@ interface SimplePlanSection {
   icon: string;
   fields: SimplePlanField[];
   readOnly?: boolean;
+}
+
+interface SimpleReportGuide {
+  focus: string;
+  status: string;
+  tone: string;
+  action: string;
+}
+
+interface ReportTimelinePoint {
+  date: string;
+  tone: string;
+  label: string;
+}
+
+interface ReportDrawerCard {
+  id: string;
+  title: string;
+  body: string;
+  status: string;
+  tone: string;
+  trend: string;
+  comments: string;
+  timeline: ReportTimelinePoint[];
 }
 
 interface SimplePlanTableConfig {
@@ -130,10 +203,12 @@ const iconMap: Record<string, string> = {
   alert: 'triangle-alert',
   arrow: 'chevron-right',
   benefit: 'circle-check',
+  benefitGraph: 'chart-pie',
   bell: 'bell',
   book: 'book-open',
   building: 'building-2',
   calendar: 'calendar-days',
+  calendarMinimal: 'calendar',
   chart: 'chart-column',
   check: 'circle-check',
   checklist: 'check-square',
@@ -173,6 +248,7 @@ const iconMap: Record<string, string> = {
   priority: 'chevrons-up',
   project: 'folder',
   quickGrid: 'layout-grid',
+  registerRisk: 'panels-top-left',
   resources: 'users',
   risks: 'triangle-alert',
   rocket: 'rocket',
@@ -185,6 +261,7 @@ const iconMap: Record<string, string> = {
   stageGate: 'clipboard-check',
   status: 'circle',
   store: 'store',
+  widget: 'layout-grid',
   table: 'table-2',
   timeline: 'list-tree',
   todo: 'circle-dot',
@@ -257,6 +334,23 @@ const workspaceTableProjects: ProjectRow[] = [
   { id: 'NEOM Integration', code: 'ATRC-05', title: 'NEOM Integration', stage: 'Planning', status: 'Alert', statusTone: 'amber', trend: ['amber', 'red', 'green'], manager: 'Fatima Ali', managerInitials: 'FA', baselineStart: '09/18/2024', baselineEnd: '01/16/2027', budgetUsed: '$3.1M', budgetTotal: '$3.1M', priority: 'normal' },
   { id: 'Smart City Alpha', code: 'ATRC-06', title: 'Smart City Alpha', stage: 'Execution', status: 'On-Track', statusTone: 'green', trend: ['green', 'amber', 'green'], manager: 'Khalid Omar', managerInitials: 'KO', baselineStart: '04/08/2025', baselineEnd: '12/15/2026', budgetUsed: '$980K', budgetTotal: '$1.7M', priority: 'normal' },
   { id: 'PMO Capability', code: 'ATRC-07', title: 'PMO Capability', stage: 'Initiation', status: 'Not Started', statusTone: 'blue', trend: ['neutral', 'neutral', 'blue'], manager: 'Laila Noor', managerInitials: 'LN', baselineStart: '05/20/2026', baselineEnd: '02/28/2027', budgetUsed: '$0', budgetTotal: '$1.2M', priority: 'not-started' },
+];
+
+const benefitRegisterRows: BenefitRegisterRow[] = [
+  { id: 'BEN-01', benefit: 'Improve research capability discovery', project: 'UAE Research Map', owner: 'Research Leads Forum', targetDate: '10/15/2026', measure: '350 researchers onboarded', realization: 'In realization', realizationTone: 'amber', status: 'On Track', statusTone: 'green' },
+  { id: 'BEN-02', benefit: 'Reduce duplicate funding calls', project: 'Vision 2030', owner: 'PMO Desk', targetDate: '09/30/2026', measure: '18% duplicate reduction', realization: 'Validating', realizationTone: 'amber', status: 'On Track', statusTone: 'green' },
+  { id: 'BEN-03', benefit: 'Accelerate sponsor approvals', project: 'NEOM Integration', owner: 'Fatima Ali', targetDate: '07/15/2026', measure: '25% cycle-time reduction', realization: 'Planned', realizationTone: 'blue', status: 'Attention', statusTone: 'amber' },
+  { id: 'BEN-04', benefit: 'Increase cross-border taskforce coordination', project: 'Global Anti-Scam Taskforce', owner: 'Sarah Ahmed', targetDate: '03/01/2026', measure: '4 joint operating protocols signed', realization: 'Realized', realizationTone: 'green', status: 'Realized', statusTone: 'green' },
+  { id: 'BEN-05', benefit: 'Lift PMO adoption maturity', project: 'PMO Capability', owner: 'Laila Noor', targetDate: '12/18/2026', measure: '80% workflow adoption', realization: 'Planned', realizationTone: 'blue', status: 'Not Started', statusTone: 'blue' },
+  { id: 'BEN-06', benefit: 'Improve predictive operations response', project: 'Smart City Alpha', owner: 'Khalid Omar', targetDate: '11/30/2026', measure: '15-minute faster dispatch time', realization: 'In realization', realizationTone: 'amber', status: 'On Track', statusTone: 'green' },
+];
+
+const riskRegisterRows: RiskRegisterRow[] = [
+  { id: 'RSK-01', risk: 'Stakeholder data quality may delay baseline', project: 'UAE Research Map', owner: 'Muna Hassan', mitigation: 'Run a cleansing sprint and confirm source owners before sign-off.', reviewDate: '05/08/2026', exposure: 'Medium', exposureTone: 'amber', status: 'Monitoring', statusTone: 'amber' },
+  { id: 'RSK-02', risk: 'Commercial overrun on integration scope', project: 'NEOM Integration', owner: 'Fatima Ali', mitigation: 'Rebaseline the contract package and secure finance approval this week.', reviewDate: '05/10/2026', exposure: 'Critical', exposureTone: 'red', status: 'Escalated', statusTone: 'red' },
+  { id: 'RSK-03', risk: 'Vendor dependency slippage affects delivery dates', project: 'Smart City Alpha', owner: 'Khalid Omar', mitigation: 'Add recovery buffer and enforce a dual-supplier checkpoint.', reviewDate: '05/06/2026', exposure: 'High', exposureTone: 'red', status: 'Active', statusTone: 'amber' },
+  { id: 'RSK-04', risk: 'Stage-gate evidence pack may miss the forum cutoff', project: 'Vision 2030', owner: 'PMO Desk', mitigation: 'Prepare the evidence pack early and assign an approval fallback.', reviewDate: '05/11/2026', exposure: 'Medium', exposureTone: 'amber', status: 'Active', statusTone: 'amber' },
+  { id: 'RSK-05', risk: 'Benefits owner response is not yet confirmed', project: 'PMO Capability', owner: 'Laila Noor', mitigation: 'Follow up weekly with a named fallback approver in the forum.', reviewDate: '05/09/2026', exposure: 'Low', exposureTone: 'blue', status: 'Watching', statusTone: 'blue' },
 ];
 
 const workspaceProjectCards = [
@@ -439,7 +533,7 @@ const timelineItems = [
 ];
 
 const reportStatusHistory = [
-  { project: 'UAE Research Map', dueLabel: 'Due today', dueTone: 'amber', trend: [{ label: 'Mar', status: 'submitted' }, { label: 'Apr', status: 'attention' }, { label: 'May', status: 'due' }] },
+  { project: 'UAE Research Map', dueLabel: 'On track', dueTone: 'green', trend: [{ label: 'Mar', status: 'submitted' }, { label: 'Apr', status: 'submitted' }, { label: 'May', status: 'submitted' }] },
   { project: 'Vision 2030', dueLabel: 'Overdue 5 days', dueTone: 'red', trend: [{ label: 'Mar', status: 'attention' }, { label: 'Apr', status: 'submitted' }, { label: 'May', status: 'overdue' }] },
   { project: 'NEOM Integration', dueLabel: 'Due today', dueTone: 'amber', trend: [{ label: 'Mar', status: 'attention' }, { label: 'Apr', status: 'submitted' }, { label: 'May', status: 'due' }] },
   { project: 'Smart City Alpha', dueLabel: 'On track', dueTone: 'green', trend: [{ label: 'Mar', status: 'attention' }, { label: 'Apr', status: 'submitted' }, { label: 'May', status: 'submitted' }] },
@@ -449,12 +543,12 @@ const reportStatusHistory = [
 
 const reportCreationDetails: Record<string, ReportCreationDetail> = {
   'UAE Research Map': {
-    intervalStart: '30/04/2026',
-    intervalEnd: '29/05/2026',
+    intervalStart: '29/05/2026',
+    intervalEnd: '29/06/2026',
     intervalStatus: 'Not created',
     stage: 'Initiation',
     state: 'Active',
-    overallTrend: 'Needs attention',
+    overallTrend: 'Improving',
     progress: 20,
     baselineEnd: '31/12/2026',
     forecastEnd: '31/12/2026',
@@ -606,6 +700,18 @@ interface StageGateContext {
   checkedCount: number;
 }
 
+interface Pm101Step {
+  title: string;
+  body: string;
+  iconAsset: string;
+  decor: string;
+  decorAssets: string[];
+  footerLabel?: string;
+  footerValue?: string;
+  footerAction?: string;
+  footerIconOnly?: boolean;
+}
+
 const projectReportsRows = [
   { period: 'Initiation', owner: 'Jordan Lee', date: '01/15/2024', budget: '$2.5M/$4.3M', priority: 'normal' },
   { period: 'Planning', owner: 'Alex Adams', date: '03/22/2026', budget: '$3.1M/$3.1M', priority: 'normal' },
@@ -624,18 +730,67 @@ const projectReportTrendPoints = [
   { date: '20/11/2024', tone: 'amber', icon: 'status' },
 ];
 
-const pm101Steps = [
-  { title: 'Project assigned', body: 'You’ll receive a PMO assignment notification.', iconAsset: './assets/pm101/icon-1.svg', decor: 'burst', decorAssets: ['./assets/pm101/decor-1.svg'] },
-  { title: 'Build project plan', body: 'Set scope, timeline, risks, and dependencies.', iconAsset: './assets/pm101/icon-2.svg', decor: 'rings', decorAssets: ['./assets/pm101/decor-2.svg'] },
-  { title: 'Submit for approval', body: 'Send your baseline for PMO review and endorsement.', iconAsset: './assets/pm101/icon-3.svg', decor: 'plus', decorAssets: ['./assets/pm101/decor-3-group-1.svg', './assets/pm101/decor-3-group-2.svg', './assets/pm101/decor-3-group-3.svg', './assets/pm101/decor-3-group-4.svg'] },
-  { title: 'Manage delivery', body: 'Track milestones, issues, and dependencies.', iconAsset: './assets/pm101/icon-4.svg', decor: 'loops', decorAssets: ['./assets/pm101/decor-4.svg'] },
-  { title: 'Report progress', body: 'Submit PSRs and maintain delivery health.', iconAsset: './assets/pm101/icon-5.svg', decor: 'hex', decorAssets: ['./assets/pm101/decor-5.svg'] },
+const pm101Steps: Pm101Step[] = [
+  {
+    title: 'Project assigned',
+    body: 'You’ll receive a PMO assignment notification.',
+    iconAsset: './assets/pm101/icon-1.svg',
+    decor: 'burst',
+    decorAssets: ['./assets/pm101/decor-1.svg'],
+    footerLabel: 'Project assigned on',
+    footerValue: 'Jul 25, 2026',
+  },
+  {
+    title: 'Build project plan',
+    body: 'Set scope, timeline, risks, and dependencies.',
+    iconAsset: './assets/pm101/icon-2.svg',
+    decor: 'rings',
+    decorAssets: ['./assets/pm101/decor-2.svg'],
+    footerAction: 'Create project plan',
+  },
+  {
+    title: 'Manage delivery',
+    body: 'Track milestones, issues, and dependencies.',
+    iconAsset: './assets/pm101/icon-3.svg',
+    decor: 'plus',
+    decorAssets: ['./assets/pm101/decor-3-group-1.svg', './assets/pm101/decor-3-group-2.svg', './assets/pm101/decor-3-group-3.svg', './assets/pm101/decor-3-group-4.svg'],
+    footerAction: 'Go to workspaces',
+  },
+  {
+    title: 'Report progress',
+    body: 'Submit PSRs and maintain delivery health.',
+    iconAsset: './assets/pm101/icon-4.svg',
+    decor: 'loops',
+    decorAssets: ['./assets/pm101/decor-4.svg'],
+    footerAction: 'Create Report',
+  },
+  {
+    title: 'Access Learning Hub',
+    body: 'Understand & align with latest PIF guidelines.',
+    iconAsset: './assets/pm101/icon-5.svg',
+    decor: 'hex',
+    decorAssets: ['./assets/pm101/decor-5.svg'],
+    footerIconOnly: true,
+  },
 ];
 
 const QUICK_LINK_PIN_LIMIT = 10;
 const QUICK_LINK_PAGE_SIZE = 10;
 const QUICK_LINK_STORAGE_KEY = 'tasama.quickLinks.pinned';
+const WORKSPACE_TABLE_COLUMN_STORAGE_KEY = 'tasama.workspaceTable.visibleColumns';
+const WORKSPACE_TABLE_COLUMN_MOTION_MS = 280;
 const defaultPinnedQuickLinkIds = ['project-plan', 'wbs'];
+const workspaceTableColumns: WorkspaceTableColumn[] = [
+  { id: 'project', label: 'Project Name' },
+  { id: 'stage', label: 'Stage' },
+  { id: 'trend', label: 'Report Status Trend' },
+  { id: 'manager', label: 'Project Manager' },
+  { id: 'baselineStart', label: 'Baseline Start Date' },
+  { id: 'baselineEnd', label: 'Baseline End Date' },
+  { id: 'budget', label: 'Budget Utilised' },
+  { id: 'status', label: 'Status' },
+];
+const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'stage', 'trend', 'manager', 'baselineStart', 'budget'];
 
 @Component({
   selector: 'app-pm-console-content',
@@ -643,89 +798,236 @@ const defaultPinnedQuickLinkIds = ['project-plan', 'wbs'];
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="app-canvas" [class.workspaces-canvas]="selectedPage === 'workspaces'" [class.wbs-canvas]="selectedPage === 'wbs'" [class.project-plan-canvas]="selectedPage === 'project-plan'" [class.playground-canvas]="selectedPage === 'playground'" [class.unassigned-canvas]="frontDoorMode === 'unassigned'">
+    <main class="app-canvas" [class.workspaces-canvas]="selectedPage === 'workspaces'" [class.wbs-canvas]="selectedPage === 'wbs'" [class.project-plan-canvas]="selectedPage === 'project-plan'" [class.playground-canvas]="selectedPage === 'playground'" [class.unassigned-canvas]="frontDoorMode === 'unassigned'" [class.pm101-locked-canvas]="onboardingPm101Locked || isPm101OnboardingWorkspaceFlow">
       @switch (selectedPage) {
         @case ('workspaces') {
-          <section class="pm-projects-page" [class.table-mode]="workspaceDisplay === 'table'" [class.card-mode]="workspaceDisplay === 'cards'" aria-label="PM Console projects">
-            <div class="pm-projects-board">
-              <div class="pm-projects-title-row">
-                <div>
-                  <h1>Workspaces</h1>
-                  <p>Showing all {{ workspaceTableProjects.length }} projects</p>
-                </div>
-                <div class="pm-projects-controls">
-                  <label class="pm-project-search"><span class="icon" aria-hidden="true"><i data-lucide="search"></i></span><input type="search" aria-label="Search for projects" placeholder="Search for projects" /></label>
-                  <div class="pm-project-view-toggle" aria-label="Project display">
-                    <button [class.active]="workspaceDisplay === 'table'" type="button" aria-label="Table view" [attr.aria-pressed]="workspaceDisplay === 'table'" (click)="workspaceDisplay = 'table'; refreshIcons()"><span class="icon" aria-hidden="true"><i data-lucide="table-2"></i></span></button>
-                    <button [class.active]="workspaceDisplay === 'cards'" type="button" aria-label="Card view" [attr.aria-pressed]="workspaceDisplay === 'cards'" (click)="workspaceDisplay = 'cards'; refreshIcons()"><span class="icon" aria-hidden="true"><i data-lucide="layout-grid"></i></span></button>
-                  </div>
-                  <label class="pm-project-select"><select aria-label="Project filter"><option>All projects</option></select><span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span></label>
-                  <button class="pm-project-filter" type="button" aria-label="Filter projects"><span class="icon" aria-hidden="true"><i data-lucide="filter"></i></span></button>
-                </div>
+          <section class="pm-projects-page" [class.table-mode]="!isWorkspaceCardMode" [class.card-mode]="isWorkspaceCardMode" [attr.aria-label]="workspaceRegisterAriaLabel">
+            <div class="pm-projects-shell">
+              <div class="pm-register-tabs" role="tablist" aria-label="Workspace registers">
+                @for (tab of workspaceRegisterTabs; track tab.id) {
+                  <button class="pm-register-tab" [class.active]="workspaceRegister === tab.id" type="button" role="tab" [attr.aria-selected]="workspaceRegister === tab.id" [style.width]="workspaceRegisterTabWidth(tab.id)" (click)="setWorkspaceRegister(tab.id)">
+                    <span class="pm-register-tab-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(tab.icon)"></i></span></span>
+                    <span class="pm-register-tab-copy"><strong>{{ tab.label }}</strong></span>
+                  </button>
+                }
               </div>
 
-              @if (workspaceDisplay === 'table') {
-                <div class="pm-project-table-view">
-                  <div class="pm-project-table-stats" aria-label="Project status summary">
-                    @for (stat of workspaceStats; track stat.label) {
-                      <article class="pm-project-table-stat {{ stat.tone }}">
-                        <span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(stat.icon)"></i></span></span>
-                        <div><small>{{ stat.label }}</small><strong>{{ stat.value }}</strong></div>
-                      </article>
-                    }
+              <div class="pm-projects-board">
+                <div class="pm-projects-board-body">
+                @if (workspaceRegister === 'projects' && workspaceDisplay === 'table') {
+                  <div class="pm-project-table-view">
+                    <div class="pm-project-table-stats" aria-label="Project status summary">
+                      @for (stat of workspaceStats; track stat.label) {
+                        <article class="pm-project-table-stat {{ stat.tone }}">
+                          <span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(stat.icon)"></i></span></span>
+                          <div><small>{{ stat.label }}</small><strong>{{ stat.value }}</strong></div>
+                        </article>
+                      }
+                    </div>
+                    <div class="pm-project-table-toolbar">
+                      <span>Items: {{ workspaceTableProjects.length }}</span>
+                      <div>
+                        <button class="pm-table-tool square" type="button" aria-label="Search projects"><span class="icon" aria-hidden="true"><i data-lucide="search"></i></span></button>
+                        <button class="pm-table-tool" type="button"><span class="icon" aria-hidden="true"><i data-lucide="filter"></i></span><span>Filter</span></button>
+                        <button class="pm-table-tool" type="button"><span class="icon" aria-hidden="true"><i data-lucide="sliders-horizontal"></i></span><span>Group by</span></button>
+                        <div class="pm-project-view-toggle" aria-label="Project display">
+                          <button type="button" aria-label="Card view" aria-pressed="false" (click)="setWorkspaceDisplay('cards')"><span class="icon" aria-hidden="true"><i data-lucide="layout-grid"></i></span></button>
+                          <button class="active" type="button" aria-label="List view" aria-pressed="true" (click)="setWorkspaceDisplay('table')"><span class="icon" aria-hidden="true"><i data-lucide="list"></i></span></button>
+                        </div>
+                        <button class="pm-table-tool" type="button"><span class="icon" aria-hidden="true"><i data-lucide="download"></i></span><span>Export</span></button>
+                        <button class="pm-table-add-project" type="button"><span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span><span>Add Project</span></button>
+                        <div class="pm-table-settings-menu" data-workspace-columns-menu>
+                          <button class="pm-table-tool square" type="button" aria-label="Table settings" aria-haspopup="dialog" [attr.aria-expanded]="workspaceColumnMenuOpen" aria-controls="workspace-column-picker" (click)="toggleWorkspaceColumnMenu()"><span class="icon" aria-hidden="true"><i data-lucide="settings"></i></span></button>
+                          @if (workspaceColumnMenuOpen) {
+                            <section class="pm-table-column-popover" id="workspace-column-picker" role="dialog" aria-label="Choose visible table columns">
+                              <div class="pm-table-column-popover-head">
+                                <div>
+                                  <strong>Visible columns</strong>
+                                  <small>{{ visibleWorkspaceTableColumns.length }} of {{ workspaceTableColumns.length }} selected</small>
+                                </div>
+                                <button class="pm-table-column-reset" type="button" [disabled]="visibleWorkspaceTableColumns.length === workspaceTableColumns.length" (click)="resetWorkspaceTableColumns()">Reset</button>
+                              </div>
+                              <div class="pm-table-column-options" role="group" aria-label="Workspace table columns">
+                                @for (column of workspaceTableColumns; track column.id) {
+                                  <label class="pm-table-column-option" [class.is-locked]="isWorkspaceTableColumnLocked(column.id)">
+                                    <input type="checkbox" [checked]="isWorkspaceTableColumnVisible(column.id)" [disabled]="isWorkspaceTableColumnLocked(column.id)" (change)="toggleWorkspaceTableColumn(column.id, $event)" />
+                                    <span>{{ column.label }}</span>
+                                  </label>
+                                }
+                              </div>
+                              <p class="pm-table-column-hint">Keep at least one column visible in the table.</p>
+                            </section>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                    <div class="pm-project-table-scroll" tabindex="0">
+                      <table class="pm-project-table pm-workspace-project-table" [style.--workspace-table-min-width.px]="workspaceTableMinWidth()">
+                        <thead>
+                          <tr>
+                            <th class="pm-table-check-cell"><input type="checkbox" aria-label="Select all projects" /></th>
+                            @for (column of renderedWorkspaceTableColumns; track column.id) {
+                              <th class="pm-table-column-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)">
+                                <div class="pm-table-column-frame">
+                                  <span class="pm-table-column-header">{{ column.label }}</span>
+                                </div>
+                              </th>
+                            }
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (project of workspaceTableProjects; track project.id) {
+                            <tr>
+                              <td class="pm-table-check-cell"><input type="checkbox" [attr.aria-label]="'Select ' + project.title" /></td>
+                              @for (column of renderedWorkspaceTableColumns; track column.id) {
+                                @switch (column.id) {
+                                  @case ('project') {
+                                    <td class="pm-table-column-cell pm-table-project-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)"><div class="pm-table-column-frame"><button type="button" (click)="openProject(project.id)"><span>{{ project.code }}</span><strong>{{ project.title }}</strong></button></div></td>
+                                  }
+                                  @case ('stage') {
+                                    <td class="pm-table-column-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)"><div class="pm-table-column-frame"><span class="pm-table-stage">{{ project.stage }}</span></div></td>
+                                  }
+                                  @case ('trend') {
+                                    <td class="pm-table-column-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)"><div class="pm-table-column-frame"><div class="pm-table-trend" [attr.aria-label]="project.title + ' report status trend'">@for (tone of project.trend; track $index) { <span class="pm-table-trend-dot {{ tone }}" role="img" [attr.aria-label]="trendLabel(tone)" [attr.title]="trendLabel(tone)"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="trendIcon(tone)"></i></span></span> }</div></div></td>
+                                  }
+                                  @case ('manager') {
+                                    <td class="pm-table-column-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)"><div class="pm-table-column-frame"><span class="pm-table-manager"><i>{{ project.managerInitials }}</i>{{ project.manager }}</span></div></td>
+                                  }
+                                  @case ('baselineStart') {
+                                    <td class="pm-table-column-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)"><div class="pm-table-column-frame"><span class="pm-table-column-text">{{ project.baselineStart }}</span></div></td>
+                                  }
+                                  @case ('baselineEnd') {
+                                    <td class="pm-table-column-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)"><div class="pm-table-column-frame"><span class="pm-table-column-text">{{ project.baselineEnd }}</span></div></td>
+                                  }
+                                  @case ('budget') {
+                                    <td class="pm-table-column-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)"><div class="pm-table-column-frame"><span class="pm-table-budget"><strong>{{ project.budgetUsed }}</strong><small>/ {{ project.budgetTotal }}</small></span></div></td>
+                                  }
+                                  @case ('status') {
+                                    <td class="pm-table-column-cell pm-table-status-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)"><div class="pm-table-column-frame"><span class="pm-table-row-status {{ project.statusTone }}">{{ project.status }}</span></div></td>
+                                  }
+                                }
+                              }
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                  <div class="pm-project-table-toolbar">
-                    <span>Items: {{ workspaceTableProjects.length }}</span>
+                } @else if (workspaceRegister === 'projects') {
+                  <div class="pm-project-table-toolbar pm-project-card-toolbar">
+                    <span>Items: {{ workspaceProjectCards.length }}</span>
                     <div>
                       <button class="pm-table-tool square" type="button" aria-label="Search projects"><span class="icon" aria-hidden="true"><i data-lucide="search"></i></span></button>
                       <button class="pm-table-tool" type="button"><span class="icon" aria-hidden="true"><i data-lucide="filter"></i></span><span>Filter</span></button>
                       <button class="pm-table-tool" type="button"><span class="icon" aria-hidden="true"><i data-lucide="sliders-horizontal"></i></span><span>Group by</span></button>
+                      <div class="pm-project-view-toggle" aria-label="Project display">
+                        <button class="active" type="button" aria-label="Card view" aria-pressed="true" (click)="setWorkspaceDisplay('cards')"><span class="icon" aria-hidden="true"><i data-lucide="layout-grid"></i></span></button>
+                        <button type="button" aria-label="List view" aria-pressed="false" (click)="setWorkspaceDisplay('table')"><span class="icon" aria-hidden="true"><i data-lucide="list"></i></span></button>
+                      </div>
                       <button class="pm-table-tool" type="button"><span class="icon" aria-hidden="true"><i data-lucide="download"></i></span><span>Export</span></button>
                       <button class="pm-table-add-project" type="button"><span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span><span>Add Project</span></button>
-                      <button class="pm-table-tool square" type="button" aria-label="Table settings"><span class="icon" aria-hidden="true"><i data-lucide="settings"></i></span></button>
+                      <button class="pm-table-tool square" type="button" aria-label="Card view settings"><span class="icon" aria-hidden="true"><i data-lucide="settings"></i></span></button>
                     </div>
                   </div>
-                  <div class="pm-project-table-scroll" tabindex="0">
-                    <table class="pm-project-table">
-                      <thead><tr><th class="pm-table-check-cell"><input type="checkbox" aria-label="Select all projects" /></th><th>Project Name</th><th>Stage</th><th>Report Status Trend</th><th>Project Manager</th><th>Baseline Start Date</th><th>Baseline End Date</th><th>Budget Utilised</th><th>Status</th></tr></thead>
-                      <tbody>
-                        @for (project of workspaceTableProjects; track project.id) {
-                          <tr>
-                            <td class="pm-table-check-cell"><input type="checkbox" [attr.aria-label]="'Select ' + project.title" /></td>
-                            <td class="pm-table-project-cell"><button type="button" (click)="openProject(project.id)"><span>{{ project.code }}</span><strong>{{ project.title }}</strong></button></td>
-                            <td><span class="pm-table-stage">{{ project.stage }}</span></td>
-                            <td><div class="pm-table-trend" [attr.aria-label]="project.title + ' report status trend'">@for (tone of project.trend; track $index) { <span class="pm-table-trend-dot {{ tone }}" role="img" [attr.aria-label]="trendLabel(tone)" [attr.title]="trendLabel(tone)"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="trendIcon(tone)"></i></span></span> }</div></td>
-                            <td><span class="pm-table-manager"><i>{{ project.managerInitials }}</i>{{ project.manager }}</span></td>
-                            <td>{{ project.baselineStart }}</td>
-                            <td>{{ project.baselineEnd }}</td>
-                            <td><span class="pm-table-budget"><strong>{{ project.budgetUsed }}</strong><small>/ {{ project.budgetTotal }}</small></span></td>
-                            <td class="pm-table-status-cell"><span class="pm-table-row-status {{ project.statusTone }}">{{ project.status }}</span></td>
-                          </tr>
+                  <div class="pm-project-card-grid">
+                    @for (project of workspaceProjectCards; track project.title + project.stage) {
+                      <article class="pm-project-card" [class.draft]="project.draft">
+                        <span class="pm-project-status {{ project.statusTone || 'neutral' }}">{{ project.draft ? 'Draft' : project.status }}</span>
+                        <div class="pm-project-card-head"><span class="pm-project-code"><span class="icon" aria-hidden="true"><i data-lucide="folder"></i></span>{{ project.code }}</span><span class="pm-project-stage" [class.muted]="project.draft">{{ project.stage }}</span></div>
+                        <h3>{{ project.title }}</h3>
+                        @if (project.draft) {
+                          <div class="pm-ai-analysis"><span>AI Insight Analysis</span><p>You've been assigned a new project. First step: create your project plan. PMO requires baseline submission within 4 weeks of assignment.</p></div>
+                        } @else {
+                          <div class="pm-project-metrics">
+                            <div class="pm-project-metric"><span>Schedule</span><strong>{{ project.schedule }}% <small>complete</small></strong><div class="pm-project-progress" [style.--progress]="project.schedule + '%'"><i></i></div></div>
+                            <div class="pm-project-metric pm-project-budget"><div class="pm-project-budget-ring" [style.--budget]="project.budget + '%'" aria-hidden="true"><i></i></div><span>Budget used</span><strong>{{ project.budgetUsed }} <small>/ {{ project.budgetTotal }}</small></strong><p>39%, well within threshold</p></div>
+                          </div>
                         }
-                      </tbody>
-                    </table>
+                        <div class="pm-project-footer"><span class="pm-project-due"><span class="icon" aria-hidden="true"><i data-lucide="history"></i></span><small>Next PSR due:</small><strong>{{ project.nextDue }}</strong></span><div class="pm-project-actions"><button class="pm-project-icon-button" type="button" (click)="openProject(project.title)" [attr.aria-label]="'Open ' + project.title + ' project plan'"><span class="icon" aria-hidden="true"><i data-lucide="eye"></i></span></button><button class="pm-project-primary" type="button" (click)="handleProjectCardAction(project)">{{ project.action }}</button></div></div>
+                      </article>
+                    }
                   </div>
-                </div>
-              } @else {
-                <div class="pm-project-card-grid">
-                  @for (project of workspaceProjectCards; track project.title + project.stage) {
-                    <article class="pm-project-card" [class.draft]="project.draft">
-                      <span class="pm-project-status {{ project.statusTone || 'neutral' }}">{{ project.draft ? 'Draft' : project.status }}</span>
-                      <div class="pm-project-card-head"><span class="pm-project-code"><span class="icon" aria-hidden="true"><i data-lucide="folder"></i></span>{{ project.code }}</span><span class="pm-project-stage" [class.muted]="project.draft">{{ project.stage }}</span></div>
-                      <h3>{{ project.title }}</h3>
-                      @if (project.draft) {
-                        <div class="pm-ai-analysis"><span>AI Insight Analysis</span><p>You've been assigned a new project. First step: create your project plan. PMO requires baseline submission within 4 weeks of assignment.</p></div>
-                      } @else {
-                        <div class="pm-project-metrics">
-                          <div class="pm-project-metric"><span>Schedule</span><strong>{{ project.schedule }}% <small>complete</small></strong><div class="pm-project-progress" [style.--progress]="project.schedule + '%'"><i></i></div></div>
-                          <div class="pm-project-metric pm-project-budget"><div class="pm-project-budget-ring" [style.--budget]="project.budget + '%'" aria-hidden="true"><i></i></div><span>Budget used</span><strong>{{ project.budgetUsed }} <small>/ {{ project.budgetTotal }}</small></strong><p>39%, well within threshold</p></div>
-                        </div>
+                } @else if (workspaceRegister === 'benefits') {
+                  <div class="pm-project-table-view">
+                    <div class="pm-project-table-stats" aria-label="Benefit register summary">
+                      @for (stat of benefitRegisterStats; track stat.label) {
+                        <article class="pm-project-table-stat {{ stat.tone }}">
+                          <span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(stat.icon)"></i></span></span>
+                          <div><small>{{ stat.label }}</small><strong>{{ stat.value }}</strong></div>
+                        </article>
                       }
-                      <div class="pm-project-footer"><span class="pm-project-due"><span class="icon" aria-hidden="true"><i data-lucide="history"></i></span><small>Next PSR due:</small><strong>{{ project.nextDue }}</strong></span><div class="pm-project-actions"><button class="pm-project-icon-button" type="button" (click)="openProject(project.title)" [attr.aria-label]="'Open ' + project.title + ' project plan'"><span class="icon" aria-hidden="true"><i data-lucide="eye"></i></span></button><button class="pm-project-primary" type="button" (click)="handleProjectCardAction(project)">{{ project.action }}</button></div></div>
-                    </article>
-                  }
+                    </div>
+                    <div class="pm-project-table-toolbar">
+                      <span>Items: {{ visibleBenefitRegisterRows.length }}</span>
+                      <div>
+                        <button class="pm-table-tool square" type="button" aria-label="Search benefits"><span class="icon" aria-hidden="true"><i data-lucide="search"></i></span></button>
+                        <button class="pm-table-tool" type="button"><span class="icon" aria-hidden="true"><i data-lucide="filter"></i></span><span>Filter</span></button>
+                        <button class="pm-table-tool" type="button"><span class="icon" aria-hidden="true"><i data-lucide="download"></i></span><span>Export</span></button>
+                        <button class="pm-table-add-project" type="button"><span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span><span>Add Benefit</span></button>
+                      </div>
+                    </div>
+                    <div class="pm-project-table-scroll" tabindex="0">
+                      <table class="pm-project-table pm-register-table">
+                        <thead><tr><th>Benefit ID</th><th>Benefit</th><th>Linked Project</th><th>Owner</th><th>Target Date</th><th>KPI / Measure</th><th>Realization</th><th>Status</th></tr></thead>
+                        <tbody>
+                          @for (benefit of visibleBenefitRegisterRows; track benefit.id) {
+                            <tr>
+                              <td><span class="pm-table-code">{{ benefit.id }}</span></td>
+                              <td class="pm-table-detail-cell"><strong>{{ benefit.benefit }}</strong></td>
+                              <td>{{ benefit.project }}</td>
+                              <td>{{ benefit.owner }}</td>
+                              <td>{{ benefit.targetDate }}</td>
+                              <td class="pm-table-detail-cell">{{ benefit.measure }}</td>
+                              <td><span class="pm-table-row-status {{ benefit.realizationTone }}">{{ benefit.realization }}</span></td>
+                              <td class="pm-table-status-cell"><span class="pm-table-row-status {{ benefit.statusTone }}">{{ benefit.status }}</span></td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="pm-project-table-view">
+                    <div class="pm-project-table-stats" aria-label="Risk register summary">
+                      @for (stat of riskRegisterStats; track stat.label) {
+                        <article class="pm-project-table-stat {{ stat.tone }}">
+                          <span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(stat.icon)"></i></span></span>
+                          <div><small>{{ stat.label }}</small><strong>{{ stat.value }}</strong></div>
+                        </article>
+                      }
+                    </div>
+                    <div class="pm-project-table-toolbar">
+                      <span>Items: {{ visibleRiskRegisterRows.length }}</span>
+                      <div>
+                        <button class="pm-table-tool square" type="button" aria-label="Search risks"><span class="icon" aria-hidden="true"><i data-lucide="search"></i></span></button>
+                        <button class="pm-table-tool" type="button"><span class="icon" aria-hidden="true"><i data-lucide="filter"></i></span><span>Filter</span></button>
+                        <button class="pm-table-tool" type="button"><span class="icon" aria-hidden="true"><i data-lucide="download"></i></span><span>Export</span></button>
+                        <button class="pm-table-add-project" type="button"><span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span><span>Add Risk</span></button>
+                      </div>
+                    </div>
+                    <div class="pm-project-table-scroll" tabindex="0">
+                      <table class="pm-project-table pm-register-table">
+                        <thead><tr><th>Risk ID</th><th>Risk</th><th>Linked Project</th><th>Owner</th><th>Mitigation</th><th>Last Review</th><th>Exposure</th><th>Status</th></tr></thead>
+                        <tbody>
+                          @for (risk of visibleRiskRegisterRows; track risk.id) {
+                            <tr>
+                              <td><span class="pm-table-code">{{ risk.id }}</span></td>
+                              <td class="pm-table-detail-cell"><strong>{{ risk.risk }}</strong></td>
+                              <td>{{ risk.project }}</td>
+                              <td>{{ risk.owner }}</td>
+                              <td class="pm-table-detail-cell">{{ risk.mitigation }}</td>
+                              <td>{{ risk.reviewDate }}</td>
+                              <td><span class="pm-table-row-status {{ risk.exposureTone }}">{{ risk.exposure }}</span></td>
+                              <td class="pm-table-status-cell"><span class="pm-table-row-status {{ risk.statusTone }}">{{ risk.status }}</span></td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                }
                 </div>
-              }
+              </div>
             </div>
           </section>
         }
@@ -875,6 +1177,26 @@ const defaultPinnedQuickLinkIds = ['project-plan', 'wbs'];
                       } @else {
                         <section class="project-plan-form-card plan-builder-card project-plan-matrix-card detailed-plan-card">
                           <div class="project-plan-section-fields">
+                            @if (projectPlanActiveSection === 'Overview') {
+                              @let identitySection = projectPlanIdentityCard;
+                              <article class="matrix-field-group simple-plan-section-card simple-field-card read-only-card detailed-plan-identity-card">
+                                <div class="simple-field-card-head">
+                                  <span class="simple-plan-section-icon" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="iconName(identitySection.icon)"></i></span></span>
+                                  <span class="matrix-field-group-copy"><strong>{{ identitySection.title }}</strong><small>{{ identitySection.body }}</small></span>
+                                </div>
+                                <div class="matrix-field-group-grid simple-plan-section-fields">
+                                  @for (field of identitySection.fields; track field.label) {
+                                    <div class="simple-readonly-field" [class.wide]="field.wide">
+                                      <span class="matrix-field-label">{{ field.label }}</span>
+                                      <span class="simple-readonly-value" [class.has-avatar]="field.avatarInitials">
+                                        @if (field.avatarInitials) { <span class="simple-person-avatar" aria-hidden="true">{{ field.avatarInitials }}</span> }
+                                        <strong>{{ field.value }}</strong>
+                                      </span>
+                                    </div>
+                                  }
+                                </div>
+                              </article>
+                            }
                             @for (group of activeProjectPlanVisibleGroups; track group.title) {
                               <details class="matrix-field-group" open>
                                 <summary><span class="matrix-field-group-copy"><strong>{{ group.title }}</strong><small>{{ group.description }}</small></span><span class="matrix-field-group-meta"><b>{{ group.fields.length }}</b><span class="icon"><i data-lucide="chevron-down"></i></span></span></summary>
@@ -1100,18 +1422,131 @@ const defaultPinnedQuickLinkIds = ['project-plan', 'wbs'];
               </div>
             </section>
           } @else {
-            <div class="content-grid">
+            <div class="content-grid" [class.pm101-locked-grid]="onboardingPm101Locked || isPm101OnboardingWorkspaceFlow">
               <div class="left-column">
-                <section class="workspace-panel" [class.project-workspace-panel]="!isAllProjects" [class.board-workspace-panel]="selectedView === 'board'">
-                  <div class="workspace-shell-head">
-                    <div class="workspace-title"><h2>{{ workspaceTitle }}</h2><p>Plan this month, clear overdue work, and track stage-gates without opening every project.</p></div>
-                    <aside class="ai-insight-widget red" aria-label="AI insights from front door"><div class="ai-insight-main"><div class="ai-insight-copy"><span>Needs attention</span><strong>Submit Vision 2030 status report</strong><p>Overdue by 5 days. Clear this before the next steering check.</p></div><div class="ai-insight-bubbles ai-insight-bubbles-bottom" aria-label="AI insight slides"><button class="ai-insight-dot active" type="button" aria-label="Show AI insight 1"></button><button class="ai-insight-dot" type="button" aria-label="Show AI insight 2"></button><button class="ai-insight-dot" type="button" aria-label="Show AI insight 3"></button></div></div></aside>
-                    <div class="workspace-tabs" role="tablist" aria-label="Workspace view" data-tour-target="workspace-tabs"><button [class.active]="selectedView !== 'stages'" type="button" aria-selected="true" (click)="setView('calendar')"><span class="icon" aria-hidden="true"><i data-lucide="check-square"></i></span> Actions</button><button [class.active]="selectedView === 'stages'" type="button" [attr.aria-selected]="selectedView === 'stages'" (click)="setView('stages')"><span class="icon" aria-hidden="true"><i data-lucide="list-tree"></i></span> Stages</button></div>
+                <section class="workspace-panel" [class.project-workspace-panel]="!isAllProjects && !onboardingPm101Locked && !isPm101OnboardingWorkspaceFlow" [class.board-workspace-panel]="selectedView === 'board'" [class.pm101-locked-workspace]="onboardingPm101Locked || isPm101OnboardingWorkspaceFlow">
+                  <div class="workspace-shell-head" [class.pm101-locked-shell-head]="onboardingPm101Locked || isPm101OnboardingWorkspaceFlow" [class.pm101-ready-shell-head]="isPm101OnboardingWorkspaceFlow">
+                    @if (onboardingPm101Locked || isPm101OnboardingWorkspaceFlow) {
+                      <img class="workspace-line-art" src="./assets/workspace-line-art.svg" alt="" aria-hidden="true" />
+                      <div class="workspace-shell-actions" aria-label="Workspace utilities">
+                        <button class="workspace-filter-button" type="button" aria-label="Refresh workspace">
+                          <span class="icon" aria-hidden="true"><i data-lucide="refresh-cw"></i></span>
+                        </button>
+                        <button class="workspace-filter-button" type="button" aria-label="Expand workspace">
+                          <span class="icon" aria-hidden="true"><i data-lucide="expand"></i></span>
+                        </button>
+                      </div>
+                      <div class="workspace-locked-title-row">
+                        <span class="workspace-pane-icon" aria-hidden="true">
+                          <img src="./assets/pane-top-icon.svg" alt="" />
+                        </span>
+                        <div class="workspace-title">
+                          <h2>{{ workspaceTitle }}</h2>
+                          <p>{{ workspaceSubtitle }}</p>
+                        </div>
+                      </div>
+                    } @else {
+                      <div class="workspace-title">
+                        <h2>{{ workspaceTitle }}</h2>
+                        <p>{{ workspaceSubtitle }}</p>
+                      </div>
+                      <aside class="ai-insight-widget red" aria-label="AI insights from front door">
+                        <div class="ai-insight-main">
+                          <div class="ai-insight-copy">
+                            <span>Needs attention</span>
+                            <strong>Submit Vision 2030 status report</strong>
+                            <p>Overdue by 5 days. Clear this before the next steering check.</p>
+                          </div>
+                          <div class="ai-insight-bubbles ai-insight-bubbles-bottom" aria-label="AI insight slides">
+                            <button class="ai-insight-dot active" type="button" aria-label="Show AI insight 1"></button>
+                            <button class="ai-insight-dot" type="button" aria-label="Show AI insight 2"></button>
+                            <button class="ai-insight-dot" type="button" aria-label="Show AI insight 3"></button>
+                          </div>
+                        </div>
+                      </aside>
+                    }
+                    @if (isPm101OnboardingWorkspaceFlow) {
+                      <div class="pm101-primary-tabs" role="tablist" aria-label="Workspace sections" data-tour-target="workspace-tabs">
+                        <button [class.active]="selectedView === 'pm101'" type="button" data-view-target="pm101" [attr.aria-selected]="selectedView === 'pm101'" (click)="setView('pm101')">
+                          <span class="icon" aria-hidden="true"><i data-lucide="book-open"></i></span>
+                          <span>PM101</span>
+                        </button>
+                        <button [class.active]="selectedView === 'calendar'" type="button" data-view-target="calendar" [attr.aria-selected]="selectedView === 'calendar'" (click)="setView('calendar')">
+                          <span class="icon" aria-hidden="true"><i data-lucide="calendar-days"></i></span>
+                          <span>Calendar</span>
+                        </button>
+                        <button [class.active]="selectedView === 'board'" type="button" data-view-target="board" [attr.aria-selected]="selectedView === 'board'" (click)="setView('board')">
+                          <span class="icon" aria-hidden="true"><i data-lucide="columns-3"></i></span>
+                          <span>Board</span>
+                        </button>
+                        <button [class.active]="selectedView === 'stages'" type="button" data-view-target="stages" [attr.aria-selected]="selectedView === 'stages'" (click)="setView('stages')">
+                          <span class="icon" aria-hidden="true"><i data-lucide="list-tree"></i></span>
+                          <span>Stages</span>
+                        </button>
+                      </div>
+                    } @else {
+                      <div class="workspace-tabs" role="tablist" aria-label="Workspace view" data-tour-target="workspace-tabs">
+                        <button
+                          [class.active]="selectedView !== 'stages'"
+                          type="button"
+                          data-view-target="actions"
+                          [attr.aria-selected]="selectedView !== 'stages'"
+                          (click)="setView(onboardingPm101Locked ? 'pm101' : 'calendar')"
+                        >
+                          <span class="icon" aria-hidden="true"><i data-lucide="check-square"></i></span>
+                          <span>Actions</span>
+                        </button>
+                        <button
+                          [class.active]="selectedView === 'stages'"
+                          [class.is-locked]="onboardingPm101Locked"
+                          type="button"
+                          data-view-target="stages"
+                          [attr.aria-selected]="selectedView === 'stages'"
+                          (click)="setView('stages')"
+                          [disabled]="onboardingPm101Locked"
+                          [attr.aria-disabled]="onboardingPm101Locked ? 'true' : null"
+                          [attr.title]="onboardingPm101Locked ? 'Available after PM 101 onboarding' : null"
+                        >
+                          <span class="icon" aria-hidden="true"><i data-lucide="list-tree"></i></span>
+                          <span>Stages</span>
+                        </button>
+                      </div>
+                    }
                   </div>
                   @if (selectedView !== 'stages') {
                     <div class="workspace-control-row">
-                      <label class="workspace-search"><span class="icon" aria-hidden="true"><i data-lucide="search"></i></span><input type="search" [attr.aria-label]="'Search ' + selectedView" [placeholder]="workspaceSearchPlaceholder" /></label>
-                      <div class="action-view-switch" role="tablist" aria-label="Actions view format"><button [class.active]="selectedView === 'board'" type="button" (click)="setView('board')"><span class="icon" aria-hidden="true"><i data-lucide="columns-3"></i></span> Board</button><button [class.active]="selectedView === 'calendar'" type="button" (click)="setView('calendar')"><span class="icon" aria-hidden="true"><i data-lucide="calendar-days"></i></span> Calendar</button><button [class.active]="selectedView === 'pm101'" type="button" (click)="setView('pm101')"><span class="icon" aria-hidden="true"><i data-lucide="book-open"></i></span> PM 101</button></div>
+                      <label class="workspace-search">
+                        <span class="icon" aria-hidden="true"><i data-lucide="search"></i></span>
+                        <input type="search" [attr.aria-label]="workspaceSearchPlaceholder" [placeholder]="workspaceSearchPlaceholder" />
+                      </label>
+                      @if (isPm101OnboardingWorkspaceFlow) {
+                        <div class="action-view-switch pm101-ready-action-view-switch" role="tablist" aria-label="Actions view format">
+                          <button [class.active]="selectedView === 'pm101'" type="button" data-view-target="pm101" (click)="setView('pm101')">PM101</button>
+                          <button [class.active]="selectedView === 'board'" type="button" data-view-target="board" (click)="setView('board')">Board</button>
+                          <button [class.active]="selectedView === 'calendar'" type="button" data-view-target="calendar" (click)="setView('calendar')">Calendar</button>
+                        </div>
+                      } @else if (onboardingPm101Locked) {
+                        <div class="action-view-switch pm101-locked-action-view-switch" role="tablist" aria-label="Actions view format">
+                          <button [class.active]="selectedView === 'pm101'" type="button" data-view-target="pm101" (click)="setView('pm101')">PM101</button>
+                          <button [class.active]="selectedView === 'board'" type="button" data-view-target="board" (click)="setView('board')" disabled aria-disabled="true" title="Available after PM 101 onboarding">Board</button>
+                          <button [class.active]="selectedView === 'calendar'" type="button" data-view-target="calendar" (click)="setView('calendar')" disabled aria-disabled="true" title="Available after PM 101 onboarding">Calendar</button>
+                        </div>
+                      } @else {
+                        <div class="action-view-switch" role="tablist" aria-label="Actions view format">
+                          <button [class.active]="selectedView === 'board'" type="button" data-view-target="board" (click)="setView('board')">
+                            <span class="icon" aria-hidden="true"><i data-lucide="columns-3"></i></span>
+                            <span>Board</span>
+                          </button>
+                          <button [class.active]="selectedView === 'calendar'" type="button" data-view-target="calendar" (click)="setView('calendar')">
+                            <span class="icon" aria-hidden="true"><i data-lucide="calendar-days"></i></span>
+                            <span>Calendar</span>
+                          </button>
+                          <button [class.active]="selectedView === 'pm101'" type="button" data-view-target="pm101" (click)="setView('pm101')">
+                            <span class="icon" aria-hidden="true"><i data-lucide="book-open"></i></span>
+                            <span>PM 101</span>
+                          </button>
+                        </div>
+                      }
                     </div>
                   }
                   <div class="workspace-body">
@@ -1123,7 +1558,91 @@ const defaultPinnedQuickLinkIds = ['project-plan', 'wbs'];
                       <div class="calendar-command-row"><div class="calendar-month-picker" aria-label="Calendar month navigation"><button class="calendar-nav-button" type="button" (click)="shiftMonth(-1)" aria-label="Previous month"><span class="icon" aria-hidden="true"><i data-lucide="chevron-left"></i></span></button><div class="calendar-month-copy"><strong>{{ calendarMonthLabel }}</strong><span>{{ visibleMonthItems.length }} item{{ visibleMonthItems.length === 1 ? '' : 's' }} this month</span></div><button class="calendar-nav-button" type="button" (click)="shiftMonth(1)" aria-label="Next month"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></button></div><div class="board-filter calendar-filter-bar" aria-label="Quick work filter"><span>Show</span><details class="work-filter-dropdown"><summary [attr.aria-label]="'Filter work by ' + selectedBoardFilterOption.label"><span class="work-filter-selected-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(selectedBoardFilterOption.icon)"></i></span></span><span>{{ selectedBoardFilterOption.label }}</span><strong>{{ countCalendarFilter(selectedBoardFilterOption) }}</strong><span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span></summary><div class="work-filter-menu" role="menu">@for (filter of boardFilters; track filter.id) { <button [class.active]="selectedBoardFilter === filter.id" type="button" role="menuitemradio" [attr.aria-checked]="selectedBoardFilter === filter.id" (click)="setBoardFilter(filter.id, $event)"><span class="work-filter-option-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(filter.icon)"></i></span></span><span>{{ filter.label }}</span><strong>{{ countCalendarFilter(filter) }}</strong></button> }</div></details></div></div>
                       <div class="timeline-calendar"><div class="weekdays"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div><div class="calendar-grid">@for (cell of calendarCells; track cell.key) { <div class="calendar-cell" [class.muted]="!cell.current" [class.today]="cell.today"><span>{{ cell.day }}</span>@for (item of cell.items; track item.label + item.project) { <button class="calendar-event {{ item.tone }}" type="button"><span class="calendar-event-dot"></span><span class="calendar-event-title">{{ item.label }}</span></button> }</div> }</div></div>
                     </div>
-                    <div class="pm101-view" [class.is-hidden]="selectedView !== 'pm101'" data-work-view="pm101"><div class="pm101-flow" aria-label="PM 101 project delivery flow"><ol class="pm101-step-list">@for (step of pm101Steps; track step.title; let index = $index) { <li class="pm101-step"><article class="pm101-card"><span class="pm101-card-icon"><img class="pm101-card-icon-asset" [src]="step.iconAsset" alt="" /></span><strong>{{ step.title }}</strong><p>{{ step.body }}</p><span [class]="'pm101-decor pm101-decor-' + step.decor" aria-hidden="true">@for (asset of step.decorAssets; track asset; let assetIndex = $index) { <img class="pm101-decor-asset pm101-decor-asset-{{ assetIndex + 1 }}" [src]="asset" alt="" /> }</span><span class="pm101-step-number" aria-hidden="true">{{ index + 1 }}</span></article></li> }</ol></div></div>
+                    <div class="pm101-view" [class.is-hidden]="selectedView !== 'pm101'" data-work-view="pm101">
+                      @if (onboardingPm101Locked) {
+                        <article class="pm101-assignment-banner" aria-label="PM 101 assignment status">
+                          <img class="pm101-assignment-banner-art" src="./assets/pm101-assignment-banner.png" alt="" aria-hidden="true" />
+                          <div class="pm101-assignment-banner-copy">
+                            <strong>Awaiting first assignment</strong>
+                            <p>Your workspace is ready. PMO assignment will unlock project planning.</p>
+                            <button class="pm101-assignment-pill" type="button" (click)="openPm101OnboardingWorkspace()" aria-label="Open first assigned project flow">
+                              <span class="icon" aria-hidden="true"><i data-lucide="bell"></i></span>
+                              <span>Waiting for PMO assignment</span>
+                            </button>
+                          </div>
+                          <span class="pm101-assignment-banner-icon" aria-hidden="true">
+                            <img src="./assets/workspace-card-box-dark.svg" alt="" />
+                          </span>
+                        </article>
+                        <div class="pm101-journey-head">
+                          <span>What happens next?</span>
+                          <h3>Your project management journey</h3>
+                          <p>From assignment to regular reporting, these are the steps you will work through in TASAMA.</p>
+                        </div>
+                      } @else if (isPm101OnboardingWorkspaceFlow) {
+                        <div class="pm101-ready-hero-grid" aria-label="First assigned project overview">
+                          <article class="pm101-ready-banner">
+                            <img class="pm101-ready-banner-art" src="./assets/pm101-first-project-banner-bg.png" alt="" aria-hidden="true" />
+                            <div class="pm101-ready-banner-copy">
+                              <strong>Your first project is ready to plan!</strong>
+                              <p>PMO assigned UAE Research Map to your workspace. Start with building the baseline project plan, then get it endorsed and start tracking progress!</p>
+                            </div>
+                          </article>
+                          <article class="pm101-ready-project-card">
+                            <img class="pm101-ready-project-card-art" src="./assets/pm101-first-project-card-bg.png" alt="" aria-hidden="true" />
+                            <span class="pm101-ready-project-chip">New project assigned by PMO</span>
+                            <strong class="pm101-ready-project-title">UAE Research Map</strong>
+                            <button class="pm101-ready-project-cta" type="button" (click)="openAssignedProjectPlan()" aria-label="Create project plan for UAE Research Map">
+                              <span>Create project plan</span>
+                              <span class="pm101-ready-project-cta-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
+                            </button>
+                            <span class="pm101-ready-project-icon" aria-hidden="true">
+                              <img src="./assets/workspace-card-box-dark.svg" alt="" />
+                            </span>
+                          </article>
+                        </div>
+                        <div class="pm101-journey-head">
+                          <span>What happens next?</span>
+                          <h3>Your project management journey</h3>
+                          <p>From assignment to regular reporting, these are the steps you will work through in TASAMA.</p>
+                        </div>
+                      }
+                      <div class="pm101-flow" aria-label="PM 101 project delivery flow">
+                        <ol class="pm101-step-list">
+                          @for (step of pm101Steps; track step.title) {
+                            <li class="pm101-step">
+                              <article class="pm101-card">
+                                <span class="pm101-card-icon">
+                                  <img class="pm101-card-icon-asset" [src]="step.iconAsset" alt="" />
+                                </span>
+                                <strong>{{ step.title }}</strong>
+                                <p>{{ step.body }}</p>
+                                <span [class]="'pm101-decor pm101-decor-' + step.decor" aria-hidden="true">
+                                  @for (asset of step.decorAssets; track asset; let assetIndex = $index) {
+                                    <img class="pm101-decor-asset pm101-decor-asset-{{ assetIndex + 1 }}" [src]="asset" alt="" />
+                                  }
+                                </span>
+                                @if (step.footerLabel && step.footerValue) {
+                                  <div class="pm101-card-footer pm101-card-footer-meta">
+                                    <span>{{ step.footerLabel }}</span>
+                                    <strong>{{ step.footerValue }}</strong>
+                                  </div>
+                                } @else if (step.footerAction) {
+                                  <div class="pm101-card-footer pm101-card-footer-link">
+                                    <span>{{ step.footerAction }}</span>
+                                    <span class="pm101-card-footer-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
+                                  </div>
+                                } @else if (step.footerIconOnly) {
+                                  <div class="pm101-card-footer pm101-card-footer-icon-only">
+                                    <span class="pm101-card-footer-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
+                                  </div>
+                                }
+                              </article>
+                            </li>
+                          }
+                        </ol>
+                      </div>
+                    </div>
                     <div class="stages-view" [class.is-hidden]="selectedView !== 'stages'" data-work-view="stages">
                       <div class="view-toolbar">
                         <div>
@@ -1162,10 +1681,142 @@ const defaultPinnedQuickLinkIds = ['project-plan', 'wbs'];
                   </div>
                 </section>
               </div>
-              <div class="right-column" [class.portfolio-frontdoor]="isAllProjects" [class.project-frontdoor]="!isAllProjects">
-                @if (isAllProjects) { <section class="top-deck" aria-label="PM front door actions" data-tour-target="frontdoor-actions"><button class="action-card workspace-command" type="button" (click)="navigate('workspaces')"><span class="action-icon"><img src="./assets/workspace-card-box.svg" alt="" aria-hidden="true" /></span><span class="action-copy"><strong>Workspaces</strong><small>Open project rooms</small></span><span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span></button><button class="action-card learning-command" type="button" (click)="setView('pm101')"><span class="action-icon"><img src="./assets/workspace-card-notebook.svg" alt="" aria-hidden="true" /></span><span class="action-copy"><strong>Learning Hub</strong><small>Guides and playbooks</small></span><span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span></button></section> }
-                <section class="side-card report-widget" [class.portfolio-report-widget]="isAllProjects" data-tour-target="right-report-widget"><div class="report-widget-head"><div><h2>{{ isAllProjects ? 'Reporting trends' : 'Project report trend' }}</h2><small>Last 3 PSR statuses</small></div></div><div class="report-trend-list">@for (report of visibleReportRows; track report.project) { <article class="report-trend-row {{ reportFrontdoorTone(report) }}"><div class="report-trend-row-head"><strong>{{ report.project }}</strong><span class="report-health-chip {{ reportFrontdoorTone(report) }}">{{ reportDueToneLabel(reportFrontdoorTone(report)) }}</span></div><div class="report-trend" style="--report-trend-count:3" aria-label="Status report trend">@for (point of report.trend; track point.label) { <span class="report-trend-point {{ reportStatusTone(point.status) }}"><span class="report-status-icon {{ reportStatusTone(point.status) }}" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="reportStatusIcon(point.status)"></i></span></span><small>{{ point.label }}</small></span> }</div><div class="report-trend-row-foot"><span class="report-row-due"><span class="icon" aria-hidden="true"><i data-lucide="history"></i></span><span>{{ reportDueText(report) }}</span></span><button class="report-row-create" type="button" (click)="openReport(report.project)"><span class="icon" aria-hidden="true"><i data-lucide="file-text"></i></span><span>Create</span></button></div></article> }</div></section>
-                @if (!isAllProjects) { <ng-container [ngTemplateOutlet]="quickLinksPanel"></ng-container> }
+              <div class="right-column" [class.portfolio-frontdoor]="isAllProjects || onboardingPm101Locked || isPm101OnboardingWorkspaceFlow" [class.project-frontdoor]="!isAllProjects && !onboardingPm101Locked && !isPm101OnboardingWorkspaceFlow" [class.pm101-locked-right]="onboardingPm101Locked || isPm101OnboardingWorkspaceFlow">
+                @if (isPm101OnboardingWorkspaceFlow) {
+                  <section class="top-deck" aria-label="PM front door actions" data-tour-target="frontdoor-actions">
+                    <button class="action-card workspace-command" type="button" (click)="navigate('workspaces')">
+                      <span class="action-icon"><img src="./assets/workspace-card-box.svg" alt="" aria-hidden="true" /></span>
+                      <span class="action-copy"><strong>Workspaces</strong><small>Open project rooms</small></span>
+                      <span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span>
+                    </button>
+                    <button class="action-card learning-command" type="button" (click)="setView('pm101')">
+                      <span class="action-icon"><img src="./assets/workspace-card-notebook.svg" alt="" aria-hidden="true" /></span>
+                      <span class="action-copy"><strong>Learning Hub</strong><small>Guides and playbooks</small></span>
+                      <span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span>
+                    </button>
+                  </section>
+                  <section class="side-card report-widget locked-empty-report-widget pm101-ready-report-widget" data-tour-target="right-report-widget">
+                    <div class="report-widget-head">
+                      <div>
+                        <h2>Reporting trends</h2>
+                        <small>View latest status reports here</small>
+                      </div>
+                    </div>
+                    <div class="locked-report-illustration" aria-hidden="true">
+                      <article class="locked-report-card locked-report-card-vision">
+                        <div class="locked-report-card-head">
+                          <strong>Vision 2030</strong>
+                          <span class="locked-report-chip off-track">Off track</span>
+                        </div>
+                        <div class="locked-report-status-bar">
+                          <span><span class="icon"><i data-lucide="triangle-alert"></i></span><small>Mar</small></span>
+                          <span><span class="icon"><i data-lucide="circle-check"></i></span><small>Apr</small></span>
+                          <span><span class="icon"><i data-lucide="circle-x"></i></span><small>May</small></span>
+                        </div>
+                        <div class="locked-report-card-foot">
+                          <span class="locked-report-foot-copy"><span class="icon"><i data-lucide="history"></i></span><small>Overdue by 5 days</small></span>
+                          <span class="locked-report-create"><span class="icon"><i data-lucide="file-text"></i></span><small>Create</small></span>
+                        </div>
+                      </article>
+                      <article class="locked-report-card locked-report-card-neom">
+                        <div class="locked-report-card-head">
+                          <strong>NEOM Integration</strong>
+                          <span class="locked-report-chip on-track">On track</span>
+                        </div>
+                        <div class="locked-report-status-bar compact">
+                          <span><span class="icon"><i data-lucide="circle-check"></i></span><small>Mar</small></span>
+                          <span><span class="icon"><i data-lucide="triangle-alert"></i></span><small>Apr</small></span>
+                          <span><span class="icon"><i data-lucide="circle-x"></i></span><small>May</small></span>
+                        </div>
+                        <div class="locked-report-card-foot">
+                          <span class="locked-report-foot-copy"><span class="icon"><i data-lucide="history"></i></span><small>Overdue by 5 days</small></span>
+                          <span class="locked-report-create"><span class="icon"><i data-lucide="file-text"></i></span><small>Create</small></span>
+                        </div>
+                      </article>
+                      <div class="locked-report-magnifier">
+                        <span class="locked-report-chip on-track">On track</span>
+                      </div>
+                      <div class="locked-report-timeline">
+                        <span><span class="icon"><i data-lucide="circle-check"></i></span><small>Mar</small></span>
+                        <span><span class="icon"><i data-lucide="triangle-alert"></i></span><small>Apr</small></span>
+                        <span><span class="icon"><i data-lucide="circle-x"></i></span><small>May</small></span>
+                      </div>
+                    </div>
+                    <div class="locked-report-copy">
+                      <strong>You haven't reach reporting yet</strong>
+                      <p>Once you have active projects and start reporting progress - your reporting trends &amp; upcoming reports will appear in this section</p>
+                    </div>
+                  </section>
+                } @else if (onboardingPm101Locked) {
+                  <section class="top-deck" aria-label="PM front door actions" data-tour-target="frontdoor-actions">
+                    <button class="action-card workspace-command is-locked" type="button" (click)="navigate('workspaces')" aria-disabled="true" title="Available after PM 101 onboarding">
+                      <span class="action-icon"><img src="./assets/workspace-card-box.svg" alt="" aria-hidden="true" /></span>
+                      <span class="action-copy"><strong>Workspaces</strong><small>Open project rooms</small></span>
+                      <span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span>
+                    </button>
+                    <button class="action-card learning-command" type="button" (click)="setView('pm101')">
+                      <span class="action-icon"><img src="./assets/workspace-card-notebook.svg" alt="" aria-hidden="true" /></span>
+                      <span class="action-copy"><strong>Learning Hub</strong><small>Guides and playbooks</small></span>
+                      <span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span>
+                    </button>
+                  </section>
+                  <section class="side-card report-widget locked-empty-report-widget" data-tour-target="right-report-widget">
+                    <div class="report-widget-head">
+                      <div>
+                        <h2>Reporting trends</h2>
+                        <small>View latest status reports here</small>
+                      </div>
+                    </div>
+                    <div class="locked-report-illustration" aria-hidden="true">
+                      <article class="locked-report-card locked-report-card-vision">
+                        <div class="locked-report-card-head">
+                          <strong>Vision 2030</strong>
+                          <span class="locked-report-chip off-track">Off track</span>
+                        </div>
+                        <div class="locked-report-status-bar">
+                          <span><span class="icon"><i data-lucide="triangle-alert"></i></span><small>Mar</small></span>
+                          <span><span class="icon"><i data-lucide="circle-check"></i></span><small>Apr</small></span>
+                          <span><span class="icon"><i data-lucide="circle-x"></i></span><small>May</small></span>
+                        </div>
+                        <div class="locked-report-card-foot">
+                          <span class="locked-report-foot-copy"><span class="icon"><i data-lucide="history"></i></span><small>Overdue by 5 days</small></span>
+                          <span class="locked-report-create"><span class="icon"><i data-lucide="file-text"></i></span><small>Create</small></span>
+                        </div>
+                      </article>
+                      <article class="locked-report-card locked-report-card-neom">
+                        <div class="locked-report-card-head">
+                          <strong>NEOM Integration</strong>
+                          <span class="locked-report-chip on-track">On track</span>
+                        </div>
+                        <div class="locked-report-status-bar compact">
+                          <span><span class="icon"><i data-lucide="circle-check"></i></span><small>Mar</small></span>
+                          <span><span class="icon"><i data-lucide="triangle-alert"></i></span><small>Apr</small></span>
+                          <span><span class="icon"><i data-lucide="circle-x"></i></span><small>May</small></span>
+                        </div>
+                        <div class="locked-report-card-foot">
+                          <span class="locked-report-foot-copy"><span class="icon"><i data-lucide="history"></i></span><small>Overdue by 5 days</small></span>
+                          <span class="locked-report-create"><span class="icon"><i data-lucide="file-text"></i></span><small>Create</small></span>
+                        </div>
+                      </article>
+                      <div class="locked-report-magnifier">
+                        <span class="locked-report-chip on-track">On track</span>
+                      </div>
+                      <div class="locked-report-timeline">
+                        <span><span class="icon"><i data-lucide="circle-check"></i></span><small>Mar</small></span>
+                        <span><span class="icon"><i data-lucide="triangle-alert"></i></span><small>Apr</small></span>
+                        <span><span class="icon"><i data-lucide="circle-x"></i></span><small>May</small></span>
+                      </div>
+                    </div>
+                    <div class="locked-report-copy">
+                      <strong>You haven't reach reporting yet</strong>
+                      <p>Once you have active projects and start reporting progress - your reporting trends &amp; upcoming reports will appear in this section</p>
+                    </div>
+                  </section>
+                } @else {
+                  @if (isAllProjects) { <section class="top-deck" aria-label="PM front door actions" data-tour-target="frontdoor-actions"><button class="action-card workspace-command" type="button" (click)="navigate('workspaces')" [disabled]="onboardingPm101Locked" [attr.aria-disabled]="onboardingPm101Locked ? 'true' : null" [attr.title]="onboardingPm101Locked ? 'Available after PM 101 onboarding' : null"><span class="action-icon"><img src="./assets/workspace-card-box.svg" alt="" aria-hidden="true" /></span><span class="action-copy"><strong>Workspaces</strong><small>Open project rooms</small></span><span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span></button><button class="action-card learning-command" type="button" (click)="setView('pm101')"><span class="action-icon"><img src="./assets/workspace-card-notebook.svg" alt="" aria-hidden="true" /></span><span class="action-copy"><strong>Learning Hub</strong><small>Guides and playbooks</small></span><span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span></button></section> }
+                  <section class="side-card report-widget" [class.portfolio-report-widget]="isAllProjects" data-tour-target="right-report-widget"><div class="report-widget-head"><div><h2>{{ isAllProjects ? 'Reporting trends' : 'Project report trend' }}</h2><small>Last 3 PSR statuses</small></div></div><div class="report-trend-list">@for (report of visibleReportRows; track report.project) { <article class="report-trend-row {{ reportFrontdoorTone(report) }}"><div class="report-trend-row-head"><strong>{{ report.project }}</strong><span class="report-health-chip {{ reportFrontdoorTone(report) }}">{{ reportDueToneLabel(reportFrontdoorTone(report)) }}</span></div><div class="report-trend" style="--report-trend-count:3" aria-label="Status report trend">@for (point of report.trend; track point.label) { <span class="report-trend-point {{ reportStatusTone(point.status) }}"><span class="report-status-icon {{ reportStatusTone(point.status) }}" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="reportStatusIcon(point.status)"></i></span></span><small>{{ point.label }}</small></span> }</div><div class="report-trend-row-foot"><span class="report-row-due"><span class="icon" aria-hidden="true"><i data-lucide="history"></i></span><span>{{ reportDueText(report) }}</span></span><button class="report-row-create" type="button" (click)="openReport(report.project)"><span class="icon" aria-hidden="true"><i data-lucide="file-text"></i></span><span>Create</span></button></div></article> }</div></section>
+                  @if (!isAllProjects) { <ng-container [ngTemplateOutlet]="quickLinksPanel"></ng-container> }
+                }
               </div>
             </div>
           }
@@ -1178,140 +1829,299 @@ const defaultPinnedQuickLinkIds = ['project-plan', 'wbs'];
         <button class="report-drawer-backdrop" type="button" (click)="closeReport()" aria-label="Close report drawer"></button>
         <aside class="report-drawer" [attr.aria-label]="activeReport.project + ' report draft'">
           <form class="report-compose-form" (submit)="saveReport($event)">
-            <div class="report-drawer-top">
-              <div class="report-common-row">
-                <button class="drawer-close" type="button" (click)="closeReport()" aria-label="Close drawer"><span class="icon" aria-hidden="true"><i data-lucide="chevron-left"></i></span></button>
-                <div class="report-drawer-title"><h2>{{ activeReport.project }}</h2><p>Project Report</p></div>
-                <div class="report-common-meta"><span>Stage: <strong>{{ activeReportDetails.stage }}</strong></span><span>State: <strong>{{ activeReportDetails.state }}</strong></span></div>
-                <span class="report-due-pill {{ activeReport.dueTone }}">{{ activeReport.dueLabel }}</span>
-                <div class="report-top-actions"><button class="report-top-cancel" type="button" (click)="closeReport()">Cancel</button><button class="report-top-save" type="submit">Save</button></div>
-              </div>
+            <div class="report-drawer-top report-drawer-top-simple">
+              <button class="drawer-close report-simple-close" type="button" (click)="closeReport()" aria-label="Close drawer"><span class="icon" aria-hidden="true"><i data-lucide="chevron-left"></i></span></button>
+              <div class="report-simple-header">
+                <div class="report-simple-header-row">
+                  <div class="report-drawer-title"><h2>{{ activeReport.project }}</h2><p>Project Report</p></div>
+                  <div class="report-simple-meta">
+                    <span>Stage: <strong class="report-simple-chip indigo">{{ activeReportDetails.stage }}</strong></span>
+                    <span>State: <strong class="report-simple-chip {{ reportBadgeTone(activeReportDetails.state, 'neutral') }}">{{ activeReportDetails.state }}</strong></span>
+                    <span>Plan: <strong class="report-simple-chip {{ simpleReportPlanChipTone }}">{{ simpleReportPlanLabel }}</strong></span>
+                  </div>
+                </div>
 
-              <div class="report-interval-row">
-                <span>Interval start date: <strong>{{ activeReportDetails.intervalStart }}</strong></span>
-                <span>Interval end date: <strong>{{ activeReportDetails.intervalEnd }}</strong></span>
-                <span>Interval Status: <strong>{{ activeReportDetails.intervalStatus.toUpperCase() }}</strong></span>
+                <div class="report-simple-toolbar">
+                  <div class="report-simple-mode-tabs" [class.is-detailed]="activeReportMode === 'detailed'" role="tablist" aria-label="Report view">
+                    <button [class.active]="activeReportMode === 'simple'" type="button" [attr.aria-selected]="activeReportMode === 'simple'" role="tab" (click)="setReportMode('simple')"><span class="icon" aria-hidden="true"><i data-lucide="calendar"></i></span><span>Simple</span></button>
+                    <button [class.active]="activeReportMode === 'detailed'" type="button" [attr.aria-selected]="activeReportMode === 'detailed'" role="tab" (click)="setReportMode('detailed')"><span class="icon" aria-hidden="true"><i data-lucide="layout-grid"></i></span><span>Detailed</span></button>
+                  </div>
+                  <div class="report-simple-toolbar-copy">
+                    <span>Reporting Interval - <strong>{{ simpleReportIntervalLabel }}</strong></span>
+                    <span>Report Status: <strong class="{{ simpleReportStatusTone }}">{{ simpleReportPlanLabel }}</strong></span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div class="report-drawer-body">
-              <nav class="report-section-nav" aria-label="Report sections" role="tablist">
-                @for (section of reportSections; track section) {
-                  <button
-                    type="button"
-                    [class.active]="activeReportSection === section"
-                    [attr.aria-selected]="activeReportSection === section"
-                    (click)="setReportSection(section)"
-                    role="tab"
-                  >
-                    <span class="report-section-name">{{ section }}</span>
-                    <span class="report-section-fill" [class.complete]="section === 'Overview'" [class.partial]="section !== 'Overview'" aria-hidden="true">
-                      @if (section === 'Overview') { <span class="icon"><i data-lucide="circle-check"></i></span> }
-                    </span>
-                  </button>
-                }
-              </nav>
+            <div class="report-drawer-body" [class.report-drawer-body-detailed]="activeReportMode === 'detailed'">
+              @if (activeReportMode === 'simple') {
+                <section class="report-layout-stack" aria-label="Simple project plan report">
+                  @let overviewCard = simpleReportOverviewCard;
+                  <article class="report-layout-card report-layout-card-overview {{ overviewCard.tone }}">
+                    <div class="report-layout-card-head">
+                      <div>
+                        <h3>{{ overviewCard.title }}</h3>
+                        <p>{{ overviewCard.body }}</p>
+                      </div>
+                      <strong class="report-layout-pill {{ overviewCard.tone }}">{{ overviewCard.status }}</strong>
+                    </div>
 
-              <div class="report-section-stack">
-                <div class="report-overview-group" [hidden]="activeReportSection !== 'Overview'" role="tabpanel">
-                  <section class="report-form-section report-overview-section">
-                    <div class="report-overview-top">
-                      <div class="report-overview-status">
-                        <span class="report-overview-label">Overall Status</span>
-                        <div class="report-inline-status" role="radiogroup" aria-label="Overall status">
+                    <div class="report-layout-summary">
+                      <div class="report-layout-summary-box report-layout-status-box">
+                        <span class="report-layout-box-label">Status</span>
+                        <div class="report-inline-status" role="radiogroup" aria-label="Simple report overall status">
                           @for (option of reportStatusOptions; track option.label) {
-                            <label class="{{ option.tone }}"><input type="radio" name="overall-status" [checked]="option.value === activeReportStatus" /><span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(option.icon)"></i></span>{{ option.label }}</span></label>
+                            <label class="{{ option.tone }}"><input type="radio" name="simple-overall-status" [checked]="isReportStatusSelected(option.value, overviewCard.status)" /><span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(option.icon)"></i></span>{{ option.simpleLabel || option.label }}</span></label>
                           }
                         </div>
                       </div>
-                      <div class="report-overview-trend"><span class="report-overview-label">Overall Status Trend</span><strong><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span> {{ activeReportDetails.overallTrend }}</strong></div>
-                      <div class="report-overview-past"><span class="report-overview-label">Past Overview Trend</span><div class="report-past-trend">@for (date of pastOverviewTrend; track date) { <span><span class="icon" aria-hidden="true"><i data-lucide="circle-check"></i></span><small>{{ date }}</small></span> }</div></div>
+                      <div class="report-layout-summary-box report-layout-trend-box">
+                        <span class="report-layout-box-label">Overall Status Trend</span>
+                        <strong><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span>{{ overviewCard.trend }}</strong>
+                      </div>
+                      <div class="report-layout-summary-box report-layout-past-box">
+                        <span class="report-layout-box-label">Past Trend</span>
+                        <div class="report-status-timeline">
+                          @for (point of overviewCard.timeline; track point.date) {
+                            <span class="{{ point.tone }}" [title]="point.label"><i><span class="icon" aria-hidden="true"><i [attr.data-lucide]="trendIcon(point.tone)"></i></span></i><small>{{ point.date }}</small></span>
+                          }
+                        </div>
+                      </div>
                     </div>
 
-                    <div class="report-narrative-grid">
-                      @for (field of reportNarrativeFields; track field.label) {
-                        <label class="report-editor-field"><span class="report-editor-label">{{ field.label }} @if (field.hint) { <small>{{ field.hint }}</small> }</span><textarea class="report-description-input" [rows]="field.rows" maxlength="3000"></textarea></label>
-                      }
-                    </div>
-                  </section>
-                </div>
+                    <label class="report-layout-comment">
+                      <span>Comments</span>
+                      <textarea rows="4" maxlength="3000"></textarea>
+                    </label>
+                  </article>
 
-                @for (area of reportReviewAreas; track area.label) {
-                  @if (area.label === 'Scope') {
-                    <section class="report-form-section report-area-section report-scope-section" [hidden]="activeReportSection !== area.label" role="tabpanel">
-                      <div class="report-overview-top scope-overview-top">
-                        <div class="report-overview-status">
-                          <span class="report-overview-label">Overall Status</span>
-                          <div class="report-inline-status" role="radiogroup" aria-label="Scope overall status">
+                  @for (card of simpleReportCards; track card.id; let cardIndex = $index) {
+                    <article class="report-layout-card report-layout-card-section {{ card.tone }}">
+                      <div class="report-layout-card-head">
+                        <div>
+                          <h3>{{ card.title }}</h3>
+                          <p>{{ card.body }}</p>
+                        </div>
+                        <strong class="report-layout-pill {{ card.tone }}">{{ card.status }}</strong>
+                      </div>
+
+                      <div class="report-layout-summary">
+                      <div class="report-layout-summary-box report-layout-status-box">
+                          <span class="report-layout-box-label">Status</span>
+                          <div class="report-inline-status" role="radiogroup" [attr.aria-label]="card.title + ' status'">
                             @for (option of reportStatusOptions; track option.label) {
-                              <label class="{{ option.tone }}"><input type="radio" name="scope-overall-status" [checked]="option.value === activeReportStatus" /><span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(option.icon)"></i></span>{{ option.label }}</span></label>
+                              <label class="{{ option.tone }}"><input type="radio" [attr.name]="'simple-card-status-' + cardIndex" [checked]="isReportStatusSelected(option.value, card.status)" /><span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(option.icon)"></i></span>{{ option.simpleLabel || option.label }}</span></label>
                             }
                           </div>
                         </div>
-                        <div class="report-overview-trend"><span class="report-overview-label">Overall Status Trend</span><strong><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span> {{ activeReportDetails.overallTrend }}</strong></div>
-                        <div class="report-overview-past"><span class="report-overview-label">Past Overview Trend</span><div class="report-past-trend">@for (date of pastOverviewTrend; track date) { <span><span class="icon" aria-hidden="true"><i data-lucide="circle-check"></i></span><small>{{ date }}</small></span> }</div></div>
+                        <div class="report-layout-summary-box report-layout-trend-box">
+                          <span class="report-layout-box-label">Overall Status Trend</span>
+                          <strong><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span>{{ card.trend }}</strong>
+                        </div>
+                        <div class="report-layout-summary-box report-layout-past-box">
+                          <span class="report-layout-box-label">Past Trend</span>
+                          <div class="report-status-timeline">
+                            @for (point of card.timeline; track point.date) {
+                              <span class="{{ point.tone }}" [title]="point.label"><i><span class="icon" aria-hidden="true"><i [attr.data-lucide]="trendIcon(point.tone)"></i></span></i><small>{{ point.date }}</small></span>
+                            }
+                          </div>
+                        </div>
                       </div>
 
-                      <label class="report-editor-field scope-comments-field">
-                        <span class="report-editor-label">Comments</span>
-                        <textarea class="report-description-input" rows="4" maxlength="3000"></textarea>
+                      <label class="report-layout-comment">
+                        <span>Comments</span>
+                        <textarea rows="4" maxlength="3000"></textarea>
                       </label>
+                    </article>
+                  }
+                </section>
+              } @else {
+                <nav class="report-section-nav" aria-label="Report sections" role="tablist">
+                  @for (section of reportSections; track section) {
+                    <button
+                      type="button"
+                      [class.active]="activeReportSection === section"
+                      [attr.aria-selected]="activeReportSection === section"
+                      (click)="setReportSection(section)"
+                      role="tab"
+                    >
+                      <span class="report-section-name">{{ section }}</span>
+                      <span class="report-section-fill" [class.complete]="section === 'Overview'" [class.partial]="section !== 'Overview'" aria-hidden="true">
+                        @if (section === 'Overview') { <span class="icon"><i data-lucide="circle-check"></i></span> }
+                      </span>
+                    </button>
+                  }
+                </nav>
 
-                      <div class="scope-panel scope-past-panel">
-                        <span class="scope-panel-label">Past reported statuses</span>
-                        <div class="scope-status-timeline">@for (past of scopePastStatuses; track past.date) { <span class="{{ past.tone }}" [title]="past.label"><i><span class="icon" aria-hidden="true"><i [attr.data-lucide]="past.tone === 'amber' ? 'bell' : 'x'"></i></span></i><small>{{ past.date }}</small></span> }</div>
+                <div class="report-section-stack">
+                  <div class="report-overview-group" [hidden]="activeReportSection !== 'Overview'" role="tabpanel">
+                    @let overviewCard = simpleReportOverviewCard;
+                    <article class="report-layout-card {{ overviewCard.tone }} report-detail-overview-card">
+                      <div class="report-layout-card-head">
+                        <div>
+                          <h3>{{ overviewCard.title }}</h3>
+                          <p>{{ overviewCard.body }}</p>
+                        </div>
+                        <strong class="report-layout-pill {{ overviewCard.tone }}">{{ overviewCard.status }}</strong>
                       </div>
 
-                      <div class="scope-group-card">
-                        <div class="scope-group-head">
-                          <div><strong>End Product</strong><span>{{ scopeProducts.length }} items</span></div>
-                          <label class="report-include-toggle"><input type="checkbox" /><span>Add to report</span></label>
+                      <div class="report-layout-summary">
+                        <div class="report-layout-summary-box report-layout-status-box">
+                          <span class="report-layout-box-label">Status</span>
+                          <div class="report-inline-status" role="radiogroup" aria-label="Overall status">
+                            @for (option of reportStatusOptions; track option.label) {
+                              <label class="{{ option.tone }}"><input type="radio" name="overall-status" [checked]="isReportStatusSelected(option.value, overviewCard.status)" /><span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(option.icon)"></i></span>{{ option.simpleLabel || option.label }}</span></label>
+                            }
+                          </div>
                         </div>
-                        <div class="scope-product-list">
-                          @for (product of scopeProducts; track product.title) {
-                            <article class="scope-product-card">
-                              <div class="scope-product-title">
-                                @if (product.icon) {
-                                  <span class="scope-product-icon" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="iconName(product.icon)"></i></span></span>
-                                } @else {
-                                  <input type="checkbox" [attr.aria-label]="'Add ' + product.title + ' to report'" />
+                        <div class="report-layout-summary-box report-layout-trend-box">
+                          <span class="report-layout-box-label">Overall Status Trend</span>
+                          <strong><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span>{{ overviewCard.trend }}</strong>
+                        </div>
+                        <div class="report-layout-summary-box report-layout-past-box">
+                          <span class="report-layout-box-label">Past Trend</span>
+                          <div class="report-status-timeline">
+                            @for (point of overviewCard.timeline; track point.date) {
+                              <span class="{{ point.tone }}" [title]="point.label"><i><span class="icon" aria-hidden="true"><i [attr.data-lucide]="trendIcon(point.tone)"></i></span></i><small>{{ point.date }}</small></span>
+                            }
+                          </div>
+                        </div>
+                      </div>
+
+                      <label class="report-layout-comment">
+                        <span>Comments</span>
+                        <textarea rows="4" maxlength="3000"></textarea>
+                      </label>
+                    </article>
+
+                    <div class="report-detail-narratives">
+                      @for (field of detailedOverviewFields; track field.label) {
+                        <label class="report-layout-field">
+                          <span>{{ field.label }} @if (field.hint) { <small>{{ field.hint }}</small> }</span>
+                          <textarea [rows]="field.rows" maxlength="3000"></textarea>
+                        </label>
+                      }
+                    </div>
+                  </div>
+
+                  @for (area of reportReviewAreas; track area.label) {
+                    @if (area.label === 'Scope') {
+                      <section class="report-area-section report-scope-section" [hidden]="activeReportSection !== area.label" role="tabpanel">
+                        <article class="report-layout-card report-detail-overview-card report-scope-overview-card red">
+                          <div class="report-layout-card-head">
+                            <div>
+                              <h3>Overall Status</h3>
+                              <p>Define your project overall status.</p>
+                            </div>
+                            <strong class="report-layout-pill {{ reportBadgeTone(area.status) }}">{{ area.status }}</strong>
+                          </div>
+
+                          <div class="report-layout-summary">
+                            <div class="report-layout-summary-box report-layout-status-box">
+                              <span class="report-layout-box-label">Status:</span>
+                              <div class="report-inline-status" role="radiogroup" aria-label="Scope overall status">
+                                @for (option of reportStatusOptions; track option.label) {
+                                  <label class="{{ option.tone }}"><input type="radio" name="scope-overall-status" [checked]="isReportStatusSelected(option.value, area.status)" /><span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(option.icon)"></i></span>{{ option.simpleLabel || option.label }}</span></label>
                                 }
-                                <strong>{{ product.title }}</strong>
                               </div>
-                              <div class="scope-product-grid">
-                                <span><small>Type</small><strong>{{ product.type }}</strong></span>
-                                <span><small>Product owner</small><strong>{{ product.owner }}</strong></span>
-                                <span><small>Capability</small><strong>{{ product.capability }}</strong></span>
-                                <span><small>Start - end date</small><strong>{{ product.dates }}</strong></span>
-                                <span><small>Budget</small><strong>{{ product.budget }}</strong></span>
+                            </div>
+                            <div class="report-layout-summary-box report-layout-trend-box">
+                              <span class="report-layout-box-label">Overall Status Trend:</span>
+                              <strong><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span>{{ reportTrendForTone(area.tone) }}</strong>
+                            </div>
+                            <div class="report-layout-summary-box report-layout-past-box">
+                              <span class="report-layout-box-label">Past reported statuses</span>
+                              <div class="scope-status-timeline">
+                                @for (past of scopePastStatuses; track past.date) {
+                                  <span class="{{ past.tone }}" [title]="past.label"><i><span class="icon" aria-hidden="true"><i [attr.data-lucide]="trendIcon(past.tone)"></i></span></i><small>{{ past.date }}</small></span>
+                                }
                               </div>
-                              <div class="scope-product-controls">
-                                <label><span>Report status</span><select [attr.aria-label]="'Report status for ' + product.title"><option>{{ product.status }}</option><option>On track</option><option>Alert/Discuss</option><option>Off track</option></select></label>
-                                <label><span>Actual start</span><input type="text" [value]="product.actualStart" /></label>
-                                <label><span>Actual end</span><input type="text" [value]="product.actualEnd" /></label>
-                                <label><span>Completed</span><span class="scope-percent-input"><input type="text" [value]="product.completed" /><span>%</span></span></label>
-                              </div>
-                            </article>
-                          }
-                        </div>
-                      </div>
+                            </div>
+                          </div>
 
-                      <div class="scope-group-card compact">
-                        <div class="scope-group-head">
-                          <div><strong>Management Product</strong><span>0 items</span></div>
-                          <label class="report-include-toggle"><input type="checkbox" /><span>Add to report</span></label>
-                        </div>
-                        <p class="scope-empty-note">No management products are linked to this reporting interval.</p>
-                      </div>
-                    </section>
+                          <label class="report-layout-comment">
+                            <span>Comments</span>
+                            <textarea rows="4" maxlength="3000"></textarea>
+                          </label>
+                        </article>
+
+                        <section class="scope-group-card scope-products-section" aria-label="Scope end products">
+                          <div class="scope-group-head">
+                            <div><strong>End Product</strong><span>{{ scopeProducts.length }} items</span></div>
+                            <button class="scope-group-link" type="button">Add to report</button>
+                          </div>
+                          <div class="scope-product-list">
+                            @for (product of scopeProducts; track product.title) {
+                              <article class="scope-product-card">
+                                <div class="scope-product-head">
+                                  <div class="scope-product-title">
+                                    @if (product.icon) {
+                                      <span class="scope-product-icon" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="iconName(product.icon)"></i></span></span>
+                                    } @else {
+                                      <span class="scope-product-check" aria-hidden="true"></span>
+                                    }
+                                    <strong>{{ product.title }}</strong>
+                                  </div>
+                                  <button class="scope-select-pill" type="button">
+                                    <span class="scope-select-pill-knob" aria-hidden="true"></span>
+                                    <span>Select</span>
+                                  </button>
+                                </div>
+
+                                <div class="scope-product-grid">
+                                  <span><small>Type</small><strong>{{ product.type }}</strong></span>
+                                  <span><small>Product owner</small><strong>{{ product.owner }}</strong></span>
+                                  <span><small>Capability</small><strong>{{ product.capability }}</strong></span>
+                                  <span><small>Start - end date</small><strong>{{ product.dates }}</strong></span>
+                                  <span><small>Budget</small><strong>{{ product.budget }}</strong></span>
+                                </div>
+
+                                <div class="scope-product-controls">
+                                  <label class="scope-product-field scope-product-field-select">
+                                    <span>Report status</span>
+                                    <span class="scope-field-control scope-field-control-select">
+                                      <select [attr.aria-label]="'Report status for ' + product.title">
+                                        <option value=""></option>
+                                        <option>On track</option>
+                                        <option>Alert</option>
+                                        <option>Off track</option>
+                                      </select>
+                                      <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                                    </span>
+                                  </label>
+                                  <label class="scope-product-field">
+                                    <span>Actual start</span>
+                                    <input type="text" [value]="product.actualStart" />
+                                  </label>
+                                  <label class="scope-product-field">
+                                    <span>Actual end</span>
+                                    <input type="text" [value]="product.actualEnd" />
+                                  </label>
+                                  <label class="scope-product-field">
+                                    <span>Completed</span>
+                                    <span class="scope-percent-input"><input type="text" [value]="product.completed" /><span>%</span></span>
+                                  </label>
+                                </div>
+                              </article>
+                            }
+                          </div>
+                        </section>
+                      </section>
                     } @else {
                       <section class="report-form-section report-area-section" [hidden]="activeReportSection !== area.label" role="tabpanel">
                         <div class="report-section-head"><div><h3>{{ area.label }}</h3></div><span class="report-area-pill {{ area.tone }}">{{ area.status }}</span></div>
                         <label class="report-form-field"><span>Update</span><textarea rows="2">{{ area.note }}</textarea></label>
                       </section>
                     }
-                }
-              </div>
+                  }
+                </div>
+              }
+            </div>
+
+            <div class="report-drawer-footer">
+              <button class="report-secondary-button" type="button" (click)="closeReport()">Cancel</button>
+              <button class="report-submit-button" type="submit">Save</button>
             </div>
           </form>
         </aside>
@@ -1365,19 +2175,21 @@ const defaultPinnedQuickLinkIds = ['project-plan', 'wbs'];
               <ng-container [ngTemplateOutlet]="quickLinkCard" [ngTemplateOutletContext]="{ action, pinnedIds }"></ng-container>
             }
           </div>
-          <div class="quick-links-pager" aria-label="Quick links pages">
-            <button class="quick-links-page-button" type="button" (click)="shiftQuickLinksPage(-1)" [disabled]="quickLinksPageIndex === 0" aria-label="Previous quick links page">
-              <span class="icon" aria-hidden="true"><i data-lucide="arrow-left"></i></span>
-            </button>
-            <div class="quick-links-page-dots" aria-hidden="true">
-              @for (page of quickLinksPageDots; track page) {
-                <span [class.active]="page === quickLinksPageIndex"></span>
-              }
+          @if (quickLinksTotalPages > 1) {
+            <div class="quick-links-pager" aria-label="Quick links pages">
+              <button class="quick-links-page-button" type="button" (click)="shiftQuickLinksPage(-1)" [disabled]="quickLinksPageIndex === 0" aria-label="Previous quick links page">
+                <span class="icon" aria-hidden="true"><i data-lucide="arrow-left"></i></span>
+              </button>
+              <div class="quick-links-page-dots" aria-hidden="true">
+                @for (page of quickLinksPageDots; track page) {
+                  <span [class.active]="page === quickLinksPageIndex"></span>
+                }
+              </div>
+              <button class="quick-links-page-button" type="button" (click)="shiftQuickLinksPage(1)" [disabled]="quickLinksPageIndex >= quickLinksTotalPages - 1" aria-label="Next quick links page">
+                <span class="icon" aria-hidden="true"><i data-lucide="arrow-right"></i></span>
+              </button>
             </div>
-            <button class="quick-links-page-button" type="button" (click)="shiftQuickLinksPage(1)" [disabled]="quickLinksPageIndex >= quickLinksTotalPages - 1" aria-label="Next quick links page">
-              <span class="icon" aria-hidden="true"><i data-lucide="arrow-right"></i></span>
-            </button>
-          </div>
+          }
         </div>
       </section>
     </ng-template>
@@ -1408,10 +2220,6 @@ const defaultPinnedQuickLinkIds = ['project-plan', 'wbs'];
           <span class="guided-tour-kicker">Guided tour · {{ guidedTourStep + 1 }} of {{ guidedTourSteps.length }}</span>
           <h2>{{ step.title }}</h2>
           <p>{{ step.body }}</p>
-          <div class="guided-tour-daily">
-            <strong>How a PM uses this</strong>
-            <span>{{ step.daily }}</span>
-          </div>
           <div class="guided-tour-progress" aria-hidden="true">
             @for (tourStep of guidedTourSteps; track tourStep.target; let index = $index) {
               <span [class.active]="index === guidedTourStep"></span>
@@ -1435,9 +2243,13 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   @Input() pmoAssignmentReady = false;
   @Input() guidedTourActive = false;
   @Input() guidedTourExitMode: string | null = null;
+  @Input() onboardingPm101Locked = false;
   @Output() readonly consoleStateChange = new EventEmitter<Partial<PmConsoleMountOptions>>();
 
   readonly workspaceTableProjects = workspaceTableProjects;
+  readonly benefitRegisterRows = benefitRegisterRows;
+  readonly riskRegisterRows = riskRegisterRows;
+  readonly workspaceTableColumns = workspaceTableColumns;
   readonly workspaceProjectCards = workspaceProjectCards;
   readonly projectQuickActions = projectQuickActions;
   readonly unassignedJourneySteps = unassignedJourneySteps;
@@ -1447,18 +2259,18 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   readonly guidedTourSteps = guidedTourSteps;
   readonly stageDefinitions = stageDefinitions;
   readonly quickLinkPinLimit = QUICK_LINK_PIN_LIMIT;
-  readonly primaryProjectPlanSections = ['Project Setup', 'Overview', 'Schedule & Scope', 'Budget', 'Benefits', 'Risk', 'Resource'];
+  readonly primaryProjectPlanSections = ['Overview', 'Schedule & Scope', 'Budget', 'Benefits', 'Risk', 'Resource'];
   readonly additionalProjectPlanSections = ['Issues', 'Change Impact', 'Related Links', 'Dependency', 'Miscellaneous'];
   readonly projectReportMetrics = ['Total Reports', 'Reports Overview', 'Reporting Compliance'];
   readonly projectReportsRows = projectReportsRows;
   readonly projectReportTrendPoints = projectReportTrendPoints;
   readonly reportSections = ['Overview', 'Scope', 'Schedule', 'Budget', 'Benefits', 'Risks', 'Issues', 'Resource', 'Dependency'];
   readonly reportStatusOptions = [
-    { label: 'On track', value: 'On track', tone: 'green', icon: 'checkMark' },
-    { label: 'Alert/Discuss', value: 'Alert', tone: 'amber', icon: 'bell' },
-    { label: 'Off track', value: 'Off Track', tone: 'red', icon: 'close' },
+    { label: 'On track', simpleLabel: 'On track', value: 'On track', tone: 'green', icon: 'checkMark' },
+    { label: 'Alert/Discuss', simpleLabel: 'Alert', value: 'Alert', tone: 'amber', icon: 'bell' },
+    { label: 'Off track', simpleLabel: 'Off track', value: 'Off Track', tone: 'red', icon: 'close' },
   ];
-  readonly pastOverviewTrend = ['31/3/2026', '31/12/2025', '30/9/2025', '30/06/2025', '31/12/2024'];
+  readonly pastOverviewTrend = ['31/03/2026', '31/12/2025', '30/09/2025', '30/06/2025', '31/12/2024'];
   readonly scopePastStatuses = [
     { date: '31/03/2026', tone: 'red', label: 'Off track' },
     { date: '31/12/2025', tone: 'amber', label: 'Alert/Discuss' },
@@ -1540,6 +2352,13 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       ],
     },
   ];
+  readonly simpleReportSections = this.simplePlanSections.slice(1);
+  readonly simpleReportGuides: SimpleReportGuide[] = [
+    { focus: 'Overview', status: 'On track', tone: 'green', action: 'Attach outcome evidence' },
+    { focus: 'Schedule & scope', status: 'Alert', tone: 'amber', action: 'Confirm forecast date or scope change' },
+    { focus: 'Budget', status: 'On track', tone: 'green', action: 'Add finance baseline evidence' },
+    { focus: 'Risk', status: 'Alert', tone: 'amber', action: 'Update owner and mitigation' },
+  ];
   readonly wbsItems = [
     { title: 'Baselined Project Plan', owner: 'Sophia Brown', progress: '0%', level: 0, tone: 'late', left: '4%', width: '18%' },
     { title: 'Benefits baseline evidence', owner: 'Muna Hassan', progress: '45%', level: 1, tone: 'active', left: '10%', width: '20%' },
@@ -1549,12 +2368,19 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   readonly months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
   workspaceDisplay: WorkspaceDisplay = 'table';
+  workspaceRegister: WorkspaceRegister = 'projects';
   calendarMonth = new Date(2026, 4, 1);
   pinnedIds = this.loadPinnedQuickLinks();
+  visibleWorkspaceTableColumnIds = this.loadWorkspaceTableColumns();
+  renderedWorkspaceTableColumnIds = [...this.visibleWorkspaceTableColumnIds];
+  workspaceTableColumnMotionStates = this.createWorkspaceTableColumnMotionStates(this.renderedWorkspaceTableColumnIds);
+  workspaceColumnMenuOpen = false;
   quickLinksPage = 0;
+  quickLinksPageSize = QUICK_LINK_PAGE_SIZE;
   quickLinksToast: string | null = null;
   selectedBoardFilter = 'all';
   activeReportProject: string | null = null;
+  activeReportMode: ReportDetailMode = 'simple';
   selectedStageGateKey: string | null = null;
   activeReportSection = 'Overview';
   projectPlanEntry: ProjectPlanEntry = 'quick';
@@ -1565,8 +2391,12 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   guidedTourStep = 0;
 
   private iconsHydrated = false;
+  private quickLinksLayoutFrame: number | null = null;
+  private quickLinksPagerBlockHeight = 0;
   private quickLinksToastTimer: number | null = null;
   private guidedTourFrame: number | null = null;
+  private workspaceTableColumnTimers: Partial<Record<WorkspaceTableColumnId, number>> = {};
+  private workspaceTableColumnFrames: Partial<Record<WorkspaceTableColumnId, number>> = {};
 
   constructor(
     private readonly iconsService: PmConsoleIconService,
@@ -1583,6 +2413,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get projectPlanStage(): string {
+    if (this.onboardingPm101Locked && this.selectedProject === firstAssignedProject.id) return 'Planning';
     const profile = stageProfiles.find((item) => item.project === this.selectedProject);
     return profile ? stageDefinitions[profile.currentStage]?.label || 'Execution' : 'Execution';
   }
@@ -1593,6 +2424,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   get activeProjectPlanGroup(): SimplePlanSection {
     return this.projectPlanGroupForSection(this.projectPlanActiveSection);
+  }
+
+  get projectPlanIdentityCard(): SimplePlanSection {
+    return this.simplePlanSections[0];
   }
 
   get activeProjectPlanVisibleGroups(): ProjectPlanFieldGroup[] {
@@ -1626,11 +2461,78 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get workspaceTitle(): string {
+    if (this.onboardingPm101Locked || this.isPm101OnboardingWorkspaceFlow) return 'Welcome!';
     return this.isAllProjects ? 'Operational Workspace' : `${this.scopedProjectName} | Operational Workspace`;
   }
 
+  get workspaceSubtitle(): string {
+    return 'Plan your month, clear overdue work, and track project stages without opening every project.';
+  }
+
   get workspaceSearchPlaceholder(): string {
+    if (this.onboardingPm101Locked || this.isPm101OnboardingWorkspaceFlow) return 'Search board';
     return this.selectedView === 'pm101' ? 'Search PM 101' : this.selectedView === 'board' ? 'Search actions' : 'Search calendar';
+  }
+
+  get isPm101OnboardingWorkspaceFlow(): boolean {
+    return this.frontDoorMode === 'assigned' && this.pmoAssignmentReady && !this.onboardingPm101Locked && this.selectedPage === 'workspace' && this.selectedProject === 'all';
+  }
+
+  get isWorkspaceCardMode(): boolean {
+    return this.workspaceRegister === 'projects' && this.workspaceDisplay === 'cards';
+  }
+
+  get workspaceRegisterTabs(): WorkspaceRegisterTab[] {
+    return [
+      { id: 'projects', label: 'Project Register', icon: 'calendarMinimal', count: this.workspaceTableProjects.length },
+      { id: 'risks', label: 'Risk Register', icon: 'widget', count: this.visibleRiskRegisterRows.length },
+      { id: 'benefits', label: 'Benefits Register', icon: 'benefitGraph', count: this.visibleBenefitRegisterRows.length },
+    ];
+  }
+
+  workspaceRegisterTabWidth(id: WorkspaceRegister): string {
+    const widths: Record<WorkspaceRegister, string> = {
+      projects: '186px',
+      risks: '165px',
+      benefits: '194px',
+    };
+    return widths[id];
+  }
+
+  get workspaceRegisterAriaLabel(): string {
+    if (this.workspaceRegister === 'benefits') return 'PM Console benefit register';
+    if (this.workspaceRegister === 'risks') return 'PM Console risk register';
+    return 'PM Console project register';
+  }
+
+  get workspaceRegisterSubtitle(): string {
+    if (this.workspaceRegister === 'benefits') return `Tracking ${this.visibleBenefitRegisterRows.length} benefit records across the workspace`;
+    if (this.workspaceRegister === 'risks') return `Monitoring ${this.visibleRiskRegisterRows.length} active risk records across the workspace`;
+    return `Showing all ${this.workspaceTableProjects.length} projects`;
+  }
+
+  get workspaceRegisterSearchPlaceholder(): string {
+    if (this.workspaceRegister === 'benefits') return 'Search benefits';
+    if (this.workspaceRegister === 'risks') return 'Search risks';
+    return 'Search for projects';
+  }
+
+  get workspaceSearchAriaLabel(): string {
+    if (this.workspaceRegister === 'benefits') return 'Search benefits';
+    if (this.workspaceRegister === 'risks') return 'Search risks';
+    return 'Search for projects';
+  }
+
+  get workspaceFilterAriaLabel(): string {
+    if (this.workspaceRegister === 'benefits') return 'Filter benefits';
+    if (this.workspaceRegister === 'risks') return 'Filter risks';
+    return 'Project filter';
+  }
+
+  get workspaceRegisterFilterLabel(): string {
+    if (this.workspaceRegister === 'benefits') return 'All benefits';
+    if (this.workspaceRegister === 'risks') return 'All risks';
+    return 'All projects';
   }
 
   get noAssignmentMessage(): string {
@@ -1659,6 +2561,50 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       { label: 'Not tracked', value: count('Not tracked'), icon: 'eyeOff', tone: 'neutral' },
       { label: 'Not Started', value: count('Not Started'), icon: 'todo', tone: 'blue' },
     ];
+  }
+
+  get benefitRegisterStats(): WorkspaceRegisterStat[] {
+    const rows = this.visibleBenefitRegisterRows;
+    const countRealization = (realization: string) => rows.filter((row) => row.realization === realization).length;
+    const countStatus = (status: string) => rows.filter((row) => row.status === status).length;
+    return [
+      { label: 'All Benefits', value: rows.length, icon: 'benefit', tone: 'brand' },
+      { label: 'Realized', value: countRealization('Realized'), icon: 'check', tone: 'green' },
+      { label: 'In Realization', value: countRealization('In realization'), icon: 'timeline', tone: 'blue' },
+      { label: 'Planned', value: countRealization('Planned'), icon: 'pauseCircle', tone: 'neutral' },
+      { label: 'Attention', value: countStatus('Attention'), icon: 'alert', tone: 'amber' },
+    ];
+  }
+
+  get riskRegisterStats(): WorkspaceRegisterStat[] {
+    const rows = this.visibleRiskRegisterRows;
+    const countExposure = (exposure: string) => rows.filter((row) => row.exposure === exposure).length;
+    const countStatus = (status: string) => rows.filter((row) => row.status === status).length;
+    return [
+      { label: 'All Risks', value: rows.length, icon: 'risks', tone: 'brand' },
+      { label: 'Critical', value: countExposure('Critical'), icon: 'alert', tone: 'red' },
+      { label: 'High', value: countExposure('High'), icon: 'trendUp', tone: 'amber' },
+      { label: 'Medium', value: countExposure('Medium'), icon: 'eyeOff', tone: 'neutral' },
+      { label: 'Escalated', value: countStatus('Escalated'), icon: 'bell', tone: 'red' },
+    ];
+  }
+
+  get visibleBenefitRegisterRows(): BenefitRegisterRow[] {
+    return this.isAllProjects ? benefitRegisterRows : benefitRegisterRows.filter((row) => row.project === this.selectedProject);
+  }
+
+  get visibleRiskRegisterRows(): RiskRegisterRow[] {
+    return this.isAllProjects ? riskRegisterRows : riskRegisterRows.filter((row) => row.project === this.selectedProject);
+  }
+
+  get renderedWorkspaceTableColumns(): WorkspaceTableColumn[] {
+    const rendered = new Set(this.renderedWorkspaceTableColumnIds);
+    return workspaceTableColumns.filter((column) => rendered.has(column.id));
+  }
+
+  get visibleWorkspaceTableColumns(): WorkspaceTableColumn[] {
+    const visible = new Set(this.visibleWorkspaceTableColumnIds);
+    return workspaceTableColumns.filter((column) => visible.has(column.id));
   }
 
   get visibleBoardColumns(): typeof actions {
@@ -1732,9 +2678,30 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   get activeReportStatus(): string {
     const latest = this.activeReport.trend.at(-1);
     const tone = this.reportStatusTone(latest?.status || 'due');
-    if (tone === 'off-track') return 'Off Track';
+    if (tone === 'off-track') return 'Off track';
     if (tone === 'alert') return 'Alert';
     return 'On track';
+  }
+
+  get simpleReportIntervalLabel(): string {
+    return `${this.formatSimpleReportDate(this.activeReportDetails.intervalStart)} - ${this.formatSimpleReportDate(this.activeReportDetails.intervalEnd)}`;
+  }
+
+  get simpleReportPlanLabel(): string {
+    const normalized = this.activeReportDetails.intervalStatus.toLowerCase();
+    if (normalized.includes('submitted') || normalized.includes('complete')) return 'Submitted';
+    if (normalized.includes('active')) return 'Active';
+    if (normalized.includes('draft') || normalized.includes('not created')) return 'Draft';
+    return this.activeReportDetails.intervalStatus;
+  }
+
+  get simpleReportPlanChipTone(): string {
+    if (this.simpleReportPlanLabel === 'Draft') return 'neutral';
+    return this.reportBadgeTone(this.simpleReportPlanLabel, 'neutral');
+  }
+
+  get simpleReportStatusTone(): string {
+    return this.reportBadgeTone(this.simpleReportPlanLabel, 'neutral');
   }
 
   get reportNarrativeFields(): Array<{ label: string; hint: string; value: string; rows: number }> {
@@ -1746,6 +2713,63 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     ];
   }
 
+  get detailedOverviewFields(): Array<{ label: string; hint: string; value: string; rows: number }> {
+    return this.reportNarrativeFields.filter((field) => field.label !== 'Comments');
+  }
+
+  get simpleReportOverviewCard(): ReportDrawerCard {
+    return {
+      id: 'simple-overview',
+      title: 'Overall Status',
+      body: 'Define your project overall status.',
+      status: this.activeReportStatus,
+      tone: this.reportToneToken(this.activeReportStatus),
+      trend: this.activeReportDetails.overallTrend,
+      comments: '',
+      timeline: this.reportTimelineForTone(this.reportToneToken(this.activeReportStatus)),
+    };
+  }
+
+  get simpleReportCards(): ReportDrawerCard[] {
+    return this.simpleReportSections.map((section, index) => {
+      const guide = this.simpleReportGuide(index);
+      return {
+        id: `simple-${slugifyPlanField(section.title)}`,
+        title: section.title,
+        body: section.body,
+        status: guide.status,
+        tone: guide.tone,
+        trend: this.reportTrendForTone(guide.tone),
+        comments: '',
+        timeline: this.reportTimelineForTone(guide.tone),
+      };
+    });
+  }
+
+  get detailedReportCards(): ReportDrawerCard[] {
+    const overview: ReportDrawerCard = {
+      id: 'overview',
+      title: 'Overview',
+      body: 'Overall project narrative and current delivery position.',
+      status: this.activeReportStatus,
+      tone: this.reportToneToken(this.activeReportStatus),
+      trend: this.activeReportDetails.overallTrend,
+      comments: this.activeReportDetails.comments,
+      timeline: this.pastOverviewTrend.map((date) => ({ date, tone: 'green', label: 'On track' })),
+    };
+    const sections = this.reportReviewAreas.map((area) => ({
+      id: slugifyPlanField(area.label),
+      title: area.label,
+      body: this.reportBodyForSection(area.label),
+      status: area.status,
+      tone: area.tone,
+      trend: this.reportTrendForTone(area.tone),
+      comments: area.note,
+      timeline: area.label === 'Scope' ? this.scopePastStatuses : this.reportTimelineForTone(area.tone),
+    }));
+    return [overview, ...sections];
+  }
+
   get quickLinksOrderedActions(): QuickAction[] {
     const pinned = this.actionsFromIds(this.pinnedIds);
     const pinnedSet = new Set(this.pinnedIds);
@@ -1753,7 +2777,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get quickLinksTotalPages(): number {
-    return Math.max(1, Math.ceil(this.quickLinksOrderedActions.length / QUICK_LINK_PAGE_SIZE));
+    return Math.max(1, Math.ceil(this.quickLinksOrderedActions.length / this.quickLinksPageSize));
   }
 
   get quickLinksPageIndex(): number {
@@ -1761,15 +2785,19 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get quickLinksPageActions(): QuickAction[] {
-    const start = this.quickLinksPageIndex * QUICK_LINK_PAGE_SIZE;
-    return this.quickLinksOrderedActions.slice(start, start + QUICK_LINK_PAGE_SIZE);
+    const start = this.quickLinksPageIndex * this.quickLinksPageSize;
+    return this.quickLinksOrderedActions.slice(start, start + this.quickLinksPageSize);
   }
 
   get quickLinksPageDots(): number[] {
     return Array.from({ length: this.quickLinksTotalPages }, (_, index) => index);
   }
 
-  get stageProfilesForSelection(): typeof stageProfiles {
+  get stageProfilesForSelection(): StageProfile[] {
+    if (this.onboardingPm101Locked) {
+      const profile = this.stageProfileForProject(firstAssignedProject.id);
+      return profile ? [profile] : [];
+    }
     return stageProfiles.filter((profile) => this.isAllProjects || profile.project === this.selectedProject);
   }
 
@@ -1791,6 +2819,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   ngOnDestroy(): void {
+    if (this.quickLinksLayoutFrame !== null) {
+      window.cancelAnimationFrame(this.quickLinksLayoutFrame);
+      this.quickLinksLayoutFrame = null;
+    }
     if (this.guidedTourFrame !== null) {
       window.cancelAnimationFrame(this.guidedTourFrame);
       this.guidedTourFrame = null;
@@ -1799,6 +2831,12 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       window.clearTimeout(this.quickLinksToastTimer);
       this.quickLinksToastTimer = null;
     }
+    for (const handle of Object.values(this.workspaceTableColumnTimers)) {
+      if (handle) window.clearTimeout(handle);
+    }
+    for (const handle of Object.values(this.workspaceTableColumnFrames)) {
+      if (handle) window.cancelAnimationFrame(handle);
+    }
   }
 
   @HostListener('window:resize')
@@ -1806,10 +2844,25 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     if (this.guidedTourActive) {
       this.scheduleGuidedTourPosition();
     }
+    this.scheduleQuickLinksLayoutMeasurement();
+  }
+
+  @HostListener('document:click', ['$event'])
+  handleDocumentClick(event: MouseEvent): void {
+    if (!this.workspaceColumnMenuOpen) return;
+    const target = event.target;
+    if (!(target instanceof Node)) return;
+    const menu = this.elementRef.nativeElement.querySelector<HTMLElement>('[data-workspace-columns-menu]');
+    if (menu?.contains(target)) return;
+    this.closeWorkspaceColumnMenu();
   }
 
   @HostListener('window:keydown.escape')
   handleEscapeKey(): void {
+    if (this.workspaceColumnMenuOpen) {
+      this.closeWorkspaceColumnMenu();
+      return;
+    }
     if (this.guidedTourActive) {
       this.completeGuidedTour();
     }
@@ -1819,8 +2872,79 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     if (this.guidedTourActive) {
       this.scheduleGuidedTourPosition();
     }
+    this.scheduleQuickLinksLayoutMeasurement();
     if (this.iconsHydrated) return;
     this.refreshIcons();
+  }
+
+  private scheduleQuickLinksLayoutMeasurement(): void {
+    if (this.quickLinksLayoutFrame !== null) return;
+    this.quickLinksLayoutFrame = window.requestAnimationFrame(() => {
+      this.quickLinksLayoutFrame = null;
+      this.updateQuickLinksPageSize();
+    });
+  }
+
+  private updateQuickLinksPageSize(): void {
+    const host = this.elementRef.nativeElement;
+    const quickLinksList = host.querySelector<HTMLElement>('.quick-actions-card .quick-action-list');
+    const quickLinksGrid = quickLinksList?.querySelector<HTMLElement>('.quick-action-grid');
+    const quickLinkCards = quickLinksGrid?.querySelectorAll<HTMLElement>('.quick-link-card');
+
+    if (!quickLinksList || !quickLinksGrid || !quickLinkCards?.length) {
+      this.quickLinksPageSize = QUICK_LINK_PAGE_SIZE;
+      return;
+    }
+
+    const rowHeight = quickLinkCards[0].getBoundingClientRect().height || quickLinkCards[0].offsetHeight;
+    const listHeight = quickLinksList.clientHeight;
+    if (!rowHeight || !listHeight) return;
+
+    const gridStyles = window.getComputedStyle(quickLinksGrid);
+    const rowGap = Number.parseFloat(gridStyles.rowGap || gridStyles.gap || '0') || 0;
+    const columns = this.quickLinksGridColumnCount(quickLinkCards);
+    const pagerElement = quickLinksList.querySelector<HTMLElement>('.quick-links-pager');
+    const pagerMarginTop = pagerElement ? Number.parseFloat(window.getComputedStyle(pagerElement).marginTop || '0') || 0 : 0;
+    const pagerBlockHeight = pagerElement ? pagerElement.offsetHeight + pagerMarginTop : this.quickLinksPagerBlockHeight;
+
+    if (pagerElement && pagerBlockHeight > 0) {
+      this.quickLinksPagerBlockHeight = pagerBlockHeight;
+    }
+
+    const totalActions = this.quickLinksOrderedActions.length;
+    const maxWithoutPager = this.quickLinksCapacity(listHeight, rowHeight, rowGap, columns);
+    let nextPageSize = maxWithoutPager;
+
+    if (totalActions > nextPageSize) {
+      const availableGridHeight = Math.max(listHeight - pagerBlockHeight, rowHeight);
+      const maxWithPager = this.quickLinksCapacity(availableGridHeight, rowHeight, rowGap, columns);
+      nextPageSize = maxWithPager;
+    }
+
+    if (nextPageSize === this.quickLinksPageSize) return;
+
+    const currentStart = this.quickLinksPageIndex * this.quickLinksPageSize;
+    this.quickLinksPageSize = nextPageSize;
+    this.quickLinksPage = Math.min(Math.floor(currentStart / this.quickLinksPageSize), this.quickLinksTotalPages - 1);
+    this.iconsHydrated = false;
+    this.changeDetector.markForCheck();
+  }
+
+  private quickLinksCapacity(availableHeight: number, rowHeight: number, rowGap: number, columns: number): number {
+    const safeColumns = Math.max(1, columns);
+    const safeHeight = Math.max(availableHeight, rowHeight);
+    const rows = Math.max(1, Math.floor((safeHeight + rowGap) / (rowHeight + rowGap)));
+    return rows * safeColumns;
+  }
+
+  private quickLinksGridColumnCount(cards: NodeListOf<HTMLElement>): number {
+    const firstTop = cards[0]?.offsetTop ?? 0;
+    let columns = 0;
+    for (const card of Array.from(cards)) {
+      if (Math.abs(card.offsetTop - firstTop) > 1) break;
+      columns += 1;
+    }
+    return Math.max(1, columns);
   }
 
   refreshIcons(): void {
@@ -1866,6 +2990,22 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       this.projectPlanActiveSection = 'Overview';
       this.projectPlanSectionsExpanded = false;
       this.projectPlanExpandedFieldSections = {};
+      this.onboardingPm101Locked = false;
+    } else if (this.guidedTourExitMode === 'pm101-lock') {
+      this.frontDoorMode = 'assigned';
+      this.pmoAssignmentReady = false;
+      this.selectedPage = 'workspace';
+      this.selectedProject = 'all';
+      this.selectedView = 'pm101';
+      this.selectedBoardFilter = 'all';
+      this.activeReportProject = null;
+      this.selectedStageGateKey = null;
+      this.projectPlanEntry = 'quick';
+      this.projectPlanDetailMode = 'simple';
+      this.projectPlanActiveSection = 'Overview';
+      this.projectPlanSectionsExpanded = false;
+      this.projectPlanExpandedFieldSections = {};
+      this.onboardingPm101Locked = true;
     }
 
     this.guidedTourExitMode = null;
@@ -1878,6 +3018,24 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       return;
     }
     this.assignFirstProject();
+  }
+
+  openPm101OnboardingWorkspace(): void {
+    this.frontDoorMode = 'assigned';
+    this.pmoAssignmentReady = true;
+    this.onboardingPm101Locked = false;
+    this.selectedProject = 'all';
+    this.selectedPage = 'workspace';
+    this.selectedView = 'pm101';
+    this.selectedBoardFilter = 'all';
+    this.activeReportProject = null;
+    this.selectedStageGateKey = null;
+    this.projectPlanEntry = 'quick';
+    this.projectPlanDetailMode = 'simple';
+    this.projectPlanActiveSection = 'Overview';
+    this.projectPlanSectionsExpanded = false;
+    this.projectPlanExpandedFieldSections = {};
+    this.emitState();
   }
 
   openAssignedProjectPlan(): void {
@@ -1918,6 +3076,19 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return labels[tone] || 'No report';
   }
 
+  setWorkspaceRegister(register: WorkspaceRegister): void {
+    if (this.workspaceRegister === register) return;
+    this.workspaceRegister = register;
+    this.iconsHydrated = false;
+  }
+
+  setWorkspaceDisplay(display: WorkspaceDisplay): void {
+    if (this.workspaceDisplay === display) return;
+    this.workspaceDisplay = display;
+    this.closeWorkspaceColumnMenu();
+    this.iconsHydrated = false;
+  }
+
   setProjectPlanEntry(entry: ProjectPlanEntry): void {
     this.projectPlanEntry = entry;
     this.projectPlanActiveSection = 'Overview';
@@ -1956,6 +3127,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   setView(view: WorkspaceView): void {
+    if (this.isOnboardingPm101BlockedView(view)) return;
     this.closeReport();
     this.closeStageGate();
     this.selectedView = view;
@@ -1964,6 +3136,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   navigate(page: ConsolePage, projectPlanEntry: ProjectPlanEntry = 'quick'): void {
+    if (this.onboardingPm101Locked && page === 'workspaces') return;
     this.closeReport();
     this.closeStageGate();
     this.selectedPage = page;
@@ -1992,7 +3165,8 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   openQuickAction(action: QuickAction): void {
     this.closeReport();
     this.closeStageGate();
-    if (action.view) this.selectedView = action.view;
+    if (action.view && !this.isOnboardingPm101BlockedView(action.view)) this.selectedView = action.view;
+    if (this.onboardingPm101Locked && action.page === 'workspaces') return;
     if (action.page) this.navigate(action.page, this.projectPlanEntryFromAction(action.entry));
     this.emitState();
   }
@@ -2000,6 +3174,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   openReport(project: string): void {
     this.closeStageGate();
     this.activeReportProject = project;
+    this.activeReportMode = 'simple';
     this.activeReportSection = 'Overview';
     this.iconsHydrated = false;
   }
@@ -2016,6 +3191,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   closeReport(): void {
     if (!this.activeReportProject) return;
     this.activeReportProject = null;
+    this.activeReportMode = 'simple';
     this.activeReportSection = 'Overview';
     this.iconsHydrated = false;
   }
@@ -2069,6 +3245,34 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   setReportSection(section: string): void {
     this.activeReportSection = section;
     this.iconsHydrated = false;
+  }
+
+  setReportMode(mode: ReportDetailMode): void {
+    this.activeReportMode = mode;
+    if (mode === 'simple') {
+      this.activeReportSection = 'Overview';
+    }
+    this.iconsHydrated = false;
+  }
+
+  simpleReportGuide(index: number): SimpleReportGuide {
+    return this.simpleReportGuides[index] || this.simpleReportGuides[0];
+  }
+
+  simpleReportFieldValue(field: SimplePlanField): string {
+    return field.value.trim() || 'Not captured';
+  }
+
+  isReportStatusSelected(optionValue: string, status: string): boolean {
+    return this.reportToneToken(optionValue) === this.reportToneToken(status);
+  }
+
+  reportBadgeTone(value: string, fallback: string = 'neutral'): string {
+    const normalized = value.toLowerCase();
+    if (normalized.includes('off')) return 'red';
+    if (normalized.includes('alert') || normalized.includes('attention') || normalized.includes('draft') || normalized.includes('due')) return 'amber';
+    if (normalized.includes('active') || normalized.includes('track') || normalized.includes('submitted') || normalized.includes('complete')) return 'green';
+    return fallback;
   }
 
   handleProjectCardAction(project: (typeof workspaceProjectCards)[number]): void {
@@ -2139,6 +3343,103 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.iconsHydrated = false;
   }
 
+  toggleWorkspaceColumnMenu(): void {
+    this.workspaceColumnMenuOpen = !this.workspaceColumnMenuOpen;
+  }
+
+  closeWorkspaceColumnMenu(): void {
+    if (!this.workspaceColumnMenuOpen) return;
+    this.workspaceColumnMenuOpen = false;
+    this.changeDetector.markForCheck();
+  }
+
+  isWorkspaceTableColumnVisible(id: WorkspaceTableColumnId): boolean {
+    return this.visibleWorkspaceTableColumnIds.includes(id);
+  }
+
+  isWorkspaceTableColumnLocked(id: WorkspaceTableColumnId): boolean {
+    return this.visibleWorkspaceTableColumnIds.length === 1 && this.visibleWorkspaceTableColumnIds[0] === id;
+  }
+
+  workspaceTableColumnMotionState(id: WorkspaceTableColumnId): WorkspaceTableColumnMotionState {
+    return this.workspaceTableColumnMotionStates[id] || 'visible';
+  }
+
+  workspaceTableColumnWidth(id: WorkspaceTableColumnId): string {
+    const maxWidths: Record<WorkspaceTableColumnId, number> = {
+      project: 361.82,
+      stage: 129.758,
+      trend: 224.789,
+      manager: 248.102,
+      baselineStart: 216.883,
+      baselineEnd: 216.883,
+      budget: 194.648,
+      status: 122,
+    };
+    const minWidths: Record<WorkspaceTableColumnId, number> = {
+      project: 220,
+      stage: 96,
+      trend: 148,
+      manager: 180,
+      baselineStart: 140,
+      baselineEnd: 140,
+      budget: 150,
+      status: 108,
+    };
+    const totalVisibleWidth = this.visibleWorkspaceTableColumnIds.reduce((sum, columnId) => sum + maxWidths[columnId], 0) || 1;
+    const widthShare = (maxWidths[id] / totalVisibleWidth) * 100;
+    return `clamp(${minWidths[id]}px, ${widthShare.toFixed(3)}%, ${maxWidths[id].toFixed(3)}px)`;
+  }
+
+  workspaceTableMinWidth(): number {
+    const minWidths: Record<WorkspaceTableColumnId, number> = {
+      project: 220,
+      stage: 96,
+      trend: 148,
+      manager: 180,
+      baselineStart: 140,
+      baselineEnd: 140,
+      budget: 150,
+      status: 108,
+    };
+    return 48 + this.visibleWorkspaceTableColumnIds.reduce((sum, columnId) => sum + minWidths[columnId], 0);
+  }
+
+  toggleWorkspaceTableColumn(id: WorkspaceTableColumnId, event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    const shouldShow = Boolean(input?.checked);
+    const isVisible = this.isWorkspaceTableColumnVisible(id);
+    if (shouldShow === isVisible) return;
+
+    if (shouldShow) {
+      this.visibleWorkspaceTableColumnIds = this.normalizeWorkspaceTableColumns([...this.visibleWorkspaceTableColumnIds, id]);
+      this.showWorkspaceTableColumn(id);
+    } else {
+      if (this.isWorkspaceTableColumnLocked(id)) return;
+      this.visibleWorkspaceTableColumnIds = this.normalizeWorkspaceTableColumns(this.visibleWorkspaceTableColumnIds.filter((columnId) => columnId !== id));
+      this.hideWorkspaceTableColumn(id);
+    }
+
+    this.persistWorkspaceTableColumns();
+  }
+
+  resetWorkspaceTableColumns(): void {
+    const nextVisible = [...defaultWorkspaceTableColumnIds];
+    const nextVisibleSet = new Set(nextVisible);
+    for (const id of defaultWorkspaceTableColumnIds) {
+      if (!this.visibleWorkspaceTableColumnIds.includes(id)) {
+        this.showWorkspaceTableColumn(id);
+      }
+    }
+    for (const id of this.visibleWorkspaceTableColumnIds) {
+      if (!nextVisibleSet.has(id)) {
+        this.hideWorkspaceTableColumn(id);
+      }
+    }
+    this.visibleWorkspaceTableColumnIds = nextVisible;
+    this.persistWorkspaceTableColumns();
+  }
+
   filterKind(type: string): string {
     const normalized = type.toLowerCase();
     if (normalized.includes('risk')) return 'risk';
@@ -2190,6 +3491,51 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   reportDueText(report: { dueLabel: string }): string {
     return report.dueLabel === 'Overdue 5 days' ? 'Overdue by 5 days' : report.dueLabel;
+  }
+
+  private reportToneToken(status: string): string {
+    const normalized = status.toLowerCase();
+    if (normalized.includes('off')) return 'red';
+    if (normalized.includes('alert') || normalized.includes('attention') || normalized.includes('due') || normalized.includes('draft')) return 'amber';
+    return 'green';
+  }
+
+  reportTrendForTone(tone: string): string {
+    if (tone === 'red') return 'Declining';
+    if (tone === 'amber') return 'Needs attention';
+    return 'Improving';
+  }
+
+  private reportTimelineForTone(tone: string): ReportTimelinePoint[] {
+    const label = tone === 'red' ? 'Off track' : tone === 'amber' ? 'Alert/Discuss' : 'On track';
+    return this.pastOverviewTrend.map((date) => ({ date, tone, label }));
+  }
+
+  private reportBodyForSection(section: string): string {
+    const descriptions: Record<string, string> = {
+      Scope: 'Baseline, forecast, and delivery boundaries.',
+      Schedule: 'Milestones, stage progress, and forecast dates.',
+      Budget: 'Funding profile, burn, and approved controls.',
+      Benefits: 'Benefits evidence, owners, and realization signals.',
+      Risks: 'Threats, mitigations, and current exposure.',
+      Issues: 'Escalations, blockers, and decision points.',
+      Resource: 'Capacity, roles, and delivery coverage.',
+      Dependency: 'Cross-project handoffs, constraints, and owner follow-ups.',
+    };
+    return descriptions[section] || 'Capture the latest delivery signal for this reporting area.';
+  }
+
+  private formatSimpleReportDate(value: string): string {
+    if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(value)) {
+      const [day, month, year] = value.split('/').map(Number);
+      return new Intl.DateTimeFormat('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'UTC',
+      }).format(new Date(Date.UTC(year, month - 1, day)));
+    }
+    return value;
   }
 
   simplePlanTableConfig(field: SimplePlanField | ProjectPlanField): SimplePlanTableConfig {
@@ -2405,7 +3751,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   private stageGateContext(key: string | null): StageGateContext | null {
     if (!key) return null;
     const [project, stageId] = key.split('|');
-    const profile = stageProfiles.find((item) => item.project === project);
+    const profile = this.stageProfileForProject(project);
     const stageIndex = stageDefinitions.findIndex((stage) => stage.id === stageId);
     if (!profile || stageIndex < 0) return null;
     const status = this.stageStatus(profile, stageIndex);
@@ -2431,6 +3777,20 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     if (stageIndex < currentIndex) return 'complete';
     if (stageIndex === currentIndex) return 'current';
     return 'upcoming';
+  }
+
+  private stageProfileForProject(project: string): StageProfile | undefined {
+    const profile = stageProfiles.find((item) => item.project === project);
+    if (this.onboardingPm101Locked && project === firstAssignedProject.id && profile) {
+      return {
+        ...profile,
+        currentStage: 1,
+        tone: 'amber',
+        checkpoint: 'Project plan baseline and planning evidence',
+        checklist: ['Planning scope confirmed', 'Schedule baseline drafted', 'Budget assumptions captured', 'RAID owners assigned', 'Planning gate pack prepared'],
+      };
+    }
+    return profile;
   }
 
   private projectPlanEntryFromAction(entry: string | undefined): ProjectPlanEntry {
@@ -2569,7 +3929,12 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       pmoAssignmentReady: this.pmoAssignmentReady,
       guidedTourActive: this.guidedTourActive,
       guidedTourExitMode: this.guidedTourExitMode,
+      onboardingPm101Locked: this.onboardingPm101Locked,
     });
+  }
+
+  private isOnboardingPm101BlockedView(view: WorkspaceView | undefined): boolean {
+    return Boolean(this.onboardingPm101Locked && (view === 'board' || view === 'calendar' || view === 'stages'));
   }
 
   private loadPinnedQuickLinks(): string[] {
@@ -2589,6 +3954,23 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     }
   }
 
+  private loadWorkspaceTableColumns(): WorkspaceTableColumnId[] {
+    try {
+      const stored = window.localStorage.getItem(WORKSPACE_TABLE_COLUMN_STORAGE_KEY);
+      return this.normalizeWorkspaceTableColumns(stored ? JSON.parse(stored) : defaultWorkspaceTableColumnIds);
+    } catch {
+      return [...defaultWorkspaceTableColumnIds];
+    }
+  }
+
+  private persistWorkspaceTableColumns(): void {
+    try {
+      window.localStorage.setItem(WORKSPACE_TABLE_COLUMN_STORAGE_KEY, JSON.stringify(this.visibleWorkspaceTableColumnIds));
+    } catch {
+      // Ignore locked-down storage; in-memory preferences still work for this session.
+    }
+  }
+
   private showQuickLinksToast(message: string): void {
     this.quickLinksToast = message;
     this.iconsHydrated = false;
@@ -2605,6 +3987,70 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   private normalizePinnedQuickLinks(ids: string[]): string[] {
     const validIds = new Set(projectQuickActions.map((action) => action.id));
     return [...new Set(ids.filter((id) => validIds.has(id)))].slice(0, QUICK_LINK_PIN_LIMIT);
+  }
+
+  private createWorkspaceTableColumnMotionStates(ids: WorkspaceTableColumnId[]): Partial<Record<WorkspaceTableColumnId, WorkspaceTableColumnMotionState>> {
+    return ids.reduce<Partial<Record<WorkspaceTableColumnId, WorkspaceTableColumnMotionState>>>((states, id) => {
+      states[id] = 'visible';
+      return states;
+    }, {});
+  }
+
+  private showWorkspaceTableColumn(id: WorkspaceTableColumnId): void {
+    this.clearWorkspaceTableColumnAnimation(id);
+    this.renderedWorkspaceTableColumnIds = this.normalizeWorkspaceTableRenderedColumns([...this.renderedWorkspaceTableColumnIds, id]);
+    this.workspaceTableColumnMotionStates = {
+      ...this.workspaceTableColumnMotionStates,
+      [id]: 'entering',
+    };
+    this.workspaceTableColumnFrames[id] = window.requestAnimationFrame(() => {
+      this.workspaceTableColumnFrames[id] = undefined;
+      this.workspaceTableColumnMotionStates = {
+        ...this.workspaceTableColumnMotionStates,
+        [id]: 'visible',
+      };
+      this.changeDetector.markForCheck();
+    });
+  }
+
+  private hideWorkspaceTableColumn(id: WorkspaceTableColumnId): void {
+    this.clearWorkspaceTableColumnAnimation(id);
+    this.workspaceTableColumnMotionStates = {
+      ...this.workspaceTableColumnMotionStates,
+      [id]: 'exiting',
+    };
+    this.workspaceTableColumnTimers[id] = window.setTimeout(() => {
+      this.workspaceTableColumnTimers[id] = undefined;
+      this.renderedWorkspaceTableColumnIds = this.renderedWorkspaceTableColumnIds.filter((columnId) => columnId !== id);
+      const nextStates = { ...this.workspaceTableColumnMotionStates };
+      delete nextStates[id];
+      this.workspaceTableColumnMotionStates = nextStates;
+      this.changeDetector.markForCheck();
+    }, WORKSPACE_TABLE_COLUMN_MOTION_MS);
+  }
+
+  private clearWorkspaceTableColumnAnimation(id: WorkspaceTableColumnId): void {
+    const timer = this.workspaceTableColumnTimers[id];
+    if (timer) {
+      window.clearTimeout(timer);
+      this.workspaceTableColumnTimers[id] = undefined;
+    }
+    const frame = this.workspaceTableColumnFrames[id];
+    if (frame) {
+      window.cancelAnimationFrame(frame);
+      this.workspaceTableColumnFrames[id] = undefined;
+    }
+  }
+
+  private normalizeWorkspaceTableColumns(ids: WorkspaceTableColumnId[]): WorkspaceTableColumnId[] {
+    const requested = new Set(ids);
+    const normalized = defaultWorkspaceTableColumnIds.filter((id) => requested.has(id));
+    return normalized.length ? normalized : [...defaultWorkspaceTableColumnIds];
+  }
+
+  private normalizeWorkspaceTableRenderedColumns(ids: WorkspaceTableColumnId[]): WorkspaceTableColumnId[] {
+    const requested = new Set(ids);
+    return defaultWorkspaceTableColumnIds.filter((id) => requested.has(id));
   }
 
   private actionsFromIds(ids: string[]): QuickAction[] {
