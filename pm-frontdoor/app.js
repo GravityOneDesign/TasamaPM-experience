@@ -2193,7 +2193,10 @@ function icon(name) {
     logout: "log-out",
     columns: "columns-3",
     calendar: "calendar-days",
+    calendarBare: "calendar",
+    panels: "panels-top-left",
     timeline: "list-tree",
+    roundGraph: "radar",
     arrow: "chevron-right",
     compass: "compass",
     prev: "chevron-left",
@@ -3284,20 +3287,38 @@ function isActionView(view) {
   return view === "board" || view === "calendar";
 }
 
-function WorkspaceTabs(selectedView) {
-  const actionsActive = isActionView(selectedView);
-  const lockedActionAttrs = onboardingPm101Locked ? 'disabled aria-disabled="true" title="Available after PM 101 onboarding"' : "";
-  const lockedStageAttrs = onboardingPm101Locked ? 'disabled aria-disabled="true" title="Available after PM 101 onboarding"' : "";
+function WorkspaceTabs(selectedView, legacyPm101Tabs = false) {
+  const lockedAttrs = onboardingPm101Locked ? 'disabled aria-disabled="true" title="Available after PM 101 onboarding"' : "";
+  if (legacyPm101Tabs) {
+    const actionsActive = isActionView(selectedView);
+    return `
+      <div class="workspace-tabs" role="tablist" aria-label="Workspace view" data-tour-target="workspace-tabs">
+        <button class="${selectedView === "pm101" ? "active" : ""}" type="button" data-view-target="pm101" aria-selected="${selectedView === "pm101"}">
+          ${icon("book")} PM101
+        </button>
+        <button class="${actionsActive ? "active" : ""}" type="button" data-view-target="actions" aria-selected="${actionsActive}" ${lockedAttrs}>
+          ${icon("checklist")} Actions
+        </button>
+        <button class="${selectedView === "stages" ? "active" : ""}" type="button" data-view-target="stages" aria-selected="${selectedView === "stages"}" ${lockedAttrs}>
+          ${icon("timeline")} Stages
+        </button>
+      </div>
+    `;
+  }
+
   return `
     <div class="workspace-tabs" role="tablist" aria-label="Workspace view" data-tour-target="workspace-tabs">
       <button class="${selectedView === "pm101" ? "active" : ""}" type="button" data-view-target="pm101" aria-selected="${selectedView === "pm101"}">
-        ${icon("book")} PM101
+        ${icon("calendarBare")} PM101
       </button>
-      <button class="${actionsActive ? "active" : ""}" type="button" data-view-target="actions" aria-selected="${actionsActive}" ${lockedActionAttrs}>
-        ${icon("checklist")} Actions
+      <button class="${selectedView === "calendar" ? "active" : ""}" type="button" data-view-target="calendar" aria-selected="${selectedView === "calendar"}" ${lockedAttrs}>
+        ${icon("panels")} Calendar
       </button>
-      <button class="${selectedView === "stages" ? "active" : ""}" type="button" data-view-target="stages" aria-selected="${selectedView === "stages"}" ${lockedStageAttrs}>
-        ${icon("timeline")} Stages
+      <button class="${selectedView === "board" ? "active" : ""}" type="button" data-view-target="board" aria-selected="${selectedView === "board"}" ${lockedAttrs}>
+        ${icon("panels")} Board
+      </button>
+      <button class="${selectedView === "stages" ? "active" : ""}" type="button" data-view-target="stages" aria-selected="${selectedView === "stages"}" ${lockedAttrs}>
+        ${icon("roundGraph")} Stages
       </button>
     </div>
   `;
@@ -3520,37 +3541,44 @@ const pm101Steps = [
   {
     title: "Project assigned",
     body: "You’ll receive a PMO assignment notification.",
-    iconAsset: "./assets/pm101/icon-1.svg",
+    iconAsset: "./assets/pm101/figma-step-1.svg",
     decor: "burst",
     decorAssets: ["./assets/pm101/decor-1.svg"],
+    footerLabel: "Project assigned on",
+    footerValue: "Jul 25, 2026",
   },
   {
     title: "Build project plan",
     body: "Set scope, timeline, risks, and dependencies.",
-    iconAsset: "./assets/pm101/icon-2.svg",
+    iconAsset: "./assets/pm101/figma-step-2.svg",
     decor: "rings",
     decorAssets: ["./assets/pm101/decor-2.svg"],
-  },
-  {
-    title: "Submit for approval",
-    body: "Send your baseline for PMO review and endorsement.",
-    iconAsset: "./assets/pm101/icon-3.svg",
-    decor: "plus",
-    decorAssets: ["./assets/pm101/decor-3-group-1.svg", "./assets/pm101/decor-3-group-2.svg", "./assets/pm101/decor-3-group-3.svg", "./assets/pm101/decor-3-group-4.svg"],
+    footerAction: "Project Plan Created",
+    footerStandalone: true,
   },
   {
     title: "Manage delivery",
     body: "Track milestones, issues, and dependencies.",
-    iconAsset: "./assets/pm101/icon-4.svg",
+    iconAsset: "./assets/pm101/figma-step-3.svg",
     decor: "loops",
     decorAssets: ["./assets/pm101/decor-4.svg"],
+    footerAction: "Go to workspaces",
   },
   {
     title: "Report progress",
     body: "Submit PSRs and maintain delivery health.",
-    iconAsset: "./assets/pm101/icon-5.svg",
+    iconAsset: "./assets/pm101/figma-step-4.svg",
     decor: "hex",
     decorAssets: ["./assets/pm101/decor-5.svg"],
+    footerAction: "Create Report",
+  },
+  {
+    title: "Access Learning Hub",
+    body: "Understand & align with latest PIF guidelines.",
+    iconAsset: "./assets/pm101/figma-step-5.svg",
+    decor: "plus",
+    decorAssets: ["./assets/pm101/decor-3-group-1.svg", "./assets/pm101/decor-3-group-2.svg", "./assets/pm101/decor-3-group-3.svg", "./assets/pm101/decor-3-group-4.svg"],
+    footerIconOnly: true,
   },
 ];
 
@@ -3560,21 +3588,151 @@ function PM101Decor(step) {
     .join("")}</span>`;
 }
 
-function PM101View(selectedView) {
+function isPm101OperationalWorkspace(selectedProject, selectedView) {
+  return frontDoorMode === "assigned" && !pmoAssignmentReady && !onboardingPm101Locked && selectedView === "pm101" && isAllProjects(selectedProject);
+}
+
+function isPm101OnboardingWorkspaceFlow(selectedProject) {
+  return frontDoorMode === "assigned" && pmoAssignmentReady && !onboardingPm101Locked && selectedPage === "workspace" && isAllProjects(selectedProject);
+}
+
+function PM101JourneyHead() {
   return `
-    <div class="pm101-view ${selectedView === "pm101" ? "" : "is-hidden"}" data-work-view="pm101">
+    <div class="pm101-journey-head">
+      <span>What happens next?</span>
+      <h3>Your project management journey</h3>
+      <p>From assignment to regular reporting, these are the steps you will work through in TASAMA.</p>
+    </div>
+  `;
+}
+
+function PM101AssignmentBanner() {
+  return `
+    <article class="pm101-assignment-banner" aria-label="PM 101 assignment status">
+      <img class="pm101-assignment-banner-art" src="./assets/pm101-assignment-banner.png" alt="" aria-hidden="true" />
+      <div class="pm101-assignment-banner-copy">
+        <strong>Awaiting first assignment</strong>
+        <p>Your workspace is ready. PMO assignment will unlock project planning.</p>
+        <button class="pm101-assignment-pill" type="button" data-pm101-ready-trigger aria-label="Open first assigned project flow">
+          ${icon("bell")}
+          <span>Waiting for PMO assignment</span>
+        </button>
+      </div>
+      <span class="pm101-assignment-banner-icon" aria-hidden="true">
+        <img src="./assets/workspace-card-box-dark.svg" alt="" />
+      </span>
+    </article>
+  `;
+}
+
+function PM101ProjectStrip() {
+  return `
+    <div class="pm101-project-strip" aria-label="PM101 project overview">
+      <article class="pm101-project-card pm101-project-card-assigned">
+        <img class="pm101-project-card-art" src="./assets/pm101-vision-card-bg.jpg" alt="" aria-hidden="true" />
+        <span class="pm101-project-chip">New project assigned by PMO</span>
+        <strong>Vision 2030</strong>
+        <button class="pm101-project-cta" type="button" data-project-id="Vision 2030" data-page-target="workspace" data-workspace-view="calendar" aria-label="Go to Vision 2030 project">
+          <span>Go to Project</span>
+          <span class="pm101-project-cta-arrow" aria-hidden="true">${icon("arrow")}</span>
+        </button>
+      </article>
+      <article class="pm101-project-card pm101-project-card-active">
+        <img class="pm101-project-card-art" src="./assets/pm101-active-card-bg.jpg" alt="" aria-hidden="true" />
+        <span class="pm101-project-chip">Active Project</span>
+        <strong>NEOM Integration</strong>
+      </article>
+      <article class="pm101-project-card pm101-project-card-active">
+        <img class="pm101-project-card-art" src="./assets/pm101-active-card-bg.jpg" alt="" aria-hidden="true" />
+        <span class="pm101-project-chip">Active Project</span>
+        <strong>Project 3</strong>
+      </article>
+    </div>
+  `;
+}
+
+function PM101ReadyHeroGrid() {
+  return `
+    <div class="pm101-ready-hero-grid" aria-label="First assigned project overview">
+      <article class="pm101-ready-banner">
+        <img class="pm101-ready-banner-art" src="./assets/pm101-first-project-banner-bg.png" alt="" aria-hidden="true" />
+        <div class="pm101-ready-banner-copy">
+          <strong>Your first project is ready to plan!</strong>
+          <p>PMO assigned UAE Research Map to your workspace. Start with building the baseline project plan, then get it endorsed and start tracking progress!</p>
+        </div>
+      </article>
+      <article class="pm101-ready-project-card">
+        <img class="pm101-ready-project-card-art" src="./assets/pm101-first-project-card-bg.png" alt="" aria-hidden="true" />
+        <span class="pm101-ready-project-chip">New project assigned by PMO</span>
+        <strong class="pm101-ready-project-title">UAE Research Map</strong>
+        <button class="pm101-ready-project-cta" type="button" data-page-target="project-plan" data-project-id="${escapeHtml(firstAssignedProject.id)}" data-plan-entry="onboarding" aria-label="Create project plan for UAE Research Map">
+          <span>Create project plan</span>
+          <span class="pm101-ready-project-cta-arrow" aria-hidden="true">${icon("arrow")}</span>
+        </button>
+        <span class="pm101-ready-project-icon" aria-hidden="true">
+          <img src="./assets/workspace-card-box-dark.svg" alt="" />
+        </span>
+      </article>
+    </div>
+  `;
+}
+
+function PM101CardFooter(step) {
+  if (step.footerLabel && step.footerValue) {
+    return `
+      <div class="pm101-card-footer pm101-card-footer-meta">
+        <span>${escapeHtml(step.footerLabel)}</span>
+        <strong>${escapeHtml(step.footerValue)}</strong>
+      </div>
+    `;
+  }
+
+  if (step.footerAction) {
+    if (step.footerStandalone) {
+      return `
+        <div class="pm101-card-footer pm101-card-footer-link pm101-card-footer-text-only">
+          <span>${escapeHtml(step.footerAction)}</span>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="pm101-card-footer pm101-card-footer-link">
+        <span>${escapeHtml(step.footerAction)}</span>
+        <span class="pm101-card-footer-arrow" aria-hidden="true">${icon("arrow")}</span>
+      </div>
+    `;
+  }
+
+  if (step.footerIconOnly) {
+    return `
+      <div class="pm101-card-footer pm101-card-footer-icon-only">
+        <span class="pm101-card-footer-arrow" aria-hidden="true">${icon("arrow")}</span>
+      </div>
+    `;
+  }
+
+  return "";
+}
+
+function PM101View(selectedView, isOperationalWorkspace = false, isAssignmentReadyWorkspace = false) {
+  return `
+    <div class="pm101-view ${isOperationalWorkspace ? "pm101-operational-view" : ""} ${selectedView === "pm101" ? "" : "is-hidden"}" data-work-view="pm101">
+      ${onboardingPm101Locked ? `${PM101AssignmentBanner()}${PM101JourneyHead()}` : ""}
+      ${isAssignmentReadyWorkspace ? `${PM101ReadyHeroGrid()}${PM101JourneyHead()}` : ""}
+      ${isOperationalWorkspace ? `${PM101ProjectStrip()}${PM101JourneyHead()}` : ""}
       <div class="pm101-flow" aria-label="PM 101 project delivery flow">
         <ol class="pm101-step-list">
           ${pm101Steps
             .map(
-              (step, index) => `
+              (step) => `
                 <li class="pm101-step">
                   <article class="pm101-card">
                     <span class="pm101-card-icon"><img class="pm101-card-icon-asset" src="${escapeHtml(step.iconAsset)}" alt="" /></span>
                     <strong>${escapeHtml(step.title)}</strong>
                     <p>${escapeHtml(step.body)}</p>
                     ${PM101Decor(step)}
-                    <span class="pm101-step-number" aria-hidden="true">${index + 1}</span>
+                    ${PM101CardFooter(step)}
                   </article>
                 </li>
               `
@@ -3587,35 +3745,66 @@ function PM101View(selectedView) {
 }
 
 function WorkspacePanel(selectedProject, selectedView, selectedRange, selectedBoardFilter, selectedCalendarMonth) {
-  const workspaceTitle = onboardingPm101Locked
-    ? "Operational Workspace"
+  const isOperationalWorkspace = isPm101OperationalWorkspace(selectedProject, selectedView);
+  const isAssignmentReadyWorkspace = isPm101OnboardingWorkspaceFlow(selectedProject);
+  const isPm101Shell = onboardingPm101Locked || isOperationalWorkspace || isAssignmentReadyWorkspace;
+  const workspaceTitle = isPm101Shell
+    ? "Welcome!"
     : isAllProjects(selectedProject)
     ? "Operational Workspace"
     : `${projectName(selectedProject)} | Operational Workspace`;
+  const workspaceSubtitle = "Plan this month, clear overdue work, and track stage-gates without opening every project.";
+  const headClasses = ["workspace-shell-head"];
+  if (isPm101Shell) headClasses.push("pm101-locked-shell-head");
+  if (isOperationalWorkspace) headClasses.push("pm101-operational-shell-head");
 
-  return `
-    <section class="workspace-panel ${!isAllProjects(selectedProject) && !onboardingPm101Locked ? "project-workspace-panel" : ""} ${onboardingPm101Locked ? "pm101-locked-workspace" : ""}">
-      <div class="workspace-shell-head">
+  const workspaceHead = isPm101Shell
+    ? `
+        <img class="workspace-line-art" src="./assets/workspace-line-art.svg" alt="" aria-hidden="true" />
+        <div class="workspace-shell-actions" aria-label="Workspace utilities">
+          <button class="workspace-filter-button" type="button" aria-label="Refresh workspace">
+            ${icon("refresh")}
+          </button>
+          <button class="workspace-filter-button" type="button" aria-label="Expand workspace">
+            ${icon("fullscreen")}
+          </button>
+        </div>
+        <div class="workspace-locked-title-row">
+          <span class="workspace-pane-icon" aria-hidden="true">
+            <img src="./assets/pane-top-icon.svg" alt="" />
+          </span>
+          <div class="workspace-title">
+            <h2>${escapeHtml(workspaceTitle)}</h2>
+            <p>${escapeHtml(workspaceSubtitle)}</p>
+          </div>
+        </div>
+      `
+    : `
         <div class="workspace-title">
           <h2>${escapeHtml(workspaceTitle)}</h2>
-          <p>Plan this month, clear overdue work, and track stage-gates without opening every project.</p>
+          <p>${escapeHtml(workspaceSubtitle)}</p>
         </div>
         ${AIInsightsWidget(selectedProject)}
-        ${WorkspaceTabs(selectedView)}
+      `;
+
+  return `
+    <section class="workspace-panel ${!isAllProjects(selectedProject) && !isPm101Shell ? "project-workspace-panel" : ""} ${isPm101Shell ? "pm101-locked-workspace" : ""} ${isOperationalWorkspace ? "pm101-operational-workspace" : ""}">
+      <div class="${headClasses.join(" ")}">
+        ${workspaceHead}
+        ${WorkspaceTabs(selectedView, onboardingPm101Locked || isAssignmentReadyWorkspace)}
       </div>
       ${
-        selectedView === "stages"
+        selectedView === "stages" || selectedView === "pm101"
           ? ""
           : `<div class="workspace-control-row">
           ${WorkspaceSearch(selectedView)}
-          ${ActionViewSwitch(selectedView)}
         </div>
       `
       }
       <div class="workspace-body">
         ${BoardView(selectedProject, selectedView, selectedBoardFilter)}
         ${CalendarView(selectedProject, selectedView, selectedBoardFilter, selectedCalendarMonth)}
-        ${PM101View(selectedView)}
+        ${PM101View(selectedView, isOperationalWorkspace, isAssignmentReadyWorkspace)}
         ${StagesView(selectedProject, selectedView)}
       </div>
     </section>
@@ -4909,25 +5098,81 @@ function projectPlanPlaceholder(field) {
   return `Enter ${field.field.toLowerCase()}`;
 }
 
-function LockedEmptyReportWidget() {
+function LockedReportIllustration() {
   return `
-    <section class="side-card report-widget locked-empty-report-widget" data-tour-target="right-report-widget">
+    <div class="locked-report-illustration" aria-hidden="true">
+      <article class="locked-report-card locked-report-card-vision">
+        <div class="locked-report-card-head">
+          <strong>Vision 2030</strong>
+          <span class="locked-report-chip off-track">Off track</span>
+        </div>
+        <div class="locked-report-status-bar">
+          <span>${icon("alert")}<small>Mar</small></span>
+          <span>${icon("check")}<small>Apr</small></span>
+          <span>${icon("close")}<small>May</small></span>
+        </div>
+        <div class="locked-report-card-foot">
+          <span class="locked-report-foot-copy">${icon("history")}<small>Overdue by 5 days</small></span>
+          <span class="locked-report-create">${icon("plan")}<small>Create</small></span>
+        </div>
+      </article>
+      <article class="locked-report-card locked-report-card-neom">
+        <div class="locked-report-card-head">
+          <strong>NEOM Integration</strong>
+          <span class="locked-report-chip on-track">On track</span>
+        </div>
+        <div class="locked-report-status-bar compact">
+          <span>${icon("check")}<small>Mar</small></span>
+          <span>${icon("alert")}<small>Apr</small></span>
+          <span>${icon("close")}<small>May</small></span>
+        </div>
+        <div class="locked-report-card-foot">
+          <span class="locked-report-foot-copy">${icon("history")}<small>Overdue by 5 days</small></span>
+          <span class="locked-report-create">${icon("plan")}<small>Create</small></span>
+        </div>
+      </article>
+      <div class="locked-report-magnifier">
+        <span class="locked-report-chip on-track">On track</span>
+      </div>
+      <div class="locked-report-timeline">
+        <span>${icon("check")}<small>Mar</small></span>
+        <span>${icon("alert")}<small>Apr</small></span>
+        <span>${icon("close")}<small>May</small></span>
+      </div>
+    </div>
+  `;
+}
+
+function LockedEmptyReportWidget(isReady = false) {
+  return `
+    <section class="side-card report-widget locked-empty-report-widget ${isReady ? "pm101-ready-report-widget" : ""}" data-tour-target="right-report-widget">
       <div class="report-widget-head">
         <div>
-          <h2>Project report trend</h2>
-          <small>Last 3 PSR statuses</small>
+          <h2>Reporting trends</h2>
+          <small>View latest status reports here</small>
         </div>
       </div>
-      <div class="report-trend-list" aria-hidden="true"></div>
+      ${LockedReportIllustration()}
+      <div class="locked-report-copy">
+        <strong>You haven't reach reporting yet</strong>
+        <p>Once you have active projects and start reporting progress - your reporting trends &amp; upcoming reports will appear in this section</p>
+      </div>
     </section>
   `;
 }
 
-function RightRail(selectedProject) {
+function RightRail(selectedProject, selectedView) {
   if (onboardingPm101Locked) {
     return `
       ${TopDeck(true)}
       ${LockedEmptyReportWidget()}
+    `;
+  }
+
+  if (isPm101OnboardingWorkspaceFlow(selectedProject)) {
+    return `
+      ${TopDeck(false)}
+      ${LockedEmptyReportWidget(true)}
     `;
   }
 
@@ -6026,11 +6271,13 @@ function App(
   const isProjectPlan = selectedPage === "project-plan";
   const isWorkspaces = selectedPage === "workspaces";
   const isUnassigned = frontDoorMode === "unassigned";
+  const isOperationalPm101 = isPm101OperationalWorkspace(selectedProject, selectedView);
+  const isAssignmentReadyPm101 = isPm101OnboardingWorkspaceFlow(selectedProject);
   return `
     <div class="modern-shell ${isPlayground ? "playground-mode" : ""} ${isWbs ? "wbs-mode" : ""} ${isProjectPlan ? "project-plan-mode" : ""} ${isUnassigned ? "unassigned-mode" : ""}">
       ${AppHeader(selectedProject, notificationPanelOpen, selectedPage, frontDoorMode)}
       ${Sidebar(selectedPage, frontDoorMode)}
-      <main class="app-canvas ${isPlayground ? "playground-canvas" : ""} ${isWbs ? "wbs-canvas" : ""} ${isProjectPlan ? "project-plan-canvas" : ""} ${isWorkspaces ? "workspaces-canvas" : ""} ${isUnassigned ? "unassigned-canvas" : ""} ${onboardingPm101Locked ? "pm101-locked-canvas" : ""}">
+      <main class="app-canvas ${isPlayground ? "playground-canvas" : ""} ${isWbs ? "wbs-canvas" : ""} ${isProjectPlan ? "project-plan-canvas" : ""} ${isWorkspaces ? "workspaces-canvas" : ""} ${isUnassigned ? "unassigned-canvas" : ""} ${onboardingPm101Locked || isOperationalPm101 || isAssignmentReadyPm101 ? "pm101-locked-canvas" : ""} ${isOperationalPm101 ? "pm101-operational-canvas" : ""}">
         ${
           isUnassigned
             ? UnassignedFrontDoor()
@@ -6042,12 +6289,12 @@ function App(
                 ? ProjectPlanPage(selectedProject, projectPlanEntryPoint)
                 : isWorkspaces
                   ? WorkspacesPage()
-                : `<div class="content-grid ${onboardingPm101Locked ? "pm101-locked-grid" : ""}">
+                : `<div class="content-grid ${onboardingPm101Locked || isOperationalPm101 || isAssignmentReadyPm101 ? "pm101-locked-grid" : ""} ${isOperationalPm101 ? "pm101-operational-grid" : ""}">
                 <div class="left-column">
                   ${WorkspacePanel(selectedProject, selectedView, selectedRange, selectedBoardFilter, selectedCalendarMonth)}
                 </div>
-                <div class="right-column ${isAllProjects(selectedProject) || onboardingPm101Locked ? "portfolio-frontdoor" : "project-frontdoor"} ${onboardingPm101Locked ? "pm101-locked-right" : ""}">
-                  ${RightRail(selectedProject)}
+                <div class="right-column ${isAllProjects(selectedProject) || onboardingPm101Locked ? "portfolio-frontdoor" : "project-frontdoor"} ${onboardingPm101Locked || isAssignmentReadyPm101 ? "pm101-locked-right" : ""}">
+                  ${RightRail(selectedProject, selectedView)}
                 </div>
               </div>`
         }
@@ -6232,7 +6479,7 @@ function initOnboardingPage() {
   document.querySelectorAll("[data-onboarding-finish]").forEach((button) => {
     button.addEventListener("click", () => {
       const startsTour = button.dataset.onboardingFinish === "tour";
-      enterFrontDoor(startsTour ? "all" : "Vision 2030", startsTour, "assigned", startsTour ? "pm101-lock" : null);
+      enterFrontDoor("all", startsTour, "assigned", startsTour ? "pm101-lock" : null);
     });
   });
 }
@@ -6264,7 +6511,7 @@ function completeGuidedTour() {
     onboardingPm101Locked = true;
     selectedPage = "workspace";
     projectPlanEntryPoint = "quick";
-    selectedProject = firstAssignedProject.id;
+    selectedProject = "all";
     selectedView = "pm101";
     selectedBoardFilter = "all";
     selectedStageGate = null;
@@ -6359,6 +6606,20 @@ function initPmoAssignmentPreview() {
     pmoAssignmentReady = true;
     selectedProject = firstAssignedProject.id;
     selectedPage = "workspace";
+    selectedStageGate = null;
+    selectedReportProject = null;
+    selectedPlaygroundDrawer = null;
+    notificationPanelOpen = false;
+    renderApp();
+  });
+
+  document.querySelector("[data-pm101-ready-trigger]")?.addEventListener("click", () => {
+    pmoAssignmentReady = true;
+    onboardingPm101Locked = false;
+    frontDoorMode = "assigned";
+    selectedProject = "all";
+    selectedPage = "workspace";
+    selectedView = "pm101";
     selectedStageGate = null;
     selectedReportProject = null;
     selectedPlaygroundDrawer = null;

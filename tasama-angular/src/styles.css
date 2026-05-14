@@ -6348,6 +6348,121 @@ p {
   width: 24px;
 }
 
+.pm101-project-strip {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 100%;
+}
+
+.pm101-project-card {
+  border-radius: 12px;
+  box-shadow:
+    0 1px 1px rgba(1, 10, 15, 0.04),
+    0 2px 4px rgba(1, 10, 15, 0.12);
+  height: 144px;
+  overflow: hidden;
+  padding: 16px;
+  position: relative;
+}
+
+.pm101-project-card::after {
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.pm101-project-card-assigned::after {
+  background: linear-gradient(245.91deg, rgba(11, 11, 11, 0) 2.78%, rgba(11, 11, 11, 0.5) 98.05%);
+}
+
+.pm101-project-card-active::after {
+  background: linear-gradient(270deg, rgba(16, 6, 159, 0.5) 0%, rgba(6, 2, 57, 0.5) 97.34%);
+  mix-blend-mode: multiply;
+}
+
+.pm101-project-card-art {
+  display: block;
+  height: 100%;
+  inset: 0;
+  max-width: none;
+  object-fit: cover;
+  position: absolute;
+  width: 100%;
+}
+
+.pm101-project-chip,
+.pm101-project-card > strong,
+.pm101-project-cta {
+  position: relative;
+  z-index: 1;
+}
+
+.pm101-project-chip {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  color: #ffffff;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  padding: 4px 8px;
+}
+
+.pm101-project-card > strong {
+  color: #ffffff;
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  margin-top: 12px;
+  max-width: 180px;
+}
+
+.pm101-project-cta {
+  align-items: center;
+  appearance: none;
+  background: #ffffff;
+  border: 0;
+  border-radius: 999px;
+  bottom: 16px;
+  color: #0b0b0b;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  gap: 8px;
+  min-height: 40px;
+  padding: 4px 4px 4px 16px;
+  position: absolute;
+  right: 16px;
+}
+
+.pm101-project-cta span:first-child {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.pm101-project-cta-arrow {
+  align-items: center;
+  background: #addc91;
+  border-radius: 99px;
+  color: #0b0b0b;
+  display: inline-flex;
+  height: 24px;
+  justify-content: center;
+  width: 24px;
+}
+
+.pm101-project-cta-arrow .icon,
+.pm101-project-cta-arrow i {
+  display: block;
+  height: 16px;
+  width: 16px;
+}
+
 .pm101-journey-head span {
   color: #848b98;
   display: block;
@@ -6583,6 +6698,186 @@ p {
 
 .pm101-decor-plus .pm101-decor-asset-4 {
   left: 70.04%;
+}
+
+.pm101-operational-canvas {
+  padding-right: 22px;
+}
+
+.content-grid.pm101-operational-grid {
+  align-content: start;
+  grid-template-columns: minmax(0, 1fr) 344px;
+}
+
+.pm101-operational-grid .left-column {
+  align-self: start;
+  max-width: none;
+}
+
+.pm101-operational-workspace {
+  flex: 0 0 auto;
+  height: 717px;
+  max-height: 100%;
+  min-height: 0;
+}
+
+.pm101-operational-shell-head {
+  background: rgba(16, 6, 159, 0.1);
+  flex-basis: 156px;
+  padding: 16px 16px 0 12px;
+}
+
+.pm101-operational-shell-head .workspace-shell-actions {
+  gap: 8px;
+  right: 16px;
+  top: 16px;
+}
+
+.pm101-operational-shell-head .workspace-filter-button {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.pm101-operational-shell-head .workspace-title h2 {
+  font-size: 18px;
+  line-height: 24px;
+}
+
+.pm101-operational-shell-head .workspace-title p {
+  color: #2f2f2f;
+  margin-top: 8px;
+}
+
+.pm101-operational-shell-head .workspace-tabs {
+  left: 16px;
+}
+
+.pm101-operational-shell-head .workspace-tabs button {
+  font-size: 14px;
+  gap: 8px;
+  height: 44px;
+  line-height: 20px;
+  padding: 0 24px;
+  width: auto;
+}
+
+.pm101-operational-workspace .workspace-body {
+  padding: 0 16px;
+}
+
+.pm101-operational-view {
+  gap: 0;
+  padding-top: 28px;
+}
+
+.pm101-operational-view .pm101-journey-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 30px;
+}
+
+.pm101-operational-view .pm101-journey-head span {
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 16px;
+}
+
+.pm101-operational-view .pm101-journey-head h3 {
+  font-size: 18px;
+  line-height: 24px;
+  margin: 0;
+}
+
+.pm101-operational-view .pm101-journey-head p {
+  margin: 0;
+}
+
+.pm101-operational-view .pm101-flow {
+  margin-left: -16px;
+  margin-right: -16px;
+  margin-top: 16px;
+  min-height: 275px;
+  width: calc(100% + 32px);
+}
+
+.pm101-operational-view .pm101-step-list {
+  min-height: 275px;
+}
+
+.pm101-operational-view .pm101-card {
+  background: #ffffff;
+  box-shadow: none;
+  gap: 12px;
+  min-height: 275px;
+  padding: 16px;
+}
+
+.pm101-operational-view .pm101-card > strong {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.pm101-operational-view .pm101-card > p {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.pm101-operational-view .pm101-card-footer-meta span {
+  color: #777777;
+  font-size: 11px;
+  font-style: italic;
+  line-height: 16px;
+}
+
+.pm101-operational-view .pm101-card-footer-meta strong,
+.pm101-operational-view .pm101-card-footer-link span:first-child {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.pm101-card-footer-text-only {
+  align-items: flex-start;
+}
+
+.pm101-operational-view .pm101-card-footer {
+  left: 16px;
+  margin-top: 0;
+  position: absolute;
+}
+
+.pm101-operational-view .pm101-card-footer-meta {
+  top: 188px;
+}
+
+.pm101-operational-view .pm101-card-footer-link {
+  top: 176px;
+}
+
+.pm101-operational-view .pm101-card-footer-icon-only {
+  top: 200px;
+}
+
+.pm101-operational-view .pm101-card-footer-link {
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pm101-operational-view .pm101-card-footer-text-only {
+  flex-direction: row;
+  top: 188px;
+}
+
+.pm101-operational-view .pm101-card-footer-arrow {
+  height: 24px;
+  width: 24px;
+}
+
+.pm101-operational-view .pm101-decor {
+  bottom: -32px;
+  height: 120px;
+  opacity: 0.42;
+  right: -33px;
+  width: 120px;
 }
 
 .view-toolbar {
@@ -20813,6 +21108,10 @@ p {
     height: auto;
   }
 
+  .content-grid.pm101-locked-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .pm-projects-page {
     grid-template-columns: minmax(0, 1fr);
     height: auto;
@@ -22052,6 +22351,116 @@ p {
 
   .right-column {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .pm101-locked-shell-head {
+    flex-basis: 168px;
+  }
+
+  .workspace-locked-title-row {
+    align-items: flex-start;
+    gap: 10px;
+    max-width: calc(100% - 86px);
+  }
+
+  .workspace-pane-icon {
+    border-radius: 10px;
+    height: 56px;
+    width: 56px;
+  }
+
+  .project-switch {
+    overflow: hidden;
+  }
+
+  .workspace-line-art {
+    display: none;
+  }
+
+  .pm101-locked-shell-head .workspace-title h2 {
+    font-size: 26px;
+    line-height: 32px;
+  }
+
+  .pm101-locked-shell-head .workspace-title p {
+    font-size: 11px;
+    line-height: 15px;
+  }
+
+  .pm101-locked-shell-head .workspace-tabs button {
+    gap: 5px;
+    padding: 0 10px;
+  }
+
+  .workspace-tabs button[data-view-target="actions"],
+  .workspace-tabs button[data-view-target="pm101"],
+  .workspace-tabs button[data-view-target="stages"] {
+    width: 96px;
+  }
+
+  .pm101-operational-shell-head .workspace-tabs {
+    max-width: calc(100vw - 32px);
+    overflow-x: auto;
+  }
+
+  .pm101-operational-shell-head .workspace-tabs button {
+    flex: 0 0 auto;
+    font-size: 12px;
+    height: 40px;
+    padding: 0 12px;
+    width: auto;
+  }
+
+  .pm101-operational-workspace {
+    height: auto;
+    max-height: none;
+  }
+
+  .pm101-project-strip {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pm101-operational-view .pm101-flow {
+    margin-left: -16px;
+    margin-right: -16px;
+  }
+
+  .pm101-operational-view .pm101-card {
+    min-height: 240px;
+  }
+
+  .pm101-operational-view .pm101-card-footer {
+    bottom: 16px;
+    top: auto;
+  }
+
+  .pm101-operational-view .pm101-card-footer-link {
+    bottom: 24px;
+  }
+
+  .pm101-ready-banner-copy {
+    left: 20px;
+    right: 20px;
+  }
+
+  .pm101-ready-banner-copy strong {
+    font-size: 17px;
+    line-height: 23px;
+  }
+
+  .pm101-step-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pm101-card > strong,
+  .pm101-card > p {
+    max-width: calc(100% - 76px);
+  }
+
+  .pm101-decor {
+    right: -16px;
   }
 }
 

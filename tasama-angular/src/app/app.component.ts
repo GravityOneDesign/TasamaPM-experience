@@ -36,7 +36,7 @@ export class AppComponent {
       authenticated: true,
       projectId: 'all',
       selectedPage: 'workspace',
-      selectedView: 'calendar',
+      selectedView: 'pm101',
       frontDoorMode: 'assigned',
     });
   }
@@ -60,9 +60,9 @@ export class AppComponent {
   proceedToFrontDoor(): void {
     this.mountConsole({
       authenticated: true,
-      projectId: 'Vision 2030',
+      projectId: 'all',
       selectedPage: 'workspace',
-      selectedView: 'calendar',
+      selectedView: 'pm101',
       frontDoorMode: 'assigned',
     });
   }

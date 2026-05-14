@@ -2189,6 +2189,7 @@ interface Pm101Step {
   footerLabel?: string;
   footerValue?: string;
   footerAction?: string;
+  footerStandalone?: boolean;
   footerIconOnly?: boolean;
 }
 
@@ -2214,7 +2215,7 @@ const pm101Steps: Pm101Step[] = [
   {
     title: 'Project assigned',
     body: 'You’ll receive a PMO assignment notification.',
-    iconAsset: './assets/pm101/icon-1.svg',
+    iconAsset: './assets/pm101/figma-step-1.svg',
     decor: 'burst',
     decorAssets: ['./assets/pm101/decor-1.svg'],
     footerLabel: 'Project assigned on',
@@ -2223,33 +2224,34 @@ const pm101Steps: Pm101Step[] = [
   {
     title: 'Build project plan',
     body: 'Set scope, timeline, risks, and dependencies.',
-    iconAsset: './assets/pm101/icon-2.svg',
+    iconAsset: './assets/pm101/figma-step-2.svg',
     decor: 'rings',
     decorAssets: ['./assets/pm101/decor-2.svg'],
-    footerAction: 'Create project plan',
+    footerAction: 'Project Plan Created',
+    footerStandalone: true,
   },
   {
     title: 'Manage delivery',
     body: 'Track milestones, issues, and dependencies.',
-    iconAsset: './assets/pm101/icon-3.svg',
-    decor: 'plus',
-    decorAssets: ['./assets/pm101/decor-3-group-1.svg', './assets/pm101/decor-3-group-2.svg', './assets/pm101/decor-3-group-3.svg', './assets/pm101/decor-3-group-4.svg'],
+    iconAsset: './assets/pm101/figma-step-3.svg',
+    decor: 'loops',
+    decorAssets: ['./assets/pm101/decor-4.svg'],
     footerAction: 'Go to workspaces',
   },
   {
     title: 'Report progress',
     body: 'Submit PSRs and maintain delivery health.',
-    iconAsset: './assets/pm101/icon-4.svg',
-    decor: 'loops',
-    decorAssets: ['./assets/pm101/decor-4.svg'],
+    iconAsset: './assets/pm101/figma-step-4.svg',
+    decor: 'hex',
+    decorAssets: ['./assets/pm101/decor-5.svg'],
     footerAction: 'Create Report',
   },
   {
     title: 'Access Learning Hub',
     body: 'Understand & align with latest PIF guidelines.',
-    iconAsset: './assets/pm101/icon-5.svg',
-    decor: 'hex',
-    decorAssets: ['./assets/pm101/decor-5.svg'],
+    iconAsset: './assets/pm101/figma-step-5.svg',
+    decor: 'plus',
+    decorAssets: ['./assets/pm101/decor-3-group-1.svg', './assets/pm101/decor-3-group-2.svg', './assets/pm101/decor-3-group-3.svg', './assets/pm101/decor-3-group-4.svg'],
     footerIconOnly: true,
   },
 ];
@@ -2278,7 +2280,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="app-canvas" [class.workspaces-canvas]="selectedPage === 'workspaces'" [class.wbs-canvas]="selectedPage === 'wbs'" [class.project-plan-canvas]="selectedPage === 'project-plan'" [class.playground-canvas]="selectedPage === 'playground'" [class.unassigned-canvas]="frontDoorMode === 'unassigned'" [class.pm101-locked-canvas]="onboardingPm101Locked || isPm101OnboardingWorkspaceFlow">
+    <main class="app-canvas" [class.workspaces-canvas]="selectedPage === 'workspaces'" [class.wbs-canvas]="selectedPage === 'wbs'" [class.project-plan-canvas]="selectedPage === 'project-plan'" [class.playground-canvas]="selectedPage === 'playground'" [class.unassigned-canvas]="frontDoorMode === 'unassigned'" [class.pm101-locked-canvas]="onboardingPm101Locked || isPm101WelcomeWorkspace" [class.pm101-operational-canvas]="isNormalPm101Workspace">
       @switch (selectedPage) {
         @case ('workspaces') {
           <section class="pm-projects-page" [class.table-mode]="!isWorkspaceCardMode" [class.card-mode]="isWorkspaceCardMode" [attr.aria-label]="workspaceRegisterAriaLabel">
@@ -5645,11 +5647,11 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
               </div>
             </section>
           } @else {
-            <div class="content-grid" [class.pm101-locked-grid]="onboardingPm101Locked || isPm101OnboardingWorkspaceFlow">
+            <div class="content-grid" [class.pm101-locked-grid]="onboardingPm101Locked || isPm101WelcomeWorkspace" [class.pm101-operational-grid]="isNormalPm101Workspace">
               <div class="left-column">
-                <section class="workspace-panel" [class.project-workspace-panel]="!isAllProjects && !onboardingPm101Locked && !isPm101OnboardingWorkspaceFlow" [class.board-workspace-panel]="selectedView === 'board'" [class.pm101-locked-workspace]="onboardingPm101Locked || isPm101OnboardingWorkspaceFlow">
-                  <div class="workspace-shell-head" [class.pm101-locked-shell-head]="onboardingPm101Locked || isPm101OnboardingWorkspaceFlow" [class.pm101-ready-shell-head]="isPm101OnboardingWorkspaceFlow">
-                    @if (onboardingPm101Locked || isPm101OnboardingWorkspaceFlow) {
+                <section class="workspace-panel" [class.project-workspace-panel]="!isAllProjects && !onboardingPm101Locked && !isPm101WelcomeWorkspace" [class.board-workspace-panel]="selectedView === 'board'" [class.pm101-locked-workspace]="onboardingPm101Locked || isPm101WelcomeWorkspace" [class.pm101-operational-workspace]="isNormalPm101Workspace">
+                  <div class="workspace-shell-head" [class.pm101-locked-shell-head]="onboardingPm101Locked || isPm101WelcomeWorkspace" [class.pm101-operational-shell-head]="isNormalPm101Workspace">
+                    @if (onboardingPm101Locked || isPm101WelcomeWorkspace) {
                       <img class="workspace-line-art" src="./assets/workspace-line-art.svg" alt="" aria-hidden="true" />
                       <div class="workspace-shell-actions" aria-label="Workspace utilities">
                         <button class="workspace-filter-button" type="button" aria-label="Refresh workspace">
@@ -5689,64 +5691,95 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                       </aside>
                     }
                     <div class="workspace-tabs" role="tablist" aria-label="Workspace view" data-tour-target="workspace-tabs">
-                      <button
-                        [class.active]="selectedView === 'pm101'"
-                        type="button"
-                        data-view-target="pm101"
-                        [attr.aria-selected]="selectedView === 'pm101'"
-                        (click)="setView('pm101')"
-                      >
-                        <span class="icon" aria-hidden="true"><i data-lucide="book-open"></i></span>
-                        <span>PM101</span>
-                      </button>
-                      <button
-                        [class.active]="isActionWorkspaceActive"
-                        [class.is-locked]="onboardingPm101Locked"
-                        type="button"
-                        data-view-target="actions"
-                        [attr.aria-selected]="isActionWorkspaceActive"
-                        (click)="setView(topActionWorkspaceView)"
-                        [disabled]="onboardingPm101Locked"
-                        [attr.aria-disabled]="onboardingPm101Locked ? 'true' : null"
-                        [attr.title]="onboardingPm101Locked ? 'Available after PM 101 onboarding' : null"
-                      >
-                        <span class="icon" aria-hidden="true"><i data-lucide="check-square"></i></span>
-                        <span>Actions</span>
-                      </button>
-                      <button
-                        [class.active]="selectedView === 'stages'"
-                        [class.is-locked]="onboardingPm101Locked"
-                        type="button"
-                        data-view-target="stages"
-                        [attr.aria-selected]="selectedView === 'stages'"
-                        (click)="setView('stages')"
-                        [disabled]="onboardingPm101Locked"
-                        [attr.aria-disabled]="onboardingPm101Locked ? 'true' : null"
-                        [attr.title]="onboardingPm101Locked ? 'Available after PM 101 onboarding' : null"
-                      >
-                        <span class="icon" aria-hidden="true"><i data-lucide="list-tree"></i></span>
-                        <span>Stages</span>
-                      </button>
+                      @if (onboardingPm101Locked || isPm101OnboardingWorkspaceFlow) {
+                        <button
+                          [class.active]="selectedView === 'pm101'"
+                          type="button"
+                          data-view-target="pm101"
+                          [attr.aria-selected]="selectedView === 'pm101'"
+                          (click)="setView('pm101')"
+                        >
+                          <span class="icon" aria-hidden="true"><i data-lucide="book-open"></i></span>
+                          <span>PM101</span>
+                        </button>
+                        <button
+                          [class.active]="isActionWorkspaceActive"
+                          [class.is-locked]="onboardingPm101Locked"
+                          type="button"
+                          data-view-target="actions"
+                          [attr.aria-selected]="isActionWorkspaceActive"
+                          (click)="setView(topActionWorkspaceView)"
+                          [disabled]="onboardingPm101Locked"
+                          [attr.aria-disabled]="onboardingPm101Locked ? 'true' : null"
+                          [attr.title]="onboardingPm101Locked ? 'Available after PM 101 onboarding' : null"
+                        >
+                          <span class="icon" aria-hidden="true"><i data-lucide="check-square"></i></span>
+                          <span>Actions</span>
+                        </button>
+                        <button
+                          [class.active]="selectedView === 'stages'"
+                          [class.is-locked]="onboardingPm101Locked"
+                          type="button"
+                          data-view-target="stages"
+                          [attr.aria-selected]="selectedView === 'stages'"
+                          (click)="setView('stages')"
+                          [disabled]="onboardingPm101Locked"
+                          [attr.aria-disabled]="onboardingPm101Locked ? 'true' : null"
+                          [attr.title]="onboardingPm101Locked ? 'Available after PM 101 onboarding' : null"
+                        >
+                          <span class="icon" aria-hidden="true"><i data-lucide="list-tree"></i></span>
+                          <span>Stages</span>
+                        </button>
+                      } @else {
+                        <button
+                          [class.active]="selectedView === 'pm101'"
+                          type="button"
+                          data-view-target="pm101"
+                          [attr.aria-selected]="selectedView === 'pm101'"
+                          (click)="setView('pm101')"
+                        >
+                          <span class="icon" aria-hidden="true"><i data-lucide="calendar"></i></span>
+                          <span>PM101</span>
+                        </button>
+                        <button
+                          [class.active]="selectedView === 'calendar'"
+                          type="button"
+                          data-view-target="calendar"
+                          [attr.aria-selected]="selectedView === 'calendar'"
+                          (click)="setView('calendar')"
+                        >
+                          <span class="icon" aria-hidden="true"><i data-lucide="panels-top-left"></i></span>
+                          <span>Calendar</span>
+                        </button>
+                        <button
+                          [class.active]="selectedView === 'board'"
+                          type="button"
+                          data-view-target="board"
+                          [attr.aria-selected]="selectedView === 'board'"
+                          (click)="setView('board')"
+                        >
+                          <span class="icon" aria-hidden="true"><i data-lucide="panels-top-left"></i></span>
+                          <span>Board</span>
+                        </button>
+                        <button
+                          [class.active]="selectedView === 'stages'"
+                          type="button"
+                          data-view-target="stages"
+                          [attr.aria-selected]="selectedView === 'stages'"
+                          (click)="setView('stages')"
+                        >
+                          <span class="icon" aria-hidden="true"><i data-lucide="radar"></i></span>
+                          <span>Stages</span>
+                        </button>
+                      }
                     </div>
                   </div>
-                  @if (selectedView !== 'stages') {
+                  @if (selectedView !== 'stages' && selectedView !== 'pm101') {
                     <div class="workspace-control-row">
                       <label class="workspace-search">
                         <span class="icon" aria-hidden="true"><i data-lucide="search"></i></span>
                         <input type="search" [attr.aria-label]="workspaceSearchPlaceholder" [placeholder]="workspaceSearchPlaceholder" />
                       </label>
-                      @if (isActionWorkspaceActive) {
-                        <div class="action-view-switch" role="tablist" aria-label="Actions view format">
-                          <button [class.active]="selectedView === 'board'" type="button" data-view-target="board" (click)="setView('board')">
-                            <span class="icon" aria-hidden="true"><i data-lucide="columns-3"></i></span>
-                            <span>Board</span>
-                          </button>
-                          <button [class.active]="selectedView === 'calendar'" type="button" data-view-target="calendar" (click)="setView('calendar')">
-                            <span class="icon" aria-hidden="true"><i data-lucide="calendar-days"></i></span>
-                            <span>Calendar</span>
-                          </button>
-                        </div>
-                      }
                     </div>
                   }
                   <div class="workspace-body">
@@ -5758,7 +5791,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                       <div class="calendar-command-row"><div class="calendar-month-picker" aria-label="Calendar month navigation"><button class="calendar-nav-button" type="button" (click)="shiftMonth(-1)" aria-label="Previous month"><span class="icon" aria-hidden="true"><i data-lucide="chevron-left"></i></span></button><div class="calendar-month-copy"><strong>{{ calendarMonthLabel }}</strong><span>{{ visibleMonthItems.length }} item{{ visibleMonthItems.length === 1 ? '' : 's' }} this month</span></div><button class="calendar-nav-button" type="button" (click)="shiftMonth(1)" aria-label="Next month"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></button></div><div class="board-filter calendar-filter-bar" aria-label="Quick work filter"><span>Show</span><details class="work-filter-dropdown"><summary [attr.aria-label]="'Filter work by ' + selectedBoardFilterOption.label"><span class="work-filter-selected-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(selectedBoardFilterOption.icon)"></i></span></span><span>{{ selectedBoardFilterOption.label }}</span><strong>{{ countCalendarFilter(selectedBoardFilterOption) }}</strong><span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span></summary><div class="work-filter-menu" role="menu">@for (filter of boardFilters; track filter.id) { <button [class.active]="selectedBoardFilter === filter.id" type="button" role="menuitemradio" [attr.aria-checked]="selectedBoardFilter === filter.id" (click)="setBoardFilter(filter.id, $event)"><span class="work-filter-option-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(filter.icon)"></i></span></span><span>{{ filter.label }}</span><strong>{{ countCalendarFilter(filter) }}</strong></button> }</div></details></div></div>
                       <div class="timeline-calendar"><div class="weekdays"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div><div class="calendar-grid">@for (cell of calendarCells; track cell.key) { <div class="calendar-cell" [class.muted]="!cell.current" [class.today]="cell.today"><span>{{ cell.day }}</span>@for (item of cell.items; track item.label + item.project) { <button class="calendar-event {{ item.tone }}" type="button"><span class="calendar-event-dot"></span><span class="calendar-event-title">{{ item.label }}</span></button> }</div> }</div></div>
                     </div>
-                    <div class="pm101-view" [class.is-hidden]="selectedView !== 'pm101'" data-work-view="pm101">
+                    <div class="pm101-view" [class.pm101-operational-view]="isNormalPm101Workspace" [class.is-hidden]="selectedView !== 'pm101'" data-work-view="pm101">
                       @if (onboardingPm101Locked) {
                         <article class="pm101-assignment-banner" aria-label="PM 101 assignment status">
                           <img class="pm101-assignment-banner-art" src="./assets/pm101-assignment-banner.png" alt="" aria-hidden="true" />
@@ -5806,6 +5839,33 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                           <h3>Your project management journey</h3>
                           <p>From assignment to regular reporting, these are the steps you will work through in TASAMA.</p>
                         </div>
+                      } @else if (isNormalPm101Workspace) {
+                        <div class="pm101-project-strip" aria-label="PM101 project overview">
+                          <article class="pm101-project-card pm101-project-card-assigned">
+                            <img class="pm101-project-card-art" src="./assets/pm101-vision-card-bg.jpg" alt="" aria-hidden="true" />
+                            <span class="pm101-project-chip">New project assigned by PMO</span>
+                            <strong>Vision 2030</strong>
+                            <button class="pm101-project-cta" type="button" (click)="selectPm101Project('Vision 2030')" aria-label="Go to Vision 2030 project">
+                              <span>Go to Project</span>
+                              <span class="pm101-project-cta-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
+                            </button>
+                          </article>
+                          <article class="pm101-project-card pm101-project-card-active">
+                            <img class="pm101-project-card-art" src="./assets/pm101-active-card-bg.jpg" alt="" aria-hidden="true" />
+                            <span class="pm101-project-chip">Active Project</span>
+                            <strong>NEOM Integration</strong>
+                          </article>
+                          <article class="pm101-project-card pm101-project-card-active">
+                            <img class="pm101-project-card-art" src="./assets/pm101-active-card-bg.jpg" alt="" aria-hidden="true" />
+                            <span class="pm101-project-chip">Active Project</span>
+                            <strong>Project 3</strong>
+                          </article>
+                        </div>
+                        <div class="pm101-journey-head">
+                          <span>What happens next?</span>
+                          <h3>Your project management journey</h3>
+                          <p>From assignment to regular reporting, these are the steps you will work through in TASAMA.</p>
+                        </div>
                       }
                       <div class="pm101-flow" aria-label="PM 101 project delivery flow">
                         <ol class="pm101-step-list">
@@ -5826,6 +5886,10 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                   <div class="pm101-card-footer pm101-card-footer-meta">
                                     <span>{{ step.footerLabel }}</span>
                                     <strong>{{ step.footerValue }}</strong>
+                                  </div>
+                                } @else if (step.footerAction && step.footerStandalone) {
+                                  <div class="pm101-card-footer pm101-card-footer-link pm101-card-footer-text-only">
+                                    <span>{{ step.footerAction }}</span>
                                   </div>
                                 } @else if (step.footerAction) {
                                   <div class="pm101-card-footer pm101-card-footer-link">
@@ -5881,7 +5945,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                   </div>
                 </section>
               </div>
-              <div class="right-column" [class.portfolio-frontdoor]="isAllProjects || onboardingPm101Locked || isPm101OnboardingWorkspaceFlow" [class.project-frontdoor]="!isAllProjects && !onboardingPm101Locked && !isPm101OnboardingWorkspaceFlow" [class.pm101-locked-right]="onboardingPm101Locked || isPm101OnboardingWorkspaceFlow">
+              <div class="right-column" [class.portfolio-frontdoor]="isAllProjects || onboardingPm101Locked" [class.project-frontdoor]="!isAllProjects && !onboardingPm101Locked" [class.pm101-locked-right]="onboardingPm101Locked || isPm101OnboardingWorkspaceFlow">
                 @if (isPm101OnboardingWorkspaceFlow) {
                   <section class="top-deck" aria-label="PM front door actions" data-tour-target="frontdoor-actions">
                     <button class="action-card workspace-command" type="button" (click)="navigate('workspaces')">
@@ -7254,7 +7318,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get workspaceTitle(): string {
-    if (this.onboardingPm101Locked || this.isPm101OnboardingWorkspaceFlow) return 'Welcome!';
+    if (this.onboardingPm101Locked || this.isPm101WelcomeWorkspace) return 'Welcome!';
     return this.isAllProjects ? 'Operational Workspace' : `${this.scopedProjectName} | Operational Workspace`;
   }
 
@@ -7279,6 +7343,14 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   get isPm101OnboardingWorkspaceFlow(): boolean {
     return this.frontDoorMode === 'assigned' && this.pmoAssignmentReady && !this.onboardingPm101Locked && this.selectedPage === 'workspace' && this.selectedProject === 'all';
+  }
+
+  get isNormalPm101Workspace(): boolean {
+    return this.frontDoorMode === 'assigned' && !this.pmoAssignmentReady && !this.onboardingPm101Locked && this.selectedPage === 'workspace' && this.selectedProject === 'all' && this.selectedView === 'pm101';
+  }
+
+  get isPm101WelcomeWorkspace(): boolean {
+    return this.isPm101OnboardingWorkspaceFlow || this.isNormalPm101Workspace;
   }
 
   get isWorkspaceCardMode(): boolean {
@@ -7858,6 +7930,18 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.projectPlanActiveSection = 'Overview';
     this.projectPlanSectionsExpanded = false;
     this.projectPlanExpandedFieldSections = {};
+    this.emitState();
+  }
+
+  selectPm101Project(projectId: string): void {
+    this.frontDoorMode = 'assigned';
+    this.onboardingPm101Locked = false;
+    this.selectedProject = projectId;
+    this.selectedPage = 'workspace';
+    this.selectedView = 'calendar';
+    this.selectedBoardFilter = 'all';
+    this.activeReportProject = null;
+    this.selectedStageGateKey = null;
     this.emitState();
   }
 
