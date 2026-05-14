@@ -1,0 +1,57 @@
+name: sdz-tasama-design-ui
+
+on:
+  workflow_dispatch:   # ✅ only manual trigger
+
+jobs:
+  deploy-GravityEngage:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: tasama-angular/package-lock.json
+
+    - name: Install and Build Angular
+      working-directory: ./tasama-angular
+      run: |
+        npm install --legacy-peer-deps
+        npm run build
+
+    - name: Prepare Deployment Package
+      run: |
+        mkdir build
+        # Copy pm-frontdoor static assets
+        cp -r pm-frontdoor build/
+        
+        # Copy built Angular files
+        # Note: Angular 17+ with application builder outputs to dist/tasama-angular/browser
+        if [ -d "tasama-angular/dist/tasama-angular/browser" ]; then
+          cp -r tasama-angular/dist/tasama-angular/browser build/tasama-angular
+        else
+          cp -r tasama-angular/dist/tasama-angular build/tasama-angular
+        fi
+        
+        # Create a root redirect to pm-frontdoor
+        echo '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/pm-frontdoor/"></head><body>Redirecting to <a href="/pm-frontdoor/">pm-frontdoor</a>...</body></html>' > build/index.html
+
+    - name: Azure Login
+      uses: azure/login@v2
+      with:
+        creds: |
+          {
+            "clientId": "${{ secrets.AZURE_CLIENT_ID }}",
+            "clientSecret": "${{ secrets.AZURE_CLIENT_SECRET }}",
+            "subscriptionId": "${{ secrets.AZURE_SUBSCRIPTION_ID }}",
+            "tenantId": "${{ secrets.AZURE_TENANT_ID }}"
+          }
+
+    - name: Deploy to GravityEngage
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: sdz-tasama-pm-ui
+        package: build
