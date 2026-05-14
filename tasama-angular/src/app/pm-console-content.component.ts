@@ -154,6 +154,7 @@ interface ReportDrawerCard {
   id: string;
   title: string;
   body: string;
+  icon: string;
   status: string;
   tone: string;
   trend: string;
@@ -730,6 +731,8 @@ interface GuidedTourStep {
 const iconMap: Record<string, string> = {
   alert: 'triangle-alert',
   arrow: 'chevron-right',
+  arrowDown: 'arrow-down',
+  arrowUp: 'arrow-up',
   benefit: 'circle-check',
   benefitGraph: 'chart-pie',
   bell: 'bell',
@@ -766,6 +769,7 @@ const iconMap: Record<string, string> = {
   management: 'file-text',
   milestone: 'flag',
   moreVertical: 'ellipsis-vertical',
+  minusCircle: 'circle-minus',
   pauseCircle: 'circle-pause',
   pin: 'pin',
   pinOff: 'pin-off',
@@ -6013,10 +6017,12 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
         <aside class="report-drawer" [attr.aria-label]="activeReport.project + ' report draft'">
           <form class="report-compose-form" (submit)="saveReport($event)">
             <div class="report-drawer-top report-drawer-top-simple">
-              <button class="drawer-close report-simple-close" type="button" (click)="closeReport()" aria-label="Close drawer"><span class="icon" aria-hidden="true"><i data-lucide="chevron-left"></i></span></button>
               <div class="report-simple-header">
                 <div class="report-simple-header-row">
-                  <div class="report-drawer-title"><h2>{{ activeReport.project }}</h2><p>Project Report</p></div>
+                  <div class="report-simple-title-group">
+                    <button class="drawer-close report-simple-close" type="button" (click)="closeReport()" aria-label="Close drawer"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
+                    <div class="report-drawer-title report-simple-title-line"><h2>Project Report</h2><span aria-hidden="true">|</span><p>{{ activeReport.project }}</p></div>
+                  </div>
                   <div class="report-simple-meta">
                     <span>Stage: <strong class="report-simple-chip indigo">{{ activeReportDetails.stage }}</strong></span>
                     <span>State: <strong class="report-simple-chip {{ reportBadgeTone(activeReportDetails.state, 'neutral') }}">{{ activeReportDetails.state }}</strong></span>
@@ -6025,13 +6031,13 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                 </div>
 
                 <div class="report-simple-toolbar">
-                  <div class="report-simple-mode-tabs" [class.is-detailed]="activeReportMode === 'detailed'" role="tablist" aria-label="Report view">
-                    <button [class.active]="activeReportMode === 'simple'" type="button" [attr.aria-selected]="activeReportMode === 'simple'" role="tab" (click)="setReportMode('simple')"><span class="icon" aria-hidden="true"><i data-lucide="calendar"></i></span><span>Simple</span></button>
-                    <button [class.active]="activeReportMode === 'detailed'" type="button" [attr.aria-selected]="activeReportMode === 'detailed'" role="tab" (click)="setReportMode('detailed')"><span class="icon" aria-hidden="true"><i data-lucide="layout-grid"></i></span><span>Detailed</span></button>
-                  </div>
                   <div class="report-simple-toolbar-copy">
-                    <span>Reporting Interval - <strong>{{ simpleReportIntervalLabel }}</strong></span>
-                    <span>Report Status: <strong class="{{ simpleReportStatusTone }}">{{ simpleReportPlanLabel }}</strong></span>
+                    <span>Reporting Interval: <strong>{{ simpleReportIntervalLabel }}</strong></span>
+                    <span>Report Status: <strong class="report-simple-chip report-status-inline-chip {{ simpleReportStatusTone }}">{{ simpleReportPlanLabel }}</strong></span>
+                  </div>
+                  <div class="report-simple-mode-tabs" [class.is-detailed]="activeReportMode === 'detailed'" role="tablist" aria-label="Report view">
+                    <button [class.active]="activeReportMode === 'simple'" type="button" [attr.aria-selected]="activeReportMode === 'simple'" role="tab" (click)="setReportMode('simple')">Simple view</button>
+                    <button [class.active]="activeReportMode === 'detailed'" type="button" [attr.aria-selected]="activeReportMode === 'detailed'" role="tab" (click)="setReportMode('detailed')">Detailed view</button>
                   </div>
                 </div>
               </div>
@@ -6039,74 +6045,76 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
 
             <div class="report-drawer-body" [class.report-drawer-body-detailed]="activeReportMode === 'detailed'">
               @if (activeReportMode === 'simple') {
-                <section class="report-layout-stack" aria-label="Simple project plan report">
+                <section class="report-layout-stack report-simple-card-stack" aria-label="Simple project plan report">
                   @let overviewCard = simpleReportOverviewCard;
-                  <article class="report-layout-card report-layout-card-overview {{ overviewCard.tone }}">
-                    <div class="report-layout-card-head">
-                      <div>
-                        <h3>{{ overviewCard.title }}</h3>
-                        <p>{{ overviewCard.body }}</p>
+                  <article class="report-layout-card report-simple-card report-simple-overall-card {{ overviewCard.tone }}">
+                    <div class="report-simple-card-head">
+                      <div class="report-simple-title-area">
+                        <span class="report-simple-card-icon" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="iconName(overviewCard.icon)"></i></span></span>
+                        <div class="report-simple-section-title">
+                          <h3>{{ overviewCard.title }}</h3>
+                          <span class="icon" aria-hidden="true"><i data-lucide="info"></i></span>
+                        </div>
                       </div>
-                      <strong class="report-layout-pill {{ overviewCard.tone }}">{{ overviewCard.status }}</strong>
+                      <div class="report-simple-history" [attr.aria-label]="overviewCard.title + ' past statuses'">
+                        @for (point of overviewCard.timeline; track point.date) {
+                          <span class="{{ point.tone }}" [title]="point.label"><span class="report-simple-history-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="trendIcon(point.tone)"></i></span></span><small>{{ point.date }}</small></span>
+                        }
+                      </div>
                     </div>
 
-                    <div class="report-layout-summary">
-                      <div class="report-layout-summary-box report-layout-status-box">
-                        <span class="report-layout-box-label">Status</span>
-                        <div class="report-inline-status" role="radiogroup" aria-label="Simple report overall status">
+                    <div class="report-simple-control-row">
+                      <div class="report-simple-field">
+                        <span class="report-simple-field-label">Status<small>*</small></span>
+                        <div class="report-simple-status-control" role="radiogroup" aria-label="Simple report overall status">
                           @for (option of reportStatusOptions; track option.label) {
                             <label class="{{ option.tone }}"><input type="radio" name="simple-overall-status" [checked]="isReportStatusSelected(option.value, overviewCard.status)" /><span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(option.icon)"></i></span>{{ option.simpleLabel || option.label }}</span></label>
                           }
                         </div>
                       </div>
-                      <div class="report-layout-summary-box report-layout-trend-box">
-                        <span class="report-layout-box-label">Overall Status Trend</span>
-                        <strong><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span>{{ overviewCard.trend }}</strong>
-                      </div>
-                      <div class="report-layout-summary-box report-layout-past-box">
-                        <span class="report-layout-box-label">Past Trend</span>
-                        <div class="report-status-timeline">
-                          @for (point of overviewCard.timeline; track point.date) {
-                            <span class="{{ point.tone }}" [title]="point.label"><i><span class="icon" aria-hidden="true"><i [attr.data-lucide]="trendIcon(point.tone)"></i></span></i><small>{{ point.date }}</small></span>
-                          }
-                        </div>
+                      <div class="report-simple-field">
+                        <span class="report-simple-field-label">Overall Status Trend</span>
+                        <strong class="report-simple-trend-chip {{ simpleReportTrendTone(overviewCard.trend, overviewCard.tone) }}"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="simpleReportTrendIcon(overviewCard.trend, overviewCard.tone)"></i></span>{{ simpleReportTrendLabel(overviewCard.trend, overviewCard.tone) }}</strong>
                       </div>
                     </div>
 
                     <label class="report-layout-comment">
                       <span>Comments</span>
-                      <textarea rows="4" maxlength="3000"></textarea>
+                      <textarea rows="3" maxlength="3000" placeholder="Add the comments here..." [value]="overviewCard.comments"></textarea>
                     </label>
                   </article>
 
                   @for (card of simpleReportCards; track card.id; let cardIndex = $index) {
-                    <article class="report-layout-card report-layout-card-section {{ card.tone }}">
-                      <div class="report-layout-card-head">
-                        <div>
-                          <h3>{{ card.title }}</h3>
-                          <p>{{ card.body }}</p>
+                    <article class="report-layout-card report-simple-card report-layout-card-section {{ card.tone }}">
+                      <div class="report-simple-card-head">
+                        <div class="report-simple-title-area">
+                          <span class="report-simple-card-icon" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="iconName(card.icon)"></i></span></span>
+                          <div class="report-simple-section-title">
+                            <h3>{{ simpleReportSectionTitle(card.title) }}</h3>
+                            <span class="icon" aria-hidden="true"><i data-lucide="info"></i></span>
+                          </div>
                         </div>
-                        <strong class="report-layout-pill {{ card.tone }}">{{ card.status }}</strong>
+                        <div class="report-simple-history" [attr.aria-label]="card.title + ' past statuses'">
+                          @for (point of card.timeline; track point.date) {
+                            <span class="{{ point.tone }}" [title]="point.label"><span class="report-simple-history-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="trendIcon(point.tone)"></i></span></span><small>{{ point.date }}</small></span>
+                          }
+                        </div>
                       </div>
 
-                      <div class="report-layout-summary">
-                      <div class="report-layout-summary-box report-layout-status-box">
-                          <span class="report-layout-box-label">Status</span>
-                          <div class="report-inline-status" role="radiogroup" [attr.aria-label]="card.title + ' status'">
+                      <div class="report-simple-control-row">
+                        <div class="report-simple-field">
+                          <span class="report-simple-field-label">Status<small>*</small></span>
+                          <div class="report-simple-status-control" role="radiogroup" [attr.aria-label]="card.title + ' status'">
                             @for (option of reportStatusOptions; track option.label) {
                               <label class="{{ option.tone }}"><input type="radio" [attr.name]="'simple-card-status-' + cardIndex" [checked]="isReportStatusSelected(option.value, card.status)" /><span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(option.icon)"></i></span>{{ option.simpleLabel || option.label }}</span></label>
                             }
                           </div>
                         </div>
-                        <div class="report-layout-summary-box report-layout-trend-box">
-                          <span class="report-layout-box-label">Overall Status Trend</span>
-                          <strong><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span>{{ card.trend }}</strong>
-                        </div>
-                        <div class="report-layout-summary-box report-layout-past-box">
-                          <span class="report-layout-box-label">Past Trend</span>
-                          <div class="report-status-timeline">
-                            @for (point of card.timeline; track point.date) {
-                              <span class="{{ point.tone }}" [title]="point.label"><i><span class="icon" aria-hidden="true"><i [attr.data-lucide]="trendIcon(point.tone)"></i></span></i><small>{{ point.date }}</small></span>
+                        <div class="report-simple-field">
+                          <span class="report-simple-field-label">Overall Status Trend</span>
+                          <div class="report-simple-trend-control" role="radiogroup" [attr.aria-label]="card.title + ' trend'">
+                            @for (option of simpleReportTrendOptions; track option.value) {
+                              <label class="{{ option.tone }}"><input type="radio" [attr.name]="'simple-card-trend-' + cardIndex" [checked]="isReportTrendSelected(option.value, card.trend)" /><span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="option.icon"></i></span>{{ option.label }}</span></label>
                             }
                           </div>
                         </div>
@@ -6114,7 +6122,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
 
                       <label class="report-layout-comment">
                         <span>Comments</span>
-                        <textarea rows="4" maxlength="3000"></textarea>
+                        <textarea rows="3" maxlength="3000" placeholder="Add the comments here..." [value]="card.comments"></textarea>
                       </label>
                     </article>
                   }
@@ -6345,6 +6353,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
 
             <div class="report-drawer-footer">
               <button class="report-secondary-button" type="button" (click)="closeReport()">Cancel</button>
+              <button class="report-more-button" type="button">More actions <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span></button>
               <button class="report-submit-button" type="submit">Save</button>
             </div>
           </form>
@@ -6491,8 +6500,13 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   readonly reportSections = ['Overview', 'Scope', 'Schedule', 'Budget', 'Benefits', 'Risks', 'Issues', 'Resource', 'Dependency'];
   readonly reportStatusOptions = [
     { label: 'On track', simpleLabel: 'On track', value: 'On track', tone: 'green', icon: 'checkMark' },
-    { label: 'Alert/Discuss', simpleLabel: 'Alert', value: 'Alert', tone: 'amber', icon: 'bell' },
+    { label: 'Alert/Discuss', simpleLabel: 'Alert', value: 'Alert', tone: 'amber', icon: 'alert' },
     { label: 'Off track', simpleLabel: 'Off track', value: 'Off Track', tone: 'red', icon: 'close' },
+  ];
+  readonly simpleReportTrendOptions = [
+    { label: 'Improving', value: 'Improving', tone: 'green', icon: 'arrow-up' },
+    { label: 'No change', value: 'No change', tone: 'neutral', icon: 'circle-minus' },
+    { label: 'Declining', value: 'Declining', tone: 'red', icon: 'arrow-down' },
   ];
   readonly pastOverviewTrend = ['31/03/2026', '31/12/2025', '30/09/2025', '30/06/2025', '31/12/2024'];
   readonly scopePastStatuses = [
@@ -7345,6 +7359,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       id: 'simple-overview',
       title: 'Overall Status',
       body: 'Define your project overall status.',
+      icon: 'info',
       status: this.activeReportStatus,
       tone: this.reportToneToken(this.activeReportStatus),
       trend: this.activeReportDetails.overallTrend,
@@ -7360,9 +7375,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
         id: `simple-${slugifyPlanField(section.title)}`,
         title: section.title,
         body: section.body,
+        icon: this.simpleReportSectionIcon(section),
         status: guide.status,
         tone: guide.tone,
-        trend: this.reportTrendForTone(guide.tone),
+        trend: this.simpleReportTrendForTone(guide.tone),
         comments: '',
         timeline: this.reportTimelineForTone(guide.tone),
       };
@@ -7374,6 +7390,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       id: 'overview',
       title: 'Overview',
       body: 'Overall project narrative and current delivery position.',
+      icon: 'info',
       status: this.activeReportStatus,
       tone: this.reportToneToken(this.activeReportStatus),
       trend: this.activeReportDetails.overallTrend,
@@ -7384,6 +7401,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       id: slugifyPlanField(area.label),
       title: area.label,
       body: this.reportBodyForSection(area.label),
+      icon: this.reportSectionIcon(area.label),
       status: area.status,
       tone: area.tone,
       trend: this.reportTrendForTone(area.tone),
@@ -9314,6 +9332,39 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return this.simpleReportGuides[index] || this.simpleReportGuides[0];
   }
 
+  simpleReportSectionTitle(title: string): string {
+    const titles: Record<string, string> = {
+      'Purpose and outcome': 'Purpose & outcome',
+      'Dates and scope': 'Dates & scope',
+    };
+    return titles[title] || title;
+  }
+
+  simpleReportTrendLabel(trend: string, tone?: string): string {
+    const normalized = trend.toLowerCase();
+    if (normalized.includes('declin') || tone === 'red') return 'Declining';
+    if (normalized.includes('stable') || normalized.includes('same') || normalized.includes('no change') || normalized.includes('attention') || tone === 'amber') return 'No change';
+    return 'Improving';
+  }
+
+  simpleReportTrendTone(trend: string, tone?: string): string {
+    const label = this.simpleReportTrendLabel(trend, tone);
+    if (label === 'Declining') return 'red';
+    if (label === 'No change') return 'neutral';
+    return 'green';
+  }
+
+  simpleReportTrendIcon(trend: string, tone?: string): string {
+    const label = this.simpleReportTrendLabel(trend, tone);
+    if (label === 'Declining') return 'arrow-down';
+    if (label === 'No change') return 'circle-minus';
+    return 'arrow-up';
+  }
+
+  isReportTrendSelected(optionValue: string, trend: string): boolean {
+    return this.simpleReportTrendLabel(trend).toLowerCase() === optionValue.toLowerCase();
+  }
+
   simpleReportFieldValue(field: SimplePlanField): string {
     return field.value.trim() || 'Not captured';
   }
@@ -9561,11 +9612,41 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return 'Improving';
   }
 
+  private simpleReportTrendForTone(tone: string): string {
+    if (tone === 'red') return 'Declining';
+    if (tone === 'amber') return 'No change';
+    return 'Improving';
+  }
+
+  private simpleReportSectionIcon(section: SimplePlanSection): string {
+    if (section.title === 'Purpose and outcome') return 'chart';
+    if (section.title === 'Dates and scope') return 'calendar';
+    if (section.title === 'Budget baseline') return 'dollar';
+    if (section.title === 'Deliverables') return 'endProduct';
+    return section.icon || 'info';
+  }
+
+  private reportSectionIcon(section: string): string {
+    const icons: Record<string, string> = {
+      Overview: 'info',
+      Scope: 'endProduct',
+      Schedule: 'calendar',
+      Budget: 'dollar',
+      Benefits: 'benefitGraph',
+      Risks: 'risks',
+      Issues: 'issues',
+      Resource: 'resources',
+      Dependency: 'dependencies',
+    };
+    return icons[section] || 'info';
+  }
+
   detailedReportAreaCard(area: { label: string; status: string; tone: string; note: string }): ReportDrawerCard {
     return {
       id: slugifyPlanField(area.label),
       title: area.label,
       body: this.reportBodyForSection(area.label),
+      icon: this.reportSectionIcon(area.label),
       status: area.status,
       tone: area.tone,
       trend: this.reportTrendForTone(area.tone),
