@@ -36,7 +36,7 @@ export class AppComponent {
       authenticated: true,
       projectId: 'all',
       selectedPage: 'workspace',
-      selectedView: 'pm101',
+      selectedView: 'calendar',
       frontDoorMode: 'assigned',
     });
   }
@@ -62,7 +62,7 @@ export class AppComponent {
       authenticated: true,
       projectId: 'Vision 2030',
       selectedPage: 'workspace',
-      selectedView: 'pm101',
+      selectedView: 'calendar',
       frontDoorMode: 'assigned',
     });
   }

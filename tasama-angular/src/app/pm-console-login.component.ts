@@ -68,8 +68,16 @@ export class PmConsoleLoginComponent {
   @Output() readonly signIn = new EventEmitter<void>();
   @Output() readonly startOnboarding = new EventEmitter<void>();
 
+  private readonly appPassword = '123';
+
   handleSubmit(event: SubmitEvent): void {
     event.preventDefault();
+    const form = event.currentTarget as HTMLFormElement;
+    const passwordInput = form.querySelector<HTMLInputElement>('input[type="password"]');
+    if (passwordInput?.value !== this.appPassword) {
+      passwordInput?.focus();
+      return;
+    }
     this.signIn.emit();
   }
 }

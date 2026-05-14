@@ -152,7 +152,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
 
   selectedProject = 'all';
   selectedPage: ConsolePage = 'workspace';
-  selectedView: WorkspaceView = 'pm101';
+  selectedView: WorkspaceView = 'calendar';
   frontDoorMode = 'assigned';
   notificationPanelOpen = false;
   pmoAssignmentReady = false;
@@ -187,7 +187,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   ngOnInit(): void {
     this.selectedProject = this.initialState.projectId || 'all';
     this.selectedPage = (this.initialState.selectedPage as ConsolePage) || 'workspace';
-    this.selectedView = (this.initialState.selectedView as WorkspaceView) || 'pm101';
+    this.selectedView = (this.initialState.selectedView as WorkspaceView) || 'calendar';
     this.frontDoorMode = this.initialState.frontDoorMode || 'assigned';
     this.guidedTourActive = Boolean(this.initialState.guidedTourActive);
     this.guidedTourExitMode = this.initialState.guidedTourExitMode ?? null;
@@ -222,7 +222,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   goHome(): void {
     this.selectedProject = this.onboardingPm101Locked ? ONBOARDING_PM101_PROJECT_ID : 'all';
     this.selectedPage = 'workspace';
-    this.selectedView = 'pm101';
+    this.selectedView = this.onboardingPm101Locked ? 'pm101' : 'calendar';
     this.notificationPanelOpen = false;
     this.markShellChanged();
   }

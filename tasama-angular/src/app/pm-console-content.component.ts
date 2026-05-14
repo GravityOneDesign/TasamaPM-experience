@@ -6453,7 +6453,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
 export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, OnDestroy {
   @Input() selectedProject = 'all';
   @Input() selectedPage: ConsolePage = 'workspace';
-  @Input() selectedView: WorkspaceView = 'pm101';
+  @Input() selectedView: WorkspaceView = 'calendar';
   @Input() frontDoorMode = 'assigned';
   @Input() pmoAssignmentReady = false;
   @Input() guidedTourActive = false;
