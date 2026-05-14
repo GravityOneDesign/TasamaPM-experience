@@ -195,6 +195,183 @@ interface ProjectPlanFieldGroupConfig {
   fields: string[];
 }
 
+interface OverviewState {
+  opportunityStatement: string;
+  driverAnalysis: string;
+  aiComponent: string;
+}
+
+interface OverviewBusinessDriverOption {
+  driver: string;
+  source: string;
+  priority: string;
+  note: string;
+}
+
+interface OverviewBusinessDriverRow {
+  id: string;
+  driver: string;
+  source: string;
+  priority: string;
+  note: string;
+}
+
+interface OverviewBusinessDriverDraft {
+  driver: string;
+  source: string;
+  priority: string;
+  note: string;
+}
+
+interface OverviewOutcomeRow {
+  id: string;
+  outcome: string;
+  measure: string;
+  owner: string;
+  status: string;
+}
+
+interface OverviewOutcomeDraft {
+  outcome: string;
+  measure: string;
+  owner: string;
+  status: string;
+}
+
+interface OverviewObjectiveRow {
+  id: string;
+  objective: string;
+  linkedObjective: string;
+  status: string;
+}
+
+interface OverviewObjectiveDraft {
+  objective: string;
+  linkedObjective: string;
+  status: string;
+}
+
+interface OverviewCapabilityOption {
+  capability: string;
+  domain: string;
+  owner: string;
+}
+
+interface OverviewCapabilityRow {
+  id: string;
+  capability: string;
+  domain: string;
+  owner: string;
+}
+
+interface OverviewCapabilityDraft {
+  selectedCapabilities: string[];
+}
+
+interface OverviewServiceOption {
+  serviceGroup: string;
+  valueStream: string;
+  phase: string;
+  service: string;
+}
+
+interface OverviewServiceRow {
+  id: string;
+  serviceGroup: string;
+  valueStream: string;
+  phase: string;
+  service: string;
+}
+
+interface OverviewServiceDraft {
+  serviceGroup: string;
+  valueStream: string;
+  phase: string;
+  service: string;
+}
+
+type ScheduleScopeDrawerMode = 'create' | 'edit';
+type ScheduleScopeProductSource = 'new' | 'existing';
+
+interface ScheduleScopeState {
+  baselineStart: string;
+  baselineEnd: string;
+  forecastStart: string;
+  forecastEnd: string;
+  inScope: string;
+  outOfScope: string;
+}
+
+interface ScheduleMilestoneRow {
+  id: string;
+  milestone: string;
+  dueDate: string;
+  owner: string;
+  priority: string;
+  note: string;
+}
+
+interface ScheduleMilestoneDraft {
+  milestone: string;
+  dueDate: string;
+  owner: string;
+  priority: string;
+  note: string;
+}
+
+interface ScheduleScopeProductRow {
+  id: string;
+  product: string;
+  description: string;
+  owner: string;
+  category: string;
+  capability: string;
+  startDate: string;
+  endDate: string;
+  capex: string;
+  opex: string;
+  predecessors: string[];
+  successors: string[];
+}
+
+interface ScheduleScopeProductDraft {
+  sourceType: ScheduleScopeProductSource;
+  product: string;
+  description: string;
+  owner: string;
+  category: string;
+  capability: string;
+  startDate: string;
+  endDate: string;
+  capex: string;
+  opex: string;
+  predecessors: string;
+  successors: string;
+}
+
+interface ScheduleManagementProductRow {
+  id: string;
+  product: string;
+  description: string;
+  owner: string;
+  category: string;
+  startDate: string;
+  endDate: string;
+  capex: string;
+  opex: string;
+}
+
+interface ScheduleManagementProductDraft {
+  product: string;
+  description: string;
+  owner: string;
+  category: string;
+  startDate: string;
+  endDate: string;
+  capex: string;
+  opex: string;
+}
+
 type DependencyRegisterKey = 'predecessor' | 'successor';
 
 interface DependencyRegisterRow {
@@ -423,6 +600,124 @@ interface BenefitPlanConfig {
   ownerOptions: string[];
   rows: BenefitPlanRow[];
   draft: BenefitPlanDraft;
+}
+
+interface BudgetRuleItem {
+  title: string;
+  body: string;
+}
+
+interface BudgetFundingSourceRow {
+  id: string;
+  source: string;
+  type: string;
+  amount: number;
+  status: string;
+  notes: string;
+}
+
+interface BudgetFundingSourceDraft {
+  source: string;
+  type: string;
+  amount: string;
+  status: string;
+  notes: string;
+}
+
+interface BudgetMonthlyRow {
+  id: string;
+  month: string;
+  capexBudget: number;
+  opexBudget: number;
+  capexForecast: number;
+  opexForecast: number;
+  capexActual: number;
+  opexActual: number;
+  capexCommitted: number;
+  opexCommitted: number;
+}
+
+type BudgetMonthlyField =
+  | 'capexForecast'
+  | 'opexForecast'
+  | 'capexActual'
+  | 'opexActual'
+  | 'capexCommitted'
+  | 'opexCommitted';
+
+interface BudgetYearPlan {
+  id: string;
+  fy: string;
+  baselineCapex: number;
+  baselineOpex: number;
+  forecastCapex: number;
+  forecastOpex: number;
+  fundingSources: BudgetFundingSourceRow[];
+  monthlyRows: BudgetMonthlyRow[];
+  approvedBudgetLabel?: string;
+}
+
+interface BudgetYearDraft {
+  fy: string;
+  baselineCapex: string;
+  baselineOpex: string;
+  forecastCapex: string;
+  forecastOpex: string;
+}
+
+interface BudgetPlanState {
+  selectedFy: string;
+  years: BudgetYearPlan[];
+  lastSavedLabel: string;
+}
+
+interface BudgetPlanMetric {
+  label: string;
+  value: string;
+  helper: string;
+  tone: 'neutral' | 'green' | 'amber' | 'red';
+}
+
+interface BudgetBreakdownRow {
+  stream: string;
+  baseline: number;
+  forecast: number;
+  actual: number;
+  committed: number;
+}
+
+type BudgetBreakdownEditableField = 'baseline' | 'forecast' | 'committed' | 'actual';
+type BudgetSubtab = 'project' | 'funding' | 'monthly';
+
+interface BudgetPlanConfig {
+  fieldName: string;
+  title: string;
+  description: string;
+  actionLabel: string;
+  emptyTitle: string;
+  emptyBody: string;
+  drawerTitle: string;
+  drawerBody: string;
+  fundingTitle: string;
+  fundingBody: string;
+  fundingEmptyTitle: string;
+  fundingEmptyBody: string;
+  monthlyTitle: string;
+  monthlyBody: string;
+  monthlyEmptyTitle: string;
+  monthlyEmptyBody: string;
+  ruleButtonLabel: string;
+  fyPlaceholder: string;
+  amountPlaceholder: string;
+  sourcePlaceholder: string;
+  sourceTypePlaceholder: string;
+  sourceStatusPlaceholder: string;
+  fyOptions: string[];
+  sourceTypeOptions: string[];
+  sourceStatusOptions: string[];
+  rules: BudgetRuleItem[];
+  yearDraft: BudgetYearDraft;
+  fundingDraft: BudgetFundingSourceDraft;
 }
 
 interface GuidedTourStep {
@@ -816,6 +1111,364 @@ const projectPlanSectionFieldGroups: Record<string, ProjectPlanFieldGroupConfig[
   ],
 };
 
+const overviewStateInitial: OverviewState = {
+  opportunityStatement:
+    'Develop an online platform that makes research capabilities, partnerships, and delivery opportunities easier to discover regardless of geography, function, or owning entity.',
+  driverAnalysis:
+    'Stakeholder mapping, portfolio reporting gaps, and inconsistent capability records show a need for one governed front door for research collaboration and delivery planning.',
+  aiComponent: 'No',
+};
+
+const overviewBusinessDriverOptionSeeds: OverviewBusinessDriverOption[] = [
+  {
+    driver: 'Strategic research visibility',
+    source: 'Strategy Office',
+    priority: 'High',
+    note: 'Supports one national view of capabilities, investment focus, and sponsor reporting.',
+  },
+  {
+    driver: 'Accessible citizen and partner services',
+    source: 'Transformation Office',
+    priority: 'High',
+    note: 'Improves discoverability and access across agencies, delivery teams, and external partners.',
+  },
+  {
+    driver: 'Stronger governance for delivery planning',
+    source: 'PMO',
+    priority: 'Medium',
+    note: 'Creates consistent intake, alignment, and assurance data before projects scale.',
+  },
+  {
+    driver: 'Faster ecosystem collaboration',
+    source: 'Research Office',
+    priority: 'Medium',
+    note: 'Reduces duplication and makes it easier to connect funders, researchers, and delivery owners.',
+  },
+];
+
+const overviewStrategicObjectiveLinkSeeds = [
+  'Accelerate innovation to bring healthy products to the market that suit all needs and tastes.',
+  'Strengthen ecosystem collaboration across research, delivery, and partner teams.',
+];
+
+const overviewBusinessPlanSignalSeeds = [
+  {
+    label: 'Business plan objective',
+    body: 'No business plan objective linked yet. Add one later if this project becomes part of a formal business-plan commitment.',
+  },
+  {
+    label: 'Business plan output',
+    body: 'No business plan output linked yet. Keep this blank until the project is connected to a tracked business-plan deliverable.',
+  },
+];
+
+const overviewOutcomeStatusOptions = ['Draft', 'Defined', 'Committed'];
+
+const overviewObjectiveStatusOptions = ['Draft', 'Linked', 'Approved'];
+
+const overviewCapabilityOptionSeeds: OverviewCapabilityOption[] = [
+  { capability: 'Monitoring & Surveillance', domain: 'Operations', owner: 'Technology Office' },
+  { capability: 'IT Management', domain: 'Technology', owner: 'Technology Office' },
+  { capability: 'Regulatory Assurance', domain: 'Governance', owner: 'PMO Desk' },
+  { capability: 'Experience Design', domain: 'Customer', owner: 'Design Office' },
+  { capability: 'Knowledge Management', domain: 'Information', owner: 'Research Office' },
+];
+
+const overviewServiceOptionSeeds: OverviewServiceOption[] = [
+  {
+    serviceGroup: 'Corporate Services',
+    valueStream: 'Procure to Pay',
+    phase: 'Execution',
+    service: 'Material Master Maintenance',
+  },
+  {
+    serviceGroup: 'Corporate Services',
+    valueStream: 'Procure to Pay',
+    phase: 'Planning',
+    service: 'Supplier Enablement',
+  },
+  {
+    serviceGroup: 'Digital Services',
+    valueStream: 'Discover to Deliver',
+    phase: 'Design',
+    service: 'Knowledge Catalogue Support',
+  },
+  {
+    serviceGroup: 'Digital Services',
+    valueStream: 'Discover to Deliver',
+    phase: 'Execution',
+    service: 'Platform Release Management',
+  },
+  {
+    serviceGroup: 'Technology Services',
+    valueStream: 'Operate to Improve',
+    phase: 'Execution',
+    service: 'Service Monitoring',
+  },
+];
+
+const overviewBusinessDriverDraftInitial: OverviewBusinessDriverDraft = {
+  driver: '',
+  source: '',
+  priority: 'High',
+  note: '',
+};
+
+const overviewOutcomeDraftInitial: OverviewOutcomeDraft = {
+  outcome: '',
+  measure: '',
+  owner: '',
+  status: 'Draft',
+};
+
+const overviewObjectiveDraftInitial: OverviewObjectiveDraft = {
+  objective: '',
+  linkedObjective: overviewStrategicObjectiveLinkSeeds[0] || '',
+  status: 'Draft',
+};
+
+const overviewCapabilityDraftInitial: OverviewCapabilityDraft = {
+  selectedCapabilities: [],
+};
+
+const overviewServiceDraftInitial: OverviewServiceDraft = {
+  serviceGroup: '',
+  valueStream: '',
+  phase: '',
+  service: '',
+};
+
+const overviewBusinessDriverRowsInitial: OverviewBusinessDriverRow[] = [
+  {
+    id: 'overview-driver-visibility',
+    driver: 'Strategic research visibility',
+    source: 'Strategy Office',
+    priority: 'High',
+    note: 'Provides a shared baseline for sponsor reporting and portfolio discussions.',
+  },
+  {
+    id: 'overview-driver-accessibility',
+    driver: 'Accessible citizen and partner services',
+    source: 'Transformation Office',
+    priority: 'High',
+    note: 'Brings the user case forward so the platform remains useful beyond the core PMO audience.',
+  },
+];
+
+const overviewOutcomeRowsInitial: OverviewOutcomeRow[] = [
+  {
+    id: 'overview-outcome-reach',
+    outcome: 'Enhance accessibility and reach',
+    measure: 'Users can discover, compare, and access delivery information from one governed workspace.',
+    owner: 'Muna Hassan',
+    status: 'Defined',
+  },
+];
+
+const overviewObjectiveRowsInitial: OverviewObjectiveRow[] = [
+  {
+    id: 'overview-objective-accessibility',
+    objective: 'Enhance accessibility and reach',
+    linkedObjective: overviewStrategicObjectiveLinkSeeds[0],
+    status: 'Linked',
+  },
+];
+
+const overviewCapabilityRowsInitial: OverviewCapabilityRow[] = [
+  { id: 'overview-capability-monitoring', capability: 'Monitoring & Surveillance', domain: 'Operations', owner: 'Technology Office' },
+  { id: 'overview-capability-it', capability: 'IT Management', domain: 'Technology', owner: 'Technology Office' },
+];
+
+const overviewServiceRowsInitial: OverviewServiceRow[] = [
+  {
+    id: 'overview-service-material-master',
+    serviceGroup: 'Corporate Services',
+    valueStream: 'Procure to Pay',
+    phase: 'Execution',
+    service: 'Material Master Maintenance',
+  },
+];
+
+const scheduleScopeStateInitial: ScheduleScopeState = {
+  baselineStart: '2026-05-01',
+  baselineEnd: '2026-12-31',
+  forecastStart: '2026-05-08',
+  forecastEnd: '2027-01-14',
+  inScope:
+    'Research entities, universities, government stakeholders, industry partners, funding bodies, and R&D capability records.',
+  outOfScope:
+    'Procurement execution, grant administration, and supporting catalogues that are not required for the baseline launch of the research map.',
+};
+
+const scheduleScopeOwnerOptions = [
+  'Muna Hassan',
+  'Chethan Vijayadeva',
+  'Vikas Nagpal',
+  'Richelle Hilton',
+  'PMO Desk',
+  'Delivery Office',
+];
+
+const scheduleScopePriorityOptions = ['High', 'Medium', 'Low'];
+
+const scheduleScopeCategoryOptions = ['Information', 'Technology', 'Process', 'People', 'Governance'];
+
+const scheduleScopeCapabilityOptions = [
+  'Discovery & Research',
+  'Digital Platform',
+  'Experience Design',
+  'Data Management',
+  'Governance & Controls',
+];
+
+const scheduleScopeExistingEndProducts = [
+  {
+    product: 'Collaboration platform',
+    description: 'Workspace for cross-agency collaboration and knowledge sharing.',
+    owner: 'Richelle Hilton',
+    category: 'Technology',
+    capability: 'Digital Platform',
+  },
+  {
+    product: 'National R&D database',
+    description: 'Central searchable register of national research capabilities.',
+    owner: 'Muna Hassan',
+    category: 'Information',
+    capability: 'Data Management',
+  },
+  {
+    product: 'Opportunity marketplace',
+    description: 'Matching experience for funders, researchers, and partners.',
+    owner: 'Delivery Office',
+    category: 'Technology',
+    capability: 'Discovery & Research',
+  },
+  {
+    product: 'CRM',
+    description: 'Partner relationship layer supporting engagement tracking.',
+    owner: 'PMO Desk',
+    category: 'Process',
+    capability: 'Governance & Controls',
+  },
+];
+
+const scheduleMilestoneDraftInitial: ScheduleMilestoneDraft = {
+  milestone: '',
+  dueDate: '',
+  owner: '',
+  priority: 'Medium',
+  note: '',
+};
+
+const scheduleEndProductDraftInitial: ScheduleScopeProductDraft = {
+  sourceType: 'new',
+  product: '',
+  description: '',
+  owner: '',
+  category: 'Information',
+  capability: '',
+  startDate: '',
+  endDate: '',
+  capex: '0',
+  opex: '0',
+  predecessors: '',
+  successors: '',
+};
+
+const scheduleManagementProductDraftInitial: ScheduleManagementProductDraft = {
+  product: '',
+  description: '',
+  owner: '',
+  category: 'Governance',
+  startDate: '',
+  endDate: '',
+  capex: '0',
+  opex: '0',
+};
+
+const scheduleMilestoneRowsInitial: ScheduleMilestoneRow[] = [
+  {
+    id: 'milestone-initiation',
+    milestone: 'Project initiation and planning',
+    dueDate: '2026-07-05',
+    owner: 'Chethan Vijayadeva',
+    priority: 'High',
+    note: 'Baseline submission pack ready for PMO review.',
+  },
+  {
+    id: 'milestone-design',
+    milestone: 'Product design',
+    dueDate: '2026-09-22',
+    owner: 'Vikas Nagpal',
+    priority: 'Medium',
+    note: 'User journeys and product blueprint aligned with sponsors.',
+  },
+  {
+    id: 'milestone-execution',
+    milestone: 'Execution readiness',
+    dueDate: '2027-02-22',
+    owner: '',
+    priority: 'Low',
+    note: 'Execution gate planned once delivery products are approved.',
+  },
+];
+
+const scheduleEndProductRowsInitial: ScheduleScopeProductRow[] = [
+  {
+    id: 'end-product-uiux',
+    product: 'User interface (UI) and user experience (UX) design',
+    description: 'Research map interaction model, core templates, and design system coverage.',
+    owner: 'Vikas Nagpal',
+    category: 'Information',
+    capability: 'Experience Design',
+    startDate: '2026-05-08',
+    endDate: '2026-08-28',
+    capex: '0',
+    opex: '0',
+    predecessors: [],
+    successors: ['National R&D database'],
+  },
+  {
+    id: 'end-product-cms',
+    product: 'Course management system (CMS)',
+    description: 'Content operations tooling for launching and maintaining knowledge assets.',
+    owner: 'Richelle Hilton',
+    category: 'Technology',
+    capability: 'Digital Platform',
+    startDate: '2026-06-12',
+    endDate: '2026-11-18',
+    capex: '180000',
+    opex: '24000',
+    predecessors: ['Data source onboarding'],
+    successors: [],
+  },
+];
+
+const scheduleManagementProductRowsInitial: ScheduleManagementProductRow[] = [
+  {
+    id: 'management-product-pid',
+    product: 'Project initiation document',
+    description: 'Baselined PID package submitted for endorsement.',
+    owner: 'PMO Desk',
+    category: 'Governance',
+    startDate: '2026-05-01',
+    endDate: '2026-06-05',
+    capex: '0',
+    opex: '0',
+  },
+  {
+    id: 'management-product-comms-plan',
+    product: 'Communication plan',
+    description: 'Stakeholder communication rhythm and escalation rules.',
+    owner: 'Muna Hassan',
+    category: 'People',
+    startDate: '2026-05-10',
+    endDate: '2026-06-20',
+    capex: '0',
+    opex: '12000',
+  },
+];
+
 const dependencyRegisterConfigs: Record<DependencyRegisterKey, DependencyRegisterConfig> = {
   predecessor: {
     key: 'predecessor',
@@ -1002,6 +1655,278 @@ const issuePlanConfig: IssuePlanConfig = {
     dateRaised: '2026-05-14',
     dueDate: '',
     dateClosed: '',
+  },
+};
+
+const budgetPlanConfig: BudgetPlanConfig = {
+  fieldName: 'Budget',
+  title: 'Budget',
+  description: 'Review the approved project budget, then manage the selected financial year below.',
+  actionLabel: 'Edit FY budget',
+  emptyTitle: 'Budget will appear once the PM assignment is ready',
+  emptyBody: 'Budget overview is populated from the approved project allocation. Project budget details are managed by financial year.',
+  drawerTitle: 'FY budget',
+  drawerBody: 'Adjust the selected financial year baseline and forecast split.',
+  fundingTitle: 'Funding sources',
+  fundingBody: 'Track where this year’s money is coming from, how much is allocated, and whether each source is already confirmed.',
+  fundingEmptyTitle: 'No funding sources added yet',
+  fundingEmptyBody: 'Add confirmed or pending funding lines here once the baseline is agreed so finance reviews can trace how the FY budget is covered.',
+  monthlyTitle: 'Monthly budget phasing',
+  monthlyBody: 'Monthly phasing rolls up to the FY forecast. Forecast, actual, and committed values are easiest to manage in a focused drawer rather than a long page table.',
+  monthlyEmptyTitle: 'No monthly phasing yet',
+  monthlyEmptyBody: 'Once an FY budget is saved we will generate monthly phasing automatically so you can refine the forecast and track actuals without building the structure from scratch.',
+  ruleButtonLabel: 'Budget rules',
+  fyPlaceholder: 'Select fiscal year',
+  amountPlaceholder: '0',
+  sourcePlaceholder: 'Enter funding source',
+  sourceTypePlaceholder: 'Select funding type',
+  sourceStatusPlaceholder: 'Select status',
+  fyOptions: ['FY 2025-2026', 'FY 2026-2027', 'FY 2027-2028', 'FY 2028-2029'],
+  sourceTypeOptions: ['CAPEX', 'OPEX', 'Grant', 'Co-funding'],
+  sourceStatusOptions: ['Confirmed', 'Pending approval', 'At risk'],
+  rules: [
+    {
+      title: 'Approved project budget',
+      body: 'The total project budget comes from the approved allocation and is not edited inside this plan page.',
+    },
+    {
+      title: 'Financial year split',
+      body: 'The PM can break the approved budget into financial year baseline and forecast values before submission.',
+    },
+    {
+      title: 'Actuals during delivery',
+      body: 'Committed and actual values are updated during project delivery and roll into available budget.',
+    },
+    {
+      title: 'Monthly budget',
+      body: 'Monthly budget values sit under the selected FY and roll up into the Project Budget table.',
+    },
+  ],
+  yearDraft: {
+    fy: 'FY 2026-2027',
+    baselineCapex: '',
+    baselineOpex: '',
+    forecastCapex: '',
+    forecastOpex: '',
+  },
+  fundingDraft: {
+    source: '',
+    type: '',
+    amount: '',
+    status: 'Confirmed',
+    notes: '',
+  },
+};
+
+function parseBudgetFiscalYears(fy: string): [number, number] {
+  const match = fy.match(/(\d{4})\D+(\d{4})/);
+  if (!match) return [2026, 2027];
+  return [Number(match[1]), Number(match[2])];
+}
+
+function distributeBudgetAmountEvenly(total: number, count: number): number[] {
+  if (!count) return [];
+  const totalCents = Math.round(total * 100);
+  const base = Math.floor(totalCents / count);
+  const remainder = totalCents - base * count;
+  return Array.from({ length: count }, (_, index) => (base + (index < remainder ? 1 : 0)) / 100);
+}
+
+function budgetMonthLabelsForFy(fy: string): string[] {
+  const [startYear, endYear] = parseBudgetFiscalYears(fy);
+  const order = [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5];
+  return order.map((monthIndex) => {
+    const year = monthIndex >= 6 ? startYear : endYear;
+    return new Date(Date.UTC(year, monthIndex, 1)).toLocaleDateString('en-US', {
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'UTC',
+    });
+  });
+}
+
+function buildBudgetMonthlyRows(
+  fy: string,
+  totals: Pick<BudgetYearPlan, 'baselineCapex' | 'baselineOpex' | 'forecastCapex' | 'forecastOpex'>,
+  overrides: Array<Partial<BudgetMonthlyRow> & { month: string }> = [],
+): BudgetMonthlyRow[] {
+  const months = budgetMonthLabelsForFy(fy);
+  const capexBudget = distributeBudgetAmountEvenly(totals.baselineCapex, months.length);
+  const opexBudget = distributeBudgetAmountEvenly(totals.baselineOpex, months.length);
+  const capexForecast = distributeBudgetAmountEvenly(totals.forecastCapex, months.length);
+  const opexForecast = distributeBudgetAmountEvenly(totals.forecastOpex, months.length);
+  const overrideMap = new Map(overrides.map((override) => [override.month, override]));
+
+  return months.map((month, index) => {
+    const override = overrideMap.get(month);
+    return {
+      id: `budget-month-${slugifyPlanField(`${fy}-${month}`)}`,
+      month,
+      capexBudget: capexBudget[index],
+      opexBudget: opexBudget[index],
+      capexForecast: override?.capexForecast ?? capexForecast[index],
+      opexForecast: override?.opexForecast ?? opexForecast[index],
+      capexActual: override?.capexActual ?? 0,
+      opexActual: override?.opexActual ?? 0,
+      capexCommitted: override?.capexCommitted ?? 0,
+      opexCommitted: override?.opexCommitted ?? 0,
+    };
+  });
+}
+
+function createBudgetYearPlan(
+  id: string,
+  fy: string,
+  baselineCapex: number,
+  baselineOpex: number,
+  forecastCapex: number,
+  forecastOpex: number,
+  fundingSources: BudgetFundingSourceRow[],
+  overrides: Array<Partial<BudgetMonthlyRow> & { month: string }> = [],
+  approvedBudgetLabel?: string,
+): BudgetYearPlan {
+  return {
+    id,
+    fy,
+    baselineCapex,
+    baselineOpex,
+    forecastCapex,
+    forecastOpex,
+    fundingSources,
+    monthlyRows: buildBudgetMonthlyRows(
+      fy,
+      { baselineCapex, baselineOpex, forecastCapex, forecastOpex },
+      overrides,
+    ),
+    approvedBudgetLabel,
+  };
+}
+
+const budgetPlanSeeds: Record<string, BudgetPlanState> = {
+  default: {
+    selectedFy: 'FY 2026-2027',
+    lastSavedLabel: 'Saved yesterday',
+    years: [
+      createBudgetYearPlan(
+        'budget-year-2025',
+        'FY 2025-2026',
+        480000,
+        180000,
+        492000,
+        188000,
+        [
+          { id: 'funding-2025-1', source: 'Strategy allocation', type: 'CAPEX', amount: 350000, status: 'Confirmed', notes: 'Core transformation allocation' },
+          { id: 'funding-2025-2', source: 'Sponsor reserve', type: 'CAPEX', amount: 130000, status: 'Pending approval', notes: 'Release expected after steering review' },
+          { id: 'funding-2025-3', source: 'Operations envelope', type: 'OPEX', amount: 180000, status: 'Confirmed', notes: 'Research office operating budget' },
+        ],
+        [
+          { month: 'Jul 2025', capexActual: 18000, opexActual: 9000, capexCommitted: 12000, opexCommitted: 3000 },
+          { month: 'Aug 2025', capexActual: 22000, opexActual: 11000, capexCommitted: 8000, opexCommitted: 2000 },
+          { month: 'Sep 2025', capexActual: 24000, opexActual: 12000, capexCommitted: 7000, opexCommitted: 2500 },
+        ],
+        'Original approved budget SAR 660K',
+      ),
+      createBudgetYearPlan(
+        'budget-year-2026',
+        'FY 2026-2027',
+        1200000,
+        420000,
+        1180000,
+        435000,
+        [
+          { id: 'funding-2026-1', source: 'Innovation fund', type: 'CAPEX', amount: 700000, status: 'Confirmed', notes: 'Primary capital envelope' },
+          { id: 'funding-2026-2', source: 'Corporate co-funding', type: 'CAPEX', amount: 500000, status: 'Pending approval', notes: 'Approval expected at Q2 forum' },
+          { id: 'funding-2026-3', source: 'Research operations', type: 'OPEX', amount: 420000, status: 'Confirmed', notes: 'Operating cost allocation' },
+        ],
+        [
+          { month: 'Jul 2026', capexActual: 24000, opexActual: 10000, capexCommitted: 18000, opexCommitted: 5000 },
+          { month: 'Aug 2026', capexActual: 31000, opexActual: 13000, capexCommitted: 14000, opexCommitted: 4000 },
+          { month: 'Sep 2026', capexActual: 27000, opexActual: 12000, capexCommitted: 12000, opexCommitted: 3000 },
+          { month: 'Oct 2026', capexActual: 15000, opexActual: 9000, capexCommitted: 10000, opexCommitted: 2500 },
+        ],
+        'Original approved budget SAR 1.62M',
+      ),
+    ],
+  },
+  'Vision 2030': {
+    selectedFy: 'FY 2026-2027',
+    lastSavedLabel: 'Saved yesterday',
+    years: [
+      createBudgetYearPlan(
+        'vision-budget-2025',
+        'FY 2025-2026',
+        480000,
+        180000,
+        492000,
+        188000,
+        [
+          { id: 'vision-funding-2025-1', source: 'Strategy allocation', type: 'CAPEX', amount: 350000, status: 'Confirmed', notes: 'Core transformation allocation' },
+          { id: 'vision-funding-2025-2', source: 'Sponsor reserve', type: 'CAPEX', amount: 130000, status: 'Pending approval', notes: 'Release expected after steering review' },
+          { id: 'vision-funding-2025-3', source: 'Operations envelope', type: 'OPEX', amount: 180000, status: 'Confirmed', notes: 'Research office operating budget' },
+        ],
+        [
+          { month: 'Jul 2025', capexActual: 18000, opexActual: 9000, capexCommitted: 12000, opexCommitted: 3000 },
+          { month: 'Aug 2025', capexActual: 22000, opexActual: 11000, capexCommitted: 8000, opexCommitted: 2000 },
+          { month: 'Sep 2025', capexActual: 24000, opexActual: 12000, capexCommitted: 7000, opexCommitted: 2500 },
+        ],
+        'Original approved budget SAR 660K',
+      ),
+      createBudgetYearPlan(
+        'vision-budget-2026',
+        'FY 2026-2027',
+        1200000,
+        420000,
+        1180000,
+        435000,
+        [
+          { id: 'vision-funding-2026-1', source: 'Innovation fund', type: 'CAPEX', amount: 700000, status: 'Confirmed', notes: 'Primary capital envelope' },
+          { id: 'vision-funding-2026-2', source: 'Corporate co-funding', type: 'CAPEX', amount: 500000, status: 'Pending approval', notes: 'Approval expected at Q2 forum' },
+          { id: 'vision-funding-2026-3', source: 'Research operations', type: 'OPEX', amount: 420000, status: 'Confirmed', notes: 'Operating cost allocation' },
+        ],
+        [
+          { month: 'Jul 2026', capexActual: 24000, opexActual: 10000, capexCommitted: 18000, opexCommitted: 5000 },
+          { month: 'Aug 2026', capexActual: 31000, opexActual: 13000, capexCommitted: 14000, opexCommitted: 4000 },
+          { month: 'Sep 2026', capexActual: 27000, opexActual: 12000, capexCommitted: 12000, opexCommitted: 3000 },
+          { month: 'Oct 2026', capexActual: 15000, opexActual: 9000, capexCommitted: 10000, opexCommitted: 2500 },
+        ],
+        'Original approved budget SAR 1.62M',
+      ),
+    ],
+  },
+  'NEOM Integration': {
+    selectedFy: 'FY 2026-2027',
+    lastSavedLabel: 'Saved this morning',
+    years: [
+      createBudgetYearPlan(
+        'neom-budget-2026',
+        'FY 2026-2027',
+        1650000,
+        520000,
+        1720000,
+        560000,
+        [
+          { id: 'neom-funding-1', source: 'Digital integration fund', type: 'CAPEX', amount: 1200000, status: 'Confirmed', notes: 'Approved in Q1' },
+          { id: 'neom-funding-2', source: 'Contingency reserve', type: 'CAPEX', amount: 450000, status: 'At risk', notes: 'Released only if scope stays approved' },
+          { id: 'neom-funding-3', source: 'Operations transition budget', type: 'OPEX', amount: 520000, status: 'Confirmed', notes: 'Shared services support' },
+        ],
+        [
+          { month: 'Jul 2026', capexActual: 42000, opexActual: 15000, capexCommitted: 30000, opexCommitted: 6000 },
+          { month: 'Aug 2026', capexActual: 38000, opexActual: 17000, capexCommitted: 26000, opexCommitted: 7000 },
+          { month: 'Sep 2026', capexActual: 51000, opexActual: 18000, capexCommitted: 18000, opexCommitted: 6000 },
+        ],
+        'Original approved budget SAR 2.17M',
+      ),
+    ],
+  },
+  'UAE Research Map': {
+    selectedFy: 'FY 2026-2027',
+    lastSavedLabel: 'Not yet saved',
+    years: [],
+  },
+  'PMO Capability': {
+    selectedFy: 'FY 2026-2027',
+    lastSavedLabel: 'Not yet saved',
+    years: [],
   },
 };
 
@@ -1614,20 +2539,26 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                 <div class="project-plan-shell plan-builder-shell quick-plan-shell" [class.simple-plan-shell]="projectPlanDetailMode === 'simple'" [class.detailed-plan-shell]="projectPlanDetailMode === 'detailed'">
                   @if (projectPlanDetailMode === 'detailed') {
                     <aside class="project-plan-sections plan-builder-nav quick-plan-nav matrix-plan-nav" aria-label="Project plan sections">
-                      @for (section of primaryProjectPlanSections; track section) {
-                        <button [class.active]="projectPlanActiveSection === section" type="button" (click)="setProjectPlanSection(section)"><span>{{ section }}</span></button>
-                      }
-                      <button class="matrix-show-sections" [class.is-expanded]="projectPlanSectionsExpanded" type="button" (click)="toggleProjectPlanSections()" [attr.aria-expanded]="projectPlanSectionsExpanded">
-                        <span class="matrix-show-sections-copy"><strong>Additional sections ({{ additionalProjectPlanSections.length }})</strong><small>{{ additionalProjectPlanSections.join(', ') }}</small></span>
-                        <span class="matrix-show-sections-indicator" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="projectPlanSectionsExpanded ? 'minus' : 'plus'"></i></span></span>
-                      </button>
-                      @if (projectPlanSectionsExpanded) {
-                        <div class="matrix-extra-sections">
-                          @for (section of additionalProjectPlanSections; track section) {
-                            <button class="detailed-only" [class.active]="projectPlanActiveSection === section" type="button" (click)="setProjectPlanSection(section)"><span>{{ section }}</span><small>Detailed</small></button>
+                      <div class="matrix-nav-group">
+                        <span class="matrix-nav-label">Core Planning</span>
+                        <div class="matrix-nav-list">
+                          @for (section of primaryProjectPlanSections; track section) {
+                            <button [class.active]="projectPlanActiveSection === section" type="button" (click)="setProjectPlanSection(section)"><span>{{ projectPlanNavLabel(section) }}</span></button>
                           }
                         </div>
-                      }
+                      </div>
+                      <span class="matrix-nav-divider" aria-hidden="true"></span>
+                      <div class="matrix-nav-group matrix-nav-actions">
+                        <div class="matrix-nav-heading">
+                          <span class="matrix-nav-label">Additional Actions</span>
+                          <span class="icon" aria-hidden="true"><i data-lucide="chevron-up"></i></span>
+                        </div>
+                        <div class="matrix-nav-list matrix-extra-sections">
+                          @for (section of additionalProjectPlanSections; track section) {
+                            <button class="detailed-only" [class.active]="projectPlanActiveSection === section" type="button" (click)="setProjectPlanSection(section)"><span>{{ projectPlanNavLabel(section) }}</span></button>
+                          }
+                        </div>
+                      </div>
                     </aside>
                   }
                   <main class="project-plan-content plan-builder-workspace quick-plan-workspace" [class.simple-plan-workspace]="projectPlanDetailMode === 'simple'" [class.detailed-plan-workspace]="projectPlanDetailMode === 'detailed'">
@@ -1735,7 +2666,927 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                 </div>
                               </article>
                             }
-                            @if (projectPlanActiveSection === 'Benefits') {
+                            @if (projectPlanActiveSection === 'Overview') {
+                              <section class="overview-plan-workspace" aria-label="Overview workspace">
+                                <article class="overview-form-card">
+                                  <div class="overview-form-head">
+                                    <div>
+                                      <h3>Case for change</h3>
+                                      <p>Capture the project narrative first, then confirm the AI governance flag before moving into drivers, outcomes, and alignment.</p>
+                                    </div>
+                                  </div>
+                                  <div class="overview-form-body">
+                                    <label class="matrix-field wide">
+                                      <span class="matrix-field-label">Opportunity or Problem Statement</span>
+                                      <textarea [value]="overviewState.opportunityStatement" (input)="updateOverviewState('opportunityStatement', $any($event.target).value)"></textarea>
+                                    </label>
+                                    <div class="overview-form-helper">
+                                      Keep this concise and readable. This is the first thing a reviewer should understand on the page.
+                                    </div>
+                                    <div class="overview-radio-field">
+                                      <span class="matrix-field-label">AI component <b>*</b></span>
+                                      <small class="matrix-field-description">Mandatory governance flag shown in every detail level.</small>
+                                      <div class="overview-radio-group" role="radiogroup" aria-label="AI component">
+                                        <label>
+                                          <input type="radio" name="overview-ai-component" [checked]="overviewState.aiComponent === 'Yes'" (change)="updateOverviewState('aiComponent', 'Yes')" />
+                                          <span>Yes</span>
+                                        </label>
+                                        <label>
+                                          <input type="radio" name="overview-ai-component" [checked]="overviewState.aiComponent !== 'Yes'" (change)="updateOverviewState('aiComponent', 'No')" />
+                                          <span>No</span>
+                                        </label>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </article>
+
+                                <article class="dependency-register-card overview-register-card">
+                                  <div class="dependency-register-head">
+                                    <div class="dependency-register-copy">
+                                      <span class="dependency-register-eyebrow">Business Drivers</span>
+                                      <strong>Business drivers</strong>
+                                      <small>Strategic and business reasons that explain why this project needs to move forward.</small>
+                                    </div>
+                                    <div class="dependency-register-actions">
+                                      <span class="dependency-register-count">{{ overviewCountLabel(overviewBusinessDriverRows.length, 'driver') }}</span>
+                                      <button class="dependency-register-add" type="button" (click)="openOverviewBusinessDriverDrawer()">
+                                        <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>Add business driver
+                                      </button>
+                                    </div>
+                                  </div>
+                                  @if (overviewBusinessDriverRows.length) {
+                                    <div class="dependency-register-table-shell">
+                                      <table class="dependency-register-table overview-driver-table" aria-label="Business drivers">
+                                        <thead>
+                                          <tr>
+                                            <th>Driver</th>
+                                            <th>Source</th>
+                                            <th>Priority</th>
+                                            <th>Why it matters</th>
+                                            <th aria-label="Actions"></th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          @for (row of overviewBusinessDriverRows; track row.id) {
+                                            <tr>
+                                              <td class="dependency-register-primary">
+                                                <strong>{{ row.driver }}</strong>
+                                                <small>Business driver carried into the project brief</small>
+                                              </td>
+                                              <td>{{ row.source }}</td>
+                                              <td><span class="schedule-priority-pill {{ scheduleMilestonePriorityTone(row.priority) }}">{{ row.priority }}</span></td>
+                                              <td>{{ row.note || 'No additional note captured' }}</td>
+                                              <td class="schedule-table-actions">
+                                                <button class="schedule-table-action" type="button" (click)="openOverviewBusinessDriverDrawer(row)" [attr.aria-label]="'Edit ' + row.driver">
+                                                  <span class="icon" aria-hidden="true"><i data-lucide="pencil"></i></span>
+                                                </button>
+                                                <button class="schedule-table-action danger" type="button" (click)="removeOverviewBusinessDriver(row.id)" [attr.aria-label]="'Delete ' + row.driver">
+                                                  <span class="icon" aria-hidden="true"><i data-lucide="trash-2"></i></span>
+                                                </button>
+                                              </td>
+                                            </tr>
+                                          }
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  } @else {
+                                    <div class="dependency-empty-state overview-empty-state">
+                                      <img src="./assets/project-card-line-art.svg" alt="" aria-hidden="true" />
+                                      <div class="dependency-empty-state-copy">
+                                        <strong>No business drivers linked yet</strong>
+                                        <p>Add the main business reasons here so the overview does not read like an isolated request.</p>
+                                      </div>
+                                    </div>
+                                  }
+                                </article>
+
+                                <article class="dependency-register-card overview-register-card">
+                                  <div class="dependency-register-head">
+                                    <div class="dependency-register-copy">
+                                      <span class="dependency-register-eyebrow">Outcome</span>
+                                      <strong>Outcomes</strong>
+                                      <small>Expected results and measures that define what success should look like.</small>
+                                    </div>
+                                    <div class="dependency-register-actions">
+                                      <span class="dependency-register-count">{{ overviewCountLabel(overviewOutcomeRows.length, 'outcome') }}</span>
+                                      <button class="dependency-register-add" type="button" (click)="openOverviewOutcomeDrawer()">
+                                        <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>Add outcome
+                                      </button>
+                                    </div>
+                                  </div>
+                                  @if (overviewOutcomeRows.length) {
+                                    <div class="dependency-register-table-shell">
+                                      <table class="dependency-register-table" aria-label="Outcomes">
+                                        <thead>
+                                          <tr>
+                                            <th>Outcome</th>
+                                            <th>Measure</th>
+                                            <th>Owner</th>
+                                            <th>Status</th>
+                                            <th aria-label="Actions"></th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          @for (row of overviewOutcomeRows; track row.id) {
+                                            <tr>
+                                              <td class="dependency-register-primary">
+                                                <strong>{{ row.outcome }}</strong>
+                                                <small>Outcome visible in the project overview</small>
+                                              </td>
+                                              <td>{{ row.measure }}</td>
+                                              <td>{{ row.owner }}</td>
+                                              <td><span class="overview-status-pill {{ overviewStatusTone(row.status) }}">{{ row.status }}</span></td>
+                                              <td class="schedule-table-actions">
+                                                <button class="schedule-table-action" type="button" (click)="openOverviewOutcomeDrawer(row)" [attr.aria-label]="'Edit ' + row.outcome">
+                                                  <span class="icon" aria-hidden="true"><i data-lucide="pencil"></i></span>
+                                                </button>
+                                                <button class="schedule-table-action danger" type="button" (click)="removeOverviewOutcome(row.id)" [attr.aria-label]="'Delete ' + row.outcome">
+                                                  <span class="icon" aria-hidden="true"><i data-lucide="trash-2"></i></span>
+                                                </button>
+                                              </td>
+                                            </tr>
+                                          }
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  } @else {
+                                    <div class="dependency-empty-state overview-empty-state compact">
+                                      <img src="./assets/project-card-line-art.svg" alt="" aria-hidden="true" />
+                                      <div class="dependency-empty-state-copy">
+                                        <strong>No outcomes saved yet</strong>
+                                        <p>Use at least one outcome so the project brief stays tied to measurable value.</p>
+                                      </div>
+                                    </div>
+                                  }
+                                </article>
+
+                                <article class="dependency-register-card overview-register-card overview-alignment-card">
+                                  <div class="dependency-register-head">
+                                    <div class="dependency-register-copy">
+                                      <span class="dependency-register-eyebrow">Project Alignment (Objectives)</span>
+                                      <strong>Project alignment</strong>
+                                      <small>Connect project objectives to the strategic objectives the work is meant to support.</small>
+                                    </div>
+                                    <div class="dependency-register-actions">
+                                      <span class="dependency-register-count">{{ overviewCountLabel(overviewObjectiveRows.length, 'objective') }}</span>
+                                      <button class="dependency-register-add" type="button" (click)="openOverviewObjectiveDrawer()">
+                                        <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>Add project objective
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  <div class="overview-alignment-summary overview-alignment-summary-simple">
+                                    <div class="overview-alignment-block">
+                                      <span class="matrix-field-label">Strategic objectives</span>
+                                      <div class="overview-alignment-pill-list">
+                                        @for (item of overviewStrategicObjectiveLinks; track item) {
+                                          <span class="overview-alignment-pill">{{ item }}</span>
+                                        }
+                                      </div>
+                                    </div>
+                                    <div class="overview-alignment-block overview-plan-notes">
+                                      @for (signal of overviewBusinessPlanSignals; track signal.label) {
+                                        <article class="overview-plan-signal">
+                                          <strong>{{ signal.label }}</strong>
+                                          <p>{{ signal.body }}</p>
+                                        </article>
+                                      }
+                                    </div>
+                                  </div>
+
+                                  @if (overviewObjectiveRows.length) {
+                                    <div class="dependency-register-table-shell">
+                                      <table class="dependency-register-table" aria-label="Project objectives">
+                                        <thead>
+                                          <tr>
+                                            <th>Project objective</th>
+                                            <th>Linked strategic objective</th>
+                                            <th>Status</th>
+                                            <th aria-label="Actions"></th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          @for (row of overviewObjectiveRows; track row.id) {
+                                            <tr>
+                                              <td class="dependency-register-primary">
+                                                <strong>{{ row.objective }}</strong>
+                                                <small>Project-level objective saved in the overview</small>
+                                              </td>
+                                              <td>{{ row.linkedObjective }}</td>
+                                              <td><span class="overview-status-pill {{ overviewStatusTone(row.status) }}">{{ row.status }}</span></td>
+                                              <td class="schedule-table-actions">
+                                                <button class="schedule-table-action" type="button" (click)="openOverviewObjectiveDrawer(row)" [attr.aria-label]="'Edit ' + row.objective">
+                                                  <span class="icon" aria-hidden="true"><i data-lucide="pencil"></i></span>
+                                                </button>
+                                                <button class="schedule-table-action danger" type="button" (click)="removeOverviewObjective(row.id)" [attr.aria-label]="'Delete ' + row.objective">
+                                                  <span class="icon" aria-hidden="true"><i data-lucide="trash-2"></i></span>
+                                                </button>
+                                              </td>
+                                            </tr>
+                                          }
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  } @else {
+                                    <div class="dependency-empty-state overview-empty-state compact">
+                                      <img src="./assets/project-card-line-art.svg" alt="" aria-hidden="true" />
+                                      <div class="dependency-empty-state-copy">
+                                        <strong>No project objectives linked yet</strong>
+                                        <p>Add objectives here so the strategic intent becomes concrete and reviewable.</p>
+                                      </div>
+                                    </div>
+                                  }
+                                </article>
+
+                                @if (activeProjectPlanHasVisibleFields && activeProjectPlanHiddenFields.length) {
+                                  <button class="matrix-show-fields overview-show-fields" [class.is-expanded]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection)" type="button" (click)="toggleProjectPlanFieldSection(projectPlanActiveSection)" [attr.aria-expanded]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection)">
+                                    <span class="matrix-show-fields-copy"><strong>{{ activeProjectPlanHiddenFieldButtonLabel }} ({{ activeProjectPlanHiddenFields.length }})</strong><small>{{ activeProjectPlanHiddenFieldPreview }}</small></span>
+                                    <span class="matrix-show-fields-indicator" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection) ? 'minus' : 'plus'"></i></span></span>
+                                  </button>
+                                  @if (isProjectPlanFieldSectionExpanded(projectPlanActiveSection)) {
+                                    <div class="matrix-hidden-fields is-expanded">
+                                      <section class="overview-hidden-stack" aria-label="Additional overview fields">
+                                        <article class="overview-form-card overview-form-card-secondary">
+                                          <div class="overview-form-head">
+                                            <div>
+                                              <h3>Additional fields</h3>
+                                              <p>Detailed fields that support deeper governance and architecture conversations.</p>
+                                            </div>
+                                          </div>
+                                          <div class="overview-form-body">
+                                            <label class="matrix-field wide">
+                                              <span class="matrix-field-label">Driver for change / Analysis undertaken</span>
+                                              <textarea [value]="overviewState.driverAnalysis" (input)="updateOverviewState('driverAnalysis', $any($event.target).value)"></textarea>
+                                            </label>
+                                          </div>
+                                        </article>
+
+                                        <article class="dependency-register-card overview-register-card">
+                                          <div class="dependency-register-head">
+                                            <div class="dependency-register-copy">
+                                              <span class="dependency-register-eyebrow">Link Capabilities</span>
+                                              <strong>Capabilities</strong>
+                                              <small>Capability mapping for detailed governance, architecture, or operating model alignment.</small>
+                                            </div>
+                                            <div class="dependency-register-actions">
+                                              <span class="dependency-register-count">{{ overviewCountLabel(overviewCapabilityRows.length, 'capability') }}</span>
+                                              <button class="dependency-register-add" type="button" (click)="openOverviewCapabilityDrawer()">
+                                                <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>Link capabilities
+                                              </button>
+                                            </div>
+                                          </div>
+                                          @if (overviewCapabilityRows.length) {
+                                            <div class="dependency-register-table-shell">
+                                              <table class="dependency-register-table" aria-label="Linked capabilities">
+                                                <thead>
+                                                  <tr>
+                                                    <th>Capability</th>
+                                                    <th>Domain</th>
+                                                    <th>Owner</th>
+                                                    <th aria-label="Actions"></th>
+                                                  </tr>
+                                                </thead>
+                                                <tbody>
+                                                  @for (row of overviewCapabilityRows; track row.id) {
+                                                    <tr>
+                                                      <td class="dependency-register-primary">
+                                                        <strong>{{ row.capability }}</strong>
+                                                        <small>Detailed governance mapping</small>
+                                                      </td>
+                                                      <td>{{ row.domain }}</td>
+                                                      <td>{{ row.owner }}</td>
+                                                      <td class="schedule-table-actions">
+                                                        <button class="schedule-table-action" type="button" (click)="openOverviewCapabilityDrawer(row)" [attr.aria-label]="'Edit ' + row.capability">
+                                                          <span class="icon" aria-hidden="true"><i data-lucide="pencil"></i></span>
+                                                        </button>
+                                                        <button class="schedule-table-action danger" type="button" (click)="removeOverviewCapability(row.id)" [attr.aria-label]="'Delete ' + row.capability">
+                                                          <span class="icon" aria-hidden="true"><i data-lucide="trash-2"></i></span>
+                                                        </button>
+                                                      </td>
+                                                    </tr>
+                                                  }
+                                                </tbody>
+                                              </table>
+                                            </div>
+                                          } @else {
+                                            <div class="dependency-empty-state overview-empty-state compact">
+                                              <img src="./assets/project-card-line-art.svg" alt="" aria-hidden="true" />
+                                              <div class="dependency-empty-state-copy">
+                                                <strong>No capabilities linked yet</strong>
+                                                <p>Add capabilities only when the detailed plan needs that mapping.</p>
+                                              </div>
+                                            </div>
+                                          }
+                                        </article>
+
+                                        <article class="dependency-register-card overview-register-card">
+                                          <div class="dependency-register-head">
+                                            <div class="dependency-register-copy">
+                                              <span class="dependency-register-eyebrow">Link Services</span>
+                                              <strong>Services</strong>
+                                              <small>Service group, value stream, phase, and service mapping for the detailed layer.</small>
+                                            </div>
+                                            <div class="dependency-register-actions">
+                                              <span class="dependency-register-count">{{ overviewCountLabel(overviewServiceRows.length, 'service') }}</span>
+                                              <button class="dependency-register-add" type="button" (click)="openOverviewServiceDrawer()">
+                                                <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>Link service
+                                              </button>
+                                            </div>
+                                          </div>
+                                          @if (overviewServiceRows.length) {
+                                            <div class="dependency-register-table-shell">
+                                              <table class="dependency-register-table" aria-label="Linked services">
+                                                <thead>
+                                                  <tr>
+                                                    <th>Service group</th>
+                                                    <th>Value stream</th>
+                                                    <th>Phase</th>
+                                                    <th>Service</th>
+                                                    <th aria-label="Actions"></th>
+                                                  </tr>
+                                                </thead>
+                                                <tbody>
+                                                  @for (row of overviewServiceRows; track row.id) {
+                                                    <tr>
+                                                      <td class="dependency-register-primary">
+                                                        <strong>{{ row.serviceGroup }}</strong>
+                                                        <small>Service catalogue connection</small>
+                                                      </td>
+                                                      <td>{{ row.valueStream }}</td>
+                                                      <td>{{ row.phase }}</td>
+                                                      <td>{{ row.service }}</td>
+                                                      <td class="schedule-table-actions">
+                                                        <button class="schedule-table-action" type="button" (click)="openOverviewServiceDrawer(row)" [attr.aria-label]="'Edit ' + row.service">
+                                                          <span class="icon" aria-hidden="true"><i data-lucide="pencil"></i></span>
+                                                        </button>
+                                                        <button class="schedule-table-action danger" type="button" (click)="removeOverviewService(row.id)" [attr.aria-label]="'Delete ' + row.service">
+                                                          <span class="icon" aria-hidden="true"><i data-lucide="trash-2"></i></span>
+                                                        </button>
+                                                      </td>
+                                                    </tr>
+                                                  }
+                                                </tbody>
+                                              </table>
+                                            </div>
+                                          } @else {
+                                            <div class="dependency-empty-state overview-empty-state compact">
+                                              <img src="./assets/project-card-line-art.svg" alt="" aria-hidden="true" />
+                                              <div class="dependency-empty-state-copy">
+                                                <strong>No services linked yet</strong>
+                                                <p>Add services only when the detailed plan needs service catalogue traceability.</p>
+                                              </div>
+                                            </div>
+                                          }
+                                        </article>
+                                      </section>
+                                    </div>
+                                  }
+                                }
+                              </section>
+                            } @else if (projectPlanActiveSection === 'Budget') {
+                              @let plan = activeBudgetPlan;
+                              @let year = activeBudgetYear;
+                              <section class="budget-workspace" aria-label="Budget">
+                                <article class="budget-section budget-overview-panel">
+                                  <div class="budget-section-head">
+                                    <div>
+                                      <h3>Budget Overview <span class="icon budget-info-icon" aria-hidden="true"><i data-lucide="info"></i></span></h3>
+                                      <p>Approved budget summary for the project. These totals give the PM a stable reference while the project budget is managed below.</p>
+                                    </div>
+                                    <button class="budget-outline-action" type="button">View revisions</button>
+                                  </div>
+
+                                  <div class="budget-overview-summary-grid" aria-label="Budget overview totals">
+                                    @for (metric of activeBudgetOverviewMetrics; track metric.label) {
+                                      <article class="budget-summary-cell {{ metric.tone }}">
+                                        <span>{{ metric.label }}</span>
+                                        <strong>{{ metric.value }}</strong>
+                                        <small>{{ metric.helper }}</small>
+                                      </article>
+                                    }
+                                  </div>
+
+                                  <div class="budget-table-wrap">
+                                    <table class="budget-table budget-overview-table" aria-label="Budget overview by fiscal year">
+                                      <thead>
+                                        <tr>
+                                          <th>FY</th>
+                                          <th>Budget</th>
+                                          <th>Forecast</th>
+                                          <th>Forecast Variance</th>
+                                          <th>Committed (Unspent)</th>
+                                          <th>Actual</th>
+                                          <th>Total Committed (C + A)</th>
+                                          <th>Available Budget</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        @for (row of plan.years; track row.id) {
+                                          <tr [class.is-selected]="row.fy === plan.selectedFy">
+                                            <td>{{ row.fy }}</td>
+                                            <td>{{ formatBudgetCurrency(budgetYearBaselineTotal(row)) }}</td>
+                                            <td>{{ formatBudgetCurrency(budgetYearForecastTotal(row)) }}</td>
+                                            <td class="budget-variance-cell {{ budgetVarianceTone(budgetYearVariance(row)) }}">
+                                              <strong>{{ formatBudgetSignedCurrency(budgetYearVariance(row)) }}</strong>
+                                              <small>{{ formatBudgetPercent(budgetYearVariance(row), budgetYearBaselineTotal(row)) }}</small>
+                                            </td>
+                                            <td>{{ formatBudgetCurrency(budgetYearCommittedTotal(row)) }}</td>
+                                            <td>{{ formatBudgetCurrency(budgetYearActualTotal(row)) }}</td>
+                                            <td>{{ formatBudgetCurrency(budgetYearActualTotal(row) + budgetYearCommittedTotal(row)) }}</td>
+                                            <td class="budget-available-cell {{ budgetYearAvailableTotal(row) < 0 ? 'red' : 'green' }}">{{ formatBudgetCurrency(budgetYearAvailableTotal(row)) }}</td>
+                                          </tr>
+                                        }
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </article>
+
+                                @if (year) {
+                                  <article class="budget-section budget-project-panel">
+                                    <div class="budget-project-head">
+                                      <div>
+                                        <h3>Project Budget <span class="icon budget-info-icon" aria-hidden="true"><i data-lucide="info"></i></span></h3>
+                                        <p>Manage the selected financial year here. Baseline and forecast are the plan breakdown; actual and committed values are updated as the project runs.</p>
+                                      </div>
+                                      <div class="budget-project-tools">
+                                        <label class="budget-fy-select">
+                                          <span>FY</span>
+                                          <select [value]="plan.selectedFy" (change)="selectBudgetFy($any($event.target).value)" aria-label="Current fiscal year">
+                                            @for (option of budgetPlanConfig.fyOptions; track option) {
+                                              <option [value]="option" [selected]="option === plan.selectedFy" [disabled]="!budgetPlanHasFy(plan, option)">{{ option }}</option>
+                                            }
+                                          </select>
+                                        </label>
+                                        <button class="budget-rules-link" data-budget-rules-trigger type="button" (click)="toggleBudgetRules()">{{ budgetPlanConfig.ruleButtonLabel }}</button>
+                                      </div>
+                                      @if (isBudgetRulesOpen) {
+                                        <div class="budget-rules-popover budget-rules-popover-compact" data-budget-rules-popover>
+                                          <div class="budget-rules-popover-head">
+                                            <strong>{{ budgetPlanConfig.ruleButtonLabel }}</strong>
+                                            <small>How budget values roll up and when they become locked.</small>
+                                          </div>
+                                          <div class="budget-rules-list">
+                                            @for (rule of budgetPlanConfig.rules; track rule.title) {
+                                              <article class="budget-rule-entry">
+                                                <strong>{{ rule.title }}</strong>
+                                                <p>{{ rule.body }}</p>
+                                              </article>
+                                            }
+                                          </div>
+                                        </div>
+                                      }
+                                    </div>
+
+                                    <div class="budget-tab-row" role="tablist" aria-label="Budget detail views">
+                                      <button type="button" role="tab" [class.is-active]="activeBudgetSubtab === 'project'" [attr.aria-selected]="activeBudgetSubtab === 'project'" (click)="selectBudgetTab('project')">Project Budget</button>
+                                      <button type="button" role="tab" [class.is-active]="activeBudgetSubtab === 'funding'" [attr.aria-selected]="activeBudgetSubtab === 'funding'" (click)="selectBudgetTab('funding')">Funding Sources <span>{{ year.fundingSources.length }}</span></button>
+                                      <button type="button" role="tab" [class.is-active]="activeBudgetSubtab === 'monthly'" [attr.aria-selected]="activeBudgetSubtab === 'monthly'" (click)="selectBudgetTab('monthly')">Monthly Budget</button>
+                                    </div>
+
+                                    @if (activeBudgetSubtab === 'project') {
+                                      <div class="budget-tab-panel">
+                                        <div class="budget-inline-note">
+                                          <span class="icon" aria-hidden="true"><i data-lucide="info"></i></span>
+                                          <span>The Financial Years shown here are based on the dates in the Schedule tab.</span>
+                                          <strong>{{ plan.lastSavedLabel }}</strong>
+                                        </div>
+                                        <div class="budget-table-wrap">
+                                          <table class="budget-table budget-project-table" aria-label="Project budget for selected fiscal year">
+                                            <thead>
+                                              <tr>
+                                                <th></th>
+                                                <th>FY Baseline</th>
+                                                <th>FY Forecast</th>
+                                                <th>Forecast Variance</th>
+                                                <th>Committed</th>
+                                                <th>YTD Baseline</th>
+                                                <th>YTD Actual</th>
+                                                <th>Available Budget</th>
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              @for (row of activeBudgetBreakdownRows; track row.stream) {
+                                                <tr [class.is-total]="row.stream === 'Total'">
+                                                  <th scope="row">{{ row.stream }}</th>
+                                                  @if (row.stream === 'Total') {
+                                                    <td>{{ formatBudgetCurrency(row.baseline) }}</td>
+                                                    <td>{{ formatBudgetCurrency(row.forecast) }}</td>
+                                                    <td class="budget-variance-cell {{ budgetVarianceTone(budgetStreamVariance(row)) }}">
+                                                      <strong>{{ formatBudgetSignedCurrency(budgetStreamVariance(row)) }}</strong>
+                                                      <small>{{ formatBudgetPercent(budgetStreamVariance(row), row.baseline) }}</small>
+                                                    </td>
+                                                    <td>{{ formatBudgetCurrency(row.committed) }}</td>
+                                                    <td>{{ formatBudgetCurrency(row.baseline) }}</td>
+                                                    <td>{{ formatBudgetCurrency(row.actual) }}</td>
+                                                    <td class="budget-available-cell {{ budgetStreamAvailable(row) < 0 ? 'red' : 'green' }}">{{ formatBudgetCurrency(budgetStreamAvailable(row)) }}</td>
+                                                  } @else {
+                                                    <td><label class="budget-money-input"><span>SAR</span><input type="number" min="0" step="100" [value]="budgetBreakdownInputValue(row, 'baseline')" (input)="updateBudgetBreakdown(row.stream, 'baseline', $any($event.target).value)" [attr.aria-label]="row.stream + ' FY baseline'" /></label></td>
+                                                    <td><label class="budget-money-input"><span>SAR</span><input type="number" min="0" step="100" [value]="budgetBreakdownInputValue(row, 'forecast')" (input)="updateBudgetBreakdown(row.stream, 'forecast', $any($event.target).value)" [attr.aria-label]="row.stream + ' FY forecast'" /></label></td>
+                                                    <td class="budget-variance-cell {{ budgetVarianceTone(budgetStreamVariance(row)) }}">
+                                                      <strong>{{ formatBudgetSignedCurrency(budgetStreamVariance(row)) }}</strong>
+                                                      <small>{{ formatBudgetPercent(budgetStreamVariance(row), row.baseline) }}</small>
+                                                    </td>
+                                                    <td><label class="budget-money-input"><span>SAR</span><input type="number" min="0" step="100" [value]="budgetBreakdownInputValue(row, 'committed')" (input)="updateBudgetBreakdown(row.stream, 'committed', $any($event.target).value)" [attr.aria-label]="row.stream + ' committed'" /></label></td>
+                                                    <td>{{ formatBudgetCurrency(row.baseline) }}</td>
+                                                    <td><label class="budget-money-input"><span>SAR</span><input type="number" min="0" step="100" [value]="budgetBreakdownInputValue(row, 'actual')" (input)="updateBudgetBreakdown(row.stream, 'actual', $any($event.target).value)" [attr.aria-label]="row.stream + ' YTD actual'" /></label></td>
+                                                    <td class="budget-available-cell {{ budgetStreamAvailable(row) < 0 ? 'red' : 'green' }}">{{ formatBudgetCurrency(budgetStreamAvailable(row)) }}</td>
+                                                  }
+                                                </tr>
+                                              }
+                                            </tbody>
+                                          </table>
+                                        </div>
+                                        <div class="budget-table-footer">
+                                          <span>Changes stay visible immediately. Use this save action to make the section feel committed before submitting the plan.</span>
+                                          <button class="budget-primary-action" type="button" (click)="saveBudgetChanges()">Save budget changes</button>
+                                        </div>
+                                      </div>
+                                    } @else if (activeBudgetSubtab === 'funding') {
+                                      <div class="budget-tab-panel">
+                                        <div class="budget-subview-head">
+                                          <div>
+                                            <strong>{{ budgetPlanConfig.fundingTitle }}</strong>
+                                            <small class="{{ budgetFundingCoverageTone(year) }}">{{ budgetFundingCoverageLabel(year) }}</small>
+                                          </div>
+                                          <button class="budget-primary-action" type="button" (click)="openBudgetFundingDrawer()">Add funding source</button>
+                                        </div>
+                                        @if (year.fundingSources.length) {
+                                          <div class="budget-table-wrap">
+                                            <table class="budget-table budget-secondary-table" aria-label="Funding sources">
+                                              <thead>
+                                                <tr>
+                                                  <th>Source</th>
+                                                  <th>Type</th>
+                                                  <th>Amount</th>
+                                                  <th>Status</th>
+                                                  <th>Notes</th>
+                                                </tr>
+                                              </thead>
+                                              <tbody>
+                                                @for (row of year.fundingSources; track row.id) {
+                                                  <tr>
+                                                    <td>{{ row.source }}</td>
+                                                    <td>{{ row.type }}</td>
+                                                    <td>{{ formatBudgetCurrency(row.amount) }}</td>
+                                                    <td><span class="dependency-register-pill {{ row.status === 'Confirmed' ? 'indigo' : row.status === 'Pending approval' ? 'amber' : 'neutral' }}">{{ row.status }}</span></td>
+                                                    <td>{{ row.notes || '-' }}</td>
+                                                  </tr>
+                                                }
+                                              </tbody>
+                                            </table>
+                                          </div>
+                                        } @else {
+                                          <div class="budget-quiet-empty">
+                                            <strong>No funding sources added</strong>
+                                            <span>Add a funding source only when finance needs the FY baseline traced back to an allocation line.</span>
+                                          </div>
+                                        }
+                                      </div>
+                                    } @else {
+                                      <div class="budget-tab-panel">
+                                        <div class="budget-subview-head">
+                                          <div>
+                                            <strong>{{ budgetPlanConfig.monthlyTitle }}</strong>
+                                            <small>{{ budgetMonthlyCountLabel(year) }} for {{ year.fy }}</small>
+                                          </div>
+                                          <button class="budget-primary-action" type="button" (click)="openBudgetMonthlyDrawer()">Edit monthly values</button>
+                                        </div>
+                                        <div class="budget-table-wrap budget-monthly-table-wrap">
+                                          <table class="budget-table budget-monthly-table" aria-label="Monthly budget for selected fiscal year">
+                                            <thead>
+                                              <tr>
+                                                <th>Month</th>
+                                                <th>Budget</th>
+                                                <th>Forecast</th>
+                                                <th>Committed</th>
+                                                <th>Actual</th>
+                                                <th>Actual Variance</th>
+                                                <th>Available Budget</th>
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              @for (row of year.monthlyRows; track row.id) {
+                                                <tr>
+                                                  <td>{{ row.month }}</td>
+                                                  <td>{{ formatBudgetCurrency(budgetMonthlyTotal(row, 'budget')) }}</td>
+                                                  <td>{{ formatBudgetCurrency(budgetMonthlyTotal(row, 'forecast')) }}</td>
+                                                  <td>{{ formatBudgetCurrency(budgetMonthlyTotal(row, 'committed')) }}</td>
+                                                  <td>{{ formatBudgetCurrency(budgetMonthlyTotal(row, 'actual')) }}</td>
+                                                  <td class="budget-variance-cell {{ budgetVarianceTone(budgetMonthlyActualVariance(row)) }}">
+                                                    <strong>{{ formatBudgetSignedCurrency(budgetMonthlyActualVariance(row)) }}</strong>
+                                                    <small>{{ formatBudgetPercent(budgetMonthlyActualVariance(row), budgetMonthlyTotal(row, 'forecast')) }}</small>
+                                                  </td>
+                                                  <td class="budget-available-cell {{ budgetMonthlyAvailable(row) < 0 ? 'red' : 'green' }}">{{ formatBudgetCurrency(budgetMonthlyAvailable(row)) }}</td>
+                                                </tr>
+                                              }
+                                            </tbody>
+                                          </table>
+                                        </div>
+                                      </div>
+                                    }
+                                  </article>
+                                }
+                              </section>
+                            } @else if (projectPlanActiveSection === 'Schedule & Scope') {
+                              <section class="schedule-scope-workspace" aria-label="Schedule and scope workspace">
+                                <article class="schedule-scope-overview-card">
+                                  <div class="schedule-scope-overview-head">
+                                    <div>
+                                      <span class="schedule-scope-section-eyebrow">Overview</span>
+                                      <h3>Schedule and scope baseline</h3>
+                                      <p>Approved dates, current forecast, milestone checkpoints, and the core scope statement in one place.</p>
+                                    </div>
+                                    <div class="schedule-scope-overview-summary" aria-label="Schedule and scope summary">
+                                      <span>
+                                        <strong>{{ scheduleScopeDateRange(scheduleScopeState.baselineStart, scheduleScopeState.baselineEnd) }}</strong>
+                                        <small>Baseline</small>
+                                      </span>
+                                      <span>
+                                        <strong>{{ scheduleScopeForecastShiftLabel }}</strong>
+                                        <small>Forecast shift</small>
+                                      </span>
+                                      <span>
+                                        <strong>{{ scheduleScopeCountLabel(scheduleMilestoneRows.length, 'milestone') }}</strong>
+                                        <small>Checkpoints</small>
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <div class="schedule-scope-form">
+                                    <section class="schedule-scope-form-section" aria-label="Timeline anchors">
+                                      <div class="schedule-scope-form-copy">
+                                        <span>Timeline</span>
+                                        <p>Compare the approved baseline with the latest forecast.</p>
+                                      </div>
+                                      <div class="schedule-date-rows">
+                                        <div class="schedule-date-row">
+                                          <span class="schedule-date-row-label">Baseline</span>
+                                          <label class="matrix-field">
+                                            <span class="matrix-field-label">Start date</span>
+                                            <input type="date" [value]="scheduleScopeState.baselineStart" (input)="updateScheduleScopeField('baselineStart', $any($event.target).value)" />
+                                          </label>
+                                          <label class="matrix-field">
+                                            <span class="matrix-field-label">End date</span>
+                                            <input type="date" [value]="scheduleScopeState.baselineEnd" (input)="updateScheduleScopeField('baselineEnd', $any($event.target).value)" />
+                                          </label>
+                                        </div>
+                                        <div class="schedule-date-row">
+                                          <span class="schedule-date-row-label">Forecast</span>
+                                          <label class="matrix-field">
+                                            <span class="matrix-field-label">Start date</span>
+                                            <input type="date" [value]="scheduleScopeState.forecastStart" (input)="updateScheduleScopeField('forecastStart', $any($event.target).value)" />
+                                          </label>
+                                          <label class="matrix-field">
+                                            <span class="matrix-field-label">End date</span>
+                                            <input type="date" [value]="scheduleScopeState.forecastEnd" (input)="updateScheduleScopeField('forecastEnd', $any($event.target).value)" />
+                                          </label>
+                                        </div>
+                                      </div>
+                                    </section>
+
+                                    <section class="schedule-scope-form-section schedule-scope-form-section-scope" aria-label="Scope boundaries">
+                                      <div class="schedule-scope-form-copy">
+                                        <span>Scope</span>
+                                        <p>The work included in the approved planning baseline.</p>
+                                      </div>
+                                      <label class="matrix-field wide schedule-scope-narrative-field">
+                                        <span class="matrix-field-label">In Scope</span>
+                                        <textarea [value]="scheduleScopeState.inScope" (input)="updateScheduleScopeField('inScope', $any($event.target).value)"></textarea>
+                                      </label>
+                                    </section>
+
+                                    <section class="schedule-scope-form-section schedule-scope-form-section-milestones" aria-label="Milestones">
+                                      <div class="schedule-scope-form-copy schedule-scope-form-copy-row">
+                                        <div>
+                                          <span>Milestones</span>
+                                          <p>Key checkpoints that anchor the plan and reporting cycle.</p>
+                                        </div>
+                                        <button class="schedule-inline-action" type="button" (click)="openScheduleMilestoneDrawer()">
+                                          <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>Add milestone
+                                        </button>
+                                      </div>
+                                      <div class="dependency-register-table-shell schedule-overview-table-shell">
+                                    <table class="dependency-register-table schedule-milestone-table" aria-label="Milestones">
+                                      <thead>
+                                        <tr>
+                                          <th>Milestone</th>
+                                          <th>Due date</th>
+                                          <th>Owner</th>
+                                          <th>Priority</th>
+                                          <th aria-label="Actions"></th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        @for (row of scheduleMilestoneRows; track row.id) {
+                                          <tr>
+                                            <td class="dependency-register-primary">
+                                              <strong>{{ row.milestone }}</strong>
+                                              <small>{{ row.note || 'No additional milestone note' }}</small>
+                                            </td>
+                                            <td>{{ scheduleScopeDateLabel(row.dueDate) }}</td>
+                                            <td>{{ row.owner || 'Owner to confirm' }}</td>
+                                            <td><span class="schedule-priority-pill {{ scheduleMilestonePriorityTone(row.priority) }}">{{ row.priority || 'TBD' }}</span></td>
+                                            <td class="schedule-table-actions">
+                                              <button class="schedule-table-action" type="button" (click)="openScheduleMilestoneDrawer(row)" [attr.aria-label]="'Edit ' + row.milestone">
+                                                <span class="icon" aria-hidden="true"><i data-lucide="pencil"></i></span>
+                                              </button>
+                                              <button class="schedule-table-action danger" type="button" (click)="removeScheduleMilestone(row.id)" [attr.aria-label]="'Delete ' + row.milestone">
+                                                <span class="icon" aria-hidden="true"><i data-lucide="trash-2"></i></span>
+                                              </button>
+                                            </td>
+                                          </tr>
+                                        }
+                                      </tbody>
+                                        </table>
+                                      </div>
+                                    </section>
+                                  </div>
+                                </article>
+
+                                @if (activeProjectPlanHiddenFields.length) {
+                                  <button class="matrix-show-fields schedule-scope-show-fields" [class.is-expanded]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection)" type="button" (click)="toggleProjectPlanFieldSection(projectPlanActiveSection)" [attr.aria-expanded]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection)">
+                                    <span class="matrix-show-fields-copy"><strong>{{ activeProjectPlanHiddenFieldButtonLabel }} ({{ activeProjectPlanHiddenFields.length }})</strong><small>{{ activeProjectPlanHiddenFieldPreview }}</small></span>
+                                    <span class="matrix-show-fields-indicator schedule-scope-fields-indicator" aria-hidden="true">{{ isProjectPlanFieldSectionExpanded(projectPlanActiveSection) ? '-' : '+' }}</span>
+                                  </button>
+                                  @if (isProjectPlanFieldSectionExpanded(projectPlanActiveSection)) {
+                                    <section class="schedule-scope-additional matrix-hidden-fields is-expanded" aria-label="Additional schedule and scope fields">
+                                      <div class="schedule-scope-additional-head">
+                                        <div>
+                                          <span class="schedule-scope-section-eyebrow">Additional fields</span>
+                                          <h3>Planning detail</h3>
+                                          <p>Exclusions, products, management artefacts, and WBS context for deeper planning reviews.</p>
+                                        </div>
+                                      </div>
+
+                                      <article class="schedule-scope-detail-form-card">
+                                        <div class="schedule-scope-detail-form">
+                                          <label class="matrix-field matrix-field-select">
+                                            <span class="matrix-field-label">Stages</span>
+                                            <span class="matrix-select-wrap">
+                                              <select [value]="projectPlanStage" aria-label="Stages">
+                                                <option value="Initiation">Initiation</option>
+                                                <option value="Planning">Planning</option>
+                                                <option value="Execution">Execution</option>
+                                                <option value="Closure">Closure</option>
+                                              </select>
+                                              <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                                            </span>
+                                          </label>
+                                          <label class="matrix-field matrix-field-textarea wide schedule-scope-narrative-field">
+                                            <span class="matrix-field-label">Out of Scope</span>
+                                            <textarea [value]="scheduleScopeState.outOfScope" (input)="updateScheduleScopeField('outOfScope', $any($event.target).value)"></textarea>
+                                          </label>
+                                        </div>
+                                      </article>
+
+                                      <div class="schedule-scope-register-stack">
+                                    <article class="dependency-register-card schedule-product-register">
+                                      <div class="dependency-register-head">
+                                        <div class="dependency-register-copy">
+                                          <span class="dependency-register-eyebrow">End Product (Deliverables)</span>
+                                          <strong>End products</strong>
+                                          <small>Outputs that will be handed over or released by this project.</small>
+                                        </div>
+                                        <div class="dependency-register-actions">
+                                          <span class="dependency-register-count">{{ scheduleScopeCountLabel(scheduleEndProductRows.length, 'product') }}</span>
+                                          <button class="dependency-register-add" type="button" (click)="openScheduleEndProductDrawer()">
+                                            <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>Add end product
+                                          </button>
+                                        </div>
+                                      </div>
+                                      <div class="dependency-register-table-shell">
+                                        <table class="dependency-register-table schedule-product-table" aria-label="End products">
+                                          <thead>
+                                            <tr>
+                                              <th>Product</th>
+                                              <th>Type</th>
+                                              <th>Owner</th>
+                                              <th>Capability</th>
+                                              <th>Timeline</th>
+                                              <th>Budget</th>
+                                              <th>Dependencies</th>
+                                              <th aria-label="Actions"></th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            @for (row of scheduleEndProductRows; track row.id) {
+                                              <tr>
+                                                <td class="dependency-register-primary">
+                                                  <strong>{{ row.product }}</strong>
+                                                  <small>{{ row.description || 'No description added' }}</small>
+                                                </td>
+                                                <td>{{ row.category }}</td>
+                                                <td>{{ row.owner || 'Owner to confirm' }}</td>
+                                                <td>{{ row.capability || 'Capability to confirm' }}</td>
+                                                <td class="dependency-register-baseline">
+                                                  <strong>{{ scheduleScopeDateLabel(row.startDate) }}</strong>
+                                                  <small>{{ scheduleScopeDateLabel(row.endDate) }}</small>
+                                                </td>
+                                                <td>{{ scheduleScopeProductBudgetTotal(row.capex, row.opex) }}</td>
+                                                <td>{{ scheduleScopeDependencySummary(row) }}</td>
+                                                <td class="schedule-table-actions">
+                                                  <button class="schedule-table-action" type="button" (click)="openScheduleEndProductDrawer(row)" [attr.aria-label]="'Edit ' + row.product">
+                                                    <span class="icon" aria-hidden="true"><i data-lucide="pencil"></i></span>
+                                                  </button>
+                                                  <button class="schedule-table-action danger" type="button" (click)="removeScheduleEndProduct(row.id)" [attr.aria-label]="'Delete ' + row.product">
+                                                    <span class="icon" aria-hidden="true"><i data-lucide="trash-2"></i></span>
+                                                  </button>
+                                                </td>
+                                              </tr>
+                                            }
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    </article>
+
+                                    <article class="dependency-register-card schedule-product-register">
+                                      <div class="dependency-register-head">
+                                        <div class="dependency-register-copy">
+                                          <span class="dependency-register-eyebrow">Management Product</span>
+                                          <strong>Management products</strong>
+                                          <small>PM artefacts, approvals, and control products needed to govern the work.</small>
+                                        </div>
+                                        <div class="dependency-register-actions">
+                                          <span class="dependency-register-count">{{ scheduleScopeCountLabel(scheduleManagementProductRows.length, 'product') }}</span>
+                                          <button class="dependency-register-add" type="button" (click)="openScheduleManagementProductDrawer()">
+                                            <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>Add management product
+                                          </button>
+                                        </div>
+                                      </div>
+                                      <div class="dependency-register-table-shell">
+                                        <table class="dependency-register-table schedule-management-table" aria-label="Management products">
+                                          <thead>
+                                            <tr>
+                                              <th>Product</th>
+                                              <th>Category</th>
+                                              <th>Owner</th>
+                                              <th>Timeline</th>
+                                              <th>Budget</th>
+                                              <th aria-label="Actions"></th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            @for (row of scheduleManagementProductRows; track row.id) {
+                                              <tr>
+                                                <td class="dependency-register-primary">
+                                                  <strong>{{ row.product }}</strong>
+                                                  <small>{{ row.description || 'No description added' }}</small>
+                                                </td>
+                                                <td>{{ row.category }}</td>
+                                                <td>{{ row.owner || 'Owner to confirm' }}</td>
+                                                <td class="dependency-register-baseline">
+                                                  <strong>{{ scheduleScopeDateLabel(row.startDate) }}</strong>
+                                                  <small>{{ scheduleScopeDateLabel(row.endDate) }}</small>
+                                                </td>
+                                                <td>{{ scheduleScopeProductBudgetTotal(row.capex, row.opex) }}</td>
+                                                <td class="schedule-table-actions">
+                                                  <button class="schedule-table-action" type="button" (click)="openScheduleManagementProductDrawer(row)" [attr.aria-label]="'Edit ' + row.product">
+                                                    <span class="icon" aria-hidden="true"><i data-lucide="pencil"></i></span>
+                                                  </button>
+                                                  <button class="schedule-table-action danger" type="button" (click)="removeScheduleManagementProduct(row.id)" [attr.aria-label]="'Delete ' + row.product">
+                                                    <span class="icon" aria-hidden="true"><i data-lucide="trash-2"></i></span>
+                                                  </button>
+                                                </td>
+                                              </tr>
+                                            }
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    </article>
+                                  </div>
+
+                                  <article class="schedule-scope-wbs-card">
+                                    <div class="schedule-scope-wbs-head">
+                                      <div>
+                                        <span class="schedule-scope-section-eyebrow">Detailed WBS</span>
+                                        <h3>Work breakdown structure</h3>
+                                        <p>Task-level structure and ownership once products need delivery planning.</p>
+                                      </div>
+                                      <button class="schedule-scope-wbs-action" type="button" (click)="navigate('wbs')">
+                                        <span class="icon" aria-hidden="true"><i data-lucide="list-tree"></i></span>Open WBS workspace
+                                      </button>
+                                    </div>
+                                    <div class="schedule-scope-wbs-metrics">
+                                      <article><span>Tracked items</span><strong>{{ scheduleScopeCountLabel(wbsItems.length, 'WBS item') }}</strong></article>
+                                      <article><span>Current highlight</span><strong>{{ scheduleScopeWbsHighlights[0]?.title || 'Baselined project plan' }}</strong></article>
+                                    </div>
+                                    <div class="schedule-scope-wbs-preview">
+                                      @for (item of scheduleScopeWbsHighlights; track item.title) {
+                                        <div class="schedule-scope-wbs-row">
+                                          <div>
+                                            <strong>{{ item.title }}</strong>
+                                            <small>{{ item.owner }}</small>
+                                          </div>
+                                          <span class="schedule-scope-wbs-pill {{ item.tone }}">{{ item.progress }}</span>
+                                        </div>
+                                      }
+                                    </div>
+                                  </article>
+                                    </section>
+                                  }
+                                }
+                              </section>
+                            } @else if (projectPlanActiveSection === 'Benefits') {
                               @let register = activeBenefitPlan;
                               <section class="dependency-register-stack benefit-register-stack" aria-label="Benefits register">
                                 <article class="benefit-agent-banner" aria-label="Benefit agent">
@@ -2320,6 +4171,212 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                     </div>
                   </main>
                 </div>
+                @if (isBudgetDrawerOpen) {
+                  <div class="dependency-drawer-shell" aria-hidden="false">
+                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close budget drawer" (click)="closeBudgetDrawer()"></button>
+                    <aside class="dependency-drawer budget-drawer" [attr.aria-label]="budgetPlanConfig.drawerTitle">
+                      <form class="dependency-drawer-form budget-drawer-form" (submit)="saveBudgetDrawer($event)">
+                        <div class="dependency-drawer-top budget-drawer-top">
+                          <div class="dependency-drawer-title">
+                            <span class="dependency-register-eyebrow">{{ budgetPlanConfig.fieldName }}</span>
+                            <h2>{{ budgetPlanConfig.drawerTitle }}</h2>
+                            <p>{{ budgetPlanConfig.drawerBody }}</p>
+                          </div>
+                          <button class="drawer-close" type="button" aria-label="Close budget drawer" (click)="closeBudgetDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
+                        </div>
+                        <div class="dependency-drawer-body budget-drawer-body">
+                          <div class="dependency-drawer-summary">
+                            <span class="dependency-register-count">{{ activeBudgetHasData ? budgetPlanYearCountLabel(activeBudgetPlan) : 'New FY budget' }}</span>
+                            <small>Use this only when the FY baseline or forecast split needs a focused edit.</small>
+                          </div>
+                          <div class="dependency-drawer-grid budget-drawer-grid">
+                            <label class="matrix-field matrix-field-select dependency-drawer-field wide">
+                              <span class="matrix-field-label">Fiscal year <b>*</b></span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="budgetYearDraft.fy" (change)="updateBudgetYearDraft('fy', $any($event.target).value)" aria-label="Fiscal year">
+                                  <option value="" disabled>{{ budgetPlanConfig.fyPlaceholder }}</option>
+                                  @for (option of budgetPlanConfig.fyOptions; track option) {
+                                    <option [value]="option" [selected]="option === budgetYearDraft.fy">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-money dependency-drawer-field">
+                              <span class="matrix-field-label">CAPEX Baseline (FY) <b>*</b></span>
+                              <span class="matrix-money-wrap"><small>SAR</small><input type="number" min="0" step="1000" [value]="budgetYearDraft.baselineCapex" (input)="updateBudgetYearDraft('baselineCapex', $any($event.target).value)" aria-label="CAPEX Baseline (FY)" [attr.placeholder]="budgetPlanConfig.amountPlaceholder" /></span>
+                            </label>
+                            <label class="matrix-field matrix-field-money dependency-drawer-field">
+                              <span class="matrix-field-label">OPEX Baseline (FY) <b>*</b></span>
+                              <span class="matrix-money-wrap"><small>SAR</small><input type="number" min="0" step="1000" [value]="budgetYearDraft.baselineOpex" (input)="updateBudgetYearDraft('baselineOpex', $any($event.target).value)" aria-label="OPEX Baseline (FY)" [attr.placeholder]="budgetPlanConfig.amountPlaceholder" /></span>
+                            </label>
+                            <label class="matrix-field matrix-field-money dependency-drawer-field">
+                              <span class="matrix-field-label">CAPEX Forecast (FY) <b>*</b></span>
+                              <span class="matrix-money-wrap"><small>SAR</small><input type="number" min="0" step="1000" [value]="budgetYearDraft.forecastCapex" (input)="updateBudgetYearDraft('forecastCapex', $any($event.target).value)" aria-label="CAPEX Forecast (FY)" [attr.placeholder]="budgetPlanConfig.amountPlaceholder" /></span>
+                            </label>
+                            <label class="matrix-field matrix-field-money dependency-drawer-field">
+                              <span class="matrix-field-label">OPEX Forecast (FY) <b>*</b></span>
+                              <span class="matrix-money-wrap"><small>SAR</small><input type="number" min="0" step="1000" [value]="budgetYearDraft.forecastOpex" (input)="updateBudgetYearDraft('forecastOpex', $any($event.target).value)" aria-label="OPEX Forecast (FY)" [attr.placeholder]="budgetPlanConfig.amountPlaceholder" /></span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="report-drawer-footer dependency-drawer-footer">
+                          <button class="report-secondary-button" type="button" (click)="closeBudgetDrawer()">Cancel</button>
+                          <button class="report-submit-button" type="submit" [disabled]="!canSaveBudgetYearDraft()">{{ budgetPlanConfig.actionLabel }}</button>
+                        </div>
+                      </form>
+                    </aside>
+                  </div>
+                }
+                @if (isBudgetFundingDrawerOpen) {
+                  @let year = activeBudgetYear;
+                  <div class="dependency-drawer-shell" aria-hidden="false">
+                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close funding sources drawer" (click)="closeBudgetFundingDrawer()"></button>
+                    <aside class="dependency-drawer budget-funding-drawer" [attr.aria-label]="budgetPlanConfig.fundingTitle">
+                      <form class="dependency-drawer-form budget-funding-drawer-form" (submit)="saveBudgetFundingDrawer($event)">
+                        <div class="dependency-drawer-top budget-funding-drawer-top">
+                          <div class="dependency-drawer-title">
+                            <span class="dependency-register-eyebrow">{{ budgetPlanConfig.fieldName }}</span>
+                            <h2>{{ budgetPlanConfig.fundingTitle }}</h2>
+                            <p>{{ budgetPlanConfig.fundingBody }}</p>
+                          </div>
+                          <button class="drawer-close" type="button" aria-label="Close funding sources drawer" (click)="closeBudgetFundingDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
+                        </div>
+                        <div class="dependency-drawer-body budget-funding-drawer-body">
+                          <div class="dependency-drawer-summary">
+                            <span class="dependency-register-count">{{ budgetFundingSourceCountLabel(year) }}</span>
+                            @if (year) { <small class="{{ budgetFundingCoverageTone(year) }}">{{ budgetFundingCoverageLabel(year) }}</small> }
+                          </div>
+                          <div class="dependency-drawer-grid budget-funding-drawer-grid">
+                            <label class="matrix-field dependency-drawer-field wide">
+                              <span class="matrix-field-label">Funding source <b>*</b></span>
+                              <input type="text" [value]="budgetFundingSourceDraft.source" (input)="updateBudgetFundingDraft('source', $any($event.target).value)" aria-label="Funding source" [attr.placeholder]="budgetPlanConfig.sourcePlaceholder" />
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Type <b>*</b></span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="budgetFundingSourceDraft.type" (change)="updateBudgetFundingDraft('type', $any($event.target).value)" aria-label="Funding type">
+                                  <option value="" disabled>{{ budgetPlanConfig.sourceTypePlaceholder }}</option>
+                                  @for (option of budgetPlanConfig.sourceTypeOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-money dependency-drawer-field">
+                              <span class="matrix-field-label">Amount <b>*</b></span>
+                              <span class="matrix-money-wrap"><small>SAR</small><input type="number" min="0" step="1000" [value]="budgetFundingSourceDraft.amount" (input)="updateBudgetFundingDraft('amount', $any($event.target).value)" aria-label="Funding amount" [attr.placeholder]="budgetPlanConfig.amountPlaceholder" /></span>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Status</span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="budgetFundingSourceDraft.status" (change)="updateBudgetFundingDraft('status', $any($event.target).value)" aria-label="Funding status">
+                                  @for (option of budgetPlanConfig.sourceStatusOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
+                              <span class="matrix-field-label">Notes</span>
+                              <textarea [value]="budgetFundingSourceDraft.notes" (input)="updateBudgetFundingDraft('notes', $any($event.target).value)" aria-label="Funding notes" placeholder="Add allocation or approval notes"></textarea>
+                            </label>
+                          </div>
+                          @if ((year?.fundingSources?.length || 0) > 0) {
+                            <div class="dependency-register-table-shell budget-drawer-table-shell">
+                              <table class="dependency-register-table budget-secondary-table" aria-label="Saved funding sources">
+                                <thead>
+                                  <tr>
+                                    <th>Source</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  @for (row of year?.fundingSources || []; track row.id) {
+                                    <tr>
+                                      <td class="dependency-register-primary">
+                                        <strong>{{ row.source }}</strong>
+                                        <small>{{ row.notes || 'Funding source detail' }}</small>
+                                      </td>
+                                      <td>{{ row.type }}</td>
+                                      <td>{{ formatBudgetCurrency(row.amount) }}</td>
+                                      <td><span class="dependency-register-pill {{ row.status === 'Confirmed' ? 'indigo' : row.status === 'Pending approval' ? 'amber' : 'neutral' }}">{{ row.status }}</span></td>
+                                    </tr>
+                                  }
+                                </tbody>
+                              </table>
+                            </div>
+                          }
+                        </div>
+                        <div class="report-drawer-footer dependency-drawer-footer">
+                          <button class="report-secondary-button" type="button" (click)="closeBudgetFundingDrawer()">Cancel</button>
+                          <button class="report-submit-button" type="submit" [disabled]="!canSaveBudgetFundingDraft()">Add funding source</button>
+                        </div>
+                      </form>
+                    </aside>
+                  </div>
+                }
+                @if (isBudgetMonthlyDrawerOpen) {
+                  @let year = activeBudgetYear;
+                  <div class="dependency-drawer-shell" aria-hidden="false">
+                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close monthly budget drawer" (click)="closeBudgetMonthlyDrawer()"></button>
+                    <aside class="dependency-drawer budget-monthly-drawer" [attr.aria-label]="budgetPlanConfig.monthlyTitle">
+                      <form class="dependency-drawer-form budget-monthly-drawer-form" (submit)="saveBudgetMonthlyDrawer($event)">
+                        <div class="dependency-drawer-top budget-monthly-drawer-top">
+                          <div class="dependency-drawer-title">
+                            <span class="dependency-register-eyebrow">{{ budgetPlanConfig.fieldName }}</span>
+                            <h2>{{ budgetPlanConfig.monthlyTitle }}</h2>
+                            <p>{{ budgetPlanConfig.monthlyBody }}</p>
+                          </div>
+                          <button class="drawer-close" type="button" aria-label="Close monthly budget drawer" (click)="closeBudgetMonthlyDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
+                        </div>
+                        <div class="dependency-drawer-body budget-monthly-drawer-body">
+                          <div class="dependency-drawer-summary">
+                            <span class="dependency-register-count">{{ year ? year.fy : budgetPlanConfig.monthlyTitle }}</span>
+                            <small>Budget phasing stays visible, while forecast, actual, and committed values can be adjusted month by month with one explicit save.</small>
+                          </div>
+                          <div class="budget-month-card-list">
+                            @for (row of budgetMonthlyEditorRows; track row.id) {
+                              <article class="budget-month-card">
+                                <div class="budget-month-card-head">
+                                  <div>
+                                    <strong>{{ row.month }}</strong>
+                                    <small>{{ formatBudgetCurrency(budgetMonthlyTotal(row, 'budget')) }} baseline phasing</small>
+                                  </div>
+                                  <span class="dependency-register-count">{{ formatBudgetCurrency(budgetMonthlyAvailable(row)) }} available</span>
+                                </div>
+                                <div class="budget-month-card-grid">
+                                  <article class="budget-month-stream">
+                                    <strong>CAPEX</strong>
+                                    <label><span>Budget</span><input type="number" [value]="row.capexBudget" aria-label="CAPEX budget for {{ row.month }}" disabled /></label>
+                                    <label><span>Forecast</span><input type="number" min="0" step="100" [value]="row.capexForecast" (input)="updateBudgetMonthlyRow(row.id, 'capexForecast', $any($event.target).value)" aria-label="CAPEX forecast for {{ row.month }}" /></label>
+                                    <label><span>Actual</span><input type="number" min="0" step="100" [value]="row.capexActual" (input)="updateBudgetMonthlyRow(row.id, 'capexActual', $any($event.target).value)" aria-label="CAPEX actual for {{ row.month }}" /></label>
+                                    <label><span>Committed</span><input type="number" min="0" step="100" [value]="row.capexCommitted" (input)="updateBudgetMonthlyRow(row.id, 'capexCommitted', $any($event.target).value)" aria-label="CAPEX committed for {{ row.month }}" /></label>
+                                  </article>
+                                  <article class="budget-month-stream">
+                                    <strong>OPEX</strong>
+                                    <label><span>Budget</span><input type="number" [value]="row.opexBudget" aria-label="OPEX budget for {{ row.month }}" disabled /></label>
+                                    <label><span>Forecast</span><input type="number" min="0" step="100" [value]="row.opexForecast" (input)="updateBudgetMonthlyRow(row.id, 'opexForecast', $any($event.target).value)" aria-label="OPEX forecast for {{ row.month }}" /></label>
+                                    <label><span>Actual</span><input type="number" min="0" step="100" [value]="row.opexActual" (input)="updateBudgetMonthlyRow(row.id, 'opexActual', $any($event.target).value)" aria-label="OPEX actual for {{ row.month }}" /></label>
+                                    <label><span>Committed</span><input type="number" min="0" step="100" [value]="row.opexCommitted" (input)="updateBudgetMonthlyRow(row.id, 'opexCommitted', $any($event.target).value)" aria-label="OPEX committed for {{ row.month }}" /></label>
+                                  </article>
+                                </div>
+                              </article>
+                            }
+                          </div>
+                        </div>
+                        <div class="report-drawer-footer dependency-drawer-footer">
+                          <button class="report-secondary-button" type="button" (click)="closeBudgetMonthlyDrawer()">Cancel</button>
+                          <button class="report-submit-button" type="submit">Save monthly budget</button>
+                        </div>
+                      </form>
+                    </aside>
+                  </div>
+                }
                 @if (activeBenefitDrawer; as register) {
                   <div class="dependency-drawer-shell" aria-hidden="false">
                     <button class="dependency-drawer-backdrop" type="button" aria-label="Close benefit drawer" (click)="closeBenefitDrawer()"></button>
@@ -2810,6 +4867,664 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                     </aside>
                   </div>
                 }
+                @if (isOverviewBusinessDriverDrawerOpen) {
+                  <div class="dependency-drawer-shell" aria-hidden="false">
+                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close business driver drawer" (click)="closeOverviewBusinessDriverDrawer()"></button>
+                    <aside class="dependency-drawer schedule-drawer overview-drawer" aria-label="Business driver drawer">
+                      <form class="dependency-drawer-form" (submit)="saveOverviewBusinessDriverDrawer($event)">
+                        <div class="dependency-drawer-top schedule-drawer-top overview-drawer-top">
+                          <div class="dependency-drawer-title">
+                            <span class="dependency-register-eyebrow">Business Drivers</span>
+                            <h2>{{ overviewDriverDrawerTitle }}</h2>
+                            <p>Capture the strategic reason cleanly in the drawer, then come back to the register to compare all drivers at a glance.</p>
+                          </div>
+                          <button class="drawer-close" type="button" aria-label="Close business driver drawer" (click)="closeOverviewBusinessDriverDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
+                        </div>
+                        <div class="dependency-drawer-body">
+                          <div class="schedule-drawer-summary-grid">
+                            <article class="schedule-drawer-summary-card">
+                              <span>Current drivers</span>
+                              <strong>{{ overviewCountLabel(overviewBusinessDriverRows.length, 'driver') }}</strong>
+                              <small>Saved in the overview register</small>
+                            </article>
+                            <article class="schedule-drawer-summary-card">
+                              <span>Priority</span>
+                              <strong>{{ overviewBusinessDriverDraft.priority || 'High' }}</strong>
+                              <small>Use this to show urgency in the register view</small>
+                            </article>
+                          </div>
+                          <div class="dependency-drawer-grid">
+                            <label class="matrix-field matrix-field-select dependency-drawer-field wide">
+                              <span class="matrix-field-label">Business driver <b>*</b></span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="overviewBusinessDriverDraft.driver" (change)="updateOverviewBusinessDriverDraft('driver', $any($event.target).value)" aria-label="Business driver">
+                                  <option value="" disabled>Select business driver</option>
+                                  @for (option of overviewBusinessDriverOptions; track option.driver) {
+                                    <option [value]="option.driver">{{ option.driver }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field dependency-drawer-field">
+                              <span class="matrix-field-label">Source</span>
+                              <input type="text" [value]="overviewBusinessDriverDraft.source" (input)="updateOverviewBusinessDriverDraft('source', $any($event.target).value)" aria-label="Source" placeholder="Strategy Office" />
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Priority</span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="overviewBusinessDriverDraft.priority" (change)="updateOverviewBusinessDriverDraft('priority', $any($event.target).value)" aria-label="Priority">
+                                  @for (option of scheduleScopePriorityOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
+                              <span class="matrix-field-label">Why it matters</span>
+                              <small class="matrix-field-description">Keep this short and specific so the driver reads well in the register table.</small>
+                              <textarea [value]="overviewBusinessDriverDraft.note" (input)="updateOverviewBusinessDriverDraft('note', $any($event.target).value)" aria-label="Why it matters" placeholder="Add the strategic or operational reason for this driver"></textarea>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="report-drawer-footer dependency-drawer-footer">
+                          <button class="report-secondary-button" type="button" (click)="closeOverviewBusinessDriverDrawer()">Cancel</button>
+                          <button class="report-submit-button" type="submit" [disabled]="!canSaveOverviewBusinessDriverDraft()">{{ editingOverviewBusinessDriverId ? 'Save changes' : 'Add business driver' }}</button>
+                        </div>
+                      </form>
+                    </aside>
+                  </div>
+                }
+                @if (isOverviewOutcomeDrawerOpen) {
+                  <div class="dependency-drawer-shell" aria-hidden="false">
+                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close outcome drawer" (click)="closeOverviewOutcomeDrawer()"></button>
+                    <aside class="dependency-drawer schedule-drawer overview-drawer" aria-label="Outcome drawer">
+                      <form class="dependency-drawer-form" (submit)="saveOverviewOutcomeDrawer($event)">
+                        <div class="dependency-drawer-top schedule-drawer-top overview-drawer-top">
+                          <div class="dependency-drawer-title">
+                            <span class="dependency-register-eyebrow">Outcome</span>
+                            <h2>{{ overviewOutcomeDrawerTitle }}</h2>
+                            <p>Move the old inline outcome form into the drawer so the page stays focused on reading, while the form stays focused on writing.</p>
+                          </div>
+                          <button class="drawer-close" type="button" aria-label="Close outcome drawer" (click)="closeOverviewOutcomeDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
+                        </div>
+                        <div class="dependency-drawer-body">
+                          <div class="schedule-drawer-summary-grid">
+                            <article class="schedule-drawer-summary-card">
+                              <span>Current outcomes</span>
+                              <strong>{{ overviewCountLabel(overviewOutcomeRows.length, 'outcome') }}</strong>
+                              <small>Visible in the overview register</small>
+                            </article>
+                            <article class="schedule-drawer-summary-card">
+                              <span>Status</span>
+                              <strong>{{ overviewOutcomeDraft.status || 'Draft' }}</strong>
+                              <small>Use this to show how ready the outcome is</small>
+                            </article>
+                          </div>
+                          <div class="dependency-drawer-grid">
+                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
+                              <span class="matrix-field-label">Outcome <b>*</b></span>
+                              <textarea [value]="overviewOutcomeDraft.outcome" (input)="updateOverviewOutcomeDraft('outcome', $any($event.target).value)" aria-label="Outcome" placeholder="Describe the outcome users should see"></textarea>
+                            </label>
+                            <label class="matrix-field dependency-drawer-field wide">
+                              <span class="matrix-field-label">Measure</span>
+                              <input type="text" [value]="overviewOutcomeDraft.measure" (input)="updateOverviewOutcomeDraft('measure', $any($event.target).value)" aria-label="Measure" placeholder="How will this be measured?" />
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Owner</span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="overviewOutcomeDraft.owner" (change)="updateOverviewOutcomeDraft('owner', $any($event.target).value)" aria-label="Owner">
+                                  <option value="">Select owner</option>
+                                  @for (option of scheduleScopeOwnerOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Status</span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="overviewOutcomeDraft.status" (change)="updateOverviewOutcomeDraft('status', $any($event.target).value)" aria-label="Status">
+                                  @for (option of overviewOutcomeStatusOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="report-drawer-footer dependency-drawer-footer">
+                          <button class="report-secondary-button" type="button" (click)="closeOverviewOutcomeDrawer()">Cancel</button>
+                          <button class="report-submit-button" type="submit" [disabled]="!canSaveOverviewOutcomeDraft()">{{ editingOverviewOutcomeId ? 'Save changes' : 'Add outcome' }}</button>
+                        </div>
+                      </form>
+                    </aside>
+                  </div>
+                }
+                @if (isOverviewObjectiveDrawerOpen) {
+                  <div class="dependency-drawer-shell" aria-hidden="false">
+                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close project objective drawer" (click)="closeOverviewObjectiveDrawer()"></button>
+                    <aside class="dependency-drawer schedule-drawer overview-drawer" aria-label="Project objective drawer">
+                      <form class="dependency-drawer-form" (submit)="saveOverviewObjectiveDrawer($event)">
+                        <div class="dependency-drawer-top schedule-drawer-top overview-drawer-top">
+                          <div class="dependency-drawer-title">
+                            <span class="dependency-register-eyebrow">Project Alignment (Objectives)</span>
+                            <h2>{{ overviewObjectiveDrawerTitle }}</h2>
+                            <p>Project objectives now sit in the same right-drawer pattern, with the linked strategic objective visible at the same time.</p>
+                          </div>
+                          <button class="drawer-close" type="button" aria-label="Close project objective drawer" (click)="closeOverviewObjectiveDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
+                        </div>
+                        <div class="dependency-drawer-body">
+                          <div class="schedule-drawer-summary-grid">
+                            <article class="schedule-drawer-summary-card">
+                              <span>Linked objectives</span>
+                              <strong>{{ overviewCountLabel(overviewObjectiveRows.length, 'objective') }}</strong>
+                              <small>Saved in the alignment register</small>
+                            </article>
+                            <article class="schedule-drawer-summary-card">
+                              <span>Status</span>
+                              <strong>{{ overviewObjectiveDraft.status || 'Draft' }}</strong>
+                              <small>Use when the objective is linked or approved</small>
+                            </article>
+                          </div>
+                          <div class="dependency-drawer-grid">
+                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
+                              <span class="matrix-field-label">Project objective <b>*</b></span>
+                              <textarea [value]="overviewObjectiveDraft.objective" (input)="updateOverviewObjectiveDraft('objective', $any($event.target).value)" aria-label="Project objective" placeholder="Describe the project objective"></textarea>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field wide">
+                              <span class="matrix-field-label">Linked strategic objective</span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="overviewObjectiveDraft.linkedObjective" (change)="updateOverviewObjectiveDraft('linkedObjective', $any($event.target).value)" aria-label="Linked strategic objective">
+                                  @for (option of overviewStrategicObjectiveLinks; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Status</span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="overviewObjectiveDraft.status" (change)="updateOverviewObjectiveDraft('status', $any($event.target).value)" aria-label="Objective status">
+                                  @for (option of overviewObjectiveStatusOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="report-drawer-footer dependency-drawer-footer">
+                          <button class="report-secondary-button" type="button" (click)="closeOverviewObjectiveDrawer()">Cancel</button>
+                          <button class="report-submit-button" type="submit" [disabled]="!canSaveOverviewObjectiveDraft()">{{ editingOverviewObjectiveId ? 'Save changes' : 'Add project objective' }}</button>
+                        </div>
+                      </form>
+                    </aside>
+                  </div>
+                }
+                @if (isOverviewCapabilityDrawerOpen) {
+                  <div class="dependency-drawer-shell" aria-hidden="false">
+                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close capability drawer" (click)="closeOverviewCapabilityDrawer()"></button>
+                    <aside class="dependency-drawer schedule-drawer overview-drawer" aria-label="Capability drawer">
+                      <form class="dependency-drawer-form" (submit)="saveOverviewCapabilityDrawer($event)">
+                        <div class="dependency-drawer-top schedule-drawer-top overview-drawer-top">
+                          <div class="dependency-drawer-title">
+                            <span class="dependency-register-eyebrow">Link Capabilities</span>
+                            <h2>{{ overviewCapabilityDrawerTitle }}</h2>
+                            <p>Keep capability mapping detailed and deliberate without forcing users to open an inline editor inside the page.</p>
+                          </div>
+                          <button class="drawer-close" type="button" aria-label="Close capability drawer" (click)="closeOverviewCapabilityDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
+                        </div>
+                        <div class="dependency-drawer-body">
+                          <div class="schedule-drawer-summary-grid">
+                            <article class="schedule-drawer-summary-card">
+                              <span>Current links</span>
+                              <strong>{{ overviewCountLabel(overviewCapabilityRows.length, 'capability') }}</strong>
+                              <small>Detailed-only governance mapping</small>
+                            </article>
+                            <article class="schedule-drawer-summary-card">
+                              <span>Selected now</span>
+                              <strong>{{ overviewCountLabel(overviewSelectedCapabilityCount, 'capability') }}</strong>
+                              <small>You can add more than one in a single pass</small>
+                            </article>
+                          </div>
+                          <section class="schedule-drawer-section">
+                            <div class="schedule-drawer-section-head">
+                              <div>
+                                <strong>Choose capabilities</strong>
+                                <small>Select the capabilities this project influences. The register will add one row per selected capability.</small>
+                              </div>
+                            </div>
+                            <div class="overview-capability-selector" role="group" aria-label="Capability selection">
+                              @for (option of overviewCapabilityOptions; track option.capability) {
+                                <label class="overview-capability-option" [class.is-selected]="overviewCapabilityDraft.selectedCapabilities.includes(option.capability)">
+                                  <input type="checkbox" [checked]="overviewCapabilityDraft.selectedCapabilities.includes(option.capability)" (change)="toggleOverviewCapabilitySelection(option.capability)" />
+                                  <span>
+                                    <strong>{{ option.capability }}</strong>
+                                    <small>{{ option.domain }} · {{ option.owner }}</small>
+                                  </span>
+                                </label>
+                              }
+                            </div>
+                          </section>
+                        </div>
+                        <div class="report-drawer-footer dependency-drawer-footer">
+                          <button class="report-secondary-button" type="button" (click)="closeOverviewCapabilityDrawer()">Cancel</button>
+                          <button class="report-submit-button" type="submit" [disabled]="!canSaveOverviewCapabilityDraft()">{{ editingOverviewCapabilityId ? 'Save changes' : 'Link capabilities' }}</button>
+                        </div>
+                      </form>
+                    </aside>
+                  </div>
+                }
+                @if (isOverviewServiceDrawerOpen) {
+                  <div class="dependency-drawer-shell" aria-hidden="false">
+                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close service drawer" (click)="closeOverviewServiceDrawer()"></button>
+                    <aside class="dependency-drawer schedule-drawer overview-drawer" aria-label="Service drawer">
+                      <form class="dependency-drawer-form" (submit)="saveOverviewServiceDrawer($event)">
+                        <div class="dependency-drawer-top schedule-drawer-top overview-drawer-top">
+                          <div class="dependency-drawer-title">
+                            <span class="dependency-register-eyebrow">Link Services</span>
+                            <h2>{{ overviewServiceDrawerTitle }}</h2>
+                            <p>Keep the service mapping flow structured, but contained, so users can complete it without losing the overview context behind the drawer.</p>
+                          </div>
+                          <button class="drawer-close" type="button" aria-label="Close service drawer" (click)="closeOverviewServiceDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
+                        </div>
+                        <div class="dependency-drawer-body">
+                          <div class="schedule-drawer-summary-grid">
+                            <article class="schedule-drawer-summary-card">
+                              <span>Current services</span>
+                              <strong>{{ overviewCountLabel(overviewServiceRows.length, 'service') }}</strong>
+                              <small>Detailed-only service catalogue links</small>
+                            </article>
+                            <article class="schedule-drawer-summary-card">
+                              <span>Selected service</span>
+                              <strong>{{ overviewServiceDraft.service || 'Not chosen' }}</strong>
+                              <small>Choose the catalogue path from group to service</small>
+                            </article>
+                          </div>
+                          <div class="dependency-drawer-grid">
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Service group <b>*</b></span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="overviewServiceDraft.serviceGroup" (change)="updateOverviewServiceDraft('serviceGroup', $any($event.target).value)" aria-label="Service group">
+                                  <option value="" disabled>Select service group</option>
+                                  @for (option of overviewServiceGroupOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Value stream <b>*</b></span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="overviewServiceDraft.valueStream" (change)="updateOverviewServiceDraft('valueStream', $any($event.target).value)" aria-label="Value stream">
+                                  <option value="" disabled>Select value stream</option>
+                                  @for (option of overviewServiceValueStreamOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Phase</span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="overviewServiceDraft.phase" (change)="updateOverviewServiceDraft('phase', $any($event.target).value)" aria-label="Phase">
+                                  <option value="">Select phase</option>
+                                  @for (option of overviewServicePhaseOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Service <b>*</b></span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="overviewServiceDraft.service" (change)="updateOverviewServiceDraft('service', $any($event.target).value)" aria-label="Service">
+                                  <option value="" disabled>Select service</option>
+                                  @for (option of overviewServiceOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="report-drawer-footer dependency-drawer-footer">
+                          <button class="report-secondary-button" type="button" (click)="closeOverviewServiceDrawer()">Cancel</button>
+                          <button class="report-submit-button" type="submit" [disabled]="!canSaveOverviewServiceDraft()">{{ editingOverviewServiceId ? 'Save changes' : 'Link service' }}</button>
+                        </div>
+                      </form>
+                    </aside>
+                  </div>
+                }
+                @if (isScheduleMilestoneDrawerOpen) {
+                  <div class="dependency-drawer-shell" aria-hidden="false">
+                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close milestone drawer" (click)="closeScheduleMilestoneDrawer()"></button>
+                    <aside class="dependency-drawer schedule-drawer" aria-label="Milestone drawer">
+                      <form class="dependency-drawer-form" (submit)="saveScheduleMilestoneDrawer($event)">
+                        <div class="dependency-drawer-top schedule-drawer-top">
+                          <div class="dependency-drawer-title">
+                            <span class="dependency-register-eyebrow">Milestones</span>
+                            <h2>{{ scheduleScopeMilestoneDrawerTitle }}</h2>
+                            <p>Keep schedule checkpoints focused, then manage them from the register instead of expanding an inline form.</p>
+                          </div>
+                          <button class="drawer-close" type="button" aria-label="Close milestone drawer" (click)="closeScheduleMilestoneDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
+                        </div>
+                        <div class="dependency-drawer-body">
+                          <div class="schedule-drawer-summary-grid">
+                            <article class="schedule-drawer-summary-card">
+                              <span>Current milestones</span>
+                              <strong>{{ scheduleScopeCountLabel(scheduleMilestoneRows.length, 'milestone') }}</strong>
+                              <small>Saved on the page beneath</small>
+                            </article>
+                            <article class="schedule-drawer-summary-card">
+                              <span>Due date</span>
+                              <strong>{{ scheduleMilestoneDraft.dueDate ? scheduleScopeDateLabel(scheduleMilestoneDraft.dueDate) : 'Not set' }}</strong>
+                              <small>Choose the governance checkpoint date</small>
+                            </article>
+                          </div>
+                          <div class="dependency-drawer-grid">
+                            <label class="matrix-field dependency-drawer-field wide">
+                              <span class="matrix-field-label">Milestone <b>*</b></span>
+                              <input type="text" [value]="scheduleMilestoneDraft.milestone" (input)="updateScheduleMilestoneDraft('milestone', $any($event.target).value)" aria-label="Milestone" placeholder="Name the milestone" />
+                            </label>
+                            <label class="matrix-field dependency-drawer-field">
+                              <span class="matrix-field-label">Due date <b>*</b></span>
+                              <input type="date" [value]="scheduleMilestoneDraft.dueDate" (input)="updateScheduleMilestoneDraft('dueDate', $any($event.target).value)" aria-label="Due date" />
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Person responsible</span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="scheduleMilestoneDraft.owner" (change)="updateScheduleMilestoneDraft('owner', $any($event.target).value)" aria-label="Person responsible">
+                                  <option value="">Select owner</option>
+                                  @for (option of scheduleScopeOwnerOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Milestone priority</span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="scheduleMilestoneDraft.priority" (change)="updateScheduleMilestoneDraft('priority', $any($event.target).value)" aria-label="Milestone priority">
+                                  @for (option of scheduleScopePriorityOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
+                              <span class="matrix-field-label">Milestone note</span>
+                              <small class="matrix-field-description">Optional context for PMO or delivery reviewers.</small>
+                              <textarea [value]="scheduleMilestoneDraft.note" (input)="updateScheduleMilestoneDraft('note', $any($event.target).value)" aria-label="Milestone note" placeholder="Add context, dependencies, or assumptions"></textarea>
+                            </label>
+                          </div>
+                        </div>
+                        <div class="report-drawer-footer dependency-drawer-footer">
+                          <button class="report-secondary-button" type="button" (click)="closeScheduleMilestoneDrawer()">Cancel</button>
+                          <button class="report-submit-button" type="submit" [disabled]="!canSaveScheduleMilestoneDraft()">{{ editingScheduleMilestoneId ? 'Save changes' : 'Add milestone' }}</button>
+                        </div>
+                      </form>
+                    </aside>
+                  </div>
+                }
+                @if (isScheduleEndProductDrawerOpen) {
+                  <div class="dependency-drawer-shell" aria-hidden="false">
+                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close end product drawer" (click)="closeScheduleEndProductDrawer()"></button>
+                    <aside class="dependency-drawer schedule-drawer schedule-product-drawer" aria-label="End product drawer">
+                      <form class="dependency-drawer-form" (submit)="saveScheduleEndProductDrawer($event)">
+                        <div class="dependency-drawer-top schedule-drawer-top schedule-product-drawer-top">
+                          <div class="dependency-drawer-title">
+                            <span class="dependency-register-eyebrow">End Product (Deliverables)</span>
+                            <h2>{{ scheduleScopeEndProductDrawerTitle }}</h2>
+                            <p>Use the drawer for product setup, then come back to the register table for comparison and review.</p>
+                          </div>
+                          <button class="drawer-close" type="button" aria-label="Close end product drawer" (click)="closeScheduleEndProductDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
+                        </div>
+                        <div class="dependency-drawer-body">
+                          <div class="schedule-drawer-summary-grid">
+                            <article class="schedule-drawer-summary-card">
+                              <span>Total budget</span>
+                              <strong>{{ scheduleScopeProductBudgetTotal(scheduleEndProductDraft.capex, scheduleEndProductDraft.opex) }}</strong>
+                              <small>Calculated from CAPEX and OPEX</small>
+                            </article>
+                            <article class="schedule-drawer-summary-card">
+                              <span>Delivery timeline</span>
+                              <strong>{{ scheduleScopeDateRange(scheduleEndProductDraft.startDate, scheduleEndProductDraft.endDate) }}</strong>
+                              <small>Use real dates when known</small>
+                            </article>
+                          </div>
+
+                          <section class="schedule-drawer-section">
+                            <div class="schedule-drawer-section-head">
+                              <div>
+                                <strong>Product source</strong>
+                                <small>Mirror the current workflow but keep it consistent with the new right-drawer pattern.</small>
+                              </div>
+                            </div>
+                            <div class="schedule-source-toggle" role="radiogroup" aria-label="End product source">
+                              <label>
+                                <input type="radio" name="end-product-source" [checked]="scheduleEndProductDraft.sourceType === 'new'" (change)="setScheduleEndProductSource('new')" />
+                                <span>Add product</span>
+                              </label>
+                              <label>
+                                <input type="radio" name="end-product-source" [checked]="scheduleEndProductDraft.sourceType === 'existing'" (change)="setScheduleEndProductSource('existing')" />
+                                <span>Add an existing product</span>
+                              </label>
+                            </div>
+                          </section>
+
+                          <div class="dependency-drawer-grid">
+                            @if (scheduleEndProductDraft.sourceType === 'existing') {
+                              <label class="matrix-field matrix-field-select dependency-drawer-field wide">
+                                <span class="matrix-field-label">Existing product <b>*</b></span>
+                                <span class="matrix-select-wrap">
+                                  <select [value]="scheduleEndProductDraft.product" (change)="applyExistingEndProductSelection($any($event.target).value)" aria-label="Existing product">
+                                    <option value="" disabled>Select existing product</option>
+                                    @for (option of scheduleScopeExistingEndProducts; track option.product) {
+                                      <option [value]="option.product">{{ option.product }}</option>
+                                    }
+                                  </select>
+                                  <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                                </span>
+                              </label>
+                            } @else {
+                              <label class="matrix-field dependency-drawer-field wide">
+                                <span class="matrix-field-label">Product <b>*</b></span>
+                                <input type="text" [value]="scheduleEndProductDraft.product" (input)="updateScheduleEndProductDraft('product', $any($event.target).value)" aria-label="Product" placeholder="Name the end product" />
+                              </label>
+                            }
+
+                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
+                              <span class="matrix-field-label">Product description</span>
+                              <textarea [value]="scheduleEndProductDraft.description" (input)="updateScheduleEndProductDraft('description', $any($event.target).value)" aria-label="Product description" placeholder="Describe what the product delivers"></textarea>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Product owner <b>*</b></span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="scheduleEndProductDraft.owner" (change)="updateScheduleEndProductDraft('owner', $any($event.target).value)" aria-label="Product owner">
+                                  <option value="">Select owner</option>
+                                  @for (option of scheduleScopeOwnerOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Product category</span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="scheduleEndProductDraft.category" (change)="updateScheduleEndProductDraft('category', $any($event.target).value)" aria-label="Product category">
+                                  @for (option of scheduleScopeCategoryOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field wide">
+                              <span class="matrix-field-label">Capability</span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="scheduleEndProductDraft.capability" (change)="updateScheduleEndProductDraft('capability', $any($event.target).value)" aria-label="Capability">
+                                  <option value="">Select capability</option>
+                                  @for (option of scheduleScopeCapabilityOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                          </div>
+
+                          <section class="schedule-drawer-section">
+                            <div class="schedule-drawer-section-head">
+                              <div>
+                                <strong>Timing and budget</strong>
+                                <small>These are still detailed-only fields, but now they’re grouped logically instead of stacked in one long modal.</small>
+                              </div>
+                            </div>
+                            <div class="dependency-drawer-grid">
+                              <label class="matrix-field dependency-drawer-field">
+                                <span class="matrix-field-label">Start date</span>
+                                <input type="date" [value]="scheduleEndProductDraft.startDate" (input)="updateScheduleEndProductDraft('startDate', $any($event.target).value)" aria-label="Start date" />
+                              </label>
+                              <label class="matrix-field dependency-drawer-field">
+                                <span class="matrix-field-label">End date</span>
+                                <input type="date" [value]="scheduleEndProductDraft.endDate" (input)="updateScheduleEndProductDraft('endDate', $any($event.target).value)" aria-label="End date" />
+                              </label>
+                              <label class="matrix-field dependency-drawer-field">
+                                <span class="matrix-field-label">CAPEX</span>
+                                <input type="text" [value]="scheduleEndProductDraft.capex" (input)="updateScheduleEndProductDraft('capex', $any($event.target).value)" aria-label="CAPEX" placeholder="0" />
+                              </label>
+                              <label class="matrix-field dependency-drawer-field">
+                                <span class="matrix-field-label">OPEX</span>
+                                <input type="text" [value]="scheduleEndProductDraft.opex" (input)="updateScheduleEndProductDraft('opex', $any($event.target).value)" aria-label="OPEX" placeholder="0" />
+                              </label>
+                            </div>
+                          </section>
+
+                          <section class="schedule-drawer-section">
+                            <div class="schedule-drawer-section-head">
+                              <div>
+                                <strong>Delivery links</strong>
+                                <small>Keep predecessor and successor relationships close to the product instead of pushing them into a separate modal context.</small>
+                              </div>
+                            </div>
+                            <div class="dependency-drawer-grid">
+                              <label class="matrix-field dependency-drawer-field wide">
+                                <span class="matrix-field-label">Predecessors</span>
+                                <input type="text" [value]="scheduleEndProductDraft.predecessors" (input)="updateScheduleEndProductDraft('predecessors', $any($event.target).value)" aria-label="Predecessors" placeholder="Comma-separated linked projects" />
+                              </label>
+                              <label class="matrix-field dependency-drawer-field wide">
+                                <span class="matrix-field-label">Successors</span>
+                                <input type="text" [value]="scheduleEndProductDraft.successors" (input)="updateScheduleEndProductDraft('successors', $any($event.target).value)" aria-label="Successors" placeholder="Comma-separated linked projects" />
+                              </label>
+                            </div>
+                          </section>
+                        </div>
+                        <div class="report-drawer-footer dependency-drawer-footer">
+                          <button class="report-secondary-button" type="button" (click)="closeScheduleEndProductDrawer()">Cancel</button>
+                          <button class="report-submit-button" type="submit" [disabled]="!canSaveScheduleEndProductDraft()">{{ editingScheduleEndProductId ? 'Save changes' : 'Add end product' }}</button>
+                        </div>
+                      </form>
+                    </aside>
+                  </div>
+                }
+                @if (isScheduleManagementProductDrawerOpen) {
+                  <div class="dependency-drawer-shell" aria-hidden="false">
+                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close management product drawer" (click)="closeScheduleManagementProductDrawer()"></button>
+                    <aside class="dependency-drawer schedule-drawer" aria-label="Management product drawer">
+                      <form class="dependency-drawer-form" (submit)="saveScheduleManagementProductDrawer($event)">
+                        <div class="dependency-drawer-top schedule-drawer-top schedule-management-drawer-top">
+                          <div class="dependency-drawer-title">
+                            <span class="dependency-register-eyebrow">Management Product</span>
+                            <h2>{{ scheduleScopeManagementProductDrawerTitle }}</h2>
+                            <p>Keep governance artefacts in the same drawer pattern so the experience stays consistent across the whole Schedule &amp; Scope tab.</p>
+                          </div>
+                          <button class="drawer-close" type="button" aria-label="Close management product drawer" (click)="closeScheduleManagementProductDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
+                        </div>
+                        <div class="dependency-drawer-body">
+                          <div class="schedule-drawer-summary-grid">
+                            <article class="schedule-drawer-summary-card">
+                              <span>Total budget</span>
+                              <strong>{{ scheduleScopeProductBudgetTotal(scheduleManagementProductDraft.capex, scheduleManagementProductDraft.opex) }}</strong>
+                              <small>Calculated from CAPEX and OPEX</small>
+                            </article>
+                            <article class="schedule-drawer-summary-card">
+                              <span>Timeline</span>
+                              <strong>{{ scheduleScopeDateRange(scheduleManagementProductDraft.startDate, scheduleManagementProductDraft.endDate) }}</strong>
+                              <small>Use if dates are confirmed</small>
+                            </article>
+                          </div>
+                          <div class="dependency-drawer-grid">
+                            <label class="matrix-field dependency-drawer-field wide">
+                              <span class="matrix-field-label">Product <b>*</b></span>
+                              <input type="text" [value]="scheduleManagementProductDraft.product" (input)="updateScheduleManagementProductDraft('product', $any($event.target).value)" aria-label="Product" placeholder="Name the management product" />
+                            </label>
+                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
+                              <span class="matrix-field-label">Product description</span>
+                              <textarea [value]="scheduleManagementProductDraft.description" (input)="updateScheduleManagementProductDraft('description', $any($event.target).value)" aria-label="Product description" placeholder="Describe the governance artefact"></textarea>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Product owner <b>*</b></span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="scheduleManagementProductDraft.owner" (change)="updateScheduleManagementProductDraft('owner', $any($event.target).value)" aria-label="Product owner">
+                                  <option value="">Select owner</option>
+                                  @for (option of scheduleScopeOwnerOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field matrix-field-select dependency-drawer-field">
+                              <span class="matrix-field-label">Product category</span>
+                              <span class="matrix-select-wrap">
+                                <select [value]="scheduleManagementProductDraft.category" (change)="updateScheduleManagementProductDraft('category', $any($event.target).value)" aria-label="Product category">
+                                  @for (option of scheduleScopeCategoryOptions; track option) {
+                                    <option [value]="option">{{ option }}</option>
+                                  }
+                                </select>
+                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                              </span>
+                            </label>
+                            <label class="matrix-field dependency-drawer-field">
+                              <span class="matrix-field-label">Start date</span>
+                              <input type="date" [value]="scheduleManagementProductDraft.startDate" (input)="updateScheduleManagementProductDraft('startDate', $any($event.target).value)" aria-label="Start date" />
+                            </label>
+                            <label class="matrix-field dependency-drawer-field">
+                              <span class="matrix-field-label">End date</span>
+                              <input type="date" [value]="scheduleManagementProductDraft.endDate" (input)="updateScheduleManagementProductDraft('endDate', $any($event.target).value)" aria-label="End date" />
+                            </label>
+                            <label class="matrix-field dependency-drawer-field">
+                              <span class="matrix-field-label">CAPEX</span>
+                              <input type="text" [value]="scheduleManagementProductDraft.capex" (input)="updateScheduleManagementProductDraft('capex', $any($event.target).value)" aria-label="CAPEX" placeholder="0" />
+                            </label>
+                            <label class="matrix-field dependency-drawer-field">
+                              <span class="matrix-field-label">OPEX</span>
+                              <input type="text" [value]="scheduleManagementProductDraft.opex" (input)="updateScheduleManagementProductDraft('opex', $any($event.target).value)" aria-label="OPEX" placeholder="0" />
+                            </label>
+                          </div>
+                        </div>
+                        <div class="report-drawer-footer dependency-drawer-footer">
+                          <button class="report-secondary-button" type="button" (click)="closeScheduleManagementProductDrawer()">Cancel</button>
+                          <button class="report-submit-button" type="submit" [disabled]="!canSaveScheduleManagementProductDraft()">{{ editingScheduleManagementProductId ? 'Save changes' : 'Add management product' }}</button>
+                        </div>
+                      </form>
+                    </aside>
+                  </div>
+                }
               } @else if (projectPlanEntry === 'reports') {
                 <div class="project-plan-shell plan-builder-shell quick-plan-shell project-report-shell project-reports-shell">
                   <main class="project-plan-content plan-builder-workspace quick-plan-workspace project-report-workspace">
@@ -2958,6 +5673,16 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                     }
                     <div class="workspace-tabs" role="tablist" aria-label="Workspace view" data-tour-target="workspace-tabs">
                       <button
+                        [class.active]="selectedView === 'pm101'"
+                        type="button"
+                        data-view-target="pm101"
+                        [attr.aria-selected]="selectedView === 'pm101'"
+                        (click)="setView('pm101')"
+                      >
+                        <span class="icon" aria-hidden="true"><i data-lucide="book-open"></i></span>
+                        <span>PM101</span>
+                      </button>
+                      <button
                         [class.active]="isActionWorkspaceActive"
                         [class.is-locked]="onboardingPm101Locked"
                         type="button"
@@ -2970,16 +5695,6 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                       >
                         <span class="icon" aria-hidden="true"><i data-lucide="check-square"></i></span>
                         <span>Actions</span>
-                      </button>
-                      <button
-                        [class.active]="selectedView === 'pm101'"
-                        type="button"
-                        data-view-target="pm101"
-                        [attr.aria-selected]="selectedView === 'pm101'"
-                        (click)="setView('pm101')"
-                      >
-                        <span class="icon" aria-hidden="true"><i data-lucide="book-open"></i></span>
-                        <span>PM101</span>
                       </button>
                       <button
                         [class.active]="selectedView === 'stages'"
@@ -3747,7 +6462,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
 export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, OnDestroy {
   @Input() selectedProject = 'all';
   @Input() selectedPage: ConsolePage = 'workspace';
-  @Input() selectedView: WorkspaceView = 'calendar';
+  @Input() selectedView: WorkspaceView = 'pm101';
   @Input() frontDoorMode = 'assigned';
   @Input() pmoAssignmentReady = false;
   @Input() guidedTourActive = false;
@@ -3862,6 +6577,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     },
   ];
   readonly simpleReportSections = this.simplePlanSections.slice(1);
+  readonly budgetPlanConfig = budgetPlanConfig;
   readonly simpleReportGuides: SimpleReportGuide[] = [
     { focus: 'Overview', status: 'On track', tone: 'green', action: 'Attach outcome evidence' },
     { focus: 'Schedule & scope', status: 'Alert', tone: 'amber', action: 'Confirm forecast date or scope change' },
@@ -3875,6 +6591,8 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     { title: 'Execution stage gate', owner: 'Muna Hassan', progress: 'Planned', level: 0, tone: 'planned', left: '47%', width: '12%' },
   ];
   readonly months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  readonly overviewStrategicObjectiveLinks = overviewStrategicObjectiveLinkSeeds;
+  readonly overviewBusinessPlanSignals = overviewBusinessPlanSignalSeeds;
 
   workspaceDisplay: WorkspaceDisplay = 'table';
   workspaceRegister: WorkspaceRegister = 'projects';
@@ -3891,12 +6609,61 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   activeReportProject: string | null = null;
   activeReportMode: ReportDetailMode = 'simple';
   selectedStageGateKey: string | null = null;
+  overviewState: OverviewState = { ...overviewStateInitial };
+  isOverviewBusinessDriverDrawerOpen = false;
+  editingOverviewBusinessDriverId: string | null = null;
+  overviewBusinessDriverRows: OverviewBusinessDriverRow[] = overviewBusinessDriverRowsInitial.map((row) => ({ ...row }));
+  overviewBusinessDriverDraft: OverviewBusinessDriverDraft = { ...overviewBusinessDriverDraftInitial };
+  isOverviewOutcomeDrawerOpen = false;
+  editingOverviewOutcomeId: string | null = null;
+  overviewOutcomeRows: OverviewOutcomeRow[] = overviewOutcomeRowsInitial.map((row) => ({ ...row }));
+  overviewOutcomeDraft: OverviewOutcomeDraft = { ...overviewOutcomeDraftInitial };
+  isOverviewObjectiveDrawerOpen = false;
+  editingOverviewObjectiveId: string | null = null;
+  overviewObjectiveRows: OverviewObjectiveRow[] = overviewObjectiveRowsInitial.map((row) => ({ ...row }));
+  overviewObjectiveDraft: OverviewObjectiveDraft = { ...overviewObjectiveDraftInitial };
+  isOverviewCapabilityDrawerOpen = false;
+  editingOverviewCapabilityId: string | null = null;
+  overviewCapabilityRows: OverviewCapabilityRow[] = overviewCapabilityRowsInitial.map((row) => ({ ...row }));
+  overviewCapabilityDraft: OverviewCapabilityDraft = {
+    selectedCapabilities: [...overviewCapabilityDraftInitial.selectedCapabilities],
+  };
+  isOverviewServiceDrawerOpen = false;
+  editingOverviewServiceId: string | null = null;
+  overviewServiceRows: OverviewServiceRow[] = overviewServiceRowsInitial.map((row) => ({ ...row }));
+  overviewServiceDraft: OverviewServiceDraft = { ...overviewServiceDraftInitial };
+  scheduleScopeState: ScheduleScopeState = { ...scheduleScopeStateInitial };
+  isScheduleMilestoneDrawerOpen = false;
+  editingScheduleMilestoneId: string | null = null;
+  scheduleMilestoneRows: ScheduleMilestoneRow[] = scheduleMilestoneRowsInitial.map((row) => ({ ...row }));
+  scheduleMilestoneDraft: ScheduleMilestoneDraft = { ...scheduleMilestoneDraftInitial };
+  isScheduleEndProductDrawerOpen = false;
+  editingScheduleEndProductId: string | null = null;
+  scheduleEndProductRows: ScheduleScopeProductRow[] = scheduleEndProductRowsInitial.map((row) => ({
+    ...row,
+    predecessors: [...row.predecessors],
+    successors: [...row.successors],
+  }));
+  scheduleEndProductDraft: ScheduleScopeProductDraft = { ...scheduleEndProductDraftInitial };
+  isScheduleManagementProductDrawerOpen = false;
+  editingScheduleManagementProductId: string | null = null;
+  scheduleManagementProductRows: ScheduleManagementProductRow[] = scheduleManagementProductRowsInitial.map((row) => ({ ...row }));
+  scheduleManagementProductDraft: ScheduleManagementProductDraft = { ...scheduleManagementProductDraftInitial };
+  isBudgetDrawerOpen = false;
+  isBudgetFundingDrawerOpen = false;
+  isBudgetMonthlyDrawerOpen = false;
+  isBudgetRulesOpen = false;
   isBenefitDrawerOpen = false;
   isIssueDrawerOpen = false;
   isRelatedLinksDrawerOpen = false;
   isResourceDrawerOpen = false;
   isChangeImpactDrawerOpen = false;
   activeDependencyRegisterKey: DependencyRegisterKey | null = null;
+  budgetPlanStates: Record<string, BudgetPlanState> = this.cloneBudgetPlanStateMap(budgetPlanSeeds);
+  budgetYearDraft: BudgetYearDraft = { ...budgetPlanConfig.yearDraft };
+  budgetFundingSourceDraft: BudgetFundingSourceDraft = { ...budgetPlanConfig.fundingDraft };
+  budgetMonthlyEditorRows: BudgetMonthlyRow[] = [];
+  activeBudgetSubtab: BudgetSubtab = 'project';
   benefitPlanRows: BenefitPlanRow[] = benefitPlanConfig.rows.map((row) => ({ ...row }));
   benefitPlanDraft: BenefitPlanDraft = { ...benefitPlanConfig.draft };
   issuePlanRows: IssuePlanRow[] = issuePlanConfig.rows.map((row) => ({ ...row }));
@@ -3953,7 +6720,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get visibleProjectPlanSections(): string[] {
-    return this.projectPlanSectionsExpanded ? [...this.primaryProjectPlanSections, ...this.additionalProjectPlanSections] : this.primaryProjectPlanSections;
+    return [...this.primaryProjectPlanSections, ...this.additionalProjectPlanSections];
   }
 
   get activeProjectPlanGroup(): SimplePlanSection {
@@ -3996,12 +6763,242 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get activeProjectPlanHiddenFieldButtonLabel(): string {
-    return this.activeProjectPlanHasVisibleFields ? 'Additional detailed fields' : 'Detailed fields';
+    return 'Additional fields';
   }
 
   get activeProjectPlanUsesIntermediateSplit(): boolean {
     const fields = this.projectPlanFieldsForSection(this.projectPlanActiveSection);
     return fields.some((field) => field.intermediate) && !this.isProjectPlanDetailedOnlySection(this.projectPlanActiveSection);
+  }
+
+  get overviewDriverDrawerTitle(): string {
+    return this.editingOverviewBusinessDriverId ? 'Edit business driver' : 'Add business driver';
+  }
+
+  get overviewOutcomeDrawerTitle(): string {
+    return this.editingOverviewOutcomeId ? 'Edit outcome' : 'Add outcome';
+  }
+
+  get overviewObjectiveDrawerTitle(): string {
+    return this.editingOverviewObjectiveId ? 'Edit project objective' : 'Add project objective';
+  }
+
+  get overviewCapabilityDrawerTitle(): string {
+    return this.editingOverviewCapabilityId ? 'Edit linked capability' : 'Link capabilities';
+  }
+
+  get overviewServiceDrawerTitle(): string {
+    return this.editingOverviewServiceId ? 'Edit linked service' : 'Link service';
+  }
+
+  get overviewBusinessDriverOptions(): OverviewBusinessDriverOption[] {
+    return overviewBusinessDriverOptionSeeds;
+  }
+
+  get overviewOutcomeStatusOptions(): string[] {
+    return overviewOutcomeStatusOptions;
+  }
+
+  get overviewObjectiveStatusOptions(): string[] {
+    return overviewObjectiveStatusOptions;
+  }
+
+  get overviewCapabilityOptions(): OverviewCapabilityOption[] {
+    return overviewCapabilityOptionSeeds;
+  }
+
+  get overviewServiceGroupOptions(): string[] {
+    return Array.from(new Set(overviewServiceOptionSeeds.map((item) => item.serviceGroup)));
+  }
+
+  get overviewServiceValueStreamOptions(): string[] {
+    return Array.from(
+      new Set(
+        overviewServiceOptionSeeds
+          .filter((item) => !this.overviewServiceDraft.serviceGroup || item.serviceGroup === this.overviewServiceDraft.serviceGroup)
+          .map((item) => item.valueStream),
+      ),
+    );
+  }
+
+  get overviewServicePhaseOptions(): string[] {
+    return Array.from(
+      new Set(
+        overviewServiceOptionSeeds
+          .filter((item) => !this.overviewServiceDraft.serviceGroup || item.serviceGroup === this.overviewServiceDraft.serviceGroup)
+          .filter((item) => !this.overviewServiceDraft.valueStream || item.valueStream === this.overviewServiceDraft.valueStream)
+          .map((item) => item.phase),
+      ),
+    );
+  }
+
+  get overviewServiceOptions(): string[] {
+    return Array.from(
+      new Set(
+        overviewServiceOptionSeeds
+          .filter((item) => !this.overviewServiceDraft.serviceGroup || item.serviceGroup === this.overviewServiceDraft.serviceGroup)
+          .filter((item) => !this.overviewServiceDraft.valueStream || item.valueStream === this.overviewServiceDraft.valueStream)
+          .filter((item) => !this.overviewServiceDraft.phase || item.phase === this.overviewServiceDraft.phase)
+          .map((item) => item.service),
+      ),
+    );
+  }
+
+  get overviewGovernanceLinkCount(): number {
+    return this.overviewCapabilityRows.length + this.overviewServiceRows.length;
+  }
+
+  get overviewSelectedCapabilityCount(): number {
+    return this.overviewCapabilityDraft.selectedCapabilities.length;
+  }
+
+  get scheduleScopeOwnerOptions(): string[] {
+    return scheduleScopeOwnerOptions;
+  }
+
+  get scheduleScopePriorityOptions(): string[] {
+    return scheduleScopePriorityOptions;
+  }
+
+  get scheduleScopeCategoryOptions(): string[] {
+    return scheduleScopeCategoryOptions;
+  }
+
+  get scheduleScopeCapabilityOptions(): string[] {
+    return scheduleScopeCapabilityOptions;
+  }
+
+  get scheduleScopeExistingEndProducts(): typeof scheduleScopeExistingEndProducts {
+    return scheduleScopeExistingEndProducts;
+  }
+
+  get scheduleScopeMilestoneDrawerTitle(): string {
+    return this.editingScheduleMilestoneId ? 'Edit milestone' : 'Add milestone';
+  }
+
+  get scheduleScopeEndProductDrawerTitle(): string {
+    return this.editingScheduleEndProductId ? 'Edit end product' : 'Add end product';
+  }
+
+  get scheduleScopeManagementProductDrawerTitle(): string {
+    return this.editingScheduleManagementProductId ? 'Edit management product' : 'Add management product';
+  }
+
+  get scheduleScopeForecastShiftLabel(): string {
+    return this.scheduleScopeDateShiftLabel(this.scheduleScopeState.baselineEnd, this.scheduleScopeState.forecastEnd);
+  }
+
+  get scheduleScopeRegisterCount(): number {
+    return this.scheduleEndProductRows.length + this.scheduleManagementProductRows.length;
+  }
+
+  get scheduleScopeWbsHighlights() {
+    return this.wbsItems.slice(0, 3);
+  }
+
+  get activeBudgetPlan(): BudgetPlanState {
+    const plan = this.budgetPlanStates[this.activeBudgetPlanKey()] || this.budgetPlanStates['default'];
+    return plan.years.length ? plan : this.budgetPlanStates['default'];
+  }
+
+  get activeBudgetYear(): BudgetYearPlan | null {
+    const plan = this.activeBudgetPlan;
+    if (!plan.years.length) return null;
+    return plan.years.find((year) => year.fy === plan.selectedFy) || plan.years[0];
+  }
+
+  get activeBudgetHasData(): boolean {
+    return this.activeBudgetPlan.years.length > 0;
+  }
+
+  get activeBudgetOverviewMetrics(): BudgetPlanMetric[] {
+    const plan = this.activeBudgetPlan;
+    const baseline = plan.years.reduce((total, year) => total + this.budgetYearBaselineTotal(year), 0);
+    const forecast = plan.years.reduce((total, year) => total + this.budgetYearForecastTotal(year), 0);
+    const actual = plan.years.reduce((total, year) => total + this.budgetYearActualTotal(year), 0);
+    const committed = plan.years.reduce((total, year) => total + this.budgetYearCommittedTotal(year), 0);
+    const available = forecast - actual - committed;
+    const variance = forecast - baseline;
+
+    return [
+      {
+        label: 'Total project budget',
+        value: this.formatBudgetCurrency(baseline),
+        helper: plan.years.length ? `${plan.years.length} FYs tracked` : 'No fiscal years set up yet',
+        tone: 'neutral',
+      },
+      {
+        label: 'Forecast',
+        value: this.formatBudgetCurrency(forecast),
+        helper: 'Rolls up from FY and monthly phasing',
+        tone: 'neutral',
+      },
+      {
+        label: 'Forecast variance',
+        value: this.formatBudgetSignedCurrency(variance),
+        helper: this.formatBudgetPercent(variance, baseline),
+        tone: this.budgetVarianceTone(variance),
+      },
+      {
+        label: 'Committed',
+        value: this.formatBudgetCurrency(committed),
+        helper: 'From monthly committed values',
+        tone: committed > 0 ? 'amber' : 'neutral',
+      },
+      {
+        label: 'Actual spent',
+        value: this.formatBudgetCurrency(actual),
+        helper: 'From monthly actuals',
+        tone: actual > 0 ? 'neutral' : 'amber',
+      },
+      {
+        label: 'Available budget',
+        value: this.formatBudgetCurrency(available),
+        helper: 'Forecast - actual - committed',
+        tone: available < 0 ? 'red' : 'green',
+      },
+    ];
+  }
+
+  get activeBudgetBreakdownRows(): BudgetBreakdownRow[] {
+    const year = this.activeBudgetYear;
+    if (!year) return [];
+    const capexActual = year.monthlyRows.reduce((total, row) => total + row.capexActual, 0);
+    const opexActual = year.monthlyRows.reduce((total, row) => total + row.opexActual, 0);
+    const capexCommitted = year.monthlyRows.reduce((total, row) => total + row.capexCommitted, 0);
+    const opexCommitted = year.monthlyRows.reduce((total, row) => total + row.opexCommitted, 0);
+
+    return [
+      {
+        stream: 'CAPEX',
+        baseline: year.baselineCapex,
+        forecast: year.forecastCapex,
+        actual: capexActual,
+        committed: capexCommitted,
+      },
+      {
+        stream: 'OPEX',
+        baseline: year.baselineOpex,
+        forecast: year.forecastOpex,
+        actual: opexActual,
+        committed: opexCommitted,
+      },
+      {
+        stream: 'Total',
+        baseline: year.baselineCapex + year.baselineOpex,
+        forecast: year.forecastCapex + year.forecastOpex,
+        actual: capexActual + opexActual,
+        committed: capexCommitted + opexCommitted,
+      },
+    ];
+  }
+
+  get activeBudgetFundingPreviewRows(): BudgetFundingSourceRow[] {
+    return this.activeBudgetYear?.fundingSources.slice(0, 3) || [];
+  }
+
+  get activeBudgetMonthlyPreviewRows(): BudgetMonthlyRow[] {
+    return this.activeBudgetYear?.monthlyRows.slice(0, 4) || [];
   }
 
   get activeBenefitPlan(): BenefitPlanConfig {
@@ -4478,12 +7475,17 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   @HostListener('document:click', ['$event'])
   handleDocumentClick(event: MouseEvent): void {
-    if (!this.workspaceColumnMenuOpen) return;
     const target = event.target;
     if (!(target instanceof Node)) return;
-    const menu = this.elementRef.nativeElement.querySelector<HTMLElement>('[data-workspace-columns-menu]');
-    if (menu?.contains(target)) return;
-    this.closeWorkspaceColumnMenu();
+    if (this.workspaceColumnMenuOpen) {
+      const menu = this.elementRef.nativeElement.querySelector<HTMLElement>('[data-workspace-columns-menu]');
+      if (!menu?.contains(target)) this.closeWorkspaceColumnMenu();
+    }
+    if (this.isBudgetRulesOpen) {
+      const popover = this.elementRef.nativeElement.querySelector<HTMLElement>('[data-budget-rules-popover]');
+      const trigger = this.elementRef.nativeElement.querySelector<HTMLElement>('[data-budget-rules-trigger]');
+      if (!popover?.contains(target) && !trigger?.contains(target)) this.closeBudgetRulesPopover();
+    }
   }
 
   @HostListener('window:keydown.escape')
@@ -4492,7 +7494,11 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       this.closeWorkspaceColumnMenu();
       return;
     }
-    if (this.isBenefitDrawerOpen || this.isIssueDrawerOpen || this.isRelatedLinksDrawerOpen || this.isResourceDrawerOpen || this.isChangeImpactDrawerOpen || this.activeDependencyRegister) {
+    if (this.isBudgetRulesOpen) {
+      this.closeBudgetRulesPopover();
+      return;
+    }
+    if (this.isBudgetDrawerOpen || this.isBudgetFundingDrawerOpen || this.isBudgetMonthlyDrawerOpen || this.isBenefitDrawerOpen || this.isIssueDrawerOpen || this.isRelatedLinksDrawerOpen || this.isResourceDrawerOpen || this.isChangeImpactDrawerOpen || this.activeDependencyRegister) {
       this.closeProjectPlanDrawers();
       return;
     }
@@ -4742,6 +7748,14 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.iconsHydrated = false;
   }
 
+  projectPlanNavLabel(section: string): string {
+    const labels: Record<string, string> = {
+      'Change Impact': 'Change impact',
+      'Related Links': 'Related links',
+    };
+    return labels[section] || section;
+  }
+
   isProjectPlanFieldSectionExpanded(section: string): boolean {
     return Boolean(this.projectPlanExpandedFieldSections[section]);
   }
@@ -4849,6 +7863,1063 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   closeStageGate(): void {
     if (!this.selectedStageGateKey) return;
     this.selectedStageGateKey = null;
+    this.iconsHydrated = false;
+  }
+
+  budgetPlanYearCountLabel(plan: BudgetPlanState): string {
+    return plan.years.length === 1 ? '1 FY tracked' : `${plan.years.length} FYs tracked`;
+  }
+
+  budgetPlanHasFy(plan: BudgetPlanState, fy: string): boolean {
+    return plan.years.some((year) => year.fy === fy);
+  }
+
+  budgetFundingSourceCountLabel(year: BudgetYearPlan | null): string {
+    if (!year) return 'No sources';
+    return year.fundingSources.length === 1 ? '1 source' : `${year.fundingSources.length} sources`;
+  }
+
+  budgetMonthlyCountLabel(year: BudgetYearPlan | null): string {
+    if (!year) return 'No months';
+    return year.monthlyRows.length === 1 ? '1 month' : `${year.monthlyRows.length} months`;
+  }
+
+  budgetYearBaselineTotal(year: BudgetYearPlan): number {
+    return year.baselineCapex + year.baselineOpex;
+  }
+
+  budgetYearForecastTotal(year: BudgetYearPlan): number {
+    return year.forecastCapex + year.forecastOpex;
+  }
+
+  budgetYearActualTotal(year: BudgetYearPlan): number {
+    return year.monthlyRows.reduce((total, row) => total + row.capexActual + row.opexActual, 0);
+  }
+
+  budgetYearCommittedTotal(year: BudgetYearPlan): number {
+    return year.monthlyRows.reduce((total, row) => total + row.capexCommitted + row.opexCommitted, 0);
+  }
+
+  budgetYearAvailableTotal(year: BudgetYearPlan): number {
+    return this.budgetYearForecastTotal(year) - this.budgetYearActualTotal(year) - this.budgetYearCommittedTotal(year);
+  }
+
+  budgetYearVariance(year: BudgetYearPlan): number {
+    return this.budgetYearForecastTotal(year) - this.budgetYearBaselineTotal(year);
+  }
+
+  budgetFundingAllocatedTotal(year: BudgetYearPlan): number {
+    return year.fundingSources.reduce((total, row) => total + row.amount, 0);
+  }
+
+  budgetFundingCoverageLabel(year: BudgetYearPlan): string {
+    const baseline = this.budgetYearBaselineTotal(year);
+    const allocated = this.budgetFundingAllocatedTotal(year);
+    const delta = allocated - baseline;
+    if (!baseline) return 'No FY baseline to compare yet';
+    if (delta === 0) return 'Funding lines match the FY baseline';
+    const direction = delta > 0 ? 'over' : 'under';
+    return `${this.formatBudgetCurrency(Math.abs(delta))} ${direction} the FY baseline`;
+  }
+
+  budgetFundingCoverageTone(year: BudgetYearPlan): string {
+    const delta = this.budgetFundingAllocatedTotal(year) - this.budgetYearBaselineTotal(year);
+    if (delta === 0) return 'neutral';
+    return delta > 0 ? 'amber' : 'red';
+  }
+
+  budgetStreamVariance(row: BudgetBreakdownRow): number {
+    return row.forecast - row.baseline;
+  }
+
+  budgetStreamAvailable(row: BudgetBreakdownRow): number {
+    return row.forecast - row.actual - row.committed;
+  }
+
+  budgetMonthlyTotal(row: BudgetMonthlyRow, kind: 'budget' | 'forecast' | 'actual' | 'committed'): number {
+    if (kind === 'budget') return row.capexBudget + row.opexBudget;
+    if (kind === 'forecast') return row.capexForecast + row.opexForecast;
+    if (kind === 'actual') return row.capexActual + row.opexActual;
+    return row.capexCommitted + row.opexCommitted;
+  }
+
+  budgetMonthlyAvailable(row: BudgetMonthlyRow): number {
+    return this.budgetMonthlyTotal(row, 'forecast') - this.budgetMonthlyTotal(row, 'actual') - this.budgetMonthlyTotal(row, 'committed');
+  }
+
+  budgetMonthlyActualVariance(row: BudgetMonthlyRow): number {
+    return this.budgetMonthlyTotal(row, 'forecast') - this.budgetMonthlyTotal(row, 'actual');
+  }
+
+  budgetBreakdownInputValue(row: BudgetBreakdownRow, field: BudgetBreakdownEditableField): string {
+    const value = row[field];
+    return Number.isInteger(value) ? String(value) : value.toFixed(2);
+  }
+
+  formatBudgetCurrency(value: number): string {
+    const absolute = Math.abs(value);
+    const prefix = value < 0 ? '-' : '';
+    if (absolute >= 1_000_000) {
+      const millions = absolute / 1_000_000;
+      const decimals = millions >= 10 ? 1 : 2;
+      return `${prefix}SAR ${Number(millions.toFixed(decimals)).toLocaleString('en-US')}M`;
+    }
+    if (absolute >= 1_000) {
+      const thousands = absolute / 1_000;
+      const decimals = thousands >= 100 ? 0 : thousands >= 10 ? 1 : 2;
+      return `${prefix}SAR ${Number(thousands.toFixed(decimals)).toLocaleString('en-US')}K`;
+    }
+    return `${prefix}SAR ${Number(absolute.toFixed(0)).toLocaleString('en-US')}`;
+  }
+
+  formatBudgetSignedCurrency(value: number): string {
+    if (value === 0) return 'SAR 0';
+    return `${value > 0 ? '+' : '-'}${this.formatBudgetCurrency(Math.abs(value))}`;
+  }
+
+  formatBudgetPercent(value: number, base: number): string {
+    if (!base) return '0%';
+    const percent = Math.abs(value / base) * 100;
+    return `${value < 0 ? '-' : ''}${percent.toFixed(percent >= 10 ? 1 : 2)}%`;
+  }
+
+  budgetVarianceTone(value: number): 'neutral' | 'green' | 'amber' | 'red' {
+    if (value === 0) return 'neutral';
+    if (value > 0) return 'amber';
+    return 'green';
+  }
+
+  selectBudgetFy(fy: string): void {
+    if (!fy) return;
+    this.updateActiveBudgetPlanState((plan) => ({
+      ...plan,
+      selectedFy: fy,
+    }));
+    this.closeBudgetRulesPopover();
+    this.iconsHydrated = false;
+  }
+
+  selectBudgetTab(tab: BudgetSubtab): void {
+    this.activeBudgetSubtab = tab;
+    this.closeBudgetRulesPopover();
+    this.iconsHydrated = false;
+  }
+
+  updateBudgetBreakdown(stream: string, field: BudgetBreakdownEditableField, value: string): void {
+    const year = this.activeBudgetYear;
+    if (!year || stream === 'Total') return;
+
+    const amount = Math.max(0, this.parseBudgetInput(value));
+    const budgetStream = stream === 'OPEX' ? 'OPEX' : 'CAPEX';
+
+    this.updateActiveBudgetPlanState((plan) => ({
+      ...plan,
+      years: plan.years.map((entry) => {
+        if (entry.fy !== year.fy) return entry;
+
+        if (field === 'baseline' || field === 'forecast') {
+          const nextYear: BudgetYearPlan = {
+            ...entry,
+            baselineCapex: field === 'baseline' && budgetStream === 'CAPEX' ? amount : entry.baselineCapex,
+            baselineOpex: field === 'baseline' && budgetStream === 'OPEX' ? amount : entry.baselineOpex,
+            forecastCapex: field === 'forecast' && budgetStream === 'CAPEX' ? amount : entry.forecastCapex,
+            forecastOpex: field === 'forecast' && budgetStream === 'OPEX' ? amount : entry.forecastOpex,
+          };
+
+          return {
+            ...nextYear,
+            monthlyRows: this.redistributeBudgetMonthlyRows(entry.monthlyRows, entry.fy, nextYear),
+          };
+        }
+
+        return {
+          ...entry,
+          monthlyRows: this.replaceBudgetMonthlyRollupTotal(entry.monthlyRows, budgetStream, field, amount),
+        };
+      }),
+      lastSavedLabel: 'Unsaved changes',
+    }));
+  }
+
+  saveBudgetChanges(): void {
+    this.updateActiveBudgetPlanState((plan) => ({
+      ...plan,
+      lastSavedLabel: 'Saved just now',
+    }));
+    this.iconsHydrated = false;
+  }
+
+  openBudgetDrawer(): void {
+    const year = this.activeBudgetYear;
+    this.closeProjectPlanDrawers();
+    this.budgetYearDraft = year
+      ? {
+          fy: year.fy,
+          baselineCapex: String(year.baselineCapex),
+          baselineOpex: String(year.baselineOpex),
+          forecastCapex: String(year.forecastCapex),
+          forecastOpex: String(year.forecastOpex),
+        }
+      : {
+          ...budgetPlanConfig.yearDraft,
+          fy: this.activeBudgetPlan.selectedFy || budgetPlanConfig.fyOptions[0],
+        };
+    this.isBudgetDrawerOpen = true;
+    this.iconsHydrated = false;
+  }
+
+  closeBudgetDrawer(): void {
+    if (!this.isBudgetDrawerOpen) return;
+    this.isBudgetDrawerOpen = false;
+    this.iconsHydrated = false;
+  }
+
+  saveBudgetDrawer(event: Event): void {
+    event.preventDefault();
+    if (!this.canSaveBudgetYearDraft()) return;
+
+    const draft = this.budgetYearDraft;
+    const fy = draft.fy.trim();
+    const baselineCapex = this.parseBudgetInput(draft.baselineCapex);
+    const baselineOpex = this.parseBudgetInput(draft.baselineOpex);
+    const forecastCapex = this.parseBudgetInput(draft.forecastCapex);
+    const forecastOpex = this.parseBudgetInput(draft.forecastOpex);
+
+    this.updateActiveBudgetPlanState((plan) => {
+      const existing = plan.years.find((year) => year.fy === fy);
+      const nextYear = existing
+        ? {
+            ...existing,
+            fy,
+            baselineCapex,
+            baselineOpex,
+            forecastCapex,
+            forecastOpex,
+            monthlyRows: this.redistributeBudgetMonthlyRows(existing.monthlyRows, fy, {
+              baselineCapex,
+              baselineOpex,
+              forecastCapex,
+              forecastOpex,
+            }),
+          }
+        : createBudgetYearPlan(
+            `budget-year-${slugifyPlanField(`${this.activeBudgetPlanKey()}-${fy}`)}-${Date.now()}`,
+            fy,
+            baselineCapex,
+            baselineOpex,
+            forecastCapex,
+            forecastOpex,
+            [],
+          );
+
+      const years = existing
+        ? plan.years.map((year) => (year.fy === fy ? nextYear : year))
+        : [...plan.years, nextYear].sort((first, second) => this.budgetFySortValue(first.fy) - this.budgetFySortValue(second.fy));
+
+      return {
+        ...plan,
+        selectedFy: fy,
+        years,
+        lastSavedLabel: 'Saved just now',
+      };
+    });
+
+    this.closeBudgetDrawer();
+  }
+
+  updateBudgetYearDraft(field: keyof BudgetYearDraft, value: string): void {
+    this.budgetYearDraft = {
+      ...this.budgetYearDraft,
+      [field]: value,
+    };
+  }
+
+  canSaveBudgetYearDraft(): boolean {
+    const draft = this.budgetYearDraft;
+    return Boolean(
+      draft.fy.trim() &&
+        draft.baselineCapex.trim() &&
+        draft.baselineOpex.trim() &&
+        draft.forecastCapex.trim() &&
+        draft.forecastOpex.trim(),
+    );
+  }
+
+  openBudgetFundingDrawer(): void {
+    if (!this.activeBudgetYear) {
+      this.openBudgetDrawer();
+      return;
+    }
+    this.closeProjectPlanDrawers();
+    this.resetBudgetFundingDraft();
+    this.isBudgetFundingDrawerOpen = true;
+    this.iconsHydrated = false;
+  }
+
+  closeBudgetFundingDrawer(): void {
+    if (!this.isBudgetFundingDrawerOpen) return;
+    this.isBudgetFundingDrawerOpen = false;
+    this.iconsHydrated = false;
+  }
+
+  saveBudgetFundingDrawer(event: Event): void {
+    event.preventDefault();
+    const year = this.activeBudgetYear;
+    if (!year || !this.canSaveBudgetFundingDraft()) return;
+
+    const draft = this.budgetFundingSourceDraft;
+    const nextRow: BudgetFundingSourceRow = {
+      id: `funding-source-${Date.now()}`,
+      source: draft.source.trim(),
+      type: draft.type.trim(),
+      amount: this.parseBudgetInput(draft.amount),
+      status: draft.status.trim() || 'Confirmed',
+      notes: draft.notes.trim(),
+    };
+
+    this.updateActiveBudgetPlanState((plan) => ({
+      ...plan,
+      years: plan.years.map((entry) =>
+        entry.fy === year.fy
+          ? {
+              ...entry,
+              fundingSources: [...entry.fundingSources, nextRow],
+            }
+          : entry,
+      ),
+      lastSavedLabel: 'Saved just now',
+    }));
+
+    this.resetBudgetFundingDraft();
+    this.closeBudgetFundingDrawer();
+  }
+
+  updateBudgetFundingDraft(field: keyof BudgetFundingSourceDraft, value: string): void {
+    this.budgetFundingSourceDraft = {
+      ...this.budgetFundingSourceDraft,
+      [field]: value,
+    };
+  }
+
+  canSaveBudgetFundingDraft(): boolean {
+    const draft = this.budgetFundingSourceDraft;
+    return Boolean(draft.source.trim() && draft.type.trim() && draft.amount.trim());
+  }
+
+  openBudgetMonthlyDrawer(): void {
+    const year = this.activeBudgetYear;
+    if (!year) {
+      this.openBudgetDrawer();
+      return;
+    }
+    this.closeProjectPlanDrawers();
+    this.budgetMonthlyEditorRows = year.monthlyRows.map((row) => ({ ...row }));
+    this.isBudgetMonthlyDrawerOpen = true;
+    this.iconsHydrated = false;
+  }
+
+  closeBudgetMonthlyDrawer(): void {
+    if (!this.isBudgetMonthlyDrawerOpen) return;
+    this.isBudgetMonthlyDrawerOpen = false;
+    this.iconsHydrated = false;
+  }
+
+  saveBudgetMonthlyDrawer(event: Event): void {
+    event.preventDefault();
+    const year = this.activeBudgetYear;
+    if (!year) return;
+    const nextRows = this.budgetMonthlyEditorRows.map((row) => ({ ...row }));
+    const forecastCapex = nextRows.reduce((total, row) => total + row.capexForecast, 0);
+    const forecastOpex = nextRows.reduce((total, row) => total + row.opexForecast, 0);
+
+    this.updateActiveBudgetPlanState((plan) => ({
+      ...plan,
+      years: plan.years.map((entry) =>
+        entry.fy === year.fy
+          ? {
+              ...entry,
+              forecastCapex,
+              forecastOpex,
+              monthlyRows: nextRows,
+            }
+          : entry,
+      ),
+      lastSavedLabel: 'Saved just now',
+    }));
+
+    this.closeBudgetMonthlyDrawer();
+  }
+
+  updateBudgetMonthlyRow(rowId: string, field: BudgetMonthlyField, value: string): void {
+    const nextValue = this.parseBudgetInput(value);
+    this.budgetMonthlyEditorRows = this.budgetMonthlyEditorRows.map((row) =>
+      row.id === rowId
+        ? {
+            ...row,
+            [field]: nextValue,
+          }
+        : row,
+    );
+  }
+
+  toggleBudgetRules(): void {
+    this.isBudgetRulesOpen = !this.isBudgetRulesOpen;
+    this.iconsHydrated = false;
+  }
+
+  closeBudgetRulesPopover(): void {
+    if (!this.isBudgetRulesOpen) return;
+    this.isBudgetRulesOpen = false;
+    this.iconsHydrated = false;
+  }
+
+  updateOverviewState(field: keyof OverviewState, value: string): void {
+    this.overviewState = {
+      ...this.overviewState,
+      [field]: value,
+    };
+  }
+
+  overviewCountLabel(count: number, singular: string, plural: string = `${singular}s`): string {
+    return count === 1 ? `1 ${singular}` : `${count} ${plural}`;
+  }
+
+  overviewStatusTone(status: string): string {
+    const normalized = status.toLowerCase();
+    if (normalized.includes('approved') || normalized.includes('committed') || normalized.includes('linked') || normalized.includes('defined')) return 'green';
+    if (normalized.includes('draft')) return 'blue';
+    return 'amber';
+  }
+
+  openOverviewBusinessDriverDrawer(row?: OverviewBusinessDriverRow): void {
+    this.closeProjectPlanDrawers();
+    this.editingOverviewBusinessDriverId = row?.id || null;
+    this.overviewBusinessDriverDraft = row
+      ? {
+          driver: row.driver,
+          source: row.source,
+          priority: row.priority,
+          note: row.note,
+        }
+      : { ...overviewBusinessDriverDraftInitial };
+    this.isOverviewBusinessDriverDrawerOpen = true;
+    this.iconsHydrated = false;
+  }
+
+  closeOverviewBusinessDriverDrawer(): void {
+    if (!this.isOverviewBusinessDriverDrawerOpen) return;
+    this.isOverviewBusinessDriverDrawerOpen = false;
+    this.editingOverviewBusinessDriverId = null;
+    this.iconsHydrated = false;
+  }
+
+  updateOverviewBusinessDriverDraft(field: keyof OverviewBusinessDriverDraft, value: string): void {
+    let nextDraft: OverviewBusinessDriverDraft = {
+      ...this.overviewBusinessDriverDraft,
+      [field]: value,
+    };
+
+    if (field === 'driver') {
+      const selected = overviewBusinessDriverOptionSeeds.find((option) => option.driver === value);
+      if (selected) {
+        nextDraft = {
+          ...nextDraft,
+          source: nextDraft.source || selected.source,
+          priority: nextDraft.priority || selected.priority,
+          note: nextDraft.note || selected.note,
+        };
+      }
+    }
+
+    this.overviewBusinessDriverDraft = nextDraft;
+  }
+
+  canSaveOverviewBusinessDriverDraft(): boolean {
+    return Boolean(this.overviewBusinessDriverDraft.driver.trim());
+  }
+
+  saveOverviewBusinessDriverDrawer(event: Event): void {
+    event.preventDefault();
+    if (!this.canSaveOverviewBusinessDriverDraft()) return;
+
+    const draft = this.overviewBusinessDriverDraft;
+    const selected = overviewBusinessDriverOptionSeeds.find((option) => option.driver === draft.driver.trim());
+    const nextRow: OverviewBusinessDriverRow = {
+      id: this.editingOverviewBusinessDriverId || `overview-business-driver-${Date.now()}`,
+      driver: draft.driver.trim(),
+      source: draft.source.trim() || selected?.source || 'Strategy Office',
+      priority: draft.priority.trim() || selected?.priority || 'Medium',
+      note: draft.note.trim() || selected?.note || '',
+    };
+
+    this.overviewBusinessDriverRows = this.editingOverviewBusinessDriverId
+      ? this.overviewBusinessDriverRows.map((row) => (row.id === this.editingOverviewBusinessDriverId ? nextRow : row))
+      : [...this.overviewBusinessDriverRows, nextRow];
+
+    this.overviewBusinessDriverDraft = { ...overviewBusinessDriverDraftInitial };
+    this.closeOverviewBusinessDriverDrawer();
+  }
+
+  removeOverviewBusinessDriver(id: string): void {
+    this.overviewBusinessDriverRows = this.overviewBusinessDriverRows.filter((row) => row.id !== id);
+    this.iconsHydrated = false;
+  }
+
+  openOverviewOutcomeDrawer(row?: OverviewOutcomeRow): void {
+    this.closeProjectPlanDrawers();
+    this.editingOverviewOutcomeId = row?.id || null;
+    this.overviewOutcomeDraft = row
+      ? {
+          outcome: row.outcome,
+          measure: row.measure,
+          owner: row.owner,
+          status: row.status,
+        }
+      : { ...overviewOutcomeDraftInitial };
+    this.isOverviewOutcomeDrawerOpen = true;
+    this.iconsHydrated = false;
+  }
+
+  closeOverviewOutcomeDrawer(): void {
+    if (!this.isOverviewOutcomeDrawerOpen) return;
+    this.isOverviewOutcomeDrawerOpen = false;
+    this.editingOverviewOutcomeId = null;
+    this.iconsHydrated = false;
+  }
+
+  updateOverviewOutcomeDraft(field: keyof OverviewOutcomeDraft, value: string): void {
+    this.overviewOutcomeDraft = {
+      ...this.overviewOutcomeDraft,
+      [field]: value,
+    };
+  }
+
+  canSaveOverviewOutcomeDraft(): boolean {
+    return Boolean(this.overviewOutcomeDraft.outcome.trim());
+  }
+
+  saveOverviewOutcomeDrawer(event: Event): void {
+    event.preventDefault();
+    if (!this.canSaveOverviewOutcomeDraft()) return;
+
+    const draft = this.overviewOutcomeDraft;
+    const nextRow: OverviewOutcomeRow = {
+      id: this.editingOverviewOutcomeId || `overview-outcome-${Date.now()}`,
+      outcome: draft.outcome.trim(),
+      measure: draft.measure.trim() || 'Measure to confirm',
+      owner: draft.owner.trim() || 'Owner to confirm',
+      status: draft.status.trim() || 'Draft',
+    };
+
+    this.overviewOutcomeRows = this.editingOverviewOutcomeId
+      ? this.overviewOutcomeRows.map((row) => (row.id === this.editingOverviewOutcomeId ? nextRow : row))
+      : [...this.overviewOutcomeRows, nextRow];
+
+    this.overviewOutcomeDraft = { ...overviewOutcomeDraftInitial };
+    this.closeOverviewOutcomeDrawer();
+  }
+
+  removeOverviewOutcome(id: string): void {
+    this.overviewOutcomeRows = this.overviewOutcomeRows.filter((row) => row.id !== id);
+    this.iconsHydrated = false;
+  }
+
+  openOverviewObjectiveDrawer(row?: OverviewObjectiveRow): void {
+    this.closeProjectPlanDrawers();
+    this.editingOverviewObjectiveId = row?.id || null;
+    this.overviewObjectiveDraft = row
+      ? {
+          objective: row.objective,
+          linkedObjective: row.linkedObjective,
+          status: row.status,
+        }
+      : { ...overviewObjectiveDraftInitial };
+    this.isOverviewObjectiveDrawerOpen = true;
+    this.iconsHydrated = false;
+  }
+
+  closeOverviewObjectiveDrawer(): void {
+    if (!this.isOverviewObjectiveDrawerOpen) return;
+    this.isOverviewObjectiveDrawerOpen = false;
+    this.editingOverviewObjectiveId = null;
+    this.iconsHydrated = false;
+  }
+
+  updateOverviewObjectiveDraft(field: keyof OverviewObjectiveDraft, value: string): void {
+    this.overviewObjectiveDraft = {
+      ...this.overviewObjectiveDraft,
+      [field]: value,
+    };
+  }
+
+  canSaveOverviewObjectiveDraft(): boolean {
+    return Boolean(this.overviewObjectiveDraft.objective.trim());
+  }
+
+  saveOverviewObjectiveDrawer(event: Event): void {
+    event.preventDefault();
+    if (!this.canSaveOverviewObjectiveDraft()) return;
+
+    const draft = this.overviewObjectiveDraft;
+    const nextRow: OverviewObjectiveRow = {
+      id: this.editingOverviewObjectiveId || `overview-objective-${Date.now()}`,
+      objective: draft.objective.trim(),
+      linkedObjective: draft.linkedObjective.trim() || overviewStrategicObjectiveLinkSeeds[0] || 'Strategic objective to confirm',
+      status: draft.status.trim() || 'Draft',
+    };
+
+    this.overviewObjectiveRows = this.editingOverviewObjectiveId
+      ? this.overviewObjectiveRows.map((row) => (row.id === this.editingOverviewObjectiveId ? nextRow : row))
+      : [...this.overviewObjectiveRows, nextRow];
+
+    this.overviewObjectiveDraft = { ...overviewObjectiveDraftInitial };
+    this.closeOverviewObjectiveDrawer();
+  }
+
+  removeOverviewObjective(id: string): void {
+    this.overviewObjectiveRows = this.overviewObjectiveRows.filter((row) => row.id !== id);
+    this.iconsHydrated = false;
+  }
+
+  openOverviewCapabilityDrawer(row?: OverviewCapabilityRow): void {
+    this.closeProjectPlanDrawers();
+    this.editingOverviewCapabilityId = row?.id || null;
+    this.overviewCapabilityDraft = row
+      ? {
+          selectedCapabilities: [row.capability],
+        }
+      : {
+          selectedCapabilities: [...overviewCapabilityDraftInitial.selectedCapabilities],
+        };
+    this.isOverviewCapabilityDrawerOpen = true;
+    this.iconsHydrated = false;
+  }
+
+  closeOverviewCapabilityDrawer(): void {
+    if (!this.isOverviewCapabilityDrawerOpen) return;
+    this.isOverviewCapabilityDrawerOpen = false;
+    this.editingOverviewCapabilityId = null;
+    this.iconsHydrated = false;
+  }
+
+  toggleOverviewCapabilitySelection(capability: string): void {
+    const selected = new Set(this.overviewCapabilityDraft.selectedCapabilities);
+    if (selected.has(capability)) {
+      selected.delete(capability);
+    } else {
+      selected.add(capability);
+    }
+    this.overviewCapabilityDraft = {
+      selectedCapabilities: Array.from(selected),
+    };
+  }
+
+  canSaveOverviewCapabilityDraft(): boolean {
+    return this.overviewCapabilityDraft.selectedCapabilities.length > 0;
+  }
+
+  saveOverviewCapabilityDrawer(event: Event): void {
+    event.preventDefault();
+    if (!this.canSaveOverviewCapabilityDraft()) return;
+
+    const availableRows = overviewCapabilityOptionSeeds.filter((option) =>
+      this.overviewCapabilityDraft.selectedCapabilities.includes(option.capability),
+    );
+    if (!availableRows.length) return;
+
+    const currentRow = this.overviewCapabilityRows.find((row) => row.id === this.editingOverviewCapabilityId) || null;
+    const existingRows = this.overviewCapabilityRows.filter((row) => row.id !== this.editingOverviewCapabilityId);
+    const existingCapabilities = new Set(existingRows.map((row) => row.capability));
+    const nextRows = availableRows
+      .filter((option) => !existingCapabilities.has(option.capability) || currentRow?.capability === option.capability)
+      .map((option, index) => ({
+        id: this.editingOverviewCapabilityId && index === 0 ? this.editingOverviewCapabilityId : `overview-capability-${Date.now()}-${index}`,
+        capability: option.capability,
+        domain: option.domain,
+        owner: option.owner,
+      }));
+
+    if (!nextRows.length && this.editingOverviewCapabilityId) {
+      this.closeOverviewCapabilityDrawer();
+      return;
+    }
+
+    this.overviewCapabilityRows = [...existingRows, ...nextRows];
+    this.overviewCapabilityDraft = {
+      selectedCapabilities: [...overviewCapabilityDraftInitial.selectedCapabilities],
+    };
+    this.closeOverviewCapabilityDrawer();
+  }
+
+  removeOverviewCapability(id: string): void {
+    this.overviewCapabilityRows = this.overviewCapabilityRows.filter((row) => row.id !== id);
+    this.iconsHydrated = false;
+  }
+
+  openOverviewServiceDrawer(row?: OverviewServiceRow): void {
+    this.closeProjectPlanDrawers();
+    this.editingOverviewServiceId = row?.id || null;
+    this.overviewServiceDraft = row
+      ? {
+          serviceGroup: row.serviceGroup,
+          valueStream: row.valueStream,
+          phase: row.phase,
+          service: row.service,
+        }
+      : { ...overviewServiceDraftInitial };
+    this.isOverviewServiceDrawerOpen = true;
+    this.iconsHydrated = false;
+  }
+
+  closeOverviewServiceDrawer(): void {
+    if (!this.isOverviewServiceDrawerOpen) return;
+    this.isOverviewServiceDrawerOpen = false;
+    this.editingOverviewServiceId = null;
+    this.iconsHydrated = false;
+  }
+
+  updateOverviewServiceDraft(field: keyof OverviewServiceDraft, value: string): void {
+    if (field === 'serviceGroup') {
+      this.overviewServiceDraft = {
+        serviceGroup: value,
+        valueStream: '',
+        phase: '',
+        service: '',
+      };
+      return;
+    }
+
+    if (field === 'valueStream') {
+      this.overviewServiceDraft = {
+        ...this.overviewServiceDraft,
+        valueStream: value,
+        phase: '',
+        service: '',
+      };
+      return;
+    }
+
+    if (field === 'phase') {
+      this.overviewServiceDraft = {
+        ...this.overviewServiceDraft,
+        phase: value,
+        service: '',
+      };
+      return;
+    }
+
+    this.overviewServiceDraft = {
+      ...this.overviewServiceDraft,
+      [field]: value,
+    };
+  }
+
+  canSaveOverviewServiceDraft(): boolean {
+    const draft = this.overviewServiceDraft;
+    return Boolean(draft.serviceGroup.trim() && draft.valueStream.trim() && draft.service.trim());
+  }
+
+  saveOverviewServiceDrawer(event: Event): void {
+    event.preventDefault();
+    if (!this.canSaveOverviewServiceDraft()) return;
+
+    const draft = this.overviewServiceDraft;
+    const matchedOption = overviewServiceOptionSeeds.find(
+      (option) =>
+        option.serviceGroup === draft.serviceGroup &&
+        option.valueStream === draft.valueStream &&
+        (!draft.phase || option.phase === draft.phase) &&
+        option.service === draft.service,
+    );
+
+    const nextRow: OverviewServiceRow = {
+      id: this.editingOverviewServiceId || `overview-service-${Date.now()}`,
+      serviceGroup: draft.serviceGroup.trim(),
+      valueStream: draft.valueStream.trim(),
+      phase: draft.phase.trim() || matchedOption?.phase || 'Phase to confirm',
+      service: draft.service.trim(),
+    };
+
+    this.overviewServiceRows = this.editingOverviewServiceId
+      ? this.overviewServiceRows.map((row) => (row.id === this.editingOverviewServiceId ? nextRow : row))
+      : [...this.overviewServiceRows, nextRow];
+
+    this.overviewServiceDraft = { ...overviewServiceDraftInitial };
+    this.closeOverviewServiceDrawer();
+  }
+
+  removeOverviewService(id: string): void {
+    this.overviewServiceRows = this.overviewServiceRows.filter((row) => row.id !== id);
+    this.iconsHydrated = false;
+  }
+
+  updateScheduleScopeField(field: keyof ScheduleScopeState, value: string): void {
+    this.scheduleScopeState = {
+      ...this.scheduleScopeState,
+      [field]: value,
+    };
+  }
+
+  scheduleScopeCountLabel(count: number, singular: string, plural: string = `${singular}s`): string {
+    return count === 1 ? `1 ${singular}` : `${count} ${plural}`;
+  }
+
+  scheduleScopeDateRange(start: string, end: string): string {
+    const startLabel = start ? this.formatProjectPlanDate(start) : 'Start TBD';
+    const endLabel = end ? this.formatProjectPlanDate(end) : 'End TBD';
+    return `${startLabel} - ${endLabel}`;
+  }
+
+  scheduleScopeDateLabel(value: string): string {
+    return value ? this.formatProjectPlanDate(value) : 'TBD';
+  }
+
+  scheduleScopeProductBudgetTotal(capex: string, opex: string): string {
+    return this.formatBudgetCurrency(this.scheduleScopeBudgetValue(capex) + this.scheduleScopeBudgetValue(opex));
+  }
+
+  scheduleScopeDependencySummary(row: ScheduleScopeProductRow): string {
+    const dependencyCount = row.predecessors.length + row.successors.length;
+    if (!dependencyCount) return 'No linked projects';
+    return this.scheduleScopeCountLabel(dependencyCount, 'linked project');
+  }
+
+  scheduleMilestonePriorityTone(priority: string): string {
+    const normalized = priority.toLowerCase();
+    if (normalized.includes('high')) return 'high';
+    if (normalized.includes('medium')) return 'medium';
+    if (normalized.includes('low')) return 'low';
+    return 'neutral';
+  }
+
+  openScheduleMilestoneDrawer(row?: ScheduleMilestoneRow): void {
+    this.closeProjectPlanDrawers();
+    this.editingScheduleMilestoneId = row?.id || null;
+    this.scheduleMilestoneDraft = row
+      ? {
+          milestone: row.milestone,
+          dueDate: row.dueDate,
+          owner: row.owner,
+          priority: row.priority || 'Medium',
+          note: row.note,
+        }
+      : { ...scheduleMilestoneDraftInitial };
+    this.isScheduleMilestoneDrawerOpen = true;
+    this.iconsHydrated = false;
+  }
+
+  closeScheduleMilestoneDrawer(): void {
+    if (!this.isScheduleMilestoneDrawerOpen) return;
+    this.isScheduleMilestoneDrawerOpen = false;
+    this.editingScheduleMilestoneId = null;
+    this.iconsHydrated = false;
+  }
+
+  saveScheduleMilestoneDrawer(event: Event): void {
+    event.preventDefault();
+    if (!this.canSaveScheduleMilestoneDraft()) return;
+
+    const draft = this.scheduleMilestoneDraft;
+    const nextRow: ScheduleMilestoneRow = {
+      id: this.editingScheduleMilestoneId || `schedule-milestone-${Date.now()}`,
+      milestone: draft.milestone.trim(),
+      dueDate: draft.dueDate.trim(),
+      owner: draft.owner.trim(),
+      priority: draft.priority.trim() || 'Medium',
+      note: draft.note.trim(),
+    };
+
+    this.scheduleMilestoneRows = this.editingScheduleMilestoneId
+      ? this.scheduleMilestoneRows.map((row) => (row.id === this.editingScheduleMilestoneId ? nextRow : row))
+      : [...this.scheduleMilestoneRows, nextRow];
+
+    this.scheduleMilestoneDraft = { ...scheduleMilestoneDraftInitial };
+    this.closeScheduleMilestoneDrawer();
+  }
+
+  updateScheduleMilestoneDraft(field: keyof ScheduleMilestoneDraft, value: string): void {
+    this.scheduleMilestoneDraft = {
+      ...this.scheduleMilestoneDraft,
+      [field]: value,
+    };
+  }
+
+  canSaveScheduleMilestoneDraft(): boolean {
+    const draft = this.scheduleMilestoneDraft;
+    return Boolean(draft.milestone.trim() && draft.dueDate.trim());
+  }
+
+  removeScheduleMilestone(id: string): void {
+    this.scheduleMilestoneRows = this.scheduleMilestoneRows.filter((row) => row.id !== id);
+    this.iconsHydrated = false;
+  }
+
+  openScheduleEndProductDrawer(row?: ScheduleScopeProductRow): void {
+    this.closeProjectPlanDrawers();
+    this.editingScheduleEndProductId = row?.id || null;
+    this.scheduleEndProductDraft = row
+      ? {
+          sourceType: 'new',
+          product: row.product,
+          description: row.description,
+          owner: row.owner,
+          category: row.category,
+          capability: row.capability,
+          startDate: row.startDate,
+          endDate: row.endDate,
+          capex: row.capex,
+          opex: row.opex,
+          predecessors: row.predecessors.join(', '),
+          successors: row.successors.join(', '),
+        }
+      : { ...scheduleEndProductDraftInitial };
+    this.isScheduleEndProductDrawerOpen = true;
+    this.iconsHydrated = false;
+  }
+
+  closeScheduleEndProductDrawer(): void {
+    if (!this.isScheduleEndProductDrawerOpen) return;
+    this.isScheduleEndProductDrawerOpen = false;
+    this.editingScheduleEndProductId = null;
+    this.iconsHydrated = false;
+  }
+
+  saveScheduleEndProductDrawer(event: Event): void {
+    event.preventDefault();
+    if (!this.canSaveScheduleEndProductDraft()) return;
+
+    const draft = this.scheduleEndProductDraft;
+    const nextRow: ScheduleScopeProductRow = {
+      id: this.editingScheduleEndProductId || `schedule-end-product-${Date.now()}`,
+      product: draft.product.trim(),
+      description: draft.description.trim(),
+      owner: draft.owner.trim() || 'Owner to confirm',
+      category: draft.category.trim() || 'Information',
+      capability: draft.capability.trim() || 'Capability to confirm',
+      startDate: draft.startDate.trim(),
+      endDate: draft.endDate.trim(),
+      capex: draft.capex.trim() || '0',
+      opex: draft.opex.trim() || '0',
+      predecessors: this.scheduleScopeSplitList(draft.predecessors),
+      successors: this.scheduleScopeSplitList(draft.successors),
+    };
+
+    this.scheduleEndProductRows = this.editingScheduleEndProductId
+      ? this.scheduleEndProductRows.map((row) => (row.id === this.editingScheduleEndProductId ? nextRow : row))
+      : [...this.scheduleEndProductRows, nextRow];
+
+    this.scheduleEndProductDraft = { ...scheduleEndProductDraftInitial };
+    this.closeScheduleEndProductDrawer();
+  }
+
+  updateScheduleEndProductDraft(field: keyof ScheduleScopeProductDraft, value: string): void {
+    this.scheduleEndProductDraft = {
+      ...this.scheduleEndProductDraft,
+      [field]: value,
+    };
+  }
+
+  setScheduleEndProductSource(source: ScheduleScopeProductSource): void {
+    this.scheduleEndProductDraft = {
+      ...this.scheduleEndProductDraft,
+      sourceType: source,
+    };
+    if (source === 'existing' && !this.scheduleEndProductDraft.product.trim()) {
+      this.applyExistingEndProductSelection(scheduleScopeExistingEndProducts[0]?.product || '');
+    }
+  }
+
+  applyExistingEndProductSelection(productName: string): void {
+    const selected = scheduleScopeExistingEndProducts.find((product) => product.product === productName);
+    if (!selected) return;
+    this.scheduleEndProductDraft = {
+      ...this.scheduleEndProductDraft,
+      sourceType: 'existing',
+      product: selected.product,
+      description: selected.description,
+      owner: selected.owner,
+      category: selected.category,
+      capability: selected.capability,
+    };
+  }
+
+  canSaveScheduleEndProductDraft(): boolean {
+    const draft = this.scheduleEndProductDraft;
+    return Boolean(draft.product.trim() && draft.owner.trim());
+  }
+
+  removeScheduleEndProduct(id: string): void {
+    this.scheduleEndProductRows = this.scheduleEndProductRows.filter((row) => row.id !== id);
+    this.iconsHydrated = false;
+  }
+
+  openScheduleManagementProductDrawer(row?: ScheduleManagementProductRow): void {
+    this.closeProjectPlanDrawers();
+    this.editingScheduleManagementProductId = row?.id || null;
+    this.scheduleManagementProductDraft = row
+      ? {
+          product: row.product,
+          description: row.description,
+          owner: row.owner,
+          category: row.category,
+          startDate: row.startDate,
+          endDate: row.endDate,
+          capex: row.capex,
+          opex: row.opex,
+        }
+      : { ...scheduleManagementProductDraftInitial };
+    this.isScheduleManagementProductDrawerOpen = true;
+    this.iconsHydrated = false;
+  }
+
+  closeScheduleManagementProductDrawer(): void {
+    if (!this.isScheduleManagementProductDrawerOpen) return;
+    this.isScheduleManagementProductDrawerOpen = false;
+    this.editingScheduleManagementProductId = null;
+    this.iconsHydrated = false;
+  }
+
+  saveScheduleManagementProductDrawer(event: Event): void {
+    event.preventDefault();
+    if (!this.canSaveScheduleManagementProductDraft()) return;
+
+    const draft = this.scheduleManagementProductDraft;
+    const nextRow: ScheduleManagementProductRow = {
+      id: this.editingScheduleManagementProductId || `schedule-management-product-${Date.now()}`,
+      product: draft.product.trim(),
+      description: draft.description.trim(),
+      owner: draft.owner.trim() || 'Owner to confirm',
+      category: draft.category.trim() || 'Governance',
+      startDate: draft.startDate.trim(),
+      endDate: draft.endDate.trim(),
+      capex: draft.capex.trim() || '0',
+      opex: draft.opex.trim() || '0',
+    };
+
+    this.scheduleManagementProductRows = this.editingScheduleManagementProductId
+      ? this.scheduleManagementProductRows.map((row) =>
+          row.id === this.editingScheduleManagementProductId ? nextRow : row,
+        )
+      : [...this.scheduleManagementProductRows, nextRow];
+
+    this.scheduleManagementProductDraft = { ...scheduleManagementProductDraftInitial };
+    this.closeScheduleManagementProductDrawer();
+  }
+
+  updateScheduleManagementProductDraft(field: keyof ScheduleManagementProductDraft, value: string): void {
+    this.scheduleManagementProductDraft = {
+      ...this.scheduleManagementProductDraft,
+      [field]: value,
+    };
+  }
+
+  canSaveScheduleManagementProductDraft(): boolean {
+    const draft = this.scheduleManagementProductDraft;
+    return Boolean(draft.product.trim() && draft.owner.trim());
+  }
+
+  removeScheduleManagementProduct(id: string): void {
+    this.scheduleManagementProductRows = this.scheduleManagementProductRows.filter((row) => row.id !== id);
     this.iconsHydrated = false;
   }
 
@@ -5884,6 +9955,101 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     };
   }
 
+  private activeBudgetPlanKey(): string {
+    if (this.selectedProject !== 'all' && this.budgetPlanStates[this.selectedProject]) return this.selectedProject;
+    return 'default';
+  }
+
+  private cloneBudgetPlanStateMap(source: Record<string, BudgetPlanState>): Record<string, BudgetPlanState> {
+    return Object.fromEntries(Object.entries(source).map(([key, value]) => [key, this.cloneBudgetPlanState(value)]));
+  }
+
+  private cloneBudgetPlanState(plan: BudgetPlanState): BudgetPlanState {
+    return {
+      selectedFy: plan.selectedFy,
+      lastSavedLabel: plan.lastSavedLabel,
+      years: plan.years.map((year) => ({
+        ...year,
+        fundingSources: year.fundingSources.map((row) => ({ ...row })),
+        monthlyRows: year.monthlyRows.map((row) => ({ ...row })),
+      })),
+    };
+  }
+
+  private updateActiveBudgetPlanState(updater: (plan: BudgetPlanState) => BudgetPlanState): void {
+    const key = this.activeBudgetPlanKey();
+    const current = this.budgetPlanStates[key] || this.budgetPlanStates['default'];
+    const next = updater(this.cloneBudgetPlanState(current));
+    this.budgetPlanStates = {
+      ...this.budgetPlanStates,
+      [key]: next,
+    };
+  }
+
+  private resetBudgetFundingDraft(): void {
+    this.budgetFundingSourceDraft = { ...budgetPlanConfig.fundingDraft };
+  }
+
+  private parseBudgetInput(value: string): number {
+    const numeric = Number(String(value).replace(/[^0-9.-]/g, ''));
+    return Number.isFinite(numeric) ? numeric : 0;
+  }
+
+  private redistributeBudgetMonthlyRows(
+    existingRows: BudgetMonthlyRow[],
+    fy: string,
+    totals: Pick<BudgetYearPlan, 'baselineCapex' | 'baselineOpex' | 'forecastCapex' | 'forecastOpex'>,
+  ): BudgetMonthlyRow[] {
+    const redistributed = buildBudgetMonthlyRows(fy, totals);
+    const existingByMonth = new Map(existingRows.map((row) => [row.month, row]));
+    return redistributed.map((row) => {
+      const existing = existingByMonth.get(row.month);
+      return existing
+        ? {
+            ...row,
+            id: existing.id,
+            capexActual: existing.capexActual,
+            opexActual: existing.opexActual,
+            capexCommitted: existing.capexCommitted,
+            opexCommitted: existing.opexCommitted,
+          }
+        : row;
+    });
+  }
+
+  private replaceBudgetMonthlyRollupTotal(
+    rows: BudgetMonthlyRow[],
+    stream: 'CAPEX' | 'OPEX',
+    field: 'actual' | 'committed',
+    target: number,
+  ): BudgetMonthlyRow[] {
+    if (!rows.length) return rows;
+
+    const key = `${stream.toLowerCase()}${field === 'actual' ? 'Actual' : 'Committed'}` as BudgetMonthlyField;
+    const currentTotal = rows.reduce((total, row) => total + row[key], 0);
+
+    if (currentTotal <= 0) {
+      return rows.map((row, index) => ({
+        ...row,
+        [key]: index === 0 ? target : 0,
+      }));
+    }
+
+    let runningTotal = 0;
+    return rows.map((row, index) => {
+      const nextValue = index === rows.length - 1 ? Math.max(0, target - runningTotal) : Math.round(row[key] * (target / currentTotal) * 100) / 100;
+      runningTotal += nextValue;
+      return {
+        ...row,
+        [key]: nextValue,
+      };
+    });
+  }
+
+  private budgetFySortValue(fy: string): number {
+    return parseBudgetFiscalYears(fy)[0];
+  }
+
   private resetBenefitDraft(): void {
     this.benefitPlanDraft = { ...benefitPlanConfig.draft };
   }
@@ -5938,7 +10104,43 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return this.formatProjectPlanDate(value);
   }
 
+  private scheduleScopeBudgetValue(value: string): number {
+    const numeric = Number(String(value).replace(/[^0-9.-]/g, ''));
+    return Number.isFinite(numeric) ? numeric : 0;
+  }
+
+  private scheduleScopeSplitList(value: string): string[] {
+    return value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  private scheduleScopeDateShiftLabel(baseline: string, forecast: string): string {
+    if (!baseline || !forecast) return 'Dates incomplete';
+    const baselineDate = new Date(`${baseline}T00:00:00`);
+    const forecastDate = new Date(`${forecast}T00:00:00`);
+    if (Number.isNaN(baselineDate.getTime()) || Number.isNaN(forecastDate.getTime())) return 'Dates incomplete';
+    const diffDays = Math.round((forecastDate.getTime() - baselineDate.getTime()) / 86400000);
+    if (diffDays === 0) return 'Forecast aligned with baseline';
+    if (diffDays > 0) return `${diffDays} day${diffDays === 1 ? '' : 's'} later than baseline`;
+    const absolute = Math.abs(diffDays);
+    return `${absolute} day${absolute === 1 ? '' : 's'} earlier than baseline`;
+  }
+
   private closeProjectPlanDrawers(): void {
+    this.closeOverviewBusinessDriverDrawer();
+    this.closeOverviewOutcomeDrawer();
+    this.closeOverviewObjectiveDrawer();
+    this.closeOverviewCapabilityDrawer();
+    this.closeOverviewServiceDrawer();
+    this.closeScheduleMilestoneDrawer();
+    this.closeScheduleEndProductDrawer();
+    this.closeScheduleManagementProductDrawer();
+    this.closeBudgetRulesPopover();
+    this.closeBudgetDrawer();
+    this.closeBudgetFundingDrawer();
+    this.closeBudgetMonthlyDrawer();
     this.closeBenefitDrawer();
     this.closeIssueDrawer();
     this.closeRelatedLinksDrawer();

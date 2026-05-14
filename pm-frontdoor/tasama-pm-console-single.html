@@ -17762,7 +17762,7 @@ function AppHeader(selectedProject, notificationOpen = false, selectedPage = "wo
   const isProjectScopedPage = isPlayground || selectedPage === "wbs" || selectedPage === "project-plan";
   const headerProject = onboardingPm101Locked ? "all" : isPlayground ? playgroundProjectId(selectedProject) : selectedProject;
   const homeProject = onboardingPm101Locked ? firstAssignedProject.id : "all";
-  const homeView = onboardingPm101Locked ? "pm101" : "calendar";
+  const homeView = onboardingPm101Locked ? "pm101" : defaultFrontDoorView;
 
   return `
     <header class="app-header ${isUnassigned ? "unassigned-header" : ""}">
@@ -18519,11 +18519,11 @@ function WorkspaceTabs(selectedView) {
   const lockedStageAttrs = onboardingPm101Locked ? 'disabled aria-disabled="true" title="Available after PM 101 onboarding"' : "";
   return `
     <div class="workspace-tabs" role="tablist" aria-label="Workspace view" data-tour-target="workspace-tabs">
-      <button class="${actionsActive ? "active" : ""}" type="button" data-view-target="actions" aria-selected="${actionsActive}" ${lockedActionAttrs}>
-        ${icon("checklist")} Actions
-      </button>
       <button class="${selectedView === "pm101" ? "active" : ""}" type="button" data-view-target="pm101" aria-selected="${selectedView === "pm101"}">
         ${icon("book")} PM101
+      </button>
+      <button class="${actionsActive ? "active" : ""}" type="button" data-view-target="actions" aria-selected="${actionsActive}" ${lockedActionAttrs}>
+        ${icon("checklist")} Actions
       </button>
       <button class="${selectedView === "stages" ? "active" : ""}" type="button" data-view-target="stages" aria-selected="${selectedView === "stages"}" ${lockedStageAttrs}>
         ${icon("timeline")} Stages
@@ -21238,7 +21238,7 @@ function LoginPage() {
 
 function App(
   selectedProject = "all",
-  selectedView = "calendar",
+  selectedView = defaultFrontDoorView,
   selectedRange = "year",
   selectedBoardFilter = "all",
   selectedCalendarMonth = monthStart(new Date()),
@@ -21289,9 +21289,12 @@ function App(
   `;
 }
 
+const defaultFrontDoorView = "pm101";
+const guidedTourFrontDoorView = "calendar";
+
 let selectedProject = "all";
 let selectedPage = "workspace";
-let selectedView = "calendar";
+let selectedView = defaultFrontDoorView;
 let lastActionView = "calendar";
 let selectedTimelineRange = "year";
 let selectedBoardFilter = "all";
@@ -21416,7 +21419,7 @@ function enterFrontDoor(projectId = "all", startTour = false, mode = "assigned",
   selectedPage = "workspace";
   projectPlanEntryPoint = "quick";
   selectedProject = projectId;
-  selectedView = "calendar";
+  selectedView = startTour ? guidedTourFrontDoorView : defaultFrontDoorView;
   selectedWorkspaceDisplay = "table";
   selectedBoardFilter = "all";
   selectedStageGate = null;

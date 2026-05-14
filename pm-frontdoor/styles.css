@@ -12533,6 +12533,11 @@ p {
   grid-template-rows: minmax(0, 1fr);
 }
 
+.plan-builder-shell.quick-plan-shell.detailed-plan-shell {
+  background: #ffffff;
+  grid-template-columns: 304px minmax(0, 1fr);
+}
+
 .plan-builder-shell.simple-plan-shell {
   grid-template-columns: minmax(0, 1fr);
 }
@@ -12778,6 +12783,99 @@ p {
 
 .matrix-extra-sections button small {
   color: #8a82bd;
+}
+
+.plan-builder-nav.quick-plan-nav.matrix-plan-nav {
+  align-self: start;
+  background: #f7f7fc;
+  border: 0;
+  border-radius: 12px;
+  display: flex;
+  gap: 12px;
+  margin: 72px 0 0 20px;
+  max-height: calc(100% - 96px);
+  overflow-y: auto;
+  padding: 16px;
+  width: 272px;
+}
+
+.matrix-nav-group,
+.matrix-nav-list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.matrix-nav-group {
+  gap: 8px;
+}
+
+.matrix-nav-list {
+  gap: 0;
+}
+
+.matrix-nav-label {
+  color: #2f2f2f;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.88px;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.matrix-nav-heading {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.matrix-nav-heading .icon {
+  color: #404040;
+  height: 16px;
+  width: 16px;
+}
+
+.matrix-nav-divider {
+  background: #d8d8df;
+  display: block;
+  flex: 0 0 1px;
+  height: 1px;
+  width: 100%;
+}
+
+.plan-builder-nav.quick-plan-nav.matrix-plan-nav .matrix-nav-list button {
+  background: transparent;
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: 12px;
+  color: #0b0b0b;
+  font-size: 14px;
+  font-weight: 500;
+  height: 40px;
+  justify-content: flex-start;
+  line-height: 20px;
+  padding: 0 16px;
+  width: 100%;
+}
+
+.plan-builder-nav.quick-plan-nav.matrix-plan-nav .matrix-extra-sections {
+  padding: 0;
+}
+
+.plan-builder-nav.quick-plan-nav.matrix-plan-nav .matrix-extra-sections button {
+  font-size: 12px;
+  height: 36px;
+  line-height: 16px;
+}
+
+.plan-builder-nav.quick-plan-nav.matrix-plan-nav .matrix-nav-list button.active,
+.matrix-plan-nav .matrix-extra-sections button.active {
+  background: rgba(16, 6, 159, 0.05);
+  border-left-color: var(--brand);
+  border-radius: 8px;
+  color: #0b0b0b;
+  padding-left: 14px;
 }
 
 .project-plan-content.plan-builder-workspace {

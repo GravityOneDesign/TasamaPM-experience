@@ -2239,6 +2239,7 @@ function icon(name) {
     status: "circle",
     todo: "circle-dot",
     down: "chevron-down",
+    up: "chevron-up",
     split: "columns-2",
     undo: "undo-2",
     redo: "redo-2",
@@ -2326,7 +2327,7 @@ function AppHeader(selectedProject, notificationOpen = false, selectedPage = "wo
   const isProjectScopedPage = isPlayground || selectedPage === "wbs" || selectedPage === "project-plan";
   const headerProject = onboardingPm101Locked ? "all" : isPlayground ? playgroundProjectId(selectedProject) : selectedProject;
   const homeProject = onboardingPm101Locked ? firstAssignedProject.id : "all";
-  const homeView = onboardingPm101Locked ? "pm101" : "calendar";
+  const homeView = onboardingPm101Locked ? "pm101" : defaultFrontDoorView;
 
   return `
     <header class="app-header ${isUnassigned ? "unassigned-header" : ""}">
@@ -3289,11 +3290,11 @@ function WorkspaceTabs(selectedView) {
   const lockedStageAttrs = onboardingPm101Locked ? 'disabled aria-disabled="true" title="Available after PM 101 onboarding"' : "";
   return `
     <div class="workspace-tabs" role="tablist" aria-label="Workspace view" data-tour-target="workspace-tabs">
-      <button class="${actionsActive ? "active" : ""}" type="button" data-view-target="actions" aria-selected="${actionsActive}" ${lockedActionAttrs}>
-        ${icon("checklist")} Actions
-      </button>
       <button class="${selectedView === "pm101" ? "active" : ""}" type="button" data-view-target="pm101" aria-selected="${selectedView === "pm101"}">
         ${icon("book")} PM101
+      </button>
+      <button class="${actionsActive ? "active" : ""}" type="button" data-view-target="actions" aria-selected="${actionsActive}" ${lockedActionAttrs}>
+        ${icon("checklist")} Actions
       </button>
       <button class="${selectedView === "stages" ? "active" : ""}" type="button" data-view-target="stages" aria-selected="${selectedView === "stages"}" ${lockedStageAttrs}>
         ${icon("timeline")} Stages
@@ -4389,7 +4390,7 @@ function ProjectPlanQuickPage(planProject, entryPoint = "quick") {
 }
 
 function projectPlanVisibleDetailedSections() {
-  return projectPlanSectionsExpanded ? projectPlanSectionOrder : projectPlanDetailedPrimarySections;
+  return [...projectPlanDetailedPrimarySections, ...projectPlanDetailedOnlySections];
 }
 
 function projectPlanActiveDetailedSection() {
@@ -4397,40 +4398,42 @@ function projectPlanActiveDetailedSection() {
   return visibleSections.includes(projectPlanActiveSection) ? projectPlanActiveSection : "Overview";
 }
 
+function projectPlanNavLabel(section) {
+  return {
+    "Change Impact": "Change impact",
+    "Related Links": "Related links",
+  }[section] || section;
+}
+
 function ProjectPlanDetailedNav(activeSection) {
-  const detailedOnlyVisible = projectPlanSectionsExpanded;
-  const detailedOnlyPreview = projectPlanDetailedOnlySections.join(", ");
   const renderSectionButton = (section, detailedOnly = false) => `
     <button
       class="${section === activeSection ? "active" : ""} ${detailedOnly ? "detailed-only" : ""}"
       type="button"
       data-plan-section="${escapeHtml(section)}"
     >
-      <span>${escapeHtml(section)}</span>
-      ${detailedOnly ? "<small>Detailed</small>" : ""}
+      <span>${escapeHtml(projectPlanNavLabel(section))}</span>
     </button>
   `;
 
   return `
     <aside class="project-plan-sections plan-builder-nav quick-plan-nav matrix-plan-nav" aria-label="Project plan sections">
-      ${projectPlanDetailedPrimarySections.map((section) => renderSectionButton(section)).join("")}
-      <button
-        class="matrix-show-sections ${detailedOnlyVisible ? "is-expanded" : ""}"
-        type="button"
-        data-plan-show-more-sections
-        aria-expanded="${detailedOnlyVisible}"
-      >
-        <span class="matrix-show-sections-copy">
-          <strong>Additional sections (${projectPlanDetailedOnlySections.length})</strong>
-          <small>${escapeHtml(detailedOnlyPreview)}</small>
-        </span>
-        <span class="matrix-show-sections-indicator" aria-hidden="true">${icon(detailedOnlyVisible ? "minus" : "plus")}</span>
-      </button>
-      ${
-        detailedOnlyVisible
-          ? `<div class="matrix-extra-sections">${projectPlanDetailedOnlySections.map((section) => renderSectionButton(section, true)).join("")}</div>`
-          : ""
-      }
+      <div class="matrix-nav-group">
+        <span class="matrix-nav-label">Core Planning</span>
+        <div class="matrix-nav-list">
+          ${projectPlanDetailedPrimarySections.map((section) => renderSectionButton(section)).join("")}
+        </div>
+      </div>
+      <span class="matrix-nav-divider" aria-hidden="true"></span>
+      <div class="matrix-nav-group matrix-nav-actions">
+        <div class="matrix-nav-heading">
+          <span class="matrix-nav-label">Additional Actions</span>
+          ${icon("up")}
+        </div>
+        <div class="matrix-nav-list matrix-extra-sections">
+          ${projectPlanDetailedOnlySections.map((section) => renderSectionButton(section, true)).join("")}
+        </div>
+      </div>
     </aside>
   `;
 }
@@ -6008,7 +6011,7 @@ function LoginPage() {
 
 function App(
   selectedProject = "all",
-  selectedView = "calendar",
+  selectedView = defaultFrontDoorView,
   selectedRange = "year",
   selectedBoardFilter = "all",
   selectedCalendarMonth = monthStart(new Date()),
@@ -6059,9 +6062,12 @@ function App(
   `;
 }
 
+const defaultFrontDoorView = "pm101";
+const guidedTourFrontDoorView = "calendar";
+
 let selectedProject = "all";
 let selectedPage = "workspace";
-let selectedView = "calendar";
+let selectedView = defaultFrontDoorView;
 let lastActionView = "calendar";
 let selectedTimelineRange = "year";
 let selectedBoardFilter = "all";
@@ -6188,7 +6194,7 @@ function enterFrontDoor(projectId = "all", startTour = false, mode = "assigned",
   selectedPage = "workspace";
   projectPlanEntryPoint = "quick";
   selectedProject = projectId;
-  selectedView = "calendar";
+  selectedView = startTour ? guidedTourFrontDoorView : defaultFrontDoorView;
   selectedWorkspaceDisplay = "table";
   selectedWorkspaceRegister = "projects";
   selectedBoardFilter = "all";
