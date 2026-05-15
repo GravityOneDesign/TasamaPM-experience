@@ -4486,8 +4486,16 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                                 <td>{{ row.owner || 'Owner to confirm' }}</td>
                                                 <td><span [pmConsoleStatusPill]="row.priority || 'TBD'" baseClass="schedule-priority-pill" [tone]="scheduleMilestonePriorityTone(row.priority)"></span></td>
                                                 <td class="schedule-table-actions">
-                                                  <button pmConsoleTableAction iconName="pencil" type="button" (click)="$event.stopPropagation(); openScheduleMilestoneDrawer(row)" [attr.aria-label]="'Edit ' + row.milestone"></button>
-                                                  <button pmConsoleTableAction iconName="trash-2" actionClass="schedule-table-action danger" type="button" (click)="$event.stopPropagation(); removeScheduleMilestone(row.id)" [attr.aria-label]="'Delete ' + row.milestone"></button>
+                                                  <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + row.milestone">
+                                                    <button type="button" role="menuitem" (click)="openScheduleMilestoneDrawer(row)">
+                                                      <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                                      Edit
+                                                    </button>
+                                                    <button class="danger" type="button" role="menuitem" (click)="removeScheduleMilestone(row.id)">
+                                                      <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                                      Delete
+                                                    </button>
+                                                  </app-pm-console-row-action-menu>
                                                 </td>
                                               </tr>
                                             }
@@ -4566,8 +4574,16 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                                       <td>{{ row.predecessors.length }}</td>
                                                       <td>{{ row.successors.length }}</td>
                                                       <td class="schedule-table-actions">
-                                                        <button pmConsoleTableAction iconName="pencil" type="button" (click)="$event.stopPropagation(); openScheduleEndProductDrawer(row)" [attr.aria-label]="'Edit ' + row.product"></button>
-                                                        <button pmConsoleTableAction iconName="trash-2" actionClass="schedule-table-action danger" type="button" (click)="$event.stopPropagation(); removeScheduleEndProduct(row.id)" [attr.aria-label]="'Delete ' + row.product"></button>
+                                                        <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + row.product">
+                                                          <button type="button" role="menuitem" (click)="openScheduleEndProductDrawer(row)">
+                                                            <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                                            Edit
+                                                          </button>
+                                                          <button class="danger" type="button" role="menuitem" (click)="removeScheduleEndProduct(row.id)">
+                                                            <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                                            Delete
+                                                          </button>
+                                                        </app-pm-console-row-action-menu>
                                                       </td>
                                                     </tr>
                                                   }
