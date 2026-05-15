@@ -4565,9 +4565,9 @@ function ProjectPlanQuickPage(planProject, entryPoint = "quick") {
       <div class="project-plan-card-frame">
         ${ProjectScopeHero(planProject, { cardHero: true, showModeTabs: true, activeEntry: "quick" })}
         <div class="project-plan-shell plan-builder-shell quick-plan-shell ${isSimple ? "simple-plan-shell" : "detailed-plan-shell"}">
+          ${ProjectPlanContentModeToggle(isSimple ? "Project Plan" : activeSection)}
           ${isSimple ? "" : ProjectPlanDetailedNav(activeSection)}
           <main class="project-plan-content plan-builder-workspace quick-plan-workspace ${isSimple ? "simple-plan-workspace" : "detailed-plan-workspace"}">
-            ${ProjectPlanContentModeToggle(isSimple ? "Project Plan" : activeSection)}
             <div class="plan-builder-main quick-plan-main project-plan-matrix-main">
               ${isSimple ? ProjectPlanSimpleContent() : ProjectPlanDetailedContent(activeSection)}
             </div>
@@ -4595,6 +4595,7 @@ function projectPlanNavLabel(section) {
 }
 
 function ProjectPlanDetailedNav(activeSection) {
+  const additionalExpanded = projectPlanSectionsExpanded;
   const renderSectionButton = (section, detailedOnly = false) => `
     <button
       class="${section === activeSection ? "active" : ""} ${detailedOnly ? "detailed-only" : ""}"
@@ -4606,7 +4607,7 @@ function ProjectPlanDetailedNav(activeSection) {
   `;
 
   return `
-    <aside class="project-plan-sections plan-builder-nav quick-plan-nav matrix-plan-nav" aria-label="Project plan sections">
+    <aside class="project-plan-sections plan-builder-nav quick-plan-nav matrix-plan-nav ${additionalExpanded ? "is-additional-expanded" : "is-additional-collapsed"}" aria-label="Project plan sections">
       <div class="matrix-nav-group">
         <span class="matrix-nav-label">Core Planning</span>
         <div class="matrix-nav-list">
@@ -4615,13 +4616,17 @@ function ProjectPlanDetailedNav(activeSection) {
       </div>
       <span class="matrix-nav-divider" aria-hidden="true"></span>
       <div class="matrix-nav-group matrix-nav-actions">
-        <div class="matrix-nav-heading">
+        <button class="matrix-nav-heading" type="button" data-plan-show-more-sections aria-expanded="${additionalExpanded ? "true" : "false"}" aria-controls="project-plan-extra-sections">
           <span class="matrix-nav-label">Additional Actions</span>
-          ${icon("up")}
-        </div>
-        <div class="matrix-nav-list matrix-extra-sections">
-          ${projectPlanDetailedOnlySections.map((section) => renderSectionButton(section, true)).join("")}
-        </div>
+          ${icon("down")}
+        </button>
+        ${
+          additionalExpanded
+            ? `<div id="project-plan-extra-sections" class="matrix-nav-list matrix-extra-sections">
+                ${projectPlanDetailedOnlySections.map((section) => renderSectionButton(section, true)).join("")}
+              </div>`
+            : ""
+        }
       </div>
     </aside>
   `;

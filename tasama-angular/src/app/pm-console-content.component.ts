@@ -14,16 +14,28 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PmConsoleIconService } from './pm-console-icon.service';
+import { PmConsolePlanDrawerComponent } from './pm-console-plan-drawer.component';
+import { PmConsolePlanEmptyStateComponent } from './pm-console-plan-empty-state.component';
+import { PmConsolePlanTableComponent } from './pm-console-plan-table.component';
+import { PmConsoleReportDrawerComponent } from './pm-console-report-drawer.component';
 import { PmConsoleMountOptions } from './pm-console.types';
+import { PmConsoleFieldComponent } from './shared/pm-console-field.component';
+import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
+import { PmConsoleRowActionMenuComponent } from './shared/pm-console-row-action-menu.component';
+import { PmConsoleRiskMatrixComponent, PmConsoleRiskMatrixSelection } from './shared/pm-console-risk-matrix.component';
+import { PmConsoleStatusPillComponent } from './shared/pm-console-status-pill.component';
+import { PmConsoleTableActionComponent } from './shared/pm-console-table-action.component';
+import { PmConsoleToolbarComponent } from './shared/pm-console-toolbar.component';
 
 type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground';
 type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
 type ActionWorkspaceView = 'board' | 'calendar';
 type WorkspaceDisplay = 'table' | 'cards';
 type WorkspaceRegister = 'projects' | 'benefits' | 'risks';
-type ProjectPlanEntry = 'quick' | 'reports' | 'change-request' | 'closure';
+type ProjectPlanEntry = 'quick' | 'reports' | 'stages' | 'change-request' | 'closure';
 type ProjectPlanDetailMode = 'simple' | 'detailed';
 type ReportDetailMode = 'simple' | 'detailed';
+type RiskProfileTab = 'identification' | 'analysis' | 'treatment';
 type WorkspaceTableColumnId = 'project' | 'stage' | 'trend' | 'manager' | 'baselineStart' | 'baselineEnd' | 'budget' | 'status';
 type WorkspaceTableColumnMotionState = 'visible' | 'entering' | 'exiting';
 
@@ -173,6 +185,130 @@ interface ReportDetailItem {
   progressLabel: string;
   progressValue: string;
   comment: string;
+}
+
+interface ReportDetailMetric {
+  label: string;
+  value: string;
+}
+
+interface ReportNotice {
+  text: string;
+  tone: string;
+  icon?: string;
+}
+
+interface ReportSummaryRow {
+  label: string;
+  value?: string;
+  tone?: string;
+  chip?: boolean;
+  dividerBefore?: boolean;
+}
+
+interface ReportSummaryCard {
+  title: string;
+  rows: ReportSummaryRow[];
+  wide?: boolean;
+  notice?: ReportNotice;
+}
+
+interface ReportSummaryGroup {
+  title: string;
+  cards: ReportSummaryCard[];
+}
+
+interface ReportSectionAction {
+  label: string;
+  icon?: string;
+}
+
+interface ReportTableColumn {
+  key: string;
+  label: string;
+  width: number;
+  align?: 'left' | 'center';
+}
+
+interface ReportTableCell {
+  type: 'checkbox' | 'text' | 'person' | 'chip' | 'dateInput' | 'select' | 'iconBadge';
+  value?: string;
+  checked?: boolean;
+  initials?: string;
+  tone?: string;
+  icon?: string;
+  clampLines?: number;
+  options?: string[];
+}
+
+interface ReportTableRow {
+  id: string;
+  cells: Record<string, ReportTableCell>;
+}
+
+interface ReportTableSelectFilter {
+  label: string;
+  value: string;
+  options?: string[];
+}
+
+interface ReportTableRadioOption {
+  label: string;
+  value: string;
+  checked?: boolean;
+}
+
+interface ReportTableRadioFilter {
+  label: string;
+  options: ReportTableRadioOption[];
+}
+
+interface ReportTableBlock {
+  id: string;
+  title: string;
+  minWidth: number;
+  selectorLabel?: string;
+  hideHeader?: boolean;
+  selectFilters?: ReportTableSelectFilter[];
+  radioFilter?: ReportTableRadioFilter;
+  columns: ReportTableColumn[];
+  rows: ReportTableRow[];
+  actions?: ReportSectionAction[];
+}
+
+interface ReportRecordField {
+  label: string;
+  value?: string;
+  type?: 'text' | 'person';
+  initials?: string;
+  wide?: boolean;
+}
+
+interface ReportRecordItem {
+  id: string;
+  selected?: boolean;
+  idLabel: string;
+  idValue: string;
+  status?: string;
+  statusTone?: string;
+  priorityLabel?: string;
+  priorityTone?: string;
+  fields: ReportRecordField[];
+}
+
+interface ReportRecordBlock {
+  id: string;
+  addLabel?: string;
+  filters?: ReportTableSelectFilter[];
+  items: ReportRecordItem[];
+}
+
+interface ReportSectionDetail {
+  icon?: string;
+  metrics?: ReportDetailMetric[];
+  summaryGroups?: ReportSummaryGroup[];
+  recordBlocks?: ReportRecordBlock[];
+  tables?: ReportTableBlock[];
 }
 
 interface SimplePlanTableConfig {
@@ -537,6 +673,187 @@ interface RelatedLinkConfig {
   draft: RelatedLinkDraft;
 }
 
+type ChangeRequestStatusFilter = 'active' | 'overdue' | 'closed';
+type ChangeRequestDrawerTab = 'overview' | 'impact' | 'links';
+type ChangeRequestImpactTab = 'benefits' | 'capabilities' | 'projects';
+type ChangeRequestType = 'Budget' | 'Schedule' | 'Scope';
+
+interface ChangeRequestRow {
+  id: string;
+  pcrNumber: string;
+  project: string;
+  pmo: string;
+  types: ChangeRequestType[];
+  createdDate: string;
+  dueDate: string;
+  priority: string;
+  status: string;
+  trigger: string;
+  changeDetails: string;
+  businessJustification: string;
+  riskImpact: string;
+  releasesImpacted: string;
+  impactToResource: string;
+  impactToQuality: string;
+  relatedLinks: RelatedLinkRow[];
+}
+
+interface ChangeRequestDraft {
+  project: string;
+  pmo: string;
+  dueDate: string;
+  trigger: string;
+  priority: string;
+  types: ChangeRequestType[];
+  changeDetails: string;
+  businessJustification: string;
+  riskImpact: string;
+  releasesImpacted: string;
+  impactToResource: string;
+  impactToQuality: string;
+  relatedLinks: RelatedLinkRow[];
+  relatedLinkName: string;
+  relatedLinkDescription: string;
+  relatedLinkUrl: string;
+}
+
+type ChangeRequestDraftField =
+  | 'project'
+  | 'pmo'
+  | 'dueDate'
+  | 'trigger'
+  | 'priority'
+  | 'changeDetails'
+  | 'businessJustification'
+  | 'riskImpact'
+  | 'releasesImpacted'
+  | 'impactToResource'
+  | 'impactToQuality';
+
+type ChangeRequestRelatedLinkDraftField = 'relatedLinkName' | 'relatedLinkDescription' | 'relatedLinkUrl';
+
+interface ChangeRequestMetric {
+  label: string;
+  value: number;
+  icon: string;
+  tone: string;
+}
+
+interface ChangeRequestTab {
+  id: ChangeRequestStatusFilter;
+  label: string;
+  count: number;
+}
+
+interface ChangeRequestImpactBenefitRow {
+  benefit: string;
+  profile: string;
+  owner: string;
+  product: string;
+}
+
+interface ChangeRequestImpactCapabilityRow {
+  group: string;
+  capability: string;
+  manager: string;
+  products: string;
+}
+
+interface ChangeRequestImpactProjectRow {
+  project: string;
+  manager: string;
+  products: string[];
+}
+
+type ClosureSectionId = 'overview' | 'budget' | 'benefits' | 'risk' | 'issues' | 'lessons';
+
+interface ClosureNavItem {
+  id: ClosureSectionId;
+  label: string;
+  icon: string;
+  count?: number;
+}
+
+interface ClosureMetric {
+  label: string;
+  value: string;
+  helper: string;
+  icon: string;
+  tone: string;
+}
+
+interface ClosureTextBlock {
+  id: string;
+  title: string;
+  description: string;
+  value: string;
+  maxLength: number;
+  icon: string;
+}
+
+interface ClosureChecklistItem {
+  label: string;
+  state: string;
+  tone: string;
+}
+
+interface ClosureFollowUpAction {
+  id: string;
+  action: string;
+  owner: string;
+  dueDate: string;
+  status: string;
+  tone: string;
+}
+
+interface ClosureRecommendation {
+  id: string;
+  recommendation: string;
+  owner: string;
+  category: string;
+  status: string;
+  tone: string;
+}
+
+interface ClosureBenefitRow {
+  category: string;
+  benefit: string;
+  owner: string;
+  realizationDate: string;
+  measures: number;
+  status: string;
+  tone: string;
+}
+
+interface ClosureRiskRow {
+  id: string;
+  risk: string;
+  actualRating: string;
+  treatments: number;
+  residualRating: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+}
+
+interface ClosureIssueRow {
+  id: string;
+  issue: string;
+  type: string;
+  resolution: string;
+  criticality: string;
+  status: string;
+  owner: string;
+  dueDate: string;
+}
+
+interface ClosureLessonRow {
+  title: string;
+  category: string;
+  issue: string;
+  recommendation: string;
+}
+
 interface ResourcePlanRow {
   id: string;
   resource: string;
@@ -614,6 +931,125 @@ interface BenefitPlanConfig {
   ownerOptions: string[];
   rows: BenefitPlanRow[];
   draft: BenefitPlanDraft;
+}
+
+interface RiskTreatmentRow {
+  id: string;
+  treatment: string;
+  type: string;
+  category: string;
+  owner: string;
+  manager: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+}
+
+interface RiskTreatmentDraft {
+  treatment: string;
+  type: string;
+  category: string;
+  owner: string;
+  manager: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+}
+
+interface RiskPlanRow {
+  id: string;
+  riskCategory: string;
+  riskName: string;
+  description: string;
+  owner: string;
+  manager: string;
+  lead: string;
+  startDate: string;
+  endDate: string;
+  reviewDueDate: string;
+  status: string;
+  strategicRisk: string;
+  enterpriseImpact: boolean;
+  actualLikelihood: string;
+  actualConsequence: string;
+  actualRating: string;
+  residualLikelihood: string;
+  residualConsequence: string;
+  residualRating: string;
+  impactedObjective: string;
+  sharedRisk: boolean;
+  source: string;
+  consequence: string;
+  controlSummary: string;
+  overallControlEffectiveness: string;
+  analysisComment: string;
+  treatmentApproach: string;
+  treatmentType: string;
+  treatmentComment: string;
+  treatments: RiskTreatmentRow[];
+  createdOn: string;
+}
+
+interface RiskPlanDraft {
+  riskCategory: string;
+  riskName: string;
+  description: string;
+  owner: string;
+  manager: string;
+  lead: string;
+  startDate: string;
+  endDate: string;
+  reviewDueDate: string;
+  status: string;
+  strategicRisk: string;
+  enterpriseImpact: boolean;
+  actualLikelihood: string;
+  actualConsequence: string;
+  actualRating: string;
+  residualLikelihood: string;
+  residualConsequence: string;
+  residualRating: string;
+  impactedObjective: string;
+  sharedRisk: boolean;
+  source: string;
+  consequence: string;
+  controlSummary: string;
+  overallControlEffectiveness: string;
+  analysisComment: string;
+  treatmentApproach: string;
+  treatmentType: string;
+  treatmentComment: string;
+  treatments: RiskTreatmentRow[];
+}
+
+type RiskPlanDraftField = Exclude<keyof RiskPlanDraft, 'enterpriseImpact' | 'sharedRisk' | 'treatments'>;
+type RiskPlanRowField = Exclude<keyof RiskPlanDraft, 'enterpriseImpact' | 'sharedRisk' | 'treatments'>;
+
+interface RiskPlanConfig {
+  fieldName: string;
+  title: string;
+  description: string;
+  actionLabel: string;
+  emptyTitle: string;
+  emptyBody: string;
+  categoryPlaceholder: string;
+  ownerPlaceholder: string;
+  leadPlaceholder: string;
+  statusPlaceholder: string;
+  strategicRiskPlaceholder: string;
+  categoryOptions: string[];
+  ownerOptions: string[];
+  statusOptions: string[];
+  strategicRiskOptions: string[];
+  likelihoodOptions: string[];
+  consequenceOptions: string[];
+  impactedObjectiveOptions: string[];
+  controlEffectivenessOptions: string[];
+  treatmentApproachOptions: string[];
+  treatmentTypeOptions: string[];
+  treatmentCategoryOptions: string[];
+  rows: RiskPlanRow[];
+  draft: RiskPlanDraft;
 }
 
 interface BudgetRuleItem {
@@ -766,6 +1202,7 @@ const iconMap: Record<string, string> = {
   down: 'chevron-down',
   dollar: 'circle-dollar-sign',
   download: 'download',
+  driver: 'rocket',
   endProduct: 'package',
   eye: 'eye',
   eyeOff: 'eye-off',
@@ -779,10 +1216,12 @@ const iconMap: Record<string, string> = {
   lessons: 'lightbulb',
   link: 'link-2',
   list: 'list',
+  lock: 'lock',
   management: 'file-text',
   milestone: 'flag',
   moreVertical: 'ellipsis-vertical',
   minusCircle: 'circle-minus',
+  outcomes: 'circle-check',
   pauseCircle: 'circle-pause',
   pin: 'pin',
   pinOff: 'pin-off',
@@ -808,6 +1247,8 @@ const iconMap: Record<string, string> = {
   store: 'store',
   widget: 'layout-grid',
   table: 'table-2',
+  target: 'target',
+  telescope: 'telescope',
   timeline: 'list-tree',
   todo: 'circle-dot',
   trendUp: 'trending-up',
@@ -951,7 +1392,6 @@ const projectPlanFieldMatrix: ProjectPlanField[] = [
   { section: 'Schedule & Scope', field: 'Forecast Start date', simple: false, intermediate: true, detailed: true, type: 'date', value: '2026-05-08' },
   { section: 'Schedule & Scope', field: 'Forecast End date', simple: false, intermediate: true, detailed: true, type: 'date', value: '2026-12-31' },
   { section: 'Schedule & Scope', field: 'Milestones', simple: false, intermediate: true, detailed: true, type: 'table', value: 'Initiation gate' },
-  { section: 'Schedule & Scope', field: 'Stages', simple: false, intermediate: false, detailed: true, type: 'select', value: 'Initiation', options: ['Initiation', 'Planning', 'Execution', 'Closure'] },
   { section: 'Schedule & Scope', field: 'In Scope', simple: true, intermediate: true, detailed: true, type: 'textarea', value: 'Research entities, universities, government stakeholders, industry partners, funding bodies, and R&D capability records.' },
   { section: 'Schedule & Scope', field: 'Out of Scope', simple: false, intermediate: false, detailed: true, type: 'textarea', value: 'Procurement execution, detailed grant administration, and non-research capability catalogues.' },
   { section: 'Schedule & Scope', field: 'End Product (Deliverables)', simple: false, intermediate: false, detailed: true, type: 'table', value: 'Research capability map' },
@@ -1093,7 +1533,7 @@ const projectPlanSectionFieldGroups: Record<string, ProjectPlanFieldGroupConfig[
     { title: 'Strategic alignment', description: 'Objectives, capabilities, and services linked to the plan.', fields: ['Project Alignment (Objectives)', 'Link Capabilities', 'Link Services'] },
   ],
   'Schedule & Scope': [
-    { title: 'Dates and stage', description: 'Baseline, forecast, and lifecycle position.', fields: ['Baseline Start date', 'Baseline End date', 'Forecast Start date', 'Forecast End date', 'Stages'] },
+    { title: 'Dates', description: 'Baseline and forecast timing for the plan.', fields: ['Baseline Start date', 'Baseline End date', 'Forecast Start date', 'Forecast End date'] },
     { title: 'Scope and delivery products', description: 'Milestones, boundaries, deliverables, management products, and WBS.', fields: ['Milestones', 'In Scope', 'Out of Scope', 'End Product (Deliverables)', 'Management Product', 'Detailed WBS'] },
   ],
   Budget: [
@@ -1494,7 +1934,7 @@ const dependencyRegisterConfigs: Record<DependencyRegisterKey, DependencyRegiste
     description: 'Projects that must land first before this plan can move safely.',
     actionLabel: 'Add predecessor',
     emptyTitle: 'No predecessor dependencies yet',
-    emptyBody: 'Track upstream projects, baseline timing, and impact once another initiative becomes a delivery blocker for this work.',
+    emptyBody: 'Add upstream projects, handoff dates, affected products, and owner details once another initiative becomes a delivery blocker for this work.',
     projectPlaceholder: 'Select predecessor project',
     impactPlaceholder: 'Select predecessor impact',
     dependentProductPlaceholder: 'Select dependent product',
@@ -1531,7 +1971,7 @@ const dependencyRegisterConfigs: Record<DependencyRegisterKey, DependencyRegiste
     description: 'Downstream projects or products that depend on this plan finishing well.',
     actionLabel: 'Add successor',
     emptyTitle: 'No successor dependencies yet',
-    emptyBody: 'Use this area for follow-on projects, downstream products, or handoffs that should start after this plan closes its work.',
+    emptyBody: 'Add downstream projects, product handoffs, baseline windows, and the PM who needs this work completed before their plan can move.',
     projectPlaceholder: 'Select successor project',
     impactPlaceholder: 'Select successor impact',
     dependentProductPlaceholder: 'Select dependent product',
@@ -1557,7 +1997,7 @@ const changeImpactConfig: ChangeImpactConfig = {
   description: 'Capture which audience is affected, how strong the impact is, and the adoption response needed before delivery friction appears.',
   actionLabel: 'Add change impact',
   emptyTitle: 'No change impacts captured yet',
-  emptyBody: 'When a process, stakeholder group, or operating model will feel this project, log it here so change planning starts before the impact turns into delivery churn.',
+  emptyBody: 'Add the audience, impact level, and adoption response when a process, stakeholder group, or operating model will feel this project.',
   categoryPlaceholder: 'Select change impact category',
   stakeholderPlaceholder: 'Select stakeholder impacted',
   levelPlaceholder: 'Select level of impact',
@@ -1594,13 +2034,424 @@ const relatedLinkConfig: RelatedLinkConfig = {
   },
 };
 
+const changeRequestTypeOptions: ChangeRequestType[] = ['Budget', 'Schedule', 'Scope'];
+const changeRequestPriorityOptions = ['Low', 'Medium', 'High'];
+const changeRequestTriggerOptions = ['Resource unavailability', 'Scope refinement', 'Schedule dependency', 'Budget reforecast', 'Quality concern', 'Policy update'];
+
+const changeRequestDraftInitial: ChangeRequestDraft = {
+  project: 'Advanced Threat Analytics Engine',
+  pmo: 'James T Kirk',
+  dueDate: '2026-05-25',
+  trigger: 'Resource unavailability',
+  priority: 'Low',
+  types: [],
+  changeDetails: '',
+  businessJustification: '',
+  riskImpact: '',
+  releasesImpacted: '',
+  impactToResource: '',
+  impactToQuality: '',
+  relatedLinks: [],
+  relatedLinkName: '',
+  relatedLinkDescription: '',
+  relatedLinkUrl: '',
+};
+
+const changeRequestRowsInitial: ChangeRequestRow[] = [
+  {
+    id: 'change-request-pcr226',
+    pcrNumber: 'PCR226',
+    project: 'Advanced Threat Analytics Engine',
+    pmo: 'James T Kirk',
+    types: ['Scope'],
+    createdDate: '2024-07-10',
+    dueDate: '2024-07-20',
+    priority: 'Medium',
+    status: 'IN DRAFT',
+    trigger: 'Scope refinement',
+    changeDetails: 'Update the delivery boundary for analytics onboarding so the team can absorb new threat data sources without disrupting the current stage gate.',
+    businessJustification: 'The additional scope improves coverage for high-priority monitoring scenarios already requested by the business owner.',
+    riskImpact: 'Moderate delivery risk if the scope change is not triaged before the next project report.',
+    releasesImpacted: 'Threat analytics beta release',
+    impactToResource: 'Requires analyst and data engineering review capacity for the revised onboarding scope.',
+    impactToQuality: 'Improves completeness of detection scenarios, but requires additional validation of source data quality.',
+    relatedLinks: [],
+  },
+  {
+    id: 'change-request-pcr184',
+    pcrNumber: 'PCR184',
+    project: 'Advanced Threat Analytics Engine',
+    pmo: 'James T Kirk',
+    types: ['Schedule'],
+    createdDate: '2022-02-11',
+    dueDate: '2022-02-10',
+    priority: 'Low',
+    status: 'ENDORSEMENT IN PROGRESS',
+    trigger: 'Resource unavailability',
+    changeDetails: 'Move the impacted schedule checkpoint while the project waits for shared resource availability.',
+    businessJustification: 'The schedule movement keeps the project realistic and avoids false escalation while resource cover is being confirmed.',
+    riskImpact: 'Low impact if PMO endorsement is completed before the next weekly report cycle.',
+    releasesImpacted: 'Planning gate pack',
+    impactToResource: 'Temporary resource gap across the project delivery team.',
+    impactToQuality: 'No direct quality impact expected if the revised dates are reflected in the baseline.',
+    relatedLinks: [],
+  },
+  {
+    id: 'change-request-pcr173',
+    pcrNumber: 'PCR173',
+    project: 'Advanced Threat Analytics Engine',
+    pmo: 'James T Kirk',
+    types: ['Schedule'],
+    createdDate: '2021-12-02',
+    dueDate: '2021-12-16',
+    priority: 'Medium',
+    status: 'CLOSED',
+    trigger: 'Schedule dependency',
+    changeDetails: 'Closed schedule adjustment from the previous planning cycle.',
+    businessJustification: 'Dependency handoff completed and accepted by PMO.',
+    riskImpact: 'No residual impact.',
+    releasesImpacted: 'Planning baseline',
+    impactToResource: '',
+    impactToQuality: '',
+    relatedLinks: [],
+  },
+  {
+    id: 'change-request-pcr149',
+    pcrNumber: 'PCR149',
+    project: 'Advanced Threat Analytics Engine',
+    pmo: 'James T Kirk',
+    types: ['Scope'],
+    createdDate: '2021-09-14',
+    dueDate: '2021-09-30',
+    priority: 'Low',
+    status: 'CLOSED',
+    trigger: 'Policy update',
+    changeDetails: 'Closed scope clarification for governance evidence.',
+    businessJustification: 'Evidence requirements were clarified for audit readiness.',
+    riskImpact: 'No residual impact.',
+    releasesImpacted: 'Governance pack',
+    impactToResource: '',
+    impactToQuality: '',
+    relatedLinks: [],
+  },
+  {
+    id: 'change-request-pcr118',
+    pcrNumber: 'PCR118',
+    project: 'Advanced Threat Analytics Engine',
+    pmo: 'James T Kirk',
+    types: ['Budget'],
+    createdDate: '2021-05-03',
+    dueDate: '2021-05-21',
+    priority: 'High',
+    status: 'CLOSED',
+    trigger: 'Budget reforecast',
+    changeDetails: 'Closed budget movement for early supplier discovery.',
+    businessJustification: 'Supplier discovery was completed within the approved envelope.',
+    riskImpact: 'No residual impact.',
+    releasesImpacted: 'Discovery phase',
+    impactToResource: '',
+    impactToQuality: '',
+    relatedLinks: [],
+  },
+  {
+    id: 'change-request-pcr102',
+    pcrNumber: 'PCR102',
+    project: 'Advanced Threat Analytics Engine',
+    pmo: 'James T Kirk',
+    types: ['Scope'],
+    createdDate: '2021-02-08',
+    dueDate: '2021-02-22',
+    priority: 'Medium',
+    status: 'CLOSED',
+    trigger: 'Quality concern',
+    changeDetails: 'Closed scope quality correction for test evidence.',
+    businessJustification: 'Quality correction was accepted by the sponsor.',
+    riskImpact: 'No residual impact.',
+    releasesImpacted: 'Test evidence pack',
+    impactToResource: '',
+    impactToQuality: '',
+    relatedLinks: [],
+  },
+];
+
+const changeRequestImpactBenefits: ChangeRequestImpactBenefitRow[] = [
+  {
+    benefit: 'Cost Reduction',
+    profile: 'Lower operational costs compared to traditional brick-and-mortar institutions.',
+    owner: '-',
+    product: '-',
+  },
+  {
+    benefit: 'Increased Client Satisfaction',
+    profile: 'Wider Reach and Inclusivity',
+    owner: 'Claire Philips',
+    product: '-',
+  },
+];
+
+const changeRequestImpactCapabilities: ChangeRequestImpactCapabilityRow[] = [
+  {
+    group: 'Crime Prevention & Public Safety',
+    capability: 'IT Management',
+    manager: '-',
+    products: 'No Products',
+  },
+  {
+    group: 'Intelligence Analysis & Assessment',
+    capability: 'Monitoring & Surveillance',
+    manager: 'Kenneth Ganya',
+    products: 'No Products',
+  },
+];
+
+const changeRequestImpactProjects: ChangeRequestImpactProjectRow[] = [
+  {
+    project: '1 - Skills Development and Training',
+    manager: '-',
+    products: [
+      'Green Product',
+      'T1A-E70 Security Risk Management Plan (SRMP)',
+      'Payment gateway',
+      'T1A-E28 Technical Solution Blueprint including the integration of on-premise and cloud-solutions',
+      'internet bandwidth',
+      'T1A-E71 Solution Overview Document (SOD)',
+      'T1B-E11 Business Intelligence & Analytics Blueprint',
+      'T1B-E72 Executive Summary',
+      'T1B-E08 Gap List & WRICEFX List',
+    ],
+  },
+];
+
+const closureReasonOptions = ['Delivered as planned', 'Closed with approved variance', 'Superseded by another initiative', 'Cancelled by sponsor', 'Merged into BAU'];
+
+const closureOverviewBlocks: ClosureTextBlock[] = [
+  {
+    id: 'executive-summary',
+    title: 'Executive summary',
+    description: 'Summarize the delivery outcome, residual decisions, and sponsor position.',
+    value:
+      'The project has completed its planned close-out review. Core deliverables are accepted, residual actions have owners, and the remaining work is ready for BAU transition tracking.',
+    maxLength: 3000,
+    icon: 'fileCheck',
+  },
+  {
+    id: 'performance-against-plan',
+    title: 'Performance against project plan',
+    description: 'Capture schedule, scope, and cost performance against the approved baseline.',
+    value:
+      'Delivery stayed within the approved scope with minor schedule movement absorbed through the final readiness window. Forecast variance remains controlled and no new baseline change is required.',
+    maxLength: 3000,
+    icon: 'chart',
+  },
+  {
+    id: 'quality',
+    title: 'Quality',
+    description: 'Record quality assurance results, accepted exceptions, and final quality confidence.',
+    value:
+      'Quality checks are complete for priority records, with source-owner validation exceptions converted into follow-up actions. No unresolved quality blocker prevents closure.',
+    maxLength: 3000,
+    icon: 'check',
+  },
+  {
+    id: 'bau-transition',
+    title: 'BAU transition',
+    description: 'Explain how service ownership, support, knowledge, and data upkeep move into operations.',
+    value:
+      'Operational ownership transfers to the Research Office with PMO reporting support for the first month after closure. A named data steward and escalation route are in place.',
+    maxLength: 3000,
+    icon: 'store',
+  },
+  {
+    id: 'capitalisation',
+    title: 'Capitalisation',
+    description: 'Capture capitalization, asset handover, and any finance evidence required at closure.',
+    value:
+      'Capitalizable project assets have been identified for finance review. Funding source evidence and monthly actuals are ready for final reconciliation.',
+    maxLength: 3000,
+    icon: 'dollar',
+  },
+];
+
+const closureChecklistItems: ClosureChecklistItem[] = [
+  { label: 'Sponsor acceptance recorded', state: 'Ready', tone: 'green' },
+  { label: 'Financial reconciliation reviewed', state: 'In review', tone: 'amber' },
+  { label: 'BAU owner confirmed', state: 'Ready', tone: 'green' },
+  { label: 'Lessons captured', state: 'Draft', tone: 'blue' },
+];
+
+const closureFollowUpActions: ClosureFollowUpAction[] = [
+  {
+    id: 'closure-action-1',
+    action: 'Confirm final source-owner validation exceptions and add the signed exception list to the evidence pack.',
+    owner: 'Muna Hassan',
+    dueDate: '2026-06-16',
+    status: 'Open',
+    tone: 'amber',
+  },
+  {
+    id: 'closure-action-2',
+    action: 'Run first BAU service review with Research Office and PMO reporting support.',
+    owner: 'Research Leads Forum',
+    dueDate: '2026-07-03',
+    status: 'Planned',
+    tone: 'blue',
+  },
+];
+
+const closureRecommendations: ClosureRecommendation[] = [
+  {
+    id: 'closure-rec-1',
+    recommendation: 'Keep monthly data stewardship reporting active for the first quarter after closure.',
+    owner: 'PMO Desk',
+    category: 'BAU transition',
+    status: 'Recommended',
+    tone: 'indigo',
+  },
+  {
+    id: 'closure-rec-2',
+    recommendation: 'Use the same source-owner validation model for future ecosystem mapping initiatives.',
+    owner: 'Strategy Office',
+    category: 'Reuse',
+    status: 'Accepted',
+    tone: 'green',
+  },
+];
+
+const closureBenefitRows: ClosureBenefitRow[] = [
+  {
+    category: 'Increased Quality',
+    benefit: 'Improved ecosystem visibility - Single source of truth reduces fragmentation in research data',
+    owner: 'Chethan Vijayadeva',
+    realizationDate: '2026-10-13',
+    measures: 0,
+    status: 'Tracking',
+    tone: 'indigo',
+  },
+  {
+    category: 'Cost Reduction',
+    benefit: 'Better funding allocation - Centralized visibility enables policymakers and funding bodies to direct investments toward high-impact and underrepresented research areas',
+    owner: 'Chethan Vijayadeva',
+    realizationDate: '2026-11-26',
+    measures: 0,
+    status: 'Tracking',
+    tone: 'indigo',
+  },
+  {
+    category: 'Increase in Revenue',
+    benefit: 'Stronger policy and strategic decision-making - Aggregated R&D data supports evidence-based planning and national innovation strategy development',
+    owner: 'Andrew Bullock',
+    realizationDate: '2026-03-07',
+    measures: 0,
+    status: 'Realized',
+    tone: 'green',
+  },
+  {
+    category: 'Increased Quality',
+    benefit: 'Faster collaboration and innovation - Easier discovery of partners accelerates the research-to-impact cycle',
+    owner: 'James T Kirk',
+    realizationDate: '2026-09-23',
+    measures: 2,
+    status: 'Tracking',
+    tone: 'indigo',
+  },
+  {
+    category: 'Cost Reduction',
+    benefit: 'Reduction in operational costs through local partnerships',
+    owner: 'James T Kirk',
+    realizationDate: '2026-12-29',
+    measures: 2,
+    status: 'Tracking',
+    tone: 'indigo',
+  },
+  {
+    category: 'Cost Reduction',
+    benefit: 'Sustained growth support during the first year of operations in Dubai',
+    owner: 'James T Kirk',
+    realizationDate: '2026-04-27',
+    measures: 2,
+    status: 'In review',
+    tone: 'amber',
+  },
+];
+
+const closureRiskRows: ClosureRiskRow[] = [
+  {
+    id: 'R839',
+    risk: 'High handover dependency if BAU owners are not ready to accept reporting ownership',
+    actualRating: 'Medium',
+    treatments: 0,
+    residualRating: 'Medium',
+    startDate: '2026-01-01',
+    endDate: '2026-12-31',
+    status: 'Open',
+  },
+  {
+    id: 'R834',
+    risk: 'Data quality risk - Inaccurate or outdated entries can reduce platform credibility',
+    actualRating: 'High',
+    treatments: 0,
+    residualRating: 'Medium',
+    startDate: '2026-01-01',
+    endDate: '2026-12-31',
+    status: 'Open',
+  },
+  {
+    id: 'R822',
+    risk: "Low adoption risk - Value diminishes if key institutions/researchers don't actively participate",
+    actualRating: 'Medium',
+    treatments: 1,
+    residualRating: 'Low',
+    startDate: '2026-01-01',
+    endDate: '2026-12-31',
+    status: 'Open',
+  },
+];
+
+const closureIssueRows: ClosureIssueRow[] = [
+  {
+    id: 'I59',
+    issue: 'Stakeholder alignment gaps - Different priorities across academia, government, and industry can slow usage',
+    type: 'Stakeholders',
+    resolution: 'Create a cross-sector governance framework with clearly defined roles, incentives, and accountability mechanisms.',
+    criticality: 'Low',
+    status: 'Open',
+    owner: '-',
+    dueDate: '2026-07-16',
+  },
+  {
+    id: 'I70',
+    issue: 'Data standardization challenge - Difficulty in harmonizing inputs across diverse institutions',
+    type: 'Resource',
+    resolution: 'Establish a unified data model with mandatory input standards and validation protocols across all participating entities.',
+    criticality: 'Medium',
+    status: 'Open',
+    owner: 'Chloe Gibson',
+    dueDate: '2026-01-23',
+  },
+];
+
+const closureLessonRows: ClosureLessonRow[] = [
+  {
+    title: 'Lesson 1',
+    category: 'Vendor Performance',
+    issue: 'Opportunity',
+    recommendation: 'Gather success stories and case studies from vendors to better understand quality of services and deliverables.',
+  },
+  {
+    title: 'Lesson 2',
+    category: 'Architecture & Design',
+    issue: 'This is an issue',
+    recommendation: 'Architecture reviews need to be done more rigorously. Identifying design flaws earlier will eliminate execution delays.',
+  },
+];
+
 const resourcePlanConfig: ResourcePlanConfig = {
   fieldName: 'Resource Plan',
   title: 'Resource plan',
   description: 'People, sourcing, and FTE assumptions needed to deliver this project.',
   actionLabel: 'Add resource',
   emptyTitle: 'No resources added yet',
-  emptyBody: 'Start with the core role, business unit, and FTE need so planning and staffing conversations begin with a clear baseline.',
+  emptyBody: 'Add the role, source type, FTE need, business unit, and planned date window so staffing conversations start from a clear baseline.',
   resourcePlaceholder: 'Select resource role',
   resourceTypePlaceholder: 'Select resource type',
   impactPlaceholder: 'Select impact level',
@@ -1629,7 +2480,7 @@ const benefitPlanConfig: BenefitPlanConfig = {
   description: 'Capture the value this project is expected to create, who owns it, and when realization should be visible.',
   actionLabel: 'Add benefit',
   emptyTitle: 'No benefits captured yet',
-  emptyBody: 'Start with the first outcome this project should unlock. Add the benefit statement, owner, and realization timing so the team can track value as delivery moves forward.',
+  emptyBody: 'Add the first outcome this project should unlock, then capture the category, owner, and realization date so value tracking starts early.',
   benefitTypePlaceholder: 'Select benefit type',
   benefitCategoryPlaceholder: 'Select benefit category',
   ownerPlaceholder: 'Select benefit owner',
@@ -1647,13 +2498,167 @@ const benefitPlanConfig: BenefitPlanConfig = {
   },
 };
 
+const riskTreatmentDraftInitial: RiskTreatmentDraft = {
+  treatment: '',
+  type: 'Mitigate',
+  category: 'Preventive',
+  owner: '',
+  manager: 'James T Kirk',
+  startDate: '',
+  endDate: '',
+  status: 'Planned',
+};
+
+const riskPlanConfig: RiskPlanConfig = {
+  fieldName: 'Risks Register',
+  title: 'Risk register',
+  description: 'Capture delivery threats, their exposure, owners, and the response needed before the risk lands in project reporting.',
+  actionLabel: 'Add risk',
+  emptyTitle: 'No risks logged yet',
+  emptyBody: 'Add potential delivery threats, exposure, owner, and mitigation response once the first risk needs PMO visibility.',
+  categoryPlaceholder: 'Select risk category',
+  ownerPlaceholder: 'Select risk owner',
+  leadPlaceholder: 'Select risk lead',
+  statusPlaceholder: 'Select risk status',
+  strategicRiskPlaceholder: 'Select strategic risk',
+  categoryOptions: ['Reputational', 'Technology Risk', 'Schedule Risk', 'Financial Risk', 'Operational Risk', 'Compliance Risk', 'Stakeholder Risk'],
+  ownerOptions: ['James T Kirk', 'Richelle Hilton', 'Muna Hassan', 'Fatima Ali', 'Khalid Omar', 'PMO Desk', 'Delivery Office'],
+  statusOptions: ['Open', 'Monitoring', 'Escalated', 'Closed'],
+  strategicRiskOptions: ['No', 'Yes', 'Strategic objective exposure', 'Enterprise dependency'],
+  likelihoodOptions: ['Rare', 'Unlikely', 'Possible', 'Likely', 'Almost certain'],
+  consequenceOptions: ['Insignificant', 'Minor', 'Moderate', 'Major', 'Severe'],
+  impactedObjectiveOptions: [
+    'Boost regional sustainability and growth through partnerships and investment',
+    'Improve national research capability discovery',
+    'Increase partner adoption of the research map',
+    'Protect credibility of strategic portfolio data',
+  ],
+  controlEffectivenessOptions: ['Not Rated', 'Ineffective', 'Partially Effective', 'Effective', 'Highly Effective'],
+  treatmentApproachOptions: ['Mitigate the threat', 'Transfer the threat', 'Accept the threat', 'Avoid the threat', 'Take the opportunity'],
+  treatmentTypeOptions: ['Mitigate', 'Avoid', 'Transfer', 'Accept', 'Exploit', 'Enhance'],
+  treatmentCategoryOptions: ['Preventive', 'Corrective', 'Detective', 'Contingency'],
+  rows: [
+    {
+      id: 'R822',
+      riskCategory: 'Reputational',
+      riskName: "Low adoption risk - Value diminishes if key institutions/researchers don't actively participate",
+      description:
+        'If key institutions and researchers do not actively maintain their profiles or promote the map, the platform may not become the trusted national entry point for research discovery.',
+      owner: 'James T Kirk',
+      manager: 'James T Kirk',
+      lead: 'James T Kirk',
+      startDate: '2026-01-01',
+      endDate: '2026-12-31',
+      reviewDueDate: '',
+      status: 'Open',
+      strategicRisk: 'No',
+      enterpriseImpact: false,
+      actualLikelihood: 'Possible',
+      actualConsequence: 'Minor',
+      actualRating: 'Medium',
+      residualLikelihood: 'Unlikely',
+      residualConsequence: 'Moderate',
+      residualRating: 'Medium',
+      impactedObjective: 'Increase partner adoption of the research map',
+      sharedRisk: false,
+      source: 'Partner onboarding depends on research institutions dedicating time to validate profiles, nominate administrators, and keep research capability data fresh.',
+      consequence: 'Low participation would weaken credibility, reduce discovery value, and make it harder for the project to demonstrate strategic adoption benefits.',
+      controlSummary: 'Stakeholder engagement cadence, named institutional champions, and monthly adoption tracking through the PMO dashboard.',
+      overallControlEffectiveness: 'Partially Effective',
+      analysisComment: 'Adoption controls are in place, but they need stronger sponsor follow-up before the execution stage.',
+      treatmentApproach: 'Mitigate the threat',
+      treatmentType: 'Mitigate',
+      treatmentComment: 'Focus on early adopter institutions first, then publish participation evidence to encourage wider uptake.',
+      treatments: [
+        {
+          id: 'risk-treatment-r822-1',
+          treatment: 'Confirm champions for priority research institutions and add participation checkpoints to the monthly steering pack.',
+          type: 'Mitigate',
+          category: 'Preventive',
+          owner: 'James T Kirk',
+          manager: 'James T Kirk',
+          startDate: '2026-05-15',
+          endDate: '2026-07-31',
+          status: 'Planned',
+        },
+      ],
+      createdOn: '2026-05-13',
+    },
+    {
+      id: 'R834',
+      riskCategory: 'Technology Risk',
+      riskName: 'Data quality risk - Inaccurate or outdated entries can reduce platform credibility',
+      description:
+        'Institution, capability, and researcher records may become stale if source owners do not validate changes quickly enough after launch.',
+      owner: 'Richelle Hilton',
+      manager: 'James T Kirk',
+      lead: 'Richelle Hilton',
+      startDate: '2026-01-01',
+      endDate: '2026-12-31',
+      reviewDueDate: '',
+      status: 'Open',
+      strategicRisk: 'No',
+      enterpriseImpact: false,
+      actualLikelihood: 'Likely',
+      actualConsequence: 'Major',
+      actualRating: 'High',
+      residualLikelihood: 'Possible',
+      residualConsequence: 'Moderate',
+      residualRating: 'Medium',
+      impactedObjective: 'Protect credibility of strategic portfolio data',
+      sharedRisk: false,
+      source: 'Source data arrives from multiple institutions with uneven update cycles, data owners, and validation standards.',
+      consequence: 'Outdated records could cause users to question the platform, reduce repeat use, and increase manual correction work for the PMO.',
+      controlSummary: 'Data steward review workflow, required source owner confirmations, and exception reports for stale records.',
+      overallControlEffectiveness: 'Partially Effective',
+      analysisComment: 'Controls need stronger automation support before the public launch window.',
+      treatmentApproach: 'Mitigate the threat',
+      treatmentType: 'Mitigate',
+      treatmentComment: 'Prioritize validation rules, stale data reporting, and source owner escalation before launch readiness review.',
+      treatments: [],
+      createdOn: '2026-05-13',
+    },
+  ],
+  draft: {
+    riskCategory: '',
+    riskName: '',
+    description: '',
+    owner: '',
+    manager: 'James T Kirk',
+    lead: '',
+    startDate: '2026-01-01',
+    endDate: '2026-12-31',
+    reviewDueDate: '',
+    status: 'Open',
+    strategicRisk: 'No',
+    enterpriseImpact: false,
+    actualLikelihood: '',
+    actualConsequence: '',
+    actualRating: '',
+    residualLikelihood: '',
+    residualConsequence: '',
+    residualRating: '',
+    impactedObjective: '',
+    sharedRisk: false,
+    source: '',
+    consequence: '',
+    controlSummary: '',
+    overallControlEffectiveness: 'Not Rated',
+    analysisComment: '',
+    treatmentApproach: 'Mitigate the threat',
+    treatmentType: 'Mitigate',
+    treatmentComment: '',
+    treatments: [],
+  },
+};
+
 const issuePlanConfig: IssuePlanConfig = {
   fieldName: 'Issues Register',
   title: 'Issues register',
   description: 'Track blockers, open decisions, and delivery problems so ownership and next action are visible without opening another tool.',
   actionLabel: 'Add issue',
   emptyTitle: 'No issues logged yet',
-  emptyBody: 'When a blocker, dependency problem, or unresolved decision appears, capture it here so the team can assign ownership and drive a resolution before the plan slows down.',
+  emptyBody: 'Add blockers, dependency problems, or unresolved decisions with owner, due date, and resolution notes before the plan starts to slow down.',
   issueTypePlaceholder: 'Select issue type',
   ownerPlaceholder: 'Select owner',
   issueTypeOptions: ['Scope issue', 'Schedule issue', 'Budget issue', 'Decision required', 'Dependency issue', 'Resource issue', 'Technical issue'],
@@ -1673,6 +2678,16 @@ const issuePlanConfig: IssuePlanConfig = {
     dueDate: '',
     dateClosed: '',
   },
+};
+
+const riskPlanEmptyState = {
+  title: 'Risk register',
+  description: 'Capture threats, exposure, mitigation ownership, and review cadence before they affect delivery.',
+  actionLabel: 'Add risk',
+  emptyTitle: 'No risks logged yet',
+  emptyBody: 'Add potential delivery threats, exposure, owner, and mitigation response once the first risk needs PMO visibility.',
+  icon: 'risks',
+  countLabel: '0 risks',
 };
 
 const budgetPlanConfig: BudgetPlanConfig = {
@@ -2115,6 +3130,13 @@ const stageDefinitions = [
   { id: 'closure', label: 'Closure', gate: 'Closure gate' },
 ];
 
+const projectPlanStageDateWindows: Record<string, { start: string; end: string }> = {
+  initiation: { start: '01/05/2026', end: '07/05/2026' },
+  planning: { start: '08/05/2026', end: '12/06/2026' },
+  execution: { start: '15/06/2026', end: '30/11/2026' },
+  closure: { start: '01/12/2026', end: '31/12/2026' },
+};
+
 const stageProfiles = [
   {
     project: 'Vision 2030',
@@ -2170,7 +3192,7 @@ const stageProfiles = [
 
 type StageDefinition = (typeof stageDefinitions)[number];
 type StageProfile = (typeof stageProfiles)[number];
-type StageGateStatus = 'complete' | 'current' | 'upcoming';
+type StageGateStatus = 'complete' | 'submitted' | 'current' | 'upcoming' | 'revoked';
 
 interface StageGateContext {
   profile: StageProfile;
@@ -2178,6 +3200,20 @@ interface StageGateContext {
   stageIndex: number;
   status: StageGateStatus;
   checkedCount: number;
+}
+
+interface ProjectPlanStageRow {
+  stage: StageDefinition;
+  stageIndex: number;
+  status: StageGateStatus;
+  statusLabel: string;
+  statusTone: string;
+  startDate: string;
+  endDate: string;
+  actionLabel: string;
+  actionIcon: string;
+  actionDisabled: boolean;
+  canRevoke: boolean;
 }
 
 interface Pm101Step {
@@ -2277,7 +3313,20 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
 @Component({
   selector: 'app-pm-console-content',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    PmConsoleFieldComponent,
+    PmConsoleIconComponent,
+    PmConsolePlanDrawerComponent,
+    PmConsolePlanEmptyStateComponent,
+    PmConsolePlanTableComponent,
+    PmConsoleReportDrawerComponent,
+    PmConsoleRiskMatrixComponent,
+    PmConsoleRowActionMenuComponent,
+    PmConsoleStatusPillComponent,
+    PmConsoleTableActionComponent,
+    PmConsoleToolbarComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="app-canvas" [class.workspaces-canvas]="selectedPage === 'workspaces'" [class.wbs-canvas]="selectedPage === 'wbs'" [class.project-plan-canvas]="selectedPage === 'project-plan'" [class.playground-canvas]="selectedPage === 'playground'" [class.unassigned-canvas]="frontDoorMode === 'unassigned'" [class.pm101-locked-canvas]="onboardingPm101Locked || isPm101WelcomeWorkspace" [class.pm101-operational-canvas]="isNormalPm101Workspace">
@@ -2306,20 +3355,18 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                         </article>
                       }
                     </div>
-                    <div class="pm-project-table-toolbar">
-                      <span>Items: {{ workspaceTableProjects.length }}</span>
-                      <div>
-                        <button class="pm-table-tool square" type="button" aria-label="Search projects"><span class="icon" aria-hidden="true"><i data-lucide="search"></i></span></button>
-                        <button class="pm-table-tool" type="button"><span class="icon" aria-hidden="true"><i data-lucide="filter"></i></span><span>Filter</span></button>
-                        <button class="pm-table-tool" type="button"><span class="icon" aria-hidden="true"><i data-lucide="sliders-horizontal"></i></span><span>Group by</span></button>
+                    <app-pm-console-toolbar [itemLabel]="'Items: ' + workspaceTableProjects.length">
+                        <button class="pm-table-tool square" type="button" aria-label="Search projects"><span pmConsoleIcon="search" aria-hidden="true"></span></button>
+                        <button class="pm-table-tool" type="button"><span pmConsoleIcon="filter" aria-hidden="true"></span><span>Filter</span></button>
+                        <button class="pm-table-tool" type="button"><span pmConsoleIcon="sliders-horizontal" aria-hidden="true"></span><span>Group by</span></button>
                         <div class="pm-project-view-toggle" aria-label="Project display">
-                          <button type="button" aria-label="Card view" aria-pressed="false" (click)="setWorkspaceDisplay('cards')"><span class="icon" aria-hidden="true"><i data-lucide="layout-grid"></i></span></button>
-                          <button class="active" type="button" aria-label="List view" aria-pressed="true" (click)="setWorkspaceDisplay('table')"><span class="icon" aria-hidden="true"><i data-lucide="list"></i></span></button>
+                          <button type="button" aria-label="Card view" aria-pressed="false" (click)="setWorkspaceDisplay('cards')"><span pmConsoleIcon="layout-grid" aria-hidden="true"></span></button>
+                          <button class="active" type="button" aria-label="List view" aria-pressed="true" (click)="setWorkspaceDisplay('table')"><span pmConsoleIcon="list" aria-hidden="true"></span></button>
                         </div>
-                        <button class="pm-table-tool" type="button"><span class="icon" aria-hidden="true"><i data-lucide="download"></i></span><span>Export</span></button>
-                        <button class="pm-table-add-project" type="button"><span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span><span>Add Project</span></button>
+                        <button class="pm-table-tool" type="button"><span pmConsoleIcon="download" aria-hidden="true"></span><span>Export</span></button>
+                        <button class="pm-table-add-project" type="button"><span pmConsoleIcon="plus" aria-hidden="true"></span><span>Add Project</span></button>
                         <div class="pm-table-settings-menu" data-workspace-columns-menu>
-                          <button class="pm-table-tool square" type="button" aria-label="Table settings" aria-haspopup="dialog" [attr.aria-expanded]="workspaceColumnMenuOpen" aria-controls="workspace-column-picker" (click)="toggleWorkspaceColumnMenu()"><span class="icon" aria-hidden="true"><i data-lucide="settings"></i></span></button>
+                          <button class="pm-table-tool square" type="button" aria-label="Table settings" aria-haspopup="dialog" [attr.aria-expanded]="workspaceColumnMenuOpen" aria-controls="workspace-column-picker" (click)="toggleWorkspaceColumnMenu()"><span pmConsoleIcon="settings" aria-hidden="true"></span></button>
                           @if (workspaceColumnMenuOpen) {
                             <section class="pm-table-column-popover" id="workspace-column-picker" role="dialog" aria-label="Choose visible table columns">
                               <div class="pm-table-column-popover-head">
@@ -2341,8 +3388,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                             </section>
                           }
                         </div>
-                      </div>
-                    </div>
+                    </app-pm-console-toolbar>
                     <div class="pm-project-table-scroll" tabindex="0">
                       <table class="pm-project-table pm-workspace-project-table" [style.--workspace-table-min-width.px]="workspaceTableMinWidth()">
                         <thead>
@@ -2385,7 +3431,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                     <td class="pm-table-column-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)"><div class="pm-table-column-frame"><span class="pm-table-budget"><strong>{{ project.budgetUsed }}</strong><small>/ {{ project.budgetTotal }}</small></span></div></td>
                                   }
                                   @case ('status') {
-                                    <td class="pm-table-column-cell pm-table-status-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)"><div class="pm-table-column-frame"><span class="pm-table-row-status {{ project.statusTone }}">{{ project.status }}</span></div></td>
+                                    <td class="pm-table-column-cell pm-table-status-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)"><div class="pm-table-column-frame"><span [pmConsoleStatusPill]="project.status" baseClass="pm-table-row-status" [tone]="project.statusTone"></span></div></td>
                                   }
                                 }
                               }
@@ -2396,21 +3442,18 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                     </div>
                   </div>
                 } @else if (workspaceRegister === 'projects') {
-                  <div class="pm-project-table-toolbar pm-project-card-toolbar">
-                    <span>Items: {{ workspaceProjectCards.length }}</span>
-                    <div>
-                      <button class="pm-table-tool square" type="button" aria-label="Search projects"><span class="icon" aria-hidden="true"><i data-lucide="search"></i></span></button>
-                      <button class="pm-table-tool" type="button"><span class="icon" aria-hidden="true"><i data-lucide="filter"></i></span><span>Filter</span></button>
-                      <button class="pm-table-tool" type="button"><span class="icon" aria-hidden="true"><i data-lucide="sliders-horizontal"></i></span><span>Group by</span></button>
+                  <app-pm-console-toolbar [itemLabel]="'Items: ' + workspaceProjectCards.length" toolbarClass="pm-project-card-toolbar">
+                      <button class="pm-table-tool square" type="button" aria-label="Search projects"><span pmConsoleIcon="search" aria-hidden="true"></span></button>
+                      <button class="pm-table-tool" type="button"><span pmConsoleIcon="filter" aria-hidden="true"></span><span>Filter</span></button>
+                      <button class="pm-table-tool" type="button"><span pmConsoleIcon="sliders-horizontal" aria-hidden="true"></span><span>Group by</span></button>
                       <div class="pm-project-view-toggle" aria-label="Project display">
-                        <button class="active" type="button" aria-label="Card view" aria-pressed="true" (click)="setWorkspaceDisplay('cards')"><span class="icon" aria-hidden="true"><i data-lucide="layout-grid"></i></span></button>
-                        <button type="button" aria-label="List view" aria-pressed="false" (click)="setWorkspaceDisplay('table')"><span class="icon" aria-hidden="true"><i data-lucide="list"></i></span></button>
+                        <button class="active" type="button" aria-label="Card view" aria-pressed="true" (click)="setWorkspaceDisplay('cards')"><span pmConsoleIcon="layout-grid" aria-hidden="true"></span></button>
+                        <button type="button" aria-label="List view" aria-pressed="false" (click)="setWorkspaceDisplay('table')"><span pmConsoleIcon="list" aria-hidden="true"></span></button>
                       </div>
-                      <button class="pm-table-tool" type="button"><span class="icon" aria-hidden="true"><i data-lucide="download"></i></span><span>Export</span></button>
-                      <button class="pm-table-add-project" type="button"><span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span><span>Add Project</span></button>
-                      <button class="pm-table-tool square" type="button" aria-label="Card view settings"><span class="icon" aria-hidden="true"><i data-lucide="settings"></i></span></button>
-                    </div>
-                  </div>
+                      <button class="pm-table-tool" type="button"><span pmConsoleIcon="download" aria-hidden="true"></span><span>Export</span></button>
+                      <button class="pm-table-add-project" type="button"><span pmConsoleIcon="plus" aria-hidden="true"></span><span>Add Project</span></button>
+                      <button class="pm-table-tool square" type="button" aria-label="Card view settings"><span pmConsoleIcon="settings" aria-hidden="true"></span></button>
+                  </app-pm-console-toolbar>
                   <div class="pm-project-card-grid">
                     @for (project of workspaceProjectCards; track project.title + project.stage) {
                       <article class="pm-project-card" [class.draft]="project.draft">
@@ -2439,15 +3482,12 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                         </article>
                       }
                     </div>
-                    <div class="pm-project-table-toolbar">
-                      <span>Items: {{ visibleBenefitRegisterRows.length }}</span>
-                      <div>
-                        <button class="pm-table-tool square" type="button" aria-label="Search benefits"><span class="icon" aria-hidden="true"><i data-lucide="search"></i></span></button>
-                        <button class="pm-table-tool" type="button"><span class="icon" aria-hidden="true"><i data-lucide="filter"></i></span><span>Filter</span></button>
-                        <button class="pm-table-tool" type="button"><span class="icon" aria-hidden="true"><i data-lucide="download"></i></span><span>Export</span></button>
-                        <button class="pm-table-add-project" type="button"><span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span><span>Add Benefit</span></button>
-                      </div>
-                    </div>
+                    <app-pm-console-toolbar [itemLabel]="'Items: ' + visibleBenefitRegisterRows.length">
+                        <button class="pm-table-tool square" type="button" aria-label="Search benefits"><span pmConsoleIcon="search" aria-hidden="true"></span></button>
+                        <button class="pm-table-tool" type="button"><span pmConsoleIcon="filter" aria-hidden="true"></span><span>Filter</span></button>
+                        <button class="pm-table-tool" type="button"><span pmConsoleIcon="download" aria-hidden="true"></span><span>Export</span></button>
+                        <button class="pm-table-add-project" type="button"><span pmConsoleIcon="plus" aria-hidden="true"></span><span>Add Benefit</span></button>
+                    </app-pm-console-toolbar>
                     <div class="pm-project-table-scroll" tabindex="0">
                       <table class="pm-project-table pm-register-table">
                         <thead><tr><th>Benefit ID</th><th>Benefit</th><th>Linked Project</th><th>Owner</th><th>Target Date</th><th>KPI / Measure</th><th>Realization</th><th>Status</th></tr></thead>
@@ -2460,8 +3500,8 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                               <td>{{ benefit.owner }}</td>
                               <td>{{ benefit.targetDate }}</td>
                               <td class="pm-table-detail-cell">{{ benefit.measure }}</td>
-                              <td><span class="pm-table-row-status {{ benefit.realizationTone }}">{{ benefit.realization }}</span></td>
-                              <td class="pm-table-status-cell"><span class="pm-table-row-status {{ benefit.statusTone }}">{{ benefit.status }}</span></td>
+                              <td><span [pmConsoleStatusPill]="benefit.realization" baseClass="pm-table-row-status" [tone]="benefit.realizationTone"></span></td>
+                              <td class="pm-table-status-cell"><span [pmConsoleStatusPill]="benefit.status" baseClass="pm-table-row-status" [tone]="benefit.statusTone"></span></td>
                             </tr>
                           }
                         </tbody>
@@ -2478,15 +3518,12 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                         </article>
                       }
                     </div>
-                    <div class="pm-project-table-toolbar">
-                      <span>Items: {{ visibleRiskRegisterRows.length }}</span>
-                      <div>
-                        <button class="pm-table-tool square" type="button" aria-label="Search risks"><span class="icon" aria-hidden="true"><i data-lucide="search"></i></span></button>
-                        <button class="pm-table-tool" type="button"><span class="icon" aria-hidden="true"><i data-lucide="filter"></i></span><span>Filter</span></button>
-                        <button class="pm-table-tool" type="button"><span class="icon" aria-hidden="true"><i data-lucide="download"></i></span><span>Export</span></button>
-                        <button class="pm-table-add-project" type="button"><span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span><span>Add Risk</span></button>
-                      </div>
-                    </div>
+                    <app-pm-console-toolbar [itemLabel]="'Items: ' + visibleRiskRegisterRows.length">
+                        <button class="pm-table-tool square" type="button" aria-label="Search risks"><span pmConsoleIcon="search" aria-hidden="true"></span></button>
+                        <button class="pm-table-tool" type="button"><span pmConsoleIcon="filter" aria-hidden="true"></span><span>Filter</span></button>
+                        <button class="pm-table-tool" type="button"><span pmConsoleIcon="download" aria-hidden="true"></span><span>Export</span></button>
+                        <button class="pm-table-add-project" type="button"><span pmConsoleIcon="plus" aria-hidden="true"></span><span>Add Risk</span></button>
+                    </app-pm-console-toolbar>
                     <div class="pm-project-table-scroll" tabindex="0">
                       <table class="pm-project-table pm-register-table">
                         <thead><tr><th>Risk ID</th><th>Risk</th><th>Linked Project</th><th>Owner</th><th>Mitigation</th><th>Last Review</th><th>Exposure</th><th>Status</th></tr></thead>
@@ -2499,8 +3536,8 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                               <td>{{ risk.owner }}</td>
                               <td class="pm-table-detail-cell">{{ risk.mitigation }}</td>
                               <td>{{ risk.reviewDate }}</td>
-                              <td><span class="pm-table-row-status {{ risk.exposureTone }}">{{ risk.exposure }}</span></td>
-                              <td class="pm-table-status-cell"><span class="pm-table-row-status {{ risk.statusTone }}">{{ risk.status }}</span></td>
+                              <td><span [pmConsoleStatusPill]="risk.exposure" baseClass="pm-table-row-status" [tone]="risk.exposureTone"></span></td>
+                              <td class="pm-table-status-cell"><span [pmConsoleStatusPill]="risk.status" baseClass="pm-table-row-status" [tone]="risk.statusTone"></span></td>
                             </tr>
                           }
                         </tbody>
@@ -2531,6 +3568,8 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
             [class.simple-plan-mode]="projectPlanEntry === 'quick' && projectPlanDetailMode === 'simple'"
             [class.detailed-plan-mode]="projectPlanEntry === 'quick' && projectPlanDetailMode === 'detailed'"
             [class.report-plan-mode]="projectPlanEntry !== 'quick'"
+            [class.change-request-plan-mode]="projectPlanEntry === 'change-request'"
+            [class.closure-plan-mode]="projectPlanEntry === 'closure'"
             aria-label="Project plan"
           >
             <div class="project-plan-card-frame" [class.project-report-card-frame]="projectPlanEntry !== 'quick'" [class.project-secondary-card-frame]="projectPlanEntry === 'change-request' || projectPlanEntry === 'closure'">
@@ -2548,6 +3587,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                     <div class="plan-builder-mode-toggle project-mode-toggle">
                       <button [class.active]="projectPlanEntry === 'quick'" type="button" (click)="setProjectPlanEntry('quick')"><span class="icon" aria-hidden="true"><i data-lucide="folder"></i></span>Project Plan</button>
                       <button [class.active]="projectPlanEntry === 'reports'" type="button" (click)="setProjectPlanEntry('reports')"><span class="icon" aria-hidden="true"><i data-lucide="panels-top-left"></i></span>Reports</button>
+                      <button [class.active]="projectPlanEntry === 'stages'" type="button" (click)="setProjectPlanEntry('stages')"><span class="icon" aria-hidden="true"><i data-lucide="route"></i></span>Stages</button>
                       <button [class.active]="projectPlanEntry === 'change-request'" type="button" (click)="setProjectPlanEntry('change-request')"><span class="icon" aria-hidden="true"><i data-lucide="chart-pie"></i></span>Change requests</button>
                       <button [class.active]="projectPlanEntry === 'closure'" type="button" (click)="setProjectPlanEntry('closure')"><span class="icon" aria-hidden="true"><i data-lucide="chart-pie"></i></span>Closure</button>
                     </div>
@@ -2556,8 +3596,20 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
               </header>
               @if (projectPlanEntry === 'quick') {
                 <div class="project-plan-shell plan-builder-shell quick-plan-shell" [class.simple-plan-shell]="projectPlanDetailMode === 'simple'" [class.detailed-plan-shell]="projectPlanDetailMode === 'detailed'">
+                  <div class="project-plan-content-modebar" [class.has-section-title]="true">
+                    <h2>{{ projectPlanDetailMode === 'simple' ? 'Project Plan' : projectPlanActiveSection }}</h2>
+                    <div class="project-plan-detail-toggle" role="tablist" aria-label="Project plan detail mode">
+                      <button [class.active]="projectPlanDetailMode === 'simple'" type="button" role="tab" [attr.aria-selected]="projectPlanDetailMode === 'simple'" (click)="setProjectPlanDetailMode('simple')">Simple view</button>
+                      <button [class.active]="projectPlanDetailMode === 'detailed'" type="button" role="tab" [attr.aria-selected]="projectPlanDetailMode === 'detailed'" (click)="setProjectPlanDetailMode('detailed')">Detailed view</button>
+                    </div>
+                  </div>
                   @if (projectPlanDetailMode === 'detailed') {
-                    <aside class="project-plan-sections plan-builder-nav quick-plan-nav matrix-plan-nav" aria-label="Project plan sections">
+                    <aside
+                      class="project-plan-sections plan-builder-nav quick-plan-nav matrix-plan-nav"
+                      [class.is-additional-expanded]="projectPlanSectionsExpanded"
+                      [class.is-additional-collapsed]="!projectPlanSectionsExpanded"
+                      aria-label="Project plan sections"
+                    >
                       <div class="matrix-nav-group">
                         <span class="matrix-nav-label">Core Planning</span>
                         <div class="matrix-nav-list">
@@ -2568,26 +3620,27 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                       </div>
                       <span class="matrix-nav-divider" aria-hidden="true"></span>
                       <div class="matrix-nav-group matrix-nav-actions">
-                        <div class="matrix-nav-heading">
+                        <button
+                          class="matrix-nav-heading"
+                          type="button"
+                          (click)="toggleProjectPlanSections()"
+                          [attr.aria-expanded]="projectPlanSectionsExpanded"
+                          aria-controls="project-plan-extra-sections"
+                        >
                           <span class="matrix-nav-label">Additional Actions</span>
-                          <span class="icon" aria-hidden="true"><i data-lucide="chevron-up"></i></span>
-                        </div>
-                        <div class="matrix-nav-list matrix-extra-sections">
-                          @for (section of additionalProjectPlanSections; track section) {
-                            <button class="detailed-only" [class.active]="projectPlanActiveSection === section" type="button" (click)="setProjectPlanSection(section)"><span>{{ projectPlanNavLabel(section) }}</span></button>
-                          }
-                        </div>
+                          <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
+                        </button>
+                        @if (projectPlanSectionsExpanded) {
+                          <div id="project-plan-extra-sections" class="matrix-nav-list matrix-extra-sections">
+                            @for (section of additionalProjectPlanSections; track section) {
+                              <button class="detailed-only" [class.active]="projectPlanActiveSection === section" type="button" (click)="setProjectPlanSection(section)"><span>{{ projectPlanNavLabel(section) }}</span></button>
+                            }
+                          </div>
+                        }
                       </div>
                     </aside>
                   }
                   <main class="project-plan-content plan-builder-workspace quick-plan-workspace" [class.simple-plan-workspace]="projectPlanDetailMode === 'simple'" [class.detailed-plan-workspace]="projectPlanDetailMode === 'detailed'">
-                    <div class="project-plan-content-modebar" [class.has-section-title]="true">
-                      <h2>{{ projectPlanDetailMode === 'simple' ? 'Project Plan' : projectPlanActiveSection }}</h2>
-                      <div class="project-plan-detail-toggle" role="tablist" aria-label="Project plan detail mode">
-                        <button [class.active]="projectPlanDetailMode === 'simple'" type="button" role="tab" [attr.aria-selected]="projectPlanDetailMode === 'simple'" (click)="setProjectPlanDetailMode('simple')">Simple view</button>
-                        <button [class.active]="projectPlanDetailMode === 'detailed'" type="button" role="tab" [attr.aria-selected]="projectPlanDetailMode === 'detailed'" (click)="setProjectPlanDetailMode('detailed')">Detailed view</button>
-                      </div>
-                    </div>
                     <div class="plan-builder-main quick-plan-main project-plan-matrix-main">
                       @if (projectPlanDetailMode === 'simple') {
                         <section class="project-plan-form-card plan-builder-card project-plan-matrix-card simple-plan-card">
@@ -2610,14 +3663,14 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                       </div>
                                     } @else {
                                       @if (field.kind === 'table') {
-                                        <article class="matrix-field matrix-field-table simple-field-control wide">
-                                          <div class="matrix-register-head">
-                                            <div>
-                                              <span class="matrix-field-label">{{ field.label }} @if (field.mandatory) { <b>*</b> }</span>
-                                              <small>{{ simplePlanTableConfig(field).description }}</small>
-                                            </div>
-                                            <button type="button"><span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>{{ simplePlanTableConfig(field).action }}</button>
-                                          </div>
+                                        <app-pm-console-plan-table
+                                          [title]="field.label"
+                                          [description]="simplePlanTableConfig(field).description"
+                                          [countLabel]="simplePlanTableConfig(field).rows.length + ' records'"
+                                          [actionLabel]="simplePlanTableConfig(field).action"
+                                          [iconName]="iconName('table')"
+                                          panelClass="matrix-field-table simple-field-control wide"
+                                        >
                                           <div class="matrix-register-table" role="table" [attr.aria-label]="field.label">
                                             <div class="matrix-register-row head" [class.columns-2]="simplePlanTableConfig(field).columns.length === 2" [class.columns-3]="simplePlanTableConfig(field).columns.length === 3" [class.columns-4]="simplePlanTableConfig(field).columns.length === 4" [class.columns-5]="simplePlanTableConfig(field).columns.length >= 5" role="row">
                                               @for (column of simplePlanTableConfig(field).columns; track column) { <span>{{ column }}</span> }
@@ -2628,7 +3681,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                               </div>
                                             }
                                           </div>
-                                        </article>
+                                        </app-pm-console-plan-table>
                                       } @else if (field.kind === 'boolean') {
                                         <div class="matrix-field matrix-field-boolean simple-field-control">
                                           <span class="matrix-field-label">{{ field.label }} @if (field.mandatory) { <b>*</b> }</span>
@@ -2689,9 +3742,14 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                               <section class="overview-plan-workspace" aria-label="Overview workspace">
                                 <article class="overview-form-card">
                                   <div class="overview-form-head">
-                                    <div>
-                                      <h3>Case for change</h3>
-                                      <p>Capture the project narrative first, then confirm the AI governance flag before moving into drivers, outcomes, and alignment.</p>
+                                    <div class="overview-form-title">
+                                      <span class="overview-form-title-icon" aria-hidden="true">
+                                        <span [pmConsoleIcon]="iconName('info')"></span>
+                                      </span>
+                                      <div>
+                                        <h3>Case for change</h3>
+                                        <p>Capture the project narrative first, then confirm the AI governance flag before moving into drivers, outcomes, and alignment.</p>
+                                      </div>
                                     </div>
                                   </div>
                                   <div class="overview-form-body">
@@ -2719,20 +3777,17 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                   </div>
                                 </article>
 
-                                <article class="dependency-register-card overview-register-card">
-                                  <div class="dependency-register-head">
-                                    <div class="dependency-register-copy">
-                                      <span class="dependency-register-eyebrow">Business Drivers</span>
-                                      <strong>Business drivers</strong>
-                                      <small>Strategic and business reasons that explain why this project needs to move forward.</small>
-                                    </div>
-                                    <div class="dependency-register-actions">
-                                      <span class="dependency-register-count">{{ overviewCountLabel(overviewBusinessDriverRows.length, 'driver') }}</span>
-                                      <button class="dependency-register-add" type="button" (click)="openOverviewBusinessDriverDrawer()">
-                                        <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>Add business driver
-                                      </button>
-                                    </div>
-                                  </div>
+                                <app-pm-console-plan-table
+                                  title="Business drivers"
+                                  eyebrow="Business Drivers"
+                                  description="Strategic and business reasons that explain why this project needs to move forward."
+                                  [countLabel]="overviewCountLabel(overviewBusinessDriverRows.length, 'driver')"
+                                  actionLabel="Add business driver"
+                                  actionAriaLabel="Add business driver"
+                                  [iconName]="iconName('driver')"
+                                  panelClass="overview-register-card"
+                                  (action)="openOverviewBusinessDriverDrawer()"
+                                >
                                   @if (overviewBusinessDriverRows.length) {
                                     <div class="dependency-register-table-shell">
                                       <table class="dependency-register-table overview-driver-table" aria-label="Business drivers">
@@ -2747,21 +3802,25 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                         </thead>
                                         <tbody>
                                           @for (row of overviewBusinessDriverRows; track row.id) {
-                                            <tr>
+                                            <tr class="plan-table-clickable-row" role="button" tabindex="0" [attr.aria-label]="'Open business driver details for ' + row.driver" (click)="openOverviewBusinessDriverDrawer(row)" (keydown.enter)="openOverviewBusinessDriverDrawer(row)" (keydown.space)="$event.preventDefault(); openOverviewBusinessDriverDrawer(row)">
                                               <td class="dependency-register-primary">
                                                 <strong>{{ row.driver }}</strong>
                                                 <small>Business driver carried into the project brief</small>
                                               </td>
                                               <td>{{ row.source }}</td>
-                                              <td><span class="schedule-priority-pill {{ scheduleMilestonePriorityTone(row.priority) }}">{{ row.priority }}</span></td>
+                                              <td><span [pmConsoleStatusPill]="row.priority" baseClass="schedule-priority-pill" [tone]="scheduleMilestonePriorityTone(row.priority)"></span></td>
                                               <td>{{ row.note || 'No additional note captured' }}</td>
                                               <td class="schedule-table-actions">
-                                                <button class="schedule-table-action" type="button" (click)="openOverviewBusinessDriverDrawer(row)" [attr.aria-label]="'Edit ' + row.driver">
-                                                  <span class="icon" aria-hidden="true"><i data-lucide="pencil"></i></span>
-                                                </button>
-                                                <button class="schedule-table-action danger" type="button" (click)="removeOverviewBusinessDriver(row.id)" [attr.aria-label]="'Delete ' + row.driver">
-                                                  <span class="icon" aria-hidden="true"><i data-lucide="trash-2"></i></span>
-                                                </button>
+                                                <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + row.driver">
+                                                  <button type="button" role="menuitem" (click)="openOverviewBusinessDriverDrawer(row)">
+                                                    <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                                    Edit
+                                                  </button>
+                                                  <button class="danger" type="button" role="menuitem" (click)="removeOverviewBusinessDriver(row.id)">
+                                                    <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                                    Delete
+                                                  </button>
+                                                </app-pm-console-row-action-menu>
                                               </td>
                                             </tr>
                                           }
@@ -2777,22 +3836,19 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                       </div>
                                     </div>
                                   }
-                                </article>
+                                </app-pm-console-plan-table>
 
-                                <article class="dependency-register-card overview-register-card">
-                                  <div class="dependency-register-head">
-                                    <div class="dependency-register-copy">
-                                      <span class="dependency-register-eyebrow">Outcome</span>
-                                      <strong>Outcomes</strong>
-                                      <small>Expected results and measures that define what success should look like.</small>
-                                    </div>
-                                    <div class="dependency-register-actions">
-                                      <span class="dependency-register-count">{{ overviewCountLabel(overviewOutcomeRows.length, 'outcome') }}</span>
-                                      <button class="dependency-register-add" type="button" (click)="openOverviewOutcomeDrawer()">
-                                        <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>Add outcome
-                                      </button>
-                                    </div>
-                                  </div>
+                                <app-pm-console-plan-table
+                                  title="Outcomes"
+                                  eyebrow="Outcome"
+                                  description="Expected results and measures that define what success should look like."
+                                  [countLabel]="overviewCountLabel(overviewOutcomeRows.length, 'outcome')"
+                                  actionLabel="Add outcome"
+                                  actionAriaLabel="Add outcome"
+                                  [iconName]="iconName('outcomes')"
+                                  panelClass="overview-register-card"
+                                  (action)="openOverviewOutcomeDrawer()"
+                                >
                                   @if (overviewOutcomeRows.length) {
                                     <div class="dependency-register-table-shell">
                                       <table class="dependency-register-table" aria-label="Outcomes">
@@ -2807,21 +3863,25 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                         </thead>
                                         <tbody>
                                           @for (row of overviewOutcomeRows; track row.id) {
-                                            <tr>
+                                            <tr class="plan-table-clickable-row" role="button" tabindex="0" [attr.aria-label]="'Open outcome details for ' + row.outcome" (click)="openOverviewOutcomeDrawer(row)" (keydown.enter)="openOverviewOutcomeDrawer(row)" (keydown.space)="$event.preventDefault(); openOverviewOutcomeDrawer(row)">
                                               <td class="dependency-register-primary">
                                                 <strong>{{ row.outcome }}</strong>
                                                 <small>Outcome visible in the project overview</small>
                                               </td>
                                               <td>{{ row.measure }}</td>
                                               <td>{{ row.owner }}</td>
-                                              <td><span class="overview-status-pill {{ overviewStatusTone(row.status) }}">{{ row.status }}</span></td>
+                                              <td><span [pmConsoleStatusPill]="row.status" baseClass="overview-status-pill" [tone]="overviewStatusTone(row.status)"></span></td>
                                               <td class="schedule-table-actions">
-                                                <button class="schedule-table-action" type="button" (click)="openOverviewOutcomeDrawer(row)" [attr.aria-label]="'Edit ' + row.outcome">
-                                                  <span class="icon" aria-hidden="true"><i data-lucide="pencil"></i></span>
-                                                </button>
-                                                <button class="schedule-table-action danger" type="button" (click)="removeOverviewOutcome(row.id)" [attr.aria-label]="'Delete ' + row.outcome">
-                                                  <span class="icon" aria-hidden="true"><i data-lucide="trash-2"></i></span>
-                                                </button>
+                                                <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + row.outcome">
+                                                  <button type="button" role="menuitem" (click)="openOverviewOutcomeDrawer(row)">
+                                                    <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                                    Edit
+                                                  </button>
+                                                  <button class="danger" type="button" role="menuitem" (click)="removeOverviewOutcome(row.id)">
+                                                    <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                                    Delete
+                                                  </button>
+                                                </app-pm-console-row-action-menu>
                                               </td>
                                             </tr>
                                           }
@@ -2837,22 +3897,19 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                       </div>
                                     </div>
                                   }
-                                </article>
+                                </app-pm-console-plan-table>
 
-                                <article class="dependency-register-card overview-register-card overview-alignment-card">
-                                  <div class="dependency-register-head">
-                                    <div class="dependency-register-copy">
-                                      <span class="dependency-register-eyebrow">Project Alignment (Objectives)</span>
-                                      <strong>Project alignment</strong>
-                                      <small>Connect project objectives to the strategic objectives the work is meant to support.</small>
-                                    </div>
-                                    <div class="dependency-register-actions">
-                                      <span class="dependency-register-count">{{ overviewCountLabel(overviewObjectiveRows.length, 'objective') }}</span>
-                                      <button class="dependency-register-add" type="button" (click)="openOverviewObjectiveDrawer()">
-                                        <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>Add project objective
-                                      </button>
-                                    </div>
-                                  </div>
+                                <app-pm-console-plan-table
+                                  title="Project alignment"
+                                  eyebrow="Project Alignment (Objectives)"
+                                  description="Connect project objectives to the strategic objectives the work is meant to support."
+                                  [countLabel]="overviewCountLabel(overviewObjectiveRows.length, 'objective')"
+                                  actionLabel="Add project objective"
+                                  actionAriaLabel="Add project objective"
+                                  [iconName]="iconName('target')"
+                                  panelClass="overview-register-card overview-alignment-card"
+                                  (action)="openOverviewObjectiveDrawer()"
+                                >
 
                                   <div class="overview-alignment-summary overview-alignment-summary-simple">
                                     <div class="overview-alignment-block">
@@ -2886,20 +3943,24 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                         </thead>
                                         <tbody>
                                           @for (row of overviewObjectiveRows; track row.id) {
-                                            <tr>
+                                            <tr class="plan-table-clickable-row" role="button" tabindex="0" [attr.aria-label]="'Open project objective details for ' + row.objective" (click)="openOverviewObjectiveDrawer(row)" (keydown.enter)="openOverviewObjectiveDrawer(row)" (keydown.space)="$event.preventDefault(); openOverviewObjectiveDrawer(row)">
                                               <td class="dependency-register-primary">
                                                 <strong>{{ row.objective }}</strong>
                                                 <small>Project-level objective saved in the overview</small>
                                               </td>
                                               <td>{{ row.linkedObjective }}</td>
-                                              <td><span class="overview-status-pill {{ overviewStatusTone(row.status) }}">{{ row.status }}</span></td>
+                                              <td><span [pmConsoleStatusPill]="row.status" baseClass="overview-status-pill" [tone]="overviewStatusTone(row.status)"></span></td>
                                               <td class="schedule-table-actions">
-                                                <button class="schedule-table-action" type="button" (click)="openOverviewObjectiveDrawer(row)" [attr.aria-label]="'Edit ' + row.objective">
-                                                  <span class="icon" aria-hidden="true"><i data-lucide="pencil"></i></span>
-                                                </button>
-                                                <button class="schedule-table-action danger" type="button" (click)="removeOverviewObjective(row.id)" [attr.aria-label]="'Delete ' + row.objective">
-                                                  <span class="icon" aria-hidden="true"><i data-lucide="trash-2"></i></span>
-                                                </button>
+                                                <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + row.objective">
+                                                  <button type="button" role="menuitem" (click)="openOverviewObjectiveDrawer(row)">
+                                                    <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                                    Edit
+                                                  </button>
+                                                  <button class="danger" type="button" role="menuitem" (click)="removeOverviewObjective(row.id)">
+                                                    <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                                    Delete
+                                                  </button>
+                                                </app-pm-console-row-action-menu>
                                               </td>
                                             </tr>
                                           }
@@ -2915,21 +3976,35 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                       </div>
                                     </div>
                                   }
-                                </article>
+                                </app-pm-console-plan-table>
 
                                 @if (activeProjectPlanHasVisibleFields && activeProjectPlanHiddenFields.length) {
-                                  <button class="matrix-show-fields overview-show-fields" [class.is-expanded]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection)" type="button" (click)="toggleProjectPlanFieldSection(projectPlanActiveSection)" [attr.aria-expanded]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection)">
-                                    <span class="matrix-show-fields-copy"><strong>{{ activeProjectPlanHiddenFieldButtonLabel }} ({{ activeProjectPlanHiddenFields.length }})</strong><small>{{ activeProjectPlanHiddenFieldPreview }}</small></span>
-                                    <span class="matrix-show-fields-indicator" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection) ? 'minus' : 'plus'"></i></span></span>
+                                  <button
+                                    class="schedule-scope-advanced-toggle overview-advanced-toggle"
+                                    [class.is-expanded]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection)"
+                                    type="button"
+                                    (click)="toggleProjectPlanFieldSection(projectPlanActiveSection)"
+                                    [attr.aria-expanded]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection)"
+                                  >
+                                    <span [pmConsoleIcon]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection) ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></span>
+                                    <span>
+                                      {{ isProjectPlanFieldSectionExpanded(projectPlanActiveSection) ? 'View less' : 'View more' }}
+                                      <small>(Advanced governance fields)</small>
+                                    </span>
                                   </button>
                                   @if (isProjectPlanFieldSectionExpanded(projectPlanActiveSection)) {
                                     <div class="matrix-hidden-fields is-expanded">
                                       <section class="overview-hidden-stack" aria-label="Additional overview fields">
                                         <article class="overview-form-card overview-form-card-secondary">
                                           <div class="overview-form-head">
-                                            <div>
-                                              <h3>Additional fields</h3>
-                                              <p>Detailed fields that support deeper governance and architecture conversations.</p>
+                                            <div class="overview-form-title">
+                                              <span class="overview-form-title-icon" aria-hidden="true">
+                                                <span [pmConsoleIcon]="iconName('sliders')"></span>
+                                              </span>
+                                              <div>
+                                                <h3>Additional fields</h3>
+                                                <p>Detailed fields that support deeper governance and architecture conversations.</p>
+                                              </div>
                                             </div>
                                           </div>
                                           <div class="overview-form-body">
@@ -2940,20 +4015,17 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                           </div>
                                         </article>
 
-                                        <article class="dependency-register-card overview-register-card">
-                                          <div class="dependency-register-head">
-                                            <div class="dependency-register-copy">
-                                              <span class="dependency-register-eyebrow">Link Capabilities</span>
-                                              <strong>Capabilities</strong>
-                                              <small>Capability mapping for detailed governance, architecture, or operating model alignment.</small>
-                                            </div>
-                                            <div class="dependency-register-actions">
-                                              <span class="dependency-register-count">{{ overviewCountLabel(overviewCapabilityRows.length, 'capability') }}</span>
-                                              <button class="dependency-register-add" type="button" (click)="openOverviewCapabilityDrawer()">
-                                                <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>Link capabilities
-                                              </button>
-                                            </div>
-                                          </div>
+                                        <app-pm-console-plan-table
+                                          title="Capabilities"
+                                          eyebrow="Link Capabilities"
+                                          description="Capability mapping for detailed governance, architecture, or operating model alignment."
+                                          [countLabel]="overviewCountLabel(overviewCapabilityRows.length, 'capability')"
+                                          actionLabel="Link capabilities"
+                                          actionAriaLabel="Link capabilities"
+                                          [iconName]="iconName('columns')"
+                                          panelClass="overview-register-card"
+                                          (action)="openOverviewCapabilityDrawer()"
+                                        >
                                           @if (overviewCapabilityRows.length) {
                                             <div class="dependency-register-table-shell">
                                               <table class="dependency-register-table" aria-label="Linked capabilities">
@@ -2967,7 +4039,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                                 </thead>
                                                 <tbody>
                                                   @for (row of overviewCapabilityRows; track row.id) {
-                                                    <tr>
+                                                    <tr class="plan-table-clickable-row" role="button" tabindex="0" [attr.aria-label]="'Open capability details for ' + row.capability" (click)="openOverviewCapabilityDrawer(row)" (keydown.enter)="openOverviewCapabilityDrawer(row)" (keydown.space)="$event.preventDefault(); openOverviewCapabilityDrawer(row)">
                                                       <td class="dependency-register-primary">
                                                         <strong>{{ row.capability }}</strong>
                                                         <small>Detailed governance mapping</small>
@@ -2975,12 +4047,16 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                                       <td>{{ row.domain }}</td>
                                                       <td>{{ row.owner }}</td>
                                                       <td class="schedule-table-actions">
-                                                        <button class="schedule-table-action" type="button" (click)="openOverviewCapabilityDrawer(row)" [attr.aria-label]="'Edit ' + row.capability">
-                                                          <span class="icon" aria-hidden="true"><i data-lucide="pencil"></i></span>
-                                                        </button>
-                                                        <button class="schedule-table-action danger" type="button" (click)="removeOverviewCapability(row.id)" [attr.aria-label]="'Delete ' + row.capability">
-                                                          <span class="icon" aria-hidden="true"><i data-lucide="trash-2"></i></span>
-                                                        </button>
+                                                        <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + row.capability">
+                                                          <button type="button" role="menuitem" (click)="openOverviewCapabilityDrawer(row)">
+                                                            <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                                            Edit
+                                                          </button>
+                                                          <button class="danger" type="button" role="menuitem" (click)="removeOverviewCapability(row.id)">
+                                                            <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                                            Delete
+                                                          </button>
+                                                        </app-pm-console-row-action-menu>
                                                       </td>
                                                     </tr>
                                                   }
@@ -2996,22 +4072,19 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                               </div>
                                             </div>
                                           }
-                                        </article>
+                                        </app-pm-console-plan-table>
 
-                                        <article class="dependency-register-card overview-register-card">
-                                          <div class="dependency-register-head">
-                                            <div class="dependency-register-copy">
-                                              <span class="dependency-register-eyebrow">Link Services</span>
-                                              <strong>Services</strong>
-                                              <small>Service group, value stream, phase, and service mapping for the detailed layer.</small>
-                                            </div>
-                                            <div class="dependency-register-actions">
-                                              <span class="dependency-register-count">{{ overviewCountLabel(overviewServiceRows.length, 'service') }}</span>
-                                              <button class="dependency-register-add" type="button" (click)="openOverviewServiceDrawer()">
-                                                <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>Link service
-                                              </button>
-                                            </div>
-                                          </div>
+                                        <app-pm-console-plan-table
+                                          title="Services"
+                                          eyebrow="Link Services"
+                                          description="Service group, value stream, phase, and service mapping for the detailed layer."
+                                          [countLabel]="overviewCountLabel(overviewServiceRows.length, 'service')"
+                                          actionLabel="Link service"
+                                          actionAriaLabel="Link service"
+                                          [iconName]="iconName('store')"
+                                          panelClass="overview-register-card"
+                                          (action)="openOverviewServiceDrawer()"
+                                        >
                                           @if (overviewServiceRows.length) {
                                             <div class="dependency-register-table-shell">
                                               <table class="dependency-register-table" aria-label="Linked services">
@@ -3026,7 +4099,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                                 </thead>
                                                 <tbody>
                                                   @for (row of overviewServiceRows; track row.id) {
-                                                    <tr>
+                                                    <tr class="plan-table-clickable-row" role="button" tabindex="0" [attr.aria-label]="'Open service details for ' + row.service" (click)="openOverviewServiceDrawer(row)" (keydown.enter)="openOverviewServiceDrawer(row)" (keydown.space)="$event.preventDefault(); openOverviewServiceDrawer(row)">
                                                       <td class="dependency-register-primary">
                                                         <strong>{{ row.serviceGroup }}</strong>
                                                         <small>Service catalogue connection</small>
@@ -3035,12 +4108,16 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                                       <td>{{ row.phase }}</td>
                                                       <td>{{ row.service }}</td>
                                                       <td class="schedule-table-actions">
-                                                        <button class="schedule-table-action" type="button" (click)="openOverviewServiceDrawer(row)" [attr.aria-label]="'Edit ' + row.service">
-                                                          <span class="icon" aria-hidden="true"><i data-lucide="pencil"></i></span>
-                                                        </button>
-                                                        <button class="schedule-table-action danger" type="button" (click)="removeOverviewService(row.id)" [attr.aria-label]="'Delete ' + row.service">
-                                                          <span class="icon" aria-hidden="true"><i data-lucide="trash-2"></i></span>
-                                                        </button>
+                                                        <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + row.service">
+                                                          <button type="button" role="menuitem" (click)="openOverviewServiceDrawer(row)">
+                                                            <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                                            Edit
+                                                          </button>
+                                                          <button class="danger" type="button" role="menuitem" (click)="removeOverviewService(row.id)">
+                                                            <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                                            Delete
+                                                          </button>
+                                                        </app-pm-console-row-action-menu>
                                                       </td>
                                                     </tr>
                                                   }
@@ -3056,7 +4133,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                               </div>
                                             </div>
                                           }
-                                        </article>
+                                        </app-pm-console-plan-table>
                                       </section>
                                     </div>
                                   }
@@ -3065,545 +4142,444 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                             } @else if (projectPlanActiveSection === 'Budget') {
                               @let plan = activeBudgetPlan;
                               @let year = activeBudgetYear;
-                              <section class="budget-workspace" aria-label="Budget">
-                                <article class="budget-section budget-overview-panel">
-                                  <div class="budget-section-head">
-                                    <div>
-                                      <h3>Budget Overview <span class="icon budget-info-icon" aria-hidden="true"><i data-lucide="info"></i></span></h3>
-                                      <p>Approved budget summary for the project. These totals give the PM a stable reference while the project budget is managed below.</p>
-                                    </div>
-                                    <button class="budget-outline-action" type="button">View revisions</button>
-                                  </div>
-
-                                  <div class="budget-overview-summary-grid" aria-label="Budget overview totals">
-                                    @for (metric of activeBudgetOverviewMetrics; track metric.label) {
-                                      <article class="budget-summary-cell {{ metric.tone }}">
-                                        <span>{{ metric.label }}</span>
-                                        <strong>{{ metric.value }}</strong>
-                                        <small>{{ metric.helper }}</small>
-                                      </article>
-                                    }
-                                  </div>
-
-                                  <div class="budget-table-wrap">
-                                    <table class="budget-table budget-overview-table" aria-label="Budget overview by fiscal year">
-                                      <thead>
-                                        <tr>
-                                          <th>FY</th>
-                                          <th>Budget</th>
-                                          <th>Forecast</th>
-                                          <th>Forecast Variance</th>
-                                          <th>Committed (Unspent)</th>
-                                          <th>Actual</th>
-                                          <th>Total Committed (C + A)</th>
-                                          <th>Available Budget</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        @for (row of plan.years; track row.id) {
-                                          <tr [class.is-selected]="row.fy === plan.selectedFy">
-                                            <td>{{ row.fy }}</td>
-                                            <td>{{ formatBudgetCurrency(budgetYearBaselineTotal(row)) }}</td>
-                                            <td>{{ formatBudgetCurrency(budgetYearForecastTotal(row)) }}</td>
-                                            <td class="budget-variance-cell {{ budgetVarianceTone(budgetYearVariance(row)) }}">
-                                              <strong>{{ formatBudgetSignedCurrency(budgetYearVariance(row)) }}</strong>
-                                              <small>{{ formatBudgetPercent(budgetYearVariance(row), budgetYearBaselineTotal(row)) }}</small>
-                                            </td>
-                                            <td>{{ formatBudgetCurrency(budgetYearCommittedTotal(row)) }}</td>
-                                            <td>{{ formatBudgetCurrency(budgetYearActualTotal(row)) }}</td>
-                                            <td>{{ formatBudgetCurrency(budgetYearActualTotal(row) + budgetYearCommittedTotal(row)) }}</td>
-                                            <td class="budget-available-cell {{ budgetYearAvailableTotal(row) < 0 ? 'red' : 'green' }}">{{ formatBudgetCurrency(budgetYearAvailableTotal(row)) }}</td>
-                                          </tr>
-                                        }
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                </article>
-
-                                @if (year) {
-                                  <article class="budget-section budget-project-panel">
-                                    <div class="budget-project-head">
+                              <section class="budget-workspace budget-design-workspace" aria-label="Budget">
+                                <article class="budget-design-card">
+                                  <header class="budget-design-card-head">
+                                    <div class="budget-design-title">
+                                      <span class="budget-design-title-icon" aria-hidden="true">
+                                        <span [pmConsoleIcon]="iconName('dollar')"></span>
+                                      </span>
                                       <div>
-                                        <h3>Project Budget <span class="icon budget-info-icon" aria-hidden="true"><i data-lucide="info"></i></span></h3>
-                                        <p>Manage the selected financial year here. Baseline and forecast are the plan breakdown; actual and committed values are updated as the project runs.</p>
+                                        <h3>Budget Overview</h3>
+                                        <p>Approved budget summary for the project. These totals give the PM a stable reference while the project budget is managed below.</p>
                                       </div>
-                                      <div class="budget-project-tools">
-                                        <label class="budget-fy-select">
-                                          <span>FY</span>
-                                          <select [value]="plan.selectedFy" (change)="selectBudgetFy($any($event.target).value)" aria-label="Current fiscal year">
-                                            @for (option of budgetPlanConfig.fyOptions; track option) {
-                                              <option [value]="option" [selected]="option === plan.selectedFy" [disabled]="!budgetPlanHasFy(plan, option)">{{ option }}</option>
-                                            }
-                                          </select>
-                                        </label>
-                                        <button class="budget-rules-link" data-budget-rules-trigger type="button" (click)="toggleBudgetRules()">{{ budgetPlanConfig.ruleButtonLabel }}</button>
-                                      </div>
-                                      @if (isBudgetRulesOpen) {
-                                        <div class="budget-rules-popover budget-rules-popover-compact" data-budget-rules-popover>
-                                          <div class="budget-rules-popover-head">
-                                            <strong>{{ budgetPlanConfig.ruleButtonLabel }}</strong>
-                                            <small>How budget values roll up and when they become locked.</small>
-                                          </div>
-                                          <div class="budget-rules-list">
-                                            @for (rule of budgetPlanConfig.rules; track rule.title) {
-                                              <article class="budget-rule-entry">
-                                                <strong>{{ rule.title }}</strong>
-                                                <p>{{ rule.body }}</p>
-                                              </article>
-                                            }
-                                          </div>
-                                        </div>
+                                    </div>
+                                  </header>
+
+                                  <section class="budget-overview-block" aria-label="Budget overview">
+                                    <div class="budget-overview-summary-grid" aria-label="Budget overview totals">
+                                      @for (metric of activeBudgetOverviewMetrics; track metric.label) {
+                                        <article class="budget-summary-cell {{ metric.tone }}">
+                                          <span>{{ metric.label }}</span>
+                                          <strong>{{ metric.value }}</strong>
+                                          <small>{{ metric.helper }}</small>
+                                        </article>
                                       }
                                     </div>
 
-                                    <div class="budget-tab-row" role="tablist" aria-label="Budget detail views">
-                                      <button type="button" role="tab" [class.is-active]="activeBudgetSubtab === 'project'" [attr.aria-selected]="activeBudgetSubtab === 'project'" (click)="selectBudgetTab('project')">Project Budget</button>
-                                      <button type="button" role="tab" [class.is-active]="activeBudgetSubtab === 'funding'" [attr.aria-selected]="activeBudgetSubtab === 'funding'" (click)="selectBudgetTab('funding')">Funding Sources <span>{{ year.fundingSources.length }}</span></button>
-                                      <button type="button" role="tab" [class.is-active]="activeBudgetSubtab === 'monthly'" [attr.aria-selected]="activeBudgetSubtab === 'monthly'" (click)="selectBudgetTab('monthly')">Monthly Budget</button>
+                                    <div class="budget-table-wrap budget-overview-table-wrap">
+                                      <table class="budget-table budget-overview-table" aria-label="Budget overview by fiscal year">
+                                        <thead>
+                                          <tr>
+                                            <th>FY</th>
+                                            <th>Budget</th>
+                                            <th>Forecast</th>
+                                            <th>Forecast Variance</th>
+                                            <th>Committed (Unspent)</th>
+                                            <th>Actual</th>
+                                            <th>Total Committed (C + A)</th>
+                                            <th>Available Budget</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          @for (row of plan.years; track row.id) {
+                                            <tr [class.is-selected]="row.fy === plan.selectedFy">
+                                              <td>{{ row.fy }}</td>
+                                              <td>{{ formatBudgetCurrency(budgetYearBaselineTotal(row)) }}</td>
+                                              <td>{{ formatBudgetCurrency(budgetYearForecastTotal(row)) }}</td>
+                                              <td class="budget-variance-cell {{ budgetVarianceTone(budgetYearVariance(row)) }}">
+                                                <strong>{{ formatBudgetSignedCurrency(budgetYearVariance(row)) }}</strong>
+                                                <small>{{ formatBudgetPercent(budgetYearVariance(row), budgetYearBaselineTotal(row)) }}</small>
+                                              </td>
+                                              <td>{{ formatBudgetCurrency(budgetYearCommittedTotal(row)) }}</td>
+                                              <td>{{ formatBudgetCurrency(budgetYearActualTotal(row)) }}</td>
+                                              <td>{{ formatBudgetCurrency(budgetYearActualTotal(row) + budgetYearCommittedTotal(row)) }}</td>
+                                              <td class="budget-available-cell {{ budgetYearAvailableTotal(row) < 0 ? 'red' : 'green' }}">{{ formatBudgetCurrency(budgetYearAvailableTotal(row)) }}</td>
+                                            </tr>
+                                          }
+                                        </tbody>
+                                      </table>
                                     </div>
 
-                                    @if (activeBudgetSubtab === 'project') {
-                                      <div class="budget-tab-panel">
-                                        <div class="budget-inline-note">
-                                          <span class="icon" aria-hidden="true"><i data-lucide="info"></i></span>
-                                          <span>The Financial Years shown here are based on the dates in the Schedule tab.</span>
-                                          <strong>{{ plan.lastSavedLabel }}</strong>
+                                    <button class="budget-view-less" type="button" aria-expanded="true">
+                                      <span pmConsoleIcon="chevron-up" aria-hidden="true"></span>
+                                      <strong>View less</strong>
+                                      <span>(Advanced governance fields)</span>
+                                    </button>
+                                  </section>
+
+                                  @if (year) {
+                                    <section class="budget-detail-card" aria-label="Project budget details">
+                                      <header class="budget-project-head">
+                                        <div>
+                                          <h3>Project Budget <span class="icon budget-info-icon" aria-hidden="true"><i data-lucide="info"></i></span></h3>
+                                          <p>Manage the selected financial year here. Baseline and forecast are the plan breakdown; actual and committed values are updated as the project runs.</p>
                                         </div>
-                                        <div class="budget-table-wrap">
-                                          <table class="budget-table budget-project-table" aria-label="Project budget for selected fiscal year">
-                                            <thead>
-                                              <tr>
-                                                <th></th>
-                                                <th>FY Baseline</th>
-                                                <th>FY Forecast</th>
-                                                <th>Forecast Variance</th>
-                                                <th>Committed</th>
-                                                <th>YTD Baseline</th>
-                                                <th>YTD Actual</th>
-                                                <th>Available Budget</th>
-                                              </tr>
-                                            </thead>
-                                            <tbody>
-                                              @for (row of activeBudgetBreakdownRows; track row.stream) {
-                                                <tr [class.is-total]="row.stream === 'Total'">
-                                                  <th scope="row">{{ row.stream }}</th>
-                                                  @if (row.stream === 'Total') {
-                                                    <td>{{ formatBudgetCurrency(row.baseline) }}</td>
-                                                    <td>{{ formatBudgetCurrency(row.forecast) }}</td>
-                                                    <td class="budget-variance-cell {{ budgetVarianceTone(budgetStreamVariance(row)) }}">
-                                                      <strong>{{ formatBudgetSignedCurrency(budgetStreamVariance(row)) }}</strong>
-                                                      <small>{{ formatBudgetPercent(budgetStreamVariance(row), row.baseline) }}</small>
-                                                    </td>
-                                                    <td>{{ formatBudgetCurrency(row.committed) }}</td>
-                                                    <td>{{ formatBudgetCurrency(row.baseline) }}</td>
-                                                    <td>{{ formatBudgetCurrency(row.actual) }}</td>
-                                                    <td class="budget-available-cell {{ budgetStreamAvailable(row) < 0 ? 'red' : 'green' }}">{{ formatBudgetCurrency(budgetStreamAvailable(row)) }}</td>
-                                                  } @else {
-                                                    <td><label class="budget-money-input"><span>SAR</span><input type="number" min="0" step="100" [value]="budgetBreakdownInputValue(row, 'baseline')" (input)="updateBudgetBreakdown(row.stream, 'baseline', $any($event.target).value)" [attr.aria-label]="row.stream + ' FY baseline'" /></label></td>
-                                                    <td><label class="budget-money-input"><span>SAR</span><input type="number" min="0" step="100" [value]="budgetBreakdownInputValue(row, 'forecast')" (input)="updateBudgetBreakdown(row.stream, 'forecast', $any($event.target).value)" [attr.aria-label]="row.stream + ' FY forecast'" /></label></td>
-                                                    <td class="budget-variance-cell {{ budgetVarianceTone(budgetStreamVariance(row)) }}">
-                                                      <strong>{{ formatBudgetSignedCurrency(budgetStreamVariance(row)) }}</strong>
-                                                      <small>{{ formatBudgetPercent(budgetStreamVariance(row), row.baseline) }}</small>
-                                                    </td>
-                                                    <td><label class="budget-money-input"><span>SAR</span><input type="number" min="0" step="100" [value]="budgetBreakdownInputValue(row, 'committed')" (input)="updateBudgetBreakdown(row.stream, 'committed', $any($event.target).value)" [attr.aria-label]="row.stream + ' committed'" /></label></td>
-                                                    <td>{{ formatBudgetCurrency(row.baseline) }}</td>
-                                                    <td><label class="budget-money-input"><span>SAR</span><input type="number" min="0" step="100" [value]="budgetBreakdownInputValue(row, 'actual')" (input)="updateBudgetBreakdown(row.stream, 'actual', $any($event.target).value)" [attr.aria-label]="row.stream + ' YTD actual'" /></label></td>
-                                                    <td class="budget-available-cell {{ budgetStreamAvailable(row) < 0 ? 'red' : 'green' }}">{{ formatBudgetCurrency(budgetStreamAvailable(row)) }}</td>
-                                                  }
-                                                </tr>
+                                        <div class="budget-project-tools">
+                                          <label class="budget-fy-select">
+                                            <span>FY</span>
+                                            <select [value]="plan.selectedFy" (change)="selectBudgetFy($any($event.target).value)" aria-label="Current fiscal year">
+                                              @for (option of budgetPlanConfig.fyOptions; track option) {
+                                                <option [value]="option" [selected]="option === plan.selectedFy" [disabled]="!budgetPlanHasFy(plan, option)">{{ option }}</option>
                                               }
-                                            </tbody>
-                                          </table>
+                                            </select>
+                                          </label>
+                                          <button class="budget-rules-link" data-budget-rules-trigger type="button" (click)="toggleBudgetRules()">{{ budgetPlanConfig.ruleButtonLabel }}</button>
                                         </div>
-                                        <div class="budget-table-footer">
-                                          <span>Changes stay visible immediately. Use this save action to make the section feel committed before submitting the plan.</span>
-                                          <button class="budget-primary-action" type="button" (click)="saveBudgetChanges()">Save budget changes</button>
-                                        </div>
-                                      </div>
-                                    } @else if (activeBudgetSubtab === 'funding') {
-                                      <div class="budget-tab-panel">
-                                        <div class="budget-subview-head">
-                                          <div>
-                                            <strong>{{ budgetPlanConfig.fundingTitle }}</strong>
-                                            <small class="{{ budgetFundingCoverageTone(year) }}">{{ budgetFundingCoverageLabel(year) }}</small>
+                                        @if (isBudgetRulesOpen) {
+                                          <div class="budget-rules-popover budget-rules-popover-compact" data-budget-rules-popover>
+                                            <div class="budget-rules-popover-head">
+                                              <strong>{{ budgetPlanConfig.ruleButtonLabel }}</strong>
+                                              <small>How budget values roll up and when they become locked.</small>
+                                            </div>
+                                            <div class="budget-rules-list">
+                                              @for (rule of budgetPlanConfig.rules; track rule.title) {
+                                                <article class="budget-rule-entry">
+                                                  <strong>{{ rule.title }}</strong>
+                                                  <p>{{ rule.body }}</p>
+                                                </article>
+                                              }
+                                            </div>
                                           </div>
-                                          <button class="budget-primary-action" type="button" (click)="openBudgetFundingDrawer()">Add funding source</button>
-                                        </div>
-                                        @if (year.fundingSources.length) {
-                                          <div class="budget-table-wrap">
-                                            <table class="budget-table budget-secondary-table" aria-label="Funding sources">
+                                        }
+                                      </header>
+
+                                      <div class="budget-tab-row" role="tablist" aria-label="Budget detail views">
+                                        <button type="button" role="tab" [class.is-active]="activeBudgetSubtab === 'project'" [attr.aria-selected]="activeBudgetSubtab === 'project'" (click)="selectBudgetTab('project')">Project Budget</button>
+                                        <button type="button" role="tab" [class.is-active]="activeBudgetSubtab === 'funding'" [attr.aria-selected]="activeBudgetSubtab === 'funding'" (click)="selectBudgetTab('funding')">Funding Sources <span>{{ year.fundingSources.length }}</span></button>
+                                        <button type="button" role="tab" [class.is-active]="activeBudgetSubtab === 'monthly'" [attr.aria-selected]="activeBudgetSubtab === 'monthly'" (click)="selectBudgetTab('monthly')">Monthly Budget</button>
+                                      </div>
+
+                                      @if (activeBudgetSubtab === 'project') {
+                                        <div class="budget-tab-panel">
+                                          <div class="budget-subview-head">
+                                            <div>
+                                              <strong>Project budget</strong>
+                                              <small>Baseline, forecast, actual, committed, and available values for {{ year.fy }}</small>
+                                            </div>
+                                            <button class="budget-primary-action" type="button" (click)="saveBudgetChanges()">Save budget changes</button>
+                                          </div>
+                                          <div class="budget-table-wrap budget-detail-table-wrap">
+                                            <table class="budget-table budget-project-table" aria-label="Project budget for selected fiscal year">
                                               <thead>
                                                 <tr>
-                                                  <th>Source</th>
-                                                  <th>Type</th>
-                                                  <th>Amount</th>
-                                                  <th>Status</th>
-                                                  <th>Notes</th>
+                                                  <th>Stream</th>
+                                                  <th>FY Baseline</th>
+                                                  <th>FY Forecast</th>
+                                                  <th>Forecast Variance</th>
+                                                  <th>Committed</th>
+                                                  <th>YTD Baseline</th>
+                                                  <th>YTD Actual</th>
+                                                  <th>Available Budget</th>
                                                 </tr>
                                               </thead>
                                               <tbody>
-                                                @for (row of year.fundingSources; track row.id) {
-                                                  <tr>
-                                                    <td>{{ row.source }}</td>
-                                                    <td>{{ row.type }}</td>
-                                                    <td>{{ formatBudgetCurrency(row.amount) }}</td>
-                                                    <td><span class="dependency-register-pill {{ row.status === 'Confirmed' ? 'indigo' : row.status === 'Pending approval' ? 'amber' : 'neutral' }}">{{ row.status }}</span></td>
-                                                    <td>{{ row.notes || '-' }}</td>
+                                                @for (row of activeBudgetBreakdownRows; track row.stream) {
+                                                  <tr [class.is-total]="row.stream === 'Total'">
+                                                    <th scope="row">{{ row.stream }}</th>
+                                                    @if (row.stream === 'Total') {
+                                                      <td>{{ formatBudgetCurrency(row.baseline) }}</td>
+                                                      <td>{{ formatBudgetCurrency(row.forecast) }}</td>
+                                                      <td class="budget-variance-cell {{ budgetVarianceTone(budgetStreamVariance(row)) }}">
+                                                        <strong>{{ formatBudgetSignedCurrency(budgetStreamVariance(row)) }}</strong>
+                                                        <small>{{ formatBudgetPercent(budgetStreamVariance(row), row.baseline) }}</small>
+                                                      </td>
+                                                      <td>{{ formatBudgetCurrency(row.committed) }}</td>
+                                                      <td>{{ formatBudgetCurrency(row.baseline) }}</td>
+                                                      <td>{{ formatBudgetCurrency(row.actual) }}</td>
+                                                      <td class="budget-available-cell {{ budgetStreamAvailable(row) < 0 ? 'red' : 'green' }}">{{ formatBudgetCurrency(budgetStreamAvailable(row)) }}</td>
+                                                    } @else {
+                                                      <td><label class="budget-money-input"><span>SAR</span><input type="number" min="0" step="100" [value]="budgetBreakdownInputValue(row, 'baseline')" (input)="updateBudgetBreakdown(row.stream, 'baseline', $any($event.target).value)" [attr.aria-label]="row.stream + ' FY baseline'" /></label></td>
+                                                      <td><label class="budget-money-input"><span>SAR</span><input type="number" min="0" step="100" [value]="budgetBreakdownInputValue(row, 'forecast')" (input)="updateBudgetBreakdown(row.stream, 'forecast', $any($event.target).value)" [attr.aria-label]="row.stream + ' FY forecast'" /></label></td>
+                                                      <td class="budget-variance-cell {{ budgetVarianceTone(budgetStreamVariance(row)) }}">
+                                                        <strong>{{ formatBudgetSignedCurrency(budgetStreamVariance(row)) }}</strong>
+                                                        <small>{{ formatBudgetPercent(budgetStreamVariance(row), row.baseline) }}</small>
+                                                      </td>
+                                                      <td><label class="budget-money-input"><span>SAR</span><input type="number" min="0" step="100" [value]="budgetBreakdownInputValue(row, 'committed')" (input)="updateBudgetBreakdown(row.stream, 'committed', $any($event.target).value)" [attr.aria-label]="row.stream + ' committed'" /></label></td>
+                                                      <td>{{ formatBudgetCurrency(row.baseline) }}</td>
+                                                      <td><label class="budget-money-input"><span>SAR</span><input type="number" min="0" step="100" [value]="budgetBreakdownInputValue(row, 'actual')" (input)="updateBudgetBreakdown(row.stream, 'actual', $any($event.target).value)" [attr.aria-label]="row.stream + ' YTD actual'" /></label></td>
+                                                      <td class="budget-available-cell {{ budgetStreamAvailable(row) < 0 ? 'red' : 'green' }}">{{ formatBudgetCurrency(budgetStreamAvailable(row)) }}</td>
+                                                    }
                                                   </tr>
                                                 }
                                               </tbody>
                                             </table>
                                           </div>
-                                        } @else {
-                                          <div class="budget-quiet-empty">
-                                            <strong>No funding sources added</strong>
-                                            <span>Add a funding source only when finance needs the FY baseline traced back to an allocation line.</span>
-                                          </div>
-                                        }
-                                      </div>
-                                    } @else {
-                                      <div class="budget-tab-panel">
-                                        <div class="budget-subview-head">
-                                          <div>
-                                            <strong>{{ budgetPlanConfig.monthlyTitle }}</strong>
-                                            <small>{{ budgetMonthlyCountLabel(year) }} for {{ year.fy }}</small>
-                                          </div>
-                                          <button class="budget-primary-action" type="button" (click)="openBudgetMonthlyDrawer()">Edit monthly values</button>
                                         </div>
-                                        <div class="budget-table-wrap budget-monthly-table-wrap">
-                                          <table class="budget-table budget-monthly-table" aria-label="Monthly budget for selected fiscal year">
-                                            <thead>
-                                              <tr>
-                                                <th>Month</th>
-                                                <th>Budget</th>
-                                                <th>Forecast</th>
-                                                <th>Committed</th>
-                                                <th>Actual</th>
-                                                <th>Actual Variance</th>
-                                                <th>Available Budget</th>
-                                              </tr>
-                                            </thead>
-                                            <tbody>
-                                              @for (row of year.monthlyRows; track row.id) {
+                                      } @else if (activeBudgetSubtab === 'funding') {
+                                        <div class="budget-tab-panel">
+                                          <div class="budget-subview-head">
+                                            <div>
+                                              <strong>{{ budgetPlanConfig.fundingTitle }}</strong>
+                                              <small [ngClass]="budgetFundingCoverageTone(year)">{{ budgetFundingCoverageLabel(year) }}</small>
+                                            </div>
+                                            <button class="budget-primary-action" type="button" (click)="openBudgetFundingDrawer()">Add funding source</button>
+                                          </div>
+                                          @if (year.fundingSources.length) {
+                                            <div class="budget-table-wrap budget-detail-table-wrap">
+                                              <table class="budget-table budget-secondary-table" aria-label="Funding sources">
+                                                <thead>
+                                                  <tr>
+                                                    <th>Source</th>
+                                                    <th>Type</th>
+                                                    <th>Amount</th>
+                                                    <th>Status</th>
+                                                    <th>Notes</th>
+                                                  </tr>
+                                                </thead>
+                                                <tbody>
+                                                  @for (row of year.fundingSources; track row.id) {
+                                                    <tr>
+                                                      <td>{{ row.source }}</td>
+                                                      <td>{{ row.type }}</td>
+                                                      <td>{{ formatBudgetCurrency(row.amount) }}</td>
+                                                      <td><span [pmConsoleStatusPill]="row.status" baseClass="dependency-register-pill" [tone]="row.status === 'Confirmed' ? 'indigo' : row.status === 'Pending approval' ? 'amber' : 'neutral'"></span></td>
+                                                      <td>{{ row.notes || '-' }}</td>
+                                                    </tr>
+                                                  }
+                                                </tbody>
+                                              </table>
+                                            </div>
+                                          } @else {
+                                            <div class="budget-quiet-empty">
+                                              <strong>No funding sources added</strong>
+                                              <span>Add a funding source only when finance needs the FY baseline traced back to an allocation line.</span>
+                                            </div>
+                                          }
+                                        </div>
+                                      } @else {
+                                        <div class="budget-tab-panel">
+                                          <div class="budget-subview-head">
+                                            <div>
+                                              <strong>{{ budgetPlanConfig.monthlyTitle }}</strong>
+                                              <small>{{ budgetMonthlyCountLabel(year) }} for {{ year.fy }}</small>
+                                            </div>
+                                            <button class="budget-primary-action" type="button" (click)="openBudgetMonthlyDrawer()">Edit monthly values</button>
+                                          </div>
+                                          <div class="budget-table-wrap budget-detail-table-wrap budget-monthly-table-wrap">
+                                            <table class="budget-table budget-monthly-table" aria-label="Monthly budget for selected fiscal year">
+                                              <thead>
                                                 <tr>
-                                                  <td>{{ row.month }}</td>
-                                                  <td>{{ formatBudgetCurrency(budgetMonthlyTotal(row, 'budget')) }}</td>
-                                                  <td>{{ formatBudgetCurrency(budgetMonthlyTotal(row, 'forecast')) }}</td>
-                                                  <td>{{ formatBudgetCurrency(budgetMonthlyTotal(row, 'committed')) }}</td>
-                                                  <td>{{ formatBudgetCurrency(budgetMonthlyTotal(row, 'actual')) }}</td>
-                                                  <td class="budget-variance-cell {{ budgetVarianceTone(budgetMonthlyActualVariance(row)) }}">
-                                                    <strong>{{ formatBudgetSignedCurrency(budgetMonthlyActualVariance(row)) }}</strong>
-                                                    <small>{{ formatBudgetPercent(budgetMonthlyActualVariance(row), budgetMonthlyTotal(row, 'forecast')) }}</small>
-                                                  </td>
-                                                  <td class="budget-available-cell {{ budgetMonthlyAvailable(row) < 0 ? 'red' : 'green' }}">{{ formatBudgetCurrency(budgetMonthlyAvailable(row)) }}</td>
+                                                  <th>Month</th>
+                                                  <th>Budget</th>
+                                                  <th>Forecast</th>
+                                                  <th>Committed</th>
+                                                  <th>Actual</th>
+                                                  <th>Actual Variance</th>
+                                                  <th>Available Budget</th>
                                                 </tr>
-                                              }
-                                            </tbody>
-                                          </table>
-                                        </div>
-                                      </div>
-                                    }
-                                  </article>
-                                }
-                              </section>
-                            } @else if (projectPlanActiveSection === 'Schedule & Scope') {
-                              <section class="schedule-scope-workspace" aria-label="Schedule and scope workspace">
-                                <article class="schedule-scope-overview-card">
-                                  <div class="schedule-scope-overview-head">
-                                    <div>
-                                      <span class="schedule-scope-section-eyebrow">Overview</span>
-                                      <h3>Schedule and scope baseline</h3>
-                                      <p>Approved dates, current forecast, milestone checkpoints, and the core scope statement in one place.</p>
-                                    </div>
-                                    <div class="schedule-scope-overview-summary" aria-label="Schedule and scope summary">
-                                      <span>
-                                        <strong>{{ scheduleScopeDateRange(scheduleScopeState.baselineStart, scheduleScopeState.baselineEnd) }}</strong>
-                                        <small>Baseline</small>
-                                      </span>
-                                      <span>
-                                        <strong>{{ scheduleScopeForecastShiftLabel }}</strong>
-                                        <small>Forecast shift</small>
-                                      </span>
-                                      <span>
-                                        <strong>{{ scheduleScopeCountLabel(scheduleMilestoneRows.length, 'milestone') }}</strong>
-                                        <small>Checkpoints</small>
-                                      </span>
-                                    </div>
-                                  </div>
-
-                                  <div class="schedule-scope-form">
-                                    <section class="schedule-scope-form-section" aria-label="Timeline anchors">
-                                      <div class="schedule-scope-form-copy">
-                                        <span>Timeline</span>
-                                        <p>Compare the approved baseline with the latest forecast.</p>
-                                      </div>
-                                      <div class="schedule-date-rows">
-                                        <div class="schedule-date-row">
-                                          <span class="schedule-date-row-label">Baseline</span>
-                                          <label class="matrix-field">
-                                            <span class="matrix-field-label">Start date</span>
-                                            <input type="date" [value]="scheduleScopeState.baselineStart" (input)="updateScheduleScopeField('baselineStart', $any($event.target).value)" />
-                                          </label>
-                                          <label class="matrix-field">
-                                            <span class="matrix-field-label">End date</span>
-                                            <input type="date" [value]="scheduleScopeState.baselineEnd" (input)="updateScheduleScopeField('baselineEnd', $any($event.target).value)" />
-                                          </label>
-                                        </div>
-                                        <div class="schedule-date-row">
-                                          <span class="schedule-date-row-label">Forecast</span>
-                                          <label class="matrix-field">
-                                            <span class="matrix-field-label">Start date</span>
-                                            <input type="date" [value]="scheduleScopeState.forecastStart" (input)="updateScheduleScopeField('forecastStart', $any($event.target).value)" />
-                                          </label>
-                                          <label class="matrix-field">
-                                            <span class="matrix-field-label">End date</span>
-                                            <input type="date" [value]="scheduleScopeState.forecastEnd" (input)="updateScheduleScopeField('forecastEnd', $any($event.target).value)" />
-                                          </label>
-                                        </div>
-                                      </div>
-                                    </section>
-
-                                    <section class="schedule-scope-form-section schedule-scope-form-section-scope" aria-label="Scope boundaries">
-                                      <div class="schedule-scope-form-copy">
-                                        <span>Scope</span>
-                                        <p>The work included in the approved planning baseline.</p>
-                                      </div>
-                                      <label class="matrix-field wide schedule-scope-narrative-field">
-                                        <span class="matrix-field-label">In Scope</span>
-                                        <textarea [value]="scheduleScopeState.inScope" (input)="updateScheduleScopeField('inScope', $any($event.target).value)"></textarea>
-                                      </label>
-                                    </section>
-
-                                    <section class="schedule-scope-form-section schedule-scope-form-section-milestones" aria-label="Milestones">
-                                      <div class="schedule-scope-form-copy schedule-scope-form-copy-row">
-                                        <div>
-                                          <span>Milestones</span>
-                                          <p>Key checkpoints that anchor the plan and reporting cycle.</p>
-                                        </div>
-                                        <button class="schedule-inline-action" type="button" (click)="openScheduleMilestoneDrawer()">
-                                          <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>Add milestone
-                                        </button>
-                                      </div>
-                                      <div class="dependency-register-table-shell schedule-overview-table-shell">
-                                    <table class="dependency-register-table schedule-milestone-table" aria-label="Milestones">
-                                      <thead>
-                                        <tr>
-                                          <th>Milestone</th>
-                                          <th>Due date</th>
-                                          <th>Owner</th>
-                                          <th>Priority</th>
-                                          <th aria-label="Actions"></th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        @for (row of scheduleMilestoneRows; track row.id) {
-                                          <tr>
-                                            <td class="dependency-register-primary">
-                                              <strong>{{ row.milestone }}</strong>
-                                              <small>{{ row.note || 'No additional milestone note' }}</small>
-                                            </td>
-                                            <td>{{ scheduleScopeDateLabel(row.dueDate) }}</td>
-                                            <td>{{ row.owner || 'Owner to confirm' }}</td>
-                                            <td><span class="schedule-priority-pill {{ scheduleMilestonePriorityTone(row.priority) }}">{{ row.priority || 'TBD' }}</span></td>
-                                            <td class="schedule-table-actions">
-                                              <button class="schedule-table-action" type="button" (click)="openScheduleMilestoneDrawer(row)" [attr.aria-label]="'Edit ' + row.milestone">
-                                                <span class="icon" aria-hidden="true"><i data-lucide="pencil"></i></span>
-                                              </button>
-                                              <button class="schedule-table-action danger" type="button" (click)="removeScheduleMilestone(row.id)" [attr.aria-label]="'Delete ' + row.milestone">
-                                                <span class="icon" aria-hidden="true"><i data-lucide="trash-2"></i></span>
-                                              </button>
-                                            </td>
-                                          </tr>
-                                        }
-                                      </tbody>
-                                        </table>
-                                      </div>
-                                    </section>
-                                  </div>
-                                </article>
-
-                                @if (activeProjectPlanHiddenFields.length) {
-                                  <button class="matrix-show-fields schedule-scope-show-fields" [class.is-expanded]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection)" type="button" (click)="toggleProjectPlanFieldSection(projectPlanActiveSection)" [attr.aria-expanded]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection)">
-                                    <span class="matrix-show-fields-copy"><strong>{{ activeProjectPlanHiddenFieldButtonLabel }} ({{ activeProjectPlanHiddenFields.length }})</strong><small>{{ activeProjectPlanHiddenFieldPreview }}</small></span>
-                                    <span class="matrix-show-fields-indicator schedule-scope-fields-indicator" aria-hidden="true">{{ isProjectPlanFieldSectionExpanded(projectPlanActiveSection) ? '-' : '+' }}</span>
-                                  </button>
-                                  @if (isProjectPlanFieldSectionExpanded(projectPlanActiveSection)) {
-                                    <section class="schedule-scope-additional matrix-hidden-fields is-expanded" aria-label="Additional schedule and scope fields">
-                                      <div class="schedule-scope-additional-head">
-                                        <div>
-                                          <span class="schedule-scope-section-eyebrow">Additional fields</span>
-                                          <h3>Planning detail</h3>
-                                          <p>Exclusions, products, management artefacts, and WBS context for deeper planning reviews.</p>
-                                        </div>
-                                      </div>
-
-                                      <article class="schedule-scope-detail-form-card">
-                                        <div class="schedule-scope-detail-form">
-                                          <label class="matrix-field matrix-field-select">
-                                            <span class="matrix-field-label">Stages</span>
-                                            <span class="matrix-select-wrap">
-                                              <select [value]="projectPlanStage" aria-label="Stages">
-                                                <option value="Initiation">Initiation</option>
-                                                <option value="Planning">Planning</option>
-                                                <option value="Execution">Execution</option>
-                                                <option value="Closure">Closure</option>
-                                              </select>
-                                              <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                                            </span>
-                                          </label>
-                                          <label class="matrix-field matrix-field-textarea wide schedule-scope-narrative-field">
-                                            <span class="matrix-field-label">Out of Scope</span>
-                                            <textarea [value]="scheduleScopeState.outOfScope" (input)="updateScheduleScopeField('outOfScope', $any($event.target).value)"></textarea>
-                                          </label>
-                                        </div>
-                                      </article>
-
-                                      <div class="schedule-scope-register-stack">
-                                    <article class="dependency-register-card schedule-product-register">
-                                      <div class="dependency-register-head">
-                                        <div class="dependency-register-copy">
-                                          <span class="dependency-register-eyebrow">End Product (Deliverables)</span>
-                                          <strong>End products</strong>
-                                          <small>Outputs that will be handed over or released by this project.</small>
-                                        </div>
-                                        <div class="dependency-register-actions">
-                                          <span class="dependency-register-count">{{ scheduleScopeCountLabel(scheduleEndProductRows.length, 'product') }}</span>
-                                          <button class="dependency-register-add" type="button" (click)="openScheduleEndProductDrawer()">
-                                            <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>Add end product
-                                          </button>
-                                        </div>
-                                      </div>
-                                      <div class="dependency-register-table-shell">
-                                        <table class="dependency-register-table schedule-product-table" aria-label="End products">
-                                          <thead>
-                                            <tr>
-                                              <th>Product</th>
-                                              <th>Type</th>
-                                              <th>Owner</th>
-                                              <th>Capability</th>
-                                              <th>Timeline</th>
-                                              <th>Budget</th>
-                                              <th>Dependencies</th>
-                                              <th aria-label="Actions"></th>
-                                            </tr>
-                                          </thead>
-                                          <tbody>
-                                            @for (row of scheduleEndProductRows; track row.id) {
-                                              <tr>
-                                                <td class="dependency-register-primary">
-                                                  <strong>{{ row.product }}</strong>
-                                                  <small>{{ row.description || 'No description added' }}</small>
-                                                </td>
-                                                <td>{{ row.category }}</td>
-                                                <td>{{ row.owner || 'Owner to confirm' }}</td>
-                                                <td>{{ row.capability || 'Capability to confirm' }}</td>
-                                                <td class="dependency-register-baseline">
-                                                  <strong>{{ scheduleScopeDateLabel(row.startDate) }}</strong>
-                                                  <small>{{ scheduleScopeDateLabel(row.endDate) }}</small>
-                                                </td>
-                                                <td>{{ scheduleScopeProductBudgetTotal(row.capex, row.opex) }}</td>
-                                                <td>{{ scheduleScopeDependencySummary(row) }}</td>
-                                                <td class="schedule-table-actions">
-                                                  <button class="schedule-table-action" type="button" (click)="openScheduleEndProductDrawer(row)" [attr.aria-label]="'Edit ' + row.product">
-                                                    <span class="icon" aria-hidden="true"><i data-lucide="pencil"></i></span>
-                                                  </button>
-                                                  <button class="schedule-table-action danger" type="button" (click)="removeScheduleEndProduct(row.id)" [attr.aria-label]="'Delete ' + row.product">
-                                                    <span class="icon" aria-hidden="true"><i data-lucide="trash-2"></i></span>
-                                                  </button>
-                                                </td>
-                                              </tr>
-                                            }
-                                          </tbody>
-                                        </table>
-                                      </div>
-                                    </article>
-
-                                    <article class="dependency-register-card schedule-product-register">
-                                      <div class="dependency-register-head">
-                                        <div class="dependency-register-copy">
-                                          <span class="dependency-register-eyebrow">Management Product</span>
-                                          <strong>Management products</strong>
-                                          <small>PM artefacts, approvals, and control products needed to govern the work.</small>
-                                        </div>
-                                        <div class="dependency-register-actions">
-                                          <span class="dependency-register-count">{{ scheduleScopeCountLabel(scheduleManagementProductRows.length, 'product') }}</span>
-                                          <button class="dependency-register-add" type="button" (click)="openScheduleManagementProductDrawer()">
-                                            <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>Add management product
-                                          </button>
-                                        </div>
-                                      </div>
-                                      <div class="dependency-register-table-shell">
-                                        <table class="dependency-register-table schedule-management-table" aria-label="Management products">
-                                          <thead>
-                                            <tr>
-                                              <th>Product</th>
-                                              <th>Category</th>
-                                              <th>Owner</th>
-                                              <th>Timeline</th>
-                                              <th>Budget</th>
-                                              <th aria-label="Actions"></th>
-                                            </tr>
-                                          </thead>
-                                          <tbody>
-                                            @for (row of scheduleManagementProductRows; track row.id) {
-                                              <tr>
-                                                <td class="dependency-register-primary">
-                                                  <strong>{{ row.product }}</strong>
-                                                  <small>{{ row.description || 'No description added' }}</small>
-                                                </td>
-                                                <td>{{ row.category }}</td>
-                                                <td>{{ row.owner || 'Owner to confirm' }}</td>
-                                                <td class="dependency-register-baseline">
-                                                  <strong>{{ scheduleScopeDateLabel(row.startDate) }}</strong>
-                                                  <small>{{ scheduleScopeDateLabel(row.endDate) }}</small>
-                                                </td>
-                                                <td>{{ scheduleScopeProductBudgetTotal(row.capex, row.opex) }}</td>
-                                                <td class="schedule-table-actions">
-                                                  <button class="schedule-table-action" type="button" (click)="openScheduleManagementProductDrawer(row)" [attr.aria-label]="'Edit ' + row.product">
-                                                    <span class="icon" aria-hidden="true"><i data-lucide="pencil"></i></span>
-                                                  </button>
-                                                  <button class="schedule-table-action danger" type="button" (click)="removeScheduleManagementProduct(row.id)" [attr.aria-label]="'Delete ' + row.product">
-                                                    <span class="icon" aria-hidden="true"><i data-lucide="trash-2"></i></span>
-                                                  </button>
-                                                </td>
-                                              </tr>
-                                            }
-                                          </tbody>
-                                        </table>
-                                      </div>
-                                    </article>
-                                  </div>
-
-                                  <article class="schedule-scope-wbs-card">
-                                    <div class="schedule-scope-wbs-head">
-                                      <div>
-                                        <span class="schedule-scope-section-eyebrow">Detailed WBS</span>
-                                        <h3>Work breakdown structure</h3>
-                                        <p>Task-level structure and ownership once products need delivery planning.</p>
-                                      </div>
-                                      <button class="schedule-scope-wbs-action" type="button" (click)="navigate('wbs')">
-                                        <span class="icon" aria-hidden="true"><i data-lucide="list-tree"></i></span>Open WBS workspace
-                                      </button>
-                                    </div>
-                                    <div class="schedule-scope-wbs-metrics">
-                                      <article><span>Tracked items</span><strong>{{ scheduleScopeCountLabel(wbsItems.length, 'WBS item') }}</strong></article>
-                                      <article><span>Current highlight</span><strong>{{ scheduleScopeWbsHighlights[0]?.title || 'Baselined project plan' }}</strong></article>
-                                    </div>
-                                    <div class="schedule-scope-wbs-preview">
-                                      @for (item of scheduleScopeWbsHighlights; track item.title) {
-                                        <div class="schedule-scope-wbs-row">
-                                          <div>
-                                            <strong>{{ item.title }}</strong>
-                                            <small>{{ item.owner }}</small>
+                                              </thead>
+                                              <tbody>
+                                                @for (row of year.monthlyRows; track row.id) {
+                                                  <tr>
+                                                    <td>{{ row.month }}</td>
+                                                    <td>{{ formatBudgetCurrency(budgetMonthlyTotal(row, 'budget')) }}</td>
+                                                    <td>{{ formatBudgetCurrency(budgetMonthlyTotal(row, 'forecast')) }}</td>
+                                                    <td>{{ formatBudgetCurrency(budgetMonthlyTotal(row, 'committed')) }}</td>
+                                                    <td>{{ formatBudgetCurrency(budgetMonthlyTotal(row, 'actual')) }}</td>
+                                                    <td class="budget-variance-cell {{ budgetVarianceTone(budgetMonthlyActualVariance(row)) }}">
+                                                      <strong>{{ formatBudgetSignedCurrency(budgetMonthlyActualVariance(row)) }}</strong>
+                                                      <small>{{ formatBudgetPercent(budgetMonthlyActualVariance(row), budgetMonthlyTotal(row, 'forecast')) }}</small>
+                                                    </td>
+                                                    <td class="budget-available-cell {{ budgetMonthlyAvailable(row) < 0 ? 'red' : 'green' }}">{{ formatBudgetCurrency(budgetMonthlyAvailable(row)) }}</td>
+                                                  </tr>
+                                                }
+                                              </tbody>
+                                            </table>
                                           </div>
-                                          <span class="schedule-scope-wbs-pill {{ item.tone }}">{{ item.progress }}</span>
                                         </div>
                                       }
-                                    </div>
-                                  </article>
                                     </section>
                                   }
-                                }
+                                </article>
+                              </section>
+                            } @else if (projectPlanActiveSection === 'Schedule & Scope') {
+                              <section class="schedule-scope-workspace schedule-scope-design-workspace" aria-label="Schedule and scope workspace">
+                                <app-pm-console-plan-table
+                                  title="Schedule and scope"
+                                  description="Approved dates, current forecast, milestone checkpoints, and the core scope statement in one place."
+                                  countLabel="0 links"
+                                  actionLabel="Manage WBS"
+                                  actionAriaLabel="Open WBS workspace"
+                                  [actionIconName]="iconName('settings')"
+                                  [iconName]="iconName('plan')"
+                                  panelClass="schedule-scope-design-card"
+                                  (action)="navigate('wbs')"
+                                >
+                                  <div class="schedule-scope-design-body">
+                                    <div class="schedule-scope-design-grid" aria-label="Forecast dates">
+                                      <label class="schedule-scope-design-field">
+                                        <span>Forecast start date</span>
+                                        <span class="schedule-scope-design-input schedule-scope-design-date">
+                                          <input
+                                            type="text"
+                                            [value]="scheduleScopeInputDate(scheduleScopeState.forecastStart)"
+                                            placeholder="DD/MM/YYYY"
+                                            inputmode="numeric"
+                                            autocomplete="off"
+                                            aria-label="Forecast start date"
+                                            (input)="updateScheduleScopeDateInput('forecastStart', $any($event.target).value)"
+                                          />
+                                          <span pmConsoleIcon="calendar" aria-hidden="true"></span>
+                                        </span>
+                                      </label>
+                                      <label class="schedule-scope-design-field">
+                                        <span>Forecast end date</span>
+                                        <span class="schedule-scope-design-input schedule-scope-design-date">
+                                          <input
+                                            type="text"
+                                            [value]="scheduleScopeInputDate(scheduleScopeState.forecastEnd)"
+                                            placeholder="DD/MM/YYYY"
+                                            inputmode="numeric"
+                                            autocomplete="off"
+                                            aria-label="Forecast end date"
+                                            (input)="updateScheduleScopeDateInput('forecastEnd', $any($event.target).value)"
+                                          />
+                                          <span pmConsoleIcon="calendar" aria-hidden="true"></span>
+                                        </span>
+                                      </label>
+                                    </div>
+
+                                    <label class="schedule-scope-design-field schedule-scope-design-field-wide">
+                                      <span>In Scope</span>
+                                      <span class="schedule-scope-design-input">
+                                        <input
+                                          type="text"
+                                          [value]="scheduleScopeState.inScope"
+                                          placeholder="Start typing"
+                                          aria-label="In Scope"
+                                          (input)="updateScheduleScopeField('inScope', $any($event.target).value)"
+                                        />
+                                      </span>
+                                    </label>
+
+                                    <section class="schedule-scope-design-section" aria-label="Milestones">
+                                      <div class="schedule-scope-design-section-head">
+                                        <h3>Milestones</h3>
+                                        <div class="schedule-scope-design-section-actions">
+                                          <span class="schedule-scope-design-count">0 links</span>
+                                          <button class="schedule-scope-design-add" type="button" (click)="openScheduleMilestoneDrawer()" aria-label="Add milestone">
+                                            <span pmConsoleIcon="plus" aria-hidden="true"></span>
+                                            Add Milestone
+                                          </button>
+                                        </div>
+                                      </div>
+                                      <div class="dependency-register-table-shell schedule-overview-table-shell schedule-scope-design-table-shell">
+                                        <table class="dependency-register-table schedule-milestone-table schedule-scope-design-table" aria-label="Milestones">
+                                          <thead>
+                                            <tr>
+                                              <th>Milestone</th>
+                                              <th>Due Date</th>
+                                              <th>Person Responsible</th>
+                                              <th>Milestone Priority</th>
+                                              <th>Actions</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            @for (row of scheduleMilestoneRows; track row.id) {
+                                              <tr class="plan-table-clickable-row" role="button" tabindex="0" [attr.aria-label]="'Open milestone details for ' + row.milestone" (click)="openScheduleMilestoneDrawer(row)" (keydown.enter)="openScheduleMilestoneDrawer(row)" (keydown.space)="$event.preventDefault(); openScheduleMilestoneDrawer(row)">
+                                                <td class="dependency-register-primary">
+                                                  <strong>{{ row.milestone }}</strong>
+                                                  <small>{{ row.note || 'No additional milestone note' }}</small>
+                                                </td>
+                                                <td>{{ scheduleScopeDateLabel(row.dueDate) }}</td>
+                                                <td>{{ row.owner || 'Owner to confirm' }}</td>
+                                                <td><span [pmConsoleStatusPill]="row.priority || 'TBD'" baseClass="schedule-priority-pill" [tone]="scheduleMilestonePriorityTone(row.priority)"></span></td>
+                                                <td class="schedule-table-actions">
+                                                  <button pmConsoleTableAction iconName="pencil" type="button" (click)="$event.stopPropagation(); openScheduleMilestoneDrawer(row)" [attr.aria-label]="'Edit ' + row.milestone"></button>
+                                                  <button pmConsoleTableAction iconName="trash-2" actionClass="schedule-table-action danger" type="button" (click)="$event.stopPropagation(); removeScheduleMilestone(row.id)" [attr.aria-label]="'Delete ' + row.milestone"></button>
+                                                </td>
+                                              </tr>
+                                            }
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    </section>
+
+                                    @if (activeProjectPlanHiddenFields.length) {
+                                      <button
+                                        class="schedule-scope-advanced-toggle"
+                                        [class.is-expanded]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection)"
+                                        type="button"
+                                        (click)="toggleProjectPlanFieldSection(projectPlanActiveSection)"
+                                        [attr.aria-expanded]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection)"
+                                      >
+                                        <span [pmConsoleIcon]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection) ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></span>
+                                        <span>
+                                          {{ isProjectPlanFieldSectionExpanded(projectPlanActiveSection) ? 'View less' : 'View more' }}
+                                          <small>(Advanced governance fields)</small>
+                                        </span>
+                                      </button>
+
+                                      @if (isProjectPlanFieldSectionExpanded(projectPlanActiveSection)) {
+                                        <div class="schedule-scope-advanced-content">
+                                          <label class="schedule-scope-design-field schedule-scope-design-field-wide">
+                                            <span>Out of Scope</span>
+                                            <span class="schedule-scope-design-input">
+                                              <input
+                                                type="text"
+                                                [value]="scheduleScopeState.outOfScope"
+                                                placeholder="Start typing"
+                                                aria-label="Out of Scope"
+                                                (input)="updateScheduleScopeField('outOfScope', $any($event.target).value)"
+                                              />
+                                            </span>
+                                          </label>
+
+                                          <section class="schedule-scope-design-section" aria-label="End products">
+                                            <div class="schedule-scope-design-section-head">
+                                              <h3>End Product</h3>
+                                              <div class="schedule-scope-design-section-actions">
+                                                <span class="schedule-scope-design-count">0 links</span>
+                                                <button class="schedule-scope-design-add" type="button" (click)="openScheduleEndProductDrawer()" aria-label="Add end product">
+                                                  <span pmConsoleIcon="plus" aria-hidden="true"></span>
+                                                  Add End Product
+                                                </button>
+                                              </div>
+                                            </div>
+                                            <div class="dependency-register-table-shell schedule-overview-table-shell schedule-scope-design-table-shell schedule-product-table-shell">
+                                              <table class="dependency-register-table schedule-product-table schedule-scope-design-table schedule-scope-design-product-table" aria-label="End products">
+                                                <thead>
+                                                  <tr>
+                                                    <th>Product</th>
+                                                    <th>Type</th>
+                                                    <th>Product Owner</th>
+                                                    <th>Capability</th>
+                                                    <th>Start Date</th>
+                                                    <th>End Date</th>
+                                                    <th>Budget</th>
+                                                    <th>PRED</th>
+                                                    <th>SUCCR</th>
+                                                    <th>Actions</th>
+                                                  </tr>
+                                                </thead>
+                                                <tbody>
+                                                  @for (row of scheduleEndProductRows; track row.id) {
+                                                    <tr class="plan-table-clickable-row" role="button" tabindex="0" [attr.aria-label]="'Open end product details for ' + row.product" (click)="openScheduleEndProductDrawer(row)" (keydown.enter)="openScheduleEndProductDrawer(row)" (keydown.space)="$event.preventDefault(); openScheduleEndProductDrawer(row)">
+                                                      <td class="dependency-register-primary"><strong>{{ row.product }}</strong></td>
+                                                      <td>{{ row.category }}</td>
+                                                      <td>{{ row.owner || 'Owner to confirm' }}</td>
+                                                      <td>{{ row.capability || '-' }}</td>
+                                                      <td>{{ scheduleScopeDateLabel(row.startDate) }}</td>
+                                                      <td>{{ scheduleScopeDateLabel(row.endDate) }}</td>
+                                                      <td>{{ scheduleScopeProductBudgetTotal(row.capex, row.opex) }}</td>
+                                                      <td>{{ row.predecessors.length }}</td>
+                                                      <td>{{ row.successors.length }}</td>
+                                                      <td class="schedule-table-actions">
+                                                        <button pmConsoleTableAction iconName="pencil" type="button" (click)="$event.stopPropagation(); openScheduleEndProductDrawer(row)" [attr.aria-label]="'Edit ' + row.product"></button>
+                                                        <button pmConsoleTableAction iconName="trash-2" actionClass="schedule-table-action danger" type="button" (click)="$event.stopPropagation(); removeScheduleEndProduct(row.id)" [attr.aria-label]="'Delete ' + row.product"></button>
+                                                      </td>
+                                                    </tr>
+                                                  }
+                                                </tbody>
+                                              </table>
+                                            </div>
+                                          </section>
+                                        </div>
+                                      }
+                                    }
+                                  </div>
+                                </app-pm-console-plan-table>
                               </section>
                             } @else if (projectPlanActiveSection === 'Benefits') {
                               @let register = activeBenefitPlan;
@@ -3621,24 +4597,19 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                   </div>
                                 </article>
 
-                                <article class="dependency-register-card benefit-register-card">
-                                  <div class="dependency-register-head">
-                                    <div class="dependency-register-copy">
-                                      <span class="dependency-register-eyebrow">{{ register.fieldName }} <small>Benefit tracking</small></span>
-                                      <strong>{{ register.title }}</strong>
-                                      <small>{{ register.description }}</small>
-                                    </div>
-                                    <div class="dependency-register-actions">
-                                      <span class="dependency-register-count">{{ benefitCountLabel(register) }}</span>
-                                      @if (register.rows.length) {
-                                        <button class="dependency-register-add" type="button" (click)="openBenefitDrawer()">
-                                          <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>{{ register.actionLabel }}
-                                        </button>
-                                      }
-                                    </div>
-                                  </div>
+                                @if (register.rows.length) {
+                                <app-pm-console-plan-table
+                                  [title]="register.title"
+                                  [eyebrow]="register.fieldName + ' · Benefit tracking'"
+                                  [description]="register.description"
+                                  [countLabel]="benefitCountLabel(register)"
+                                  [actionLabel]="register.actionLabel"
+                                  actionAriaLabel="Add benefit"
+                                  [iconName]="iconName('benefit')"
+                                  panelClass="benefit-register-card"
+                                  (action)="openBenefitDrawer()"
+                                >
 
-                                  @if (register.rows.length) {
                                     <div class="dependency-register-table-shell benefit-register-table-shell">
                                       <table class="dependency-register-table benefit-register-table" [attr.aria-label]="register.fieldName">
                                         <thead>
@@ -3669,42 +4640,304 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                         </tbody>
                                       </table>
                                     </div>
-                                  } @else {
-                                    <div class="dependency-empty-state benefit-empty-state">
-                                      <img src="./assets/project-card-line-art.svg" alt="" aria-hidden="true" />
-                                      <div class="dependency-empty-state-copy">
-                                        <strong>{{ register.emptyTitle }}</strong>
-                                        <p>{{ register.emptyBody }}</p>
-                                        <div class="benefit-empty-state-actions">
-                                          <button class="dependency-register-add" type="button" (click)="openBenefitDrawer()">
-                                            <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>Add first benefit
-                                          </button>
-                                          <span class="benefit-empty-state-note">Use the Benefit Agent banner above when you want help framing the first draft before you save it.</span>
+                                </app-pm-console-plan-table>
+                                } @else {
+                                  <app-pm-console-plan-empty-state
+                                    [title]="register.title"
+                                    [description]="register.description"
+                                    [countLabel]="benefitCountLabel(register)"
+                                    [actionLabel]="register.actionLabel"
+                                    [actionAriaLabel]="'Add first benefit'"
+                                    [iconName]="iconName('benefit')"
+                                    [emptyTitle]="register.emptyTitle"
+                                    [emptyBody]="register.emptyBody"
+                                    (action)="openBenefitDrawer()"
+                                  ></app-pm-console-plan-empty-state>
+                                }
+                              </section>
+                            } @else if (projectPlanActiveSection === 'Risk') {
+                              @let register = activeRiskPlan;
+                              <section class="dependency-register-stack risk-register-stack" aria-label="Risk register">
+                                @if (activeRiskProfile; as risk) {
+                                  <article class="risk-profile-shell" aria-label="Risk profile">
+                                    <header class="risk-profile-header">
+                                      <div class="risk-profile-title">
+                                        <button class="risk-profile-back" type="button" (click)="closeRiskProfile()" aria-label="Back to risk register">
+                                          <span pmConsoleIcon="chevron-left" aria-hidden="true"></span>
+                                        </button>
+                                        <div>
+                                          <span class="risk-profile-eyebrow">{{ risk.id }} · {{ risk.actualRating || 'Not rated' }}</span>
+                                          <h3>{{ risk.riskName }}</h3>
+                                          <small>Created on {{ riskDateLabel(risk.createdOn) }} · Owner {{ risk.owner }}</small>
                                         </div>
                                       </div>
+                                      <div class="risk-profile-actions">
+                                        <span [pmConsoleStatusPill]="risk.status" baseClass="dependency-register-pill" [tone]="riskStatusTone(risk.status)"></span>
+                                        <button class="risk-profile-secondary" type="button">View activity</button>
+                                        <button class="risk-profile-primary" type="button" (click)="saveRiskProfile()">Save</button>
+                                        <button class="risk-profile-primary" type="button" (click)="completeRiskAssessment(risk.id)">Complete assessment</button>
+                                      </div>
+                                    </header>
+
+                                    <div class="risk-profile-layout">
+                                      <nav class="risk-profile-nav" aria-label="Risk profile sections">
+                                        @for (tab of riskProfileTabs; track tab.id) {
+                                          <button type="button" [class.active]="activeRiskProfileTab === tab.id" (click)="setRiskProfileTab(tab.id)">
+                                            <span [pmConsoleIcon]="iconName(tab.icon)" aria-hidden="true"></span>
+                                            <span>{{ tab.label }}</span>
+                                          </button>
+                                        }
+                                      </nav>
+
+                                      <section class="risk-profile-panel">
+                                        @if (activeRiskProfileTab === 'identification') {
+                                          <div class="risk-profile-form-grid">
+                                            <app-pm-console-field label="Risk Status" type="select" [value]="risk.status" [options]="register.statusOptions" ariaLabel="Risk Status" fieldClass="risk-profile-field" (valueChange)="updateRiskProfileField('status', $event)" />
+                                            <app-pm-console-field label="Risk Name" type="textarea" [value]="risk.riskName" placeholder="Type risk name" ariaLabel="Risk Name" fieldClass="risk-profile-field" [mandatory]="true" [wide]="true" [maxLength]="500" (valueChange)="updateRiskProfileField('riskName', $event)" />
+                                            <app-pm-console-field label="Start Date" type="date" [value]="risk.startDate" ariaLabel="Start Date" fieldClass="risk-profile-field" [mandatory]="true" (valueChange)="updateRiskProfileField('startDate', $event)" />
+                                            <app-pm-console-field label="End Date" type="date" [value]="risk.endDate" ariaLabel="End Date" fieldClass="risk-profile-field" [mandatory]="true" (valueChange)="updateRiskProfileField('endDate', $event)" />
+                                            <app-pm-console-field label="Risk Description" type="textarea" [value]="risk.description" placeholder="Describe the risk" ariaLabel="Risk Description" fieldClass="risk-profile-field" [wide]="true" (valueChange)="updateRiskProfileField('description', $event)" />
+                                            <app-pm-console-field label="Risk Category" type="select" [value]="risk.riskCategory" [options]="register.categoryOptions" ariaLabel="Risk Category" fieldClass="risk-profile-field" [mandatory]="true" (valueChange)="updateRiskProfileField('riskCategory', $event)" />
+                                            <app-pm-console-field label="Strategic Risk" type="select" [value]="risk.strategicRisk" [options]="register.strategicRiskOptions" ariaLabel="Strategic Risk" fieldClass="risk-profile-field" (valueChange)="updateRiskProfileField('strategicRisk', $event)" />
+                                            <app-pm-console-field label="Risk Lead" type="select" [value]="risk.lead" [options]="register.ownerOptions" ariaLabel="Risk Lead" fieldClass="risk-profile-field" [mandatory]="true" (valueChange)="updateRiskProfileField('lead', $event)" />
+                                            <app-pm-console-field label="Risk Manager" type="select" [value]="risk.manager" [options]="register.ownerOptions" ariaLabel="Risk Manager" fieldClass="risk-profile-field" [mandatory]="true" (valueChange)="updateRiskProfileField('manager', $event)" />
+                                          </div>
+                                        } @else if (activeRiskProfileTab === 'analysis') {
+                                          <div class="risk-profile-analysis">
+                                            <div class="risk-profile-form-grid">
+                                              <app-pm-console-field label="Impacted Objective" type="select" [value]="risk.impactedObjective" [options]="register.impactedObjectiveOptions" ariaLabel="Impacted Objective" fieldClass="risk-profile-field" [wide]="true" (valueChange)="updateRiskProfileField('impactedObjective', $event)" />
+                                              <section class="risk-linked-strip wide" aria-label="Linked risks">
+                                                <span class="matrix-field-label">Linked risks</span>
+                                                <div>
+                                                  <span>Division risks <b>0</b></span>
+                                                  <span>Branch risks <b>0</b></span>
+                                                  <span>Section risks <b>0</b></span>
+                                                  <span>Project risks <b>{{ register.rows.length }}</b></span>
+                                                  <span>Program risks <b>0</b></span>
+                                                </div>
+                                              </section>
+                                              <app-pm-console-field label="Source" type="textarea" [value]="risk.source" placeholder="Add source" ariaLabel="Source" fieldClass="risk-profile-field" [wide]="true" (valueChange)="updateRiskProfileField('source', $event)" />
+                                              <app-pm-console-field label="Consequence" type="textarea" [value]="risk.consequence" placeholder="Add consequence" ariaLabel="Consequence" fieldClass="risk-profile-field" [wide]="true" (valueChange)="updateRiskProfileField('consequence', $event)" />
+                                              <section class="risk-radio-field wide" aria-label="Shared risk">
+                                                <span class="matrix-field-label">Is this a shared risk?</span>
+                                                <label><input type="radio" name="risk-shared-profile" [checked]="risk.sharedRisk" (change)="updateRiskProfileSharedRisk(true)" /> Yes</label>
+                                                <label><input type="radio" name="risk-shared-profile" [checked]="!risk.sharedRisk" (change)="updateRiskProfileSharedRisk(false)" /> No</label>
+                                              </section>
+                                            </div>
+
+                                            <section class="risk-control-card">
+                                              <header>
+                                                <div>
+                                                  <span class="risk-profile-section-eyebrow">Control</span>
+                                                  <strong>Current control view</strong>
+                                                </div>
+                                                <span class="dependency-register-count">{{ risk.overallControlEffectiveness }}</span>
+                                              </header>
+                                              <p>{{ risk.controlSummary || 'No control added yet.' }}</p>
+                                              <app-pm-console-field label="Control summary" type="textarea" [value]="risk.controlSummary" placeholder="Describe the control or assurance activity" ariaLabel="Control summary" fieldClass="risk-profile-field" [wide]="true" (valueChange)="updateRiskProfileField('controlSummary', $event)" />
+                                              <app-pm-console-field label="Overall Control Effectiveness" type="select" [value]="risk.overallControlEffectiveness" [options]="register.controlEffectivenessOptions" ariaLabel="Overall Control Effectiveness" fieldClass="risk-profile-field" (valueChange)="updateRiskProfileField('overallControlEffectiveness', $event)" />
+                                              <app-pm-console-field label="Comment" type="textarea" [value]="risk.analysisComment" placeholder="Add analysis comments" ariaLabel="Analysis comment" fieldClass="risk-profile-field" [wide]="true" (valueChange)="updateRiskProfileField('analysisComment', $event)" />
+                                            </section>
+
+                                            <div class="risk-rating-section">
+                                              <div class="risk-rating-summary">
+                                                <span class="risk-profile-section-eyebrow">Actual Risk Rating</span>
+                                                <strong>{{ risk.actualRating || '-' }}</strong>
+                                                <small>{{ risk.actualConsequence || '-' }} consequence · {{ risk.actualLikelihood || '-' }} likelihood</small>
+                                              </div>
+                                              <app-pm-console-risk-matrix
+                                                title="Actual risk rating"
+                                                description="Select the current consequence and likelihood."
+                                                [likelihood]="risk.actualLikelihood"
+                                                [consequence]="risk.actualConsequence"
+                                                (selectionChange)="updateRiskProfileMatrix('actual', $event)"
+                                              ></app-pm-console-risk-matrix>
+                                            </div>
+                                          </div>
+                                        } @else {
+                                          <div class="risk-profile-treatment">
+                                            <div class="risk-profile-form-grid">
+                                              <app-pm-console-field label="Treatment Approach" type="select" [value]="risk.treatmentApproach" [options]="register.treatmentApproachOptions" ariaLabel="Treatment Approach" fieldClass="risk-profile-field" [wide]="true" (valueChange)="updateRiskProfileField('treatmentApproach', $event)" />
+                                              <app-pm-console-field label="Treatment Type" type="select" [value]="risk.treatmentType" [options]="register.treatmentTypeOptions" ariaLabel="Treatment Type" fieldClass="risk-profile-field" (valueChange)="updateRiskProfileField('treatmentType', $event)" />
+                                              <app-pm-console-field label="Comment" type="textarea" [value]="risk.treatmentComment" placeholder="Add treatment comment" ariaLabel="Treatment comment" fieldClass="risk-profile-field" [wide]="true" (valueChange)="updateRiskProfileField('treatmentComment', $event)" />
+                                            </div>
+
+                                            <section class="risk-treatment-card">
+                                              <header>
+                                                <div>
+                                                  <span class="risk-profile-section-eyebrow">Treatment</span>
+                                                  <strong>{{ riskTreatmentCountLabel(risk.treatments) }}</strong>
+                                                </div>
+                                              </header>
+                                              <div class="risk-treatment-compose">
+                                                <app-pm-console-field label="Proposed Treatment" type="textarea" [value]="riskTreatmentDraft.treatment" placeholder="Describe the treatment action" ariaLabel="Proposed Treatment" fieldClass="risk-profile-field" [wide]="true" (valueChange)="updateRiskTreatmentDraft('treatment', $event)" />
+                                                <app-pm-console-field label="Type" type="select" [value]="riskTreatmentDraft.type" [options]="register.treatmentTypeOptions" ariaLabel="Treatment Type" fieldClass="risk-profile-field" (valueChange)="updateRiskTreatmentDraft('type', $event)" />
+                                                <app-pm-console-field label="Category" type="select" [value]="riskTreatmentDraft.category" [options]="register.treatmentCategoryOptions" ariaLabel="Treatment Category" fieldClass="risk-profile-field" (valueChange)="updateRiskTreatmentDraft('category', $event)" />
+                                                <app-pm-console-field label="Owner" type="select" [value]="riskTreatmentDraft.owner" [options]="register.ownerOptions" [placeholder]="register.ownerPlaceholder" ariaLabel="Treatment Owner" fieldClass="risk-profile-field" (valueChange)="updateRiskTreatmentDraft('owner', $event)" />
+                                                <app-pm-console-field label="Manager" type="select" [value]="riskTreatmentDraft.manager" [options]="register.ownerOptions" ariaLabel="Treatment Manager" fieldClass="risk-profile-field" (valueChange)="updateRiskTreatmentDraft('manager', $event)" />
+                                                <app-pm-console-field label="Start Date" type="date" [value]="riskTreatmentDraft.startDate" ariaLabel="Treatment Start Date" fieldClass="risk-profile-field" (valueChange)="updateRiskTreatmentDraft('startDate', $event)" />
+                                                <app-pm-console-field label="End Date" type="date" [value]="riskTreatmentDraft.endDate" ariaLabel="Treatment End Date" fieldClass="risk-profile-field" (valueChange)="updateRiskTreatmentDraft('endDate', $event)" />
+                                                <button class="risk-profile-add-treatment" type="button" [disabled]="!canAddRiskTreatmentDraft()" (click)="addRiskTreatmentToProfile()"><span pmConsoleIcon="plus" aria-hidden="true"></span>Add treatment</button>
+                                              </div>
+                                              @if (risk.treatments.length) {
+                                                <div class="dependency-register-table-shell risk-treatment-table-shell">
+                                                  <table class="dependency-register-table risk-treatment-table" aria-label="Risk treatments">
+                                                    <thead>
+                                                      <tr><th>Proposed Treatment</th><th>Type</th><th>Category</th><th>Owner</th><th>Dates</th><th></th></tr>
+                                                    </thead>
+                                                    <tbody>
+                                                      @for (treatment of risk.treatments; track treatment.id) {
+                                                        <tr>
+                                                          <td class="dependency-register-primary"><strong>{{ treatment.treatment }}</strong><small>{{ treatment.status }}</small></td>
+                                                          <td>{{ treatment.type }}</td>
+                                                          <td>{{ treatment.category }}</td>
+                                                          <td>{{ treatment.owner }}</td>
+                                                          <td class="dependency-register-baseline"><strong>{{ riskDateLabel(treatment.startDate) }}</strong><small>{{ riskDateLabel(treatment.endDate) }}</small></td>
+                                                          <td class="schedule-table-actions">
+                                                            <app-pm-console-row-action-menu ariaLabel="Treatment actions">
+                                                              <button class="danger" type="button" role="menuitem" (click)="removeRiskTreatmentFromProfile(treatment.id)">
+                                                                <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                                                Delete
+                                                              </button>
+                                                            </app-pm-console-row-action-menu>
+                                                          </td>
+                                                        </tr>
+                                                      }
+                                                    </tbody>
+                                                  </table>
+                                                </div>
+                                              } @else {
+                                                <p class="risk-profile-empty-note">No treatment added yet.</p>
+                                              }
+                                            </section>
+
+                                            <div class="risk-rating-section">
+                                              <div class="risk-rating-summary">
+                                                <span class="risk-profile-section-eyebrow">Residual Risk Rating</span>
+                                                <strong>{{ risk.residualRating || '-' }}</strong>
+                                                <small>{{ risk.residualConsequence || '-' }} consequence · {{ risk.residualLikelihood || '-' }} likelihood</small>
+                                              </div>
+                                              <app-pm-console-risk-matrix
+                                                title="Residual risk rating"
+                                                description="Select the expected rating after treatment."
+                                                [likelihood]="risk.residualLikelihood"
+                                                [consequence]="risk.residualConsequence"
+                                                (selectionChange)="updateRiskProfileMatrix('residual', $event)"
+                                              ></app-pm-console-risk-matrix>
+                                            </div>
+                                          </div>
+                                        }
+                                      </section>
                                     </div>
-                                  }
-                                </article>
+                                  </article>
+                                } @else if (register.rows.length) {
+                                  <article class="risk-agent-banner" aria-label="Risk generator">
+                                    <div class="risk-agent-copy">
+                                      <span class="benefit-agent-eyebrow"><img src="./assets/ai-spark-star.svg" alt="" aria-hidden="true" />AI assisted</span>
+                                      <strong>Risk Generator</strong>
+                                      <p>Seed likely project risks from scope, schedule, stakeholders, and dependency data, then refine ownership and treatment details manually.</p>
+                                    </div>
+                                    <div class="benefit-agent-highlights" aria-label="Risk generator capabilities">
+                                      <span>Draft risk statements</span>
+                                      <span>Suggest ratings</span>
+                                      <span>Recommend treatments</span>
+                                    </div>
+                                  </article>
+
+                                  <app-pm-console-plan-table
+                                    [title]="register.title"
+                                    [eyebrow]="register.fieldName + ' · Risk tracking'"
+                                    [description]="register.description"
+                                    [countLabel]="riskCountLabel(register)"
+                                    [actionLabel]="register.actionLabel"
+                                    actionAriaLabel="Add risk"
+                                    [iconName]="iconName('risks')"
+                                    panelClass="risk-register-card"
+                                    (action)="openRiskDrawer()"
+                                  >
+                                    <div class="dependency-register-table-shell risk-register-table-shell">
+                                      <table class="dependency-register-table risk-register-table" [attr.aria-label]="register.fieldName">
+                                        <thead>
+                                          <tr>
+                                            <th>Risk ID</th>
+                                            <th>Risk Category</th>
+                                            <th>Risk Name</th>
+                                            <th>Strategic<br />Impact</th>
+                                            <th>AR</th>
+                                            <th>Treatment</th>
+                                            <th>RR</th>
+                                            <th>Risk Owner</th>
+                                            <th>End Date</th>
+                                            <th>Review<br />Due Date</th>
+                                            <th>Status</th>
+                                            <th aria-label="Actions"></th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          @for (row of register.rows; track row.id) {
+                                            <tr class="plan-table-clickable-row" role="button" tabindex="0" [attr.aria-label]="'Open full profile for ' + row.id" (click)="openRiskProfile(row)" (keydown.enter)="openRiskProfile(row)" (keydown.space)="$event.preventDefault(); openRiskProfile(row)">
+                                              <td><span class="pm-table-code">{{ row.id }}</span></td>
+                                              <td>{{ row.riskCategory }}</td>
+                                              <td class="dependency-register-primary">
+                                                <strong>{{ row.riskName }}</strong>
+                                                <small>{{ row.description || 'No description added' }}</small>
+                                              </td>
+                                              <td>{{ riskStrategicLabel(row) }}</td>
+                                              <td><span class="risk-rating-swatch {{ riskRatingTone(row.actualRating) }}" [attr.aria-label]="'Actual rating ' + (row.actualRating || 'not rated')"></span></td>
+                                              <td>{{ row.treatments.length }}</td>
+                                              <td><span class="risk-rating-swatch {{ riskRatingTone(row.residualRating) }}" [attr.aria-label]="'Residual rating ' + (row.residualRating || 'not rated')"></span></td>
+                                              <td>{{ row.owner }}</td>
+                                              <td>{{ riskDateLabel(row.endDate) }}</td>
+                                              <td>{{ riskDateLabel(row.reviewDueDate) }}</td>
+                                              <td><span [pmConsoleStatusPill]="row.status" baseClass="dependency-register-pill" [tone]="riskStatusTone(row.status)"></span></td>
+                                              <td class="schedule-table-actions">
+                                                <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + row.id">
+                                                  <button type="button" role="menuitem" (click)="openRiskProfile(row)">
+                                                    <span pmConsoleIcon="panel-right-open" aria-hidden="true"></span>
+                                                    Open details
+                                                  </button>
+                                                  <button type="button" role="menuitem" (click)="openRiskDrawer(row)">
+                                                    <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                                    Edit
+                                                  </button>
+                                                </app-pm-console-row-action-menu>
+                                              </td>
+                                            </tr>
+                                          }
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </app-pm-console-plan-table>
+                                } @else {
+                                  <app-pm-console-plan-empty-state
+                                    [title]="register.title"
+                                    [description]="register.description"
+                                    [countLabel]="riskCountLabel(register)"
+                                    [actionLabel]="register.actionLabel"
+                                    [actionAriaLabel]="'Add risk'"
+                                    [iconName]="iconName('risks')"
+                                    [emptyTitle]="register.emptyTitle"
+                                    [emptyBody]="register.emptyBody"
+                                    (action)="openRiskDrawer()"
+                                  ></app-pm-console-plan-empty-state>
+                                }
                               </section>
                             } @else if (projectPlanActiveSection === 'Issues') {
                               @let register = activeIssuePlan;
                               <section class="dependency-register-stack issue-register-stack" aria-label="Issues register">
-                                <article class="dependency-register-card issue-register-card">
-                                  <div class="dependency-register-head">
-                                    <div class="dependency-register-copy">
-                                      <span class="dependency-register-eyebrow">{{ register.fieldName }}</span>
-                                      <strong>{{ register.title }}</strong>
-                                      <small>{{ register.description }}</small>
-                                    </div>
-                                    <div class="dependency-register-actions">
-                                      <span class="dependency-register-count">{{ issueCountLabel(register) }}</span>
-                                      <button class="dependency-register-add" type="button" (click)="openIssueDrawer()">
-                                        <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>{{ register.actionLabel }}
-                                      </button>
-                                    </div>
-                                  </div>
+                                @if (register.rows.length) {
+                                <app-pm-console-plan-table
+                                  [title]="register.title"
+                                  [eyebrow]="register.fieldName"
+                                  [description]="register.description"
+                                  [countLabel]="issueCountLabel(register)"
+                                  [actionLabel]="register.actionLabel"
+                                  actionAriaLabel="Add issue"
+                                  [iconName]="iconName('issues')"
+                                  panelClass="issue-register-card"
+                                  (action)="openIssueDrawer()"
+                                >
 
-                                  @if (register.rows.length) {
                                     <div class="dependency-register-table-shell">
                                       <table class="dependency-register-table issue-register-table" [attr.aria-label]="register.fieldName">
                                         <thead>
@@ -3732,42 +4965,42 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                                 <small>{{ row.dueDate ? 'Due ' + row.dueDate : 'Due date TBD' }}</small>
                                                 @if (row.dateClosed) { <small>Closed {{ row.dateClosed }}</small> }
                                               </td>
-                                              <td class="dependency-register-status"><span class="dependency-register-pill {{ issueStatusTone(row.status) }}">{{ row.status }}</span></td>
+                                              <td class="dependency-register-status"><span [pmConsoleStatusPill]="row.status" baseClass="dependency-register-pill" [tone]="issueStatusTone(row.status)"></span></td>
                                             </tr>
                                           }
                                         </tbody>
                                       </table>
                                     </div>
-                                  } @else {
-                                    <div class="dependency-empty-state issue-empty-state">
-                                      <img src="./assets/project-card-line-art.svg" alt="" aria-hidden="true" />
-                                      <div class="dependency-empty-state-copy">
-                                        <strong>{{ register.emptyTitle }}</strong>
-                                        <p>{{ register.emptyBody }}</p>
-                                      </div>
-                                    </div>
-                                  }
-                                </article>
+                                </app-pm-console-plan-table>
+                                } @else {
+                                  <app-pm-console-plan-empty-state
+                                    [title]="register.title"
+                                    [description]="register.description"
+                                    [countLabel]="issueCountLabel(register)"
+                                    [actionLabel]="register.actionLabel"
+                                    [actionAriaLabel]="'Add first issue'"
+                                    [iconName]="iconName('issues')"
+                                    [emptyTitle]="register.emptyTitle"
+                                    [emptyBody]="register.emptyBody"
+                                    (action)="openIssueDrawer()"
+                                  ></app-pm-console-plan-empty-state>
+                                }
                               </section>
                             } @else if (projectPlanActiveSection === 'Related Links') {
                               @let register = activeRelatedLinksRegister;
                               <section class="dependency-register-stack" aria-label="Related links register">
-                                <article class="dependency-register-card">
-                                  <div class="dependency-register-head">
-                                    <div class="dependency-register-copy">
-                                      <span class="dependency-register-eyebrow">{{ register.fieldName }}</span>
-                                      <strong>{{ register.title }}</strong>
-                                      <small>{{ register.description }}</small>
-                                    </div>
-                                    <div class="dependency-register-actions">
-                                      <span class="dependency-register-count">{{ relatedLinksCountLabel(register) }}</span>
-                                      <button class="dependency-register-add" type="button" (click)="openRelatedLinksDrawer()">
-                                        <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>{{ register.actionLabel }}
-                                      </button>
-                                    </div>
-                                  </div>
+                                @if (register.rows.length) {
+                                <app-pm-console-plan-table
+                                  [title]="register.title"
+                                  [eyebrow]="register.fieldName"
+                                  [description]="register.description"
+                                  [countLabel]="relatedLinksCountLabel(register)"
+                                  [actionLabel]="register.actionLabel"
+                                  actionAriaLabel="Add related link"
+                                  [iconName]="iconName('link')"
+                                  (action)="openRelatedLinksDrawer()"
+                                >
 
-                                  @if (register.rows.length) {
                                     <div class="dependency-register-table-shell">
                                       <table class="dependency-register-table" [attr.aria-label]="register.fieldName">
                                         <thead>
@@ -3794,36 +5027,36 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                         </tbody>
                                       </table>
                                     </div>
-                                  } @else {
-                                    <div class="dependency-empty-state">
-                                      <img src="./assets/project-card-line-art.svg" alt="" aria-hidden="true" />
-                                      <div class="dependency-empty-state-copy">
-                                        <strong>{{ register.emptyTitle }}</strong>
-                                        <p>{{ register.emptyBody }}</p>
-                                      </div>
-                                    </div>
-                                  }
-                                </article>
+                                </app-pm-console-plan-table>
+                                } @else {
+                                  <app-pm-console-plan-empty-state
+                                    [title]="register.title"
+                                    [description]="register.description"
+                                    [countLabel]="relatedLinksCountLabel(register)"
+                                    [actionLabel]="register.actionLabel"
+                                    [actionAriaLabel]="'Add related link'"
+                                    [iconName]="iconName('link')"
+                                    [emptyTitle]="register.emptyTitle"
+                                    [emptyBody]="register.emptyBody"
+                                    (action)="openRelatedLinksDrawer()"
+                                  ></app-pm-console-plan-empty-state>
+                                }
                               </section>
                             } @else if (projectPlanActiveSection === 'Resource') {
                               @let register = activeResourcePlan;
                               <section class="dependency-register-stack" aria-label="Resource plan">
-                                <article class="dependency-register-card">
-                                  <div class="dependency-register-head">
-                                    <div class="dependency-register-copy">
-                                      <span class="dependency-register-eyebrow">{{ register.fieldName }}</span>
-                                      <strong>{{ register.title }}</strong>
-                                      <small>{{ register.description }}</small>
-                                    </div>
-                                    <div class="dependency-register-actions">
-                                      <span class="dependency-register-count">{{ resourceCountLabel(register) }}</span>
-                                      <button class="dependency-register-add" type="button" (click)="openResourceDrawer()">
-                                        <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>{{ register.actionLabel }}
-                                      </button>
-                                    </div>
-                                  </div>
+                                @if (register.rows.length) {
+                                <app-pm-console-plan-table
+                                  [title]="register.title"
+                                  [eyebrow]="register.fieldName"
+                                  [description]="register.description"
+                                  [countLabel]="resourceCountLabel(register)"
+                                  [actionLabel]="register.actionLabel"
+                                  actionAriaLabel="Add resource"
+                                  [iconName]="iconName('resources')"
+                                  (action)="openResourceDrawer()"
+                                >
 
-                                  @if (register.rows.length) {
                                     <div class="dependency-register-table-shell">
                                       <table class="dependency-register-table" [attr.aria-label]="register.fieldName">
                                         <thead>
@@ -3856,20 +5089,25 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                         </tbody>
                                       </table>
                                     </div>
-                                  } @else {
-                                    <div class="dependency-empty-state">
-                                      <img src="./assets/project-card-line-art.svg" alt="" aria-hidden="true" />
-                                      <div class="dependency-empty-state-copy">
-                                        <strong>{{ register.emptyTitle }}</strong>
-                                        <p>{{ register.emptyBody }}</p>
-                                      </div>
-                                    </div>
-                                  }
-                                </article>
+                                </app-pm-console-plan-table>
+                                } @else {
+                                  <app-pm-console-plan-empty-state
+                                    [title]="register.title"
+                                    [description]="register.description"
+                                    [countLabel]="resourceCountLabel(register)"
+                                    [actionLabel]="register.actionLabel"
+                                    [actionAriaLabel]="'Add resource'"
+                                    [iconName]="iconName('resources')"
+                                    [emptyTitle]="register.emptyTitle"
+                                    [emptyBody]="register.emptyBody"
+                                    (action)="openResourceDrawer()"
+                                  ></app-pm-console-plan-empty-state>
+                                }
                               </section>
                             } @else if (projectPlanActiveSection === 'Change Impact') {
                               @let register = changeImpactRegister;
                               <section class="dependency-register-stack change-impact-register-stack" aria-label="Change impact register">
+                                @if (register.rows.length) {
                                 <article class="dependency-register-card change-impact-register-card">
                                   <div class="dependency-register-head change-impact-register-head">
                                     <div class="dependency-register-copy">
@@ -3885,7 +5123,6 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                     </div>
                                   </div>
 
-                                  @if (register.rows.length) {
                                     <div class="change-impact-card-list">
                                       @for (row of register.rows; track row.id) {
                                         <article class="change-impact-entry-card">
@@ -3908,36 +5145,36 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                         </article>
                                       }
                                     </div>
-                                  } @else {
-                                    <div class="dependency-empty-state change-impact-empty-state">
-                                      <img src="./assets/project-card-line-art.svg" alt="" aria-hidden="true" />
-                                      <div class="dependency-empty-state-copy">
-                                        <strong>{{ register.emptyTitle }}</strong>
-                                        <p>{{ register.emptyBody }}</p>
-                                      </div>
-                                    </div>
-                                  }
                                 </article>
+                                } @else {
+                                  <app-pm-console-plan-empty-state
+                                    [title]="register.title"
+                                    [description]="register.description"
+                                    [countLabel]="changeImpactCountLabel(register)"
+                                    [actionLabel]="register.actionLabel"
+                                    [actionAriaLabel]="'Add change impact'"
+                                    [iconName]="iconName('changeRequest')"
+                                    [emptyTitle]="register.emptyTitle"
+                                    [emptyBody]="register.emptyBody"
+                                    (action)="openChangeImpactDrawer()"
+                                  ></app-pm-console-plan-empty-state>
+                                }
                               </section>
                             } @else if (projectPlanActiveSection === 'Dependency') {
                               <section class="dependency-register-stack" aria-label="Dependency registers">
                                 @for (register of visibleDependencyRegisters; track register.key) {
-                                  <article class="dependency-register-card">
-                                    <div class="dependency-register-head">
-                                      <div class="dependency-register-copy">
-                                        <span class="dependency-register-eyebrow">{{ register.fieldName }}</span>
-                                        <strong>{{ register.title }}</strong>
-                                        <small>{{ register.description }}</small>
-                                      </div>
-                                      <div class="dependency-register-actions">
-                                        <span class="dependency-register-count">{{ dependencyCountLabel(register) }}</span>
-                                        <button class="dependency-register-add" type="button" (click)="openDependencyDrawer(register.key)">
-                                          <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>{{ register.actionLabel }}
-                                        </button>
-                                      </div>
-                                    </div>
+                                  @if (register.rows.length) {
+                                  <app-pm-console-plan-table
+                                    [title]="register.title"
+                                    [eyebrow]="register.fieldName"
+                                    [description]="register.description"
+                                    [countLabel]="dependencyCountLabel(register)"
+                                    [actionLabel]="register.actionLabel"
+                                    [actionAriaLabel]="'Add ' + register.title.toLowerCase()"
+                                    [iconName]="iconName('dependencies')"
+                                    (action)="openDependencyDrawer(register.key)"
+                                  >
 
-                                    @if (register.rows.length) {
                                       <div class="dependency-register-table-shell">
                                         <table class="dependency-register-table" [attr.aria-label]="register.fieldName">
                                           <thead>
@@ -3964,22 +5201,26 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                                   <small>{{ row.baselineEnd }}</small>
                                                 </td>
                                                 <td>{{ row.projectManager }}</td>
-                                                <td class="dependency-register-status"><span class="dependency-register-pill {{ dependencyStatusTone(row.status) }}">{{ row.status }}</span></td>
+                                                <td class="dependency-register-status"><span [pmConsoleStatusPill]="row.status" baseClass="dependency-register-pill" [tone]="dependencyStatusTone(row.status)"></span></td>
                                               </tr>
                                             }
                                           </tbody>
                                         </table>
                                       </div>
-                                    } @else {
-                                      <div class="dependency-empty-state">
-                                        <img src="./assets/project-card-line-art.svg" alt="" aria-hidden="true" />
-                                        <div class="dependency-empty-state-copy">
-                                          <strong>{{ register.emptyTitle }}</strong>
-                                          <p>{{ register.emptyBody }}</p>
-                                        </div>
-                                      </div>
-                                    }
-                                  </article>
+                                  </app-pm-console-plan-table>
+                                  } @else {
+                                    <app-pm-console-plan-empty-state
+                                      [title]="register.title"
+                                      [description]="register.description"
+                                      [countLabel]="dependencyCountLabel(register)"
+                                      [actionLabel]="register.actionLabel"
+                                      [actionAriaLabel]="'Add ' + register.title.toLowerCase()"
+                                      [iconName]="iconName('dependencies')"
+                                      [emptyTitle]="register.emptyTitle"
+                                      [emptyBody]="register.emptyBody"
+                                      (action)="openDependencyDrawer(register.key)"
+                                    ></app-pm-console-plan-empty-state>
+                                  }
                                 }
                               </section>
 
@@ -3992,22 +5233,18 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                   <div class="matrix-hidden-fields is-expanded">
                                     <section class="dependency-register-stack dependency-register-stack-hidden" aria-label="Additional dependency fields">
                                       @for (register of hiddenDependencyRegisters; track register.key) {
-                                        <article class="dependency-register-card">
-                                          <div class="dependency-register-head">
-                                            <div class="dependency-register-copy">
-                                              <span class="dependency-register-eyebrow">{{ register.fieldName }} <small>Detailed only</small></span>
-                                              <strong>{{ register.title }}</strong>
-                                              <small>{{ register.description }}</small>
-                                            </div>
-                                            <div class="dependency-register-actions">
-                                              <span class="dependency-register-count">{{ dependencyCountLabel(register) }}</span>
-                                              <button class="dependency-register-add" type="button" (click)="openDependencyDrawer(register.key)">
-                                                <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>{{ register.actionLabel }}
-                                              </button>
-                                            </div>
-                                          </div>
+                                        @if (register.rows.length) {
+                                        <app-pm-console-plan-table
+                                          [title]="register.title"
+                                          [eyebrow]="register.fieldName + ' · Detailed only'"
+                                          [description]="register.description"
+                                          [countLabel]="dependencyCountLabel(register)"
+                                          [actionLabel]="register.actionLabel"
+                                          [actionAriaLabel]="'Add ' + register.title.toLowerCase()"
+                                          [iconName]="iconName('dependencies')"
+                                          (action)="openDependencyDrawer(register.key)"
+                                        >
 
-                                          @if (register.rows.length) {
                                             <div class="dependency-register-table-shell">
                                               <table class="dependency-register-table" [attr.aria-label]="register.fieldName">
                                                 <thead>
@@ -4034,22 +5271,26 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                                         <small>{{ row.baselineEnd }}</small>
                                                       </td>
                                                       <td>{{ row.projectManager }}</td>
-                                                      <td class="dependency-register-status"><span class="dependency-register-pill {{ dependencyStatusTone(row.status) }}">{{ row.status }}</span></td>
+                                                      <td class="dependency-register-status"><span [pmConsoleStatusPill]="row.status" baseClass="dependency-register-pill" [tone]="dependencyStatusTone(row.status)"></span></td>
                                                     </tr>
                                                   }
                                                 </tbody>
                                               </table>
                                             </div>
-                                          } @else {
-                                            <div class="dependency-empty-state">
-                                              <img src="./assets/project-card-line-art.svg" alt="" aria-hidden="true" />
-                                              <div class="dependency-empty-state-copy">
-                                                <strong>{{ register.emptyTitle }}</strong>
-                                                <p>{{ register.emptyBody }}</p>
-                                              </div>
-                                            </div>
-                                          }
-                                        </article>
+                                        </app-pm-console-plan-table>
+                                        } @else {
+                                          <app-pm-console-plan-empty-state
+                                            [title]="register.title"
+                                            [description]="register.description"
+                                            [countLabel]="dependencyCountLabel(register)"
+                                            [actionLabel]="register.actionLabel"
+                                            [actionAriaLabel]="'Add ' + register.title.toLowerCase()"
+                                            [iconName]="iconName('dependencies')"
+                                            [emptyTitle]="register.emptyTitle"
+                                            [emptyBody]="register.emptyBody"
+                                            (action)="openDependencyDrawer(register.key)"
+                                          ></app-pm-console-plan-empty-state>
+                                        }
                                       }
                                     </section>
                                   </div>
@@ -4062,11 +5303,14 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                   <div class="matrix-field-group-grid">
                                     @for (field of group.fields; track field.id) {
                                       @if (field.type === 'table') {
-                                        <article class="matrix-field matrix-field-table wide">
-                                          <div class="matrix-register-head">
-                                            <div><span class="matrix-field-label">{{ field.field }} @if (field.mandatory) { <b>*</b> }</span><small>{{ simplePlanTableConfig(field).description }}</small></div>
-                                            <button type="button"><span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>{{ simplePlanTableConfig(field).action }}</button>
-                                          </div>
+                                        <app-pm-console-plan-table
+                                          [title]="field.field"
+                                          [description]="simplePlanTableConfig(field).description"
+                                          [countLabel]="simplePlanTableConfig(field).rows.length + ' records'"
+                                          [actionLabel]="simplePlanTableConfig(field).action"
+                                          [iconName]="iconName('table')"
+                                          panelClass="matrix-field-table wide"
+                                        >
                                           <div class="matrix-register-table" role="table" [attr.aria-label]="field.field">
                                             <div class="matrix-register-row head" [class.columns-2]="simplePlanTableConfig(field).columns.length === 2" [class.columns-3]="simplePlanTableConfig(field).columns.length === 3" [class.columns-4]="simplePlanTableConfig(field).columns.length === 4" [class.columns-5]="simplePlanTableConfig(field).columns.length >= 5" role="row">
                                               @for (column of simplePlanTableConfig(field).columns; track column) { <span>{{ column }}</span> }
@@ -4077,7 +5321,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                               </div>
                                             }
                                           </div>
-                                        </article>
+                                        </app-pm-console-plan-table>
                                       } @else if (field.type === 'boolean' || field.type === 'choice') {
                                         <div class="matrix-field matrix-field-boolean" [class.wide]="field.type === 'choice'">
                                           <span class="matrix-field-label">{{ field.field }} @if (field.mandatory) { <b>*</b> }</span>
@@ -4129,11 +5373,15 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                         <div class="matrix-field-group-grid">
                                           @for (field of group.fields; track field.id) {
                                             @if (field.type === 'table') {
-                                              <article class="matrix-field matrix-field-table wide">
-                                                <div class="matrix-register-head">
-                                                  <div><span class="matrix-field-label">{{ field.field }} <small>Detailed only</small> @if (field.mandatory) { <b>*</b> }</span><small>{{ simplePlanTableConfig(field).description }}</small></div>
-                                                  <button type="button"><span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>{{ simplePlanTableConfig(field).action }}</button>
-                                                </div>
+                                              <app-pm-console-plan-table
+                                                [title]="field.field"
+                                                eyebrow="Detailed only"
+                                                [description]="simplePlanTableConfig(field).description"
+                                                [countLabel]="simplePlanTableConfig(field).rows.length + ' records'"
+                                                [actionLabel]="simplePlanTableConfig(field).action"
+                                                [iconName]="iconName('table')"
+                                                panelClass="matrix-field-table wide"
+                                              >
                                                 <div class="matrix-register-table" role="table" [attr.aria-label]="field.field">
                                                   <div class="matrix-register-row head" [class.columns-2]="simplePlanTableConfig(field).columns.length === 2" [class.columns-3]="simplePlanTableConfig(field).columns.length === 3" [class.columns-4]="simplePlanTableConfig(field).columns.length === 4" [class.columns-5]="simplePlanTableConfig(field).columns.length >= 5" role="row">
                                                     @for (column of simplePlanTableConfig(field).columns; track column) { <span>{{ column }}</span> }
@@ -4144,7 +5392,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                                     </div>
                                                   }
                                                 </div>
-                                              </article>
+                                              </app-pm-console-plan-table>
                                             } @else if (field.type === 'boolean' || field.type === 'choice') {
                                               <div class="matrix-field matrix-field-boolean" [class.wide]="field.type === 'choice'">
                                                 <span class="matrix-field-label">{{ field.field }} <small>Detailed only</small> @if (field.mandatory) { <b>*</b> }</span>
@@ -4191,585 +5439,375 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                   </main>
                 </div>
                 @if (isBudgetDrawerOpen) {
-                  <div class="dependency-drawer-shell" aria-hidden="false">
-                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close budget drawer" (click)="closeBudgetDrawer()"></button>
-                    <aside class="dependency-drawer budget-drawer" [attr.aria-label]="budgetPlanConfig.drawerTitle">
-                      <form class="dependency-drawer-form budget-drawer-form" (submit)="saveBudgetDrawer($event)">
-                        <div class="dependency-drawer-top budget-drawer-top">
-                          <div class="dependency-drawer-title">
-                            <span class="dependency-register-eyebrow">{{ budgetPlanConfig.fieldName }}</span>
-                            <h2>{{ budgetPlanConfig.drawerTitle }}</h2>
-                            <p>{{ budgetPlanConfig.drawerBody }}</p>
-                          </div>
-                          <button class="drawer-close" type="button" aria-label="Close budget drawer" (click)="closeBudgetDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
-                        </div>
-                        <div class="dependency-drawer-body budget-drawer-body">
-                          <div class="dependency-drawer-summary">
-                            <span class="dependency-register-count">{{ activeBudgetHasData ? budgetPlanYearCountLabel(activeBudgetPlan) : 'New FY budget' }}</span>
-                            <small>Use this only when the FY baseline or forecast split needs a focused edit.</small>
-                          </div>
-                          <div class="dependency-drawer-grid budget-drawer-grid">
-                            <label class="matrix-field matrix-field-select dependency-drawer-field wide">
-                              <span class="matrix-field-label">Fiscal year <b>*</b></span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="budgetYearDraft.fy" (change)="updateBudgetYearDraft('fy', $any($event.target).value)" aria-label="Fiscal year">
-                                  <option value="" disabled>{{ budgetPlanConfig.fyPlaceholder }}</option>
-                                  @for (option of budgetPlanConfig.fyOptions; track option) {
-                                    <option [value]="option" [selected]="option === budgetYearDraft.fy">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-money dependency-drawer-field">
-                              <span class="matrix-field-label">CAPEX Baseline (FY) <b>*</b></span>
-                              <span class="matrix-money-wrap"><small>SAR</small><input type="number" min="0" step="1000" [value]="budgetYearDraft.baselineCapex" (input)="updateBudgetYearDraft('baselineCapex', $any($event.target).value)" aria-label="CAPEX Baseline (FY)" [attr.placeholder]="budgetPlanConfig.amountPlaceholder" /></span>
-                            </label>
-                            <label class="matrix-field matrix-field-money dependency-drawer-field">
-                              <span class="matrix-field-label">OPEX Baseline (FY) <b>*</b></span>
-                              <span class="matrix-money-wrap"><small>SAR</small><input type="number" min="0" step="1000" [value]="budgetYearDraft.baselineOpex" (input)="updateBudgetYearDraft('baselineOpex', $any($event.target).value)" aria-label="OPEX Baseline (FY)" [attr.placeholder]="budgetPlanConfig.amountPlaceholder" /></span>
-                            </label>
-                            <label class="matrix-field matrix-field-money dependency-drawer-field">
-                              <span class="matrix-field-label">CAPEX Forecast (FY) <b>*</b></span>
-                              <span class="matrix-money-wrap"><small>SAR</small><input type="number" min="0" step="1000" [value]="budgetYearDraft.forecastCapex" (input)="updateBudgetYearDraft('forecastCapex', $any($event.target).value)" aria-label="CAPEX Forecast (FY)" [attr.placeholder]="budgetPlanConfig.amountPlaceholder" /></span>
-                            </label>
-                            <label class="matrix-field matrix-field-money dependency-drawer-field">
-                              <span class="matrix-field-label">OPEX Forecast (FY) <b>*</b></span>
-                              <span class="matrix-money-wrap"><small>SAR</small><input type="number" min="0" step="1000" [value]="budgetYearDraft.forecastOpex" (input)="updateBudgetYearDraft('forecastOpex', $any($event.target).value)" aria-label="OPEX Forecast (FY)" [attr.placeholder]="budgetPlanConfig.amountPlaceholder" /></span>
-                            </label>
-                          </div>
-                        </div>
-                        <div class="report-drawer-footer dependency-drawer-footer">
-                          <button class="report-secondary-button" type="button" (click)="closeBudgetDrawer()">Cancel</button>
-                          <button class="report-submit-button" type="submit" [disabled]="!canSaveBudgetYearDraft()">{{ budgetPlanConfig.actionLabel }}</button>
-                        </div>
-                      </form>
-                    </aside>
-                  </div>
+                  <app-pm-console-plan-drawer
+                    [title]="budgetPlanConfig.drawerTitle"
+                    [eyebrow]="budgetPlanConfig.fieldName"
+                    [description]="budgetPlanConfig.drawerBody"
+                    [summaryLabel]="activeBudgetHasData ? budgetPlanYearCountLabel(activeBudgetPlan) : 'New FY budget'"
+                    summary="Use this only when the FY baseline or forecast split needs a focused edit."
+                    [submitLabel]="budgetPlanConfig.actionLabel"
+                    [submitDisabled]="!canSaveBudgetYearDraft()"
+                    closeAriaLabel="Close budget drawer"
+                    panelClass="budget-drawer"
+                    (close)="closeBudgetDrawer()"
+                    (submitForm)="saveBudgetDrawer($event)"
+                  >
+                    <div planDrawerBody class="dependency-drawer-grid budget-drawer-grid">
+                      <app-pm-console-field label="Fiscal year" type="select" [value]="budgetYearDraft.fy" [options]="budgetPlanConfig.fyOptions" [placeholder]="budgetPlanConfig.fyPlaceholder" ariaLabel="Fiscal year" fieldClass="dependency-drawer-field" [mandatory]="true" [wide]="true" (valueChange)="updateBudgetYearDraft('fy', $event)" />
+                      <app-pm-console-field label="CAPEX Baseline (FY)" type="money" inputType="number" [value]="budgetYearDraft.baselineCapex" [placeholder]="budgetPlanConfig.amountPlaceholder" ariaLabel="CAPEX Baseline (FY)" fieldClass="dependency-drawer-field" min="0" step="1000" [mandatory]="true" (valueChange)="updateBudgetYearDraft('baselineCapex', $event)" />
+                      <app-pm-console-field label="OPEX Baseline (FY)" type="money" inputType="number" [value]="budgetYearDraft.baselineOpex" [placeholder]="budgetPlanConfig.amountPlaceholder" ariaLabel="OPEX Baseline (FY)" fieldClass="dependency-drawer-field" min="0" step="1000" [mandatory]="true" (valueChange)="updateBudgetYearDraft('baselineOpex', $event)" />
+                      <app-pm-console-field label="CAPEX Forecast (FY)" type="money" inputType="number" [value]="budgetYearDraft.forecastCapex" [placeholder]="budgetPlanConfig.amountPlaceholder" ariaLabel="CAPEX Forecast (FY)" fieldClass="dependency-drawer-field" min="0" step="1000" [mandatory]="true" (valueChange)="updateBudgetYearDraft('forecastCapex', $event)" />
+                      <app-pm-console-field label="OPEX Forecast (FY)" type="money" inputType="number" [value]="budgetYearDraft.forecastOpex" [placeholder]="budgetPlanConfig.amountPlaceholder" ariaLabel="OPEX Forecast (FY)" fieldClass="dependency-drawer-field" min="0" step="1000" [mandatory]="true" (valueChange)="updateBudgetYearDraft('forecastOpex', $event)" />
+                    </div>
+                  </app-pm-console-plan-drawer>
                 }
                 @if (isBudgetFundingDrawerOpen) {
                   @let year = activeBudgetYear;
-                  <div class="dependency-drawer-shell" aria-hidden="false">
-                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close funding sources drawer" (click)="closeBudgetFundingDrawer()"></button>
-                    <aside class="dependency-drawer budget-funding-drawer" [attr.aria-label]="budgetPlanConfig.fundingTitle">
-                      <form class="dependency-drawer-form budget-funding-drawer-form" (submit)="saveBudgetFundingDrawer($event)">
-                        <div class="dependency-drawer-top budget-funding-drawer-top">
-                          <div class="dependency-drawer-title">
-                            <span class="dependency-register-eyebrow">{{ budgetPlanConfig.fieldName }}</span>
-                            <h2>{{ budgetPlanConfig.fundingTitle }}</h2>
-                            <p>{{ budgetPlanConfig.fundingBody }}</p>
-                          </div>
-                          <button class="drawer-close" type="button" aria-label="Close funding sources drawer" (click)="closeBudgetFundingDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
-                        </div>
-                        <div class="dependency-drawer-body budget-funding-drawer-body">
-                          <div class="dependency-drawer-summary">
-                            <span class="dependency-register-count">{{ budgetFundingSourceCountLabel(year) }}</span>
-                            @if (year) { <small class="{{ budgetFundingCoverageTone(year) }}">{{ budgetFundingCoverageLabel(year) }}</small> }
-                          </div>
-                          <div class="dependency-drawer-grid budget-funding-drawer-grid">
-                            <label class="matrix-field dependency-drawer-field wide">
-                              <span class="matrix-field-label">Funding source <b>*</b></span>
-                              <input type="text" [value]="budgetFundingSourceDraft.source" (input)="updateBudgetFundingDraft('source', $any($event.target).value)" aria-label="Funding source" [attr.placeholder]="budgetPlanConfig.sourcePlaceholder" />
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Type <b>*</b></span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="budgetFundingSourceDraft.type" (change)="updateBudgetFundingDraft('type', $any($event.target).value)" aria-label="Funding type">
-                                  <option value="" disabled>{{ budgetPlanConfig.sourceTypePlaceholder }}</option>
-                                  @for (option of budgetPlanConfig.sourceTypeOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-money dependency-drawer-field">
-                              <span class="matrix-field-label">Amount <b>*</b></span>
-                              <span class="matrix-money-wrap"><small>SAR</small><input type="number" min="0" step="1000" [value]="budgetFundingSourceDraft.amount" (input)="updateBudgetFundingDraft('amount', $any($event.target).value)" aria-label="Funding amount" [attr.placeholder]="budgetPlanConfig.amountPlaceholder" /></span>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Status</span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="budgetFundingSourceDraft.status" (change)="updateBudgetFundingDraft('status', $any($event.target).value)" aria-label="Funding status">
-                                  @for (option of budgetPlanConfig.sourceStatusOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
-                              <span class="matrix-field-label">Notes</span>
-                              <textarea [value]="budgetFundingSourceDraft.notes" (input)="updateBudgetFundingDraft('notes', $any($event.target).value)" aria-label="Funding notes" placeholder="Add allocation or approval notes"></textarea>
-                            </label>
-                          </div>
-                          @if ((year?.fundingSources?.length || 0) > 0) {
-                            <div class="dependency-register-table-shell budget-drawer-table-shell">
-                              <table class="dependency-register-table budget-secondary-table" aria-label="Saved funding sources">
-                                <thead>
-                                  <tr>
-                                    <th>Source</th>
-                                    <th>Type</th>
-                                    <th>Amount</th>
-                                    <th>Status</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  @for (row of year?.fundingSources || []; track row.id) {
-                                    <tr>
-                                      <td class="dependency-register-primary">
-                                        <strong>{{ row.source }}</strong>
-                                        <small>{{ row.notes || 'Funding source detail' }}</small>
-                                      </td>
-                                      <td>{{ row.type }}</td>
-                                      <td>{{ formatBudgetCurrency(row.amount) }}</td>
-                                      <td><span class="dependency-register-pill {{ row.status === 'Confirmed' ? 'indigo' : row.status === 'Pending approval' ? 'amber' : 'neutral' }}">{{ row.status }}</span></td>
-                                    </tr>
-                                  }
-                                </tbody>
-                              </table>
-                            </div>
-                          }
-                        </div>
-                        <div class="report-drawer-footer dependency-drawer-footer">
-                          <button class="report-secondary-button" type="button" (click)="closeBudgetFundingDrawer()">Cancel</button>
-                          <button class="report-submit-button" type="submit" [disabled]="!canSaveBudgetFundingDraft()">Add funding source</button>
-                        </div>
-                      </form>
-                    </aside>
-                  </div>
+                  <app-pm-console-plan-drawer
+                    [title]="budgetPlanConfig.fundingTitle"
+                    [eyebrow]="budgetPlanConfig.fieldName"
+                    [description]="budgetPlanConfig.fundingBody"
+                    [summaryLabel]="budgetFundingSourceCountLabel(year)"
+                    [summary]="year ? budgetFundingCoverageLabel(year) : 'Capture the funding source, amount, status, and notes for this fiscal year.'"
+                    submitLabel="Add funding source"
+                    [submitDisabled]="!canSaveBudgetFundingDraft()"
+                    closeAriaLabel="Close funding sources drawer"
+                    panelClass="budget-funding-drawer"
+                    (close)="closeBudgetFundingDrawer()"
+                    (submitForm)="saveBudgetFundingDrawer($event)"
+                  >
+                    <div planDrawerBody class="dependency-drawer-grid budget-funding-drawer-grid">
+                      <app-pm-console-field
+                        label="Funding source"
+                        [value]="budgetFundingSourceDraft.source"
+                        [placeholder]="budgetPlanConfig.sourcePlaceholder"
+                        ariaLabel="Funding source"
+                        fieldClass="dependency-drawer-field"
+                        [mandatory]="true"
+                        [wide]="true"
+                        (valueChange)="updateBudgetFundingDraft('source', $event)"
+                      />
+                      <app-pm-console-field
+                        label="Type"
+                        type="select"
+                        [value]="budgetFundingSourceDraft.type"
+                        [options]="budgetPlanConfig.sourceTypeOptions"
+                        [placeholder]="budgetPlanConfig.sourceTypePlaceholder"
+                        ariaLabel="Funding type"
+                        fieldClass="dependency-drawer-field"
+                        [mandatory]="true"
+                        (valueChange)="updateBudgetFundingDraft('type', $event)"
+                      />
+                      <app-pm-console-field label="Amount" type="money" inputType="number" [value]="budgetFundingSourceDraft.amount" [placeholder]="budgetPlanConfig.amountPlaceholder" ariaLabel="Funding amount" fieldClass="dependency-drawer-field" min="0" step="1000" [mandatory]="true" (valueChange)="updateBudgetFundingDraft('amount', $event)" />
+                      <app-pm-console-field
+                        label="Status"
+                        type="select"
+                        [value]="budgetFundingSourceDraft.status"
+                        [options]="budgetPlanConfig.sourceStatusOptions"
+                        ariaLabel="Funding status"
+                        fieldClass="dependency-drawer-field"
+                        (valueChange)="updateBudgetFundingDraft('status', $event)"
+                      />
+                      <app-pm-console-field
+                        label="Notes"
+                        type="textarea"
+                        [value]="budgetFundingSourceDraft.notes"
+                        placeholder="Add allocation or approval notes"
+                        ariaLabel="Funding notes"
+                        fieldClass="dependency-drawer-field"
+                        [wide]="true"
+                        (valueChange)="updateBudgetFundingDraft('notes', $event)"
+                      />
+                    </div>
+                    @if ((year?.fundingSources?.length || 0) > 0) {
+                      <div planDrawerBody class="dependency-register-table-shell budget-drawer-table-shell">
+                        <table class="dependency-register-table budget-secondary-table" aria-label="Saved funding sources">
+                          <thead>
+                            <tr>
+                              <th>Source</th>
+                              <th>Type</th>
+                              <th>Amount</th>
+                              <th>Status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (row of year?.fundingSources || []; track row.id) {
+                              <tr>
+                                <td class="dependency-register-primary">
+                                  <strong>{{ row.source }}</strong>
+                                  <small>{{ row.notes || 'Funding source detail' }}</small>
+                                </td>
+                                <td>{{ row.type }}</td>
+                                <td>{{ formatBudgetCurrency(row.amount) }}</td>
+                                <td><span [pmConsoleStatusPill]="row.status" baseClass="dependency-register-pill" [tone]="row.status === 'Confirmed' ? 'indigo' : row.status === 'Pending approval' ? 'amber' : 'neutral'"></span></td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      </div>
+                    }
+                  </app-pm-console-plan-drawer>
                 }
                 @if (isBudgetMonthlyDrawerOpen) {
                   @let year = activeBudgetYear;
-                  <div class="dependency-drawer-shell" aria-hidden="false">
-                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close monthly budget drawer" (click)="closeBudgetMonthlyDrawer()"></button>
-                    <aside class="dependency-drawer budget-monthly-drawer" [attr.aria-label]="budgetPlanConfig.monthlyTitle">
-                      <form class="dependency-drawer-form budget-monthly-drawer-form" (submit)="saveBudgetMonthlyDrawer($event)">
-                        <div class="dependency-drawer-top budget-monthly-drawer-top">
-                          <div class="dependency-drawer-title">
-                            <span class="dependency-register-eyebrow">{{ budgetPlanConfig.fieldName }}</span>
-                            <h2>{{ budgetPlanConfig.monthlyTitle }}</h2>
-                            <p>{{ budgetPlanConfig.monthlyBody }}</p>
+                  <app-pm-console-plan-drawer
+                    [title]="budgetPlanConfig.monthlyTitle"
+                    [eyebrow]="budgetPlanConfig.fieldName"
+                    [description]="budgetPlanConfig.monthlyBody"
+                    [summaryLabel]="year ? year.fy : budgetPlanConfig.monthlyTitle"
+                    summary="Budget phasing stays visible, while forecast, actual, and committed values can be adjusted month by month with one explicit save."
+                    submitLabel="Save monthly budget"
+                    closeAriaLabel="Close monthly budget drawer"
+                    panelClass="budget-monthly-drawer"
+                    (close)="closeBudgetMonthlyDrawer()"
+                    (submitForm)="saveBudgetMonthlyDrawer($event)"
+                  >
+                    <div planDrawerBody class="budget-month-card-list">
+                      @for (row of budgetMonthlyEditorRows; track row.id) {
+                        <article class="budget-month-card">
+                          <div class="budget-month-card-head">
+                            <div>
+                              <strong>{{ row.month }}</strong>
+                              <small>{{ formatBudgetCurrency(budgetMonthlyTotal(row, 'budget')) }} baseline phasing</small>
+                            </div>
+                            <span class="dependency-register-count">{{ formatBudgetCurrency(budgetMonthlyAvailable(row)) }} available</span>
                           </div>
-                          <button class="drawer-close" type="button" aria-label="Close monthly budget drawer" (click)="closeBudgetMonthlyDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
-                        </div>
-                        <div class="dependency-drawer-body budget-monthly-drawer-body">
-                          <div class="dependency-drawer-summary">
-                            <span class="dependency-register-count">{{ year ? year.fy : budgetPlanConfig.monthlyTitle }}</span>
-                            <small>Budget phasing stays visible, while forecast, actual, and committed values can be adjusted month by month with one explicit save.</small>
+                          <div class="budget-month-card-grid">
+                            <article class="budget-month-stream">
+                              <strong>CAPEX</strong>
+                              <label><span>Budget</span><input type="number" [value]="row.capexBudget" aria-label="CAPEX budget for {{ row.month }}" disabled /></label>
+                              <label><span>Forecast</span><input type="number" min="0" step="100" [value]="row.capexForecast" (input)="updateBudgetMonthlyRow(row.id, 'capexForecast', $any($event.target).value)" aria-label="CAPEX forecast for {{ row.month }}" /></label>
+                              <label><span>Actual</span><input type="number" min="0" step="100" [value]="row.capexActual" (input)="updateBudgetMonthlyRow(row.id, 'capexActual', $any($event.target).value)" aria-label="CAPEX actual for {{ row.month }}" /></label>
+                              <label><span>Committed</span><input type="number" min="0" step="100" [value]="row.capexCommitted" (input)="updateBudgetMonthlyRow(row.id, 'capexCommitted', $any($event.target).value)" aria-label="CAPEX committed for {{ row.month }}" /></label>
+                            </article>
+                            <article class="budget-month-stream">
+                              <strong>OPEX</strong>
+                              <label><span>Budget</span><input type="number" [value]="row.opexBudget" aria-label="OPEX budget for {{ row.month }}" disabled /></label>
+                              <label><span>Forecast</span><input type="number" min="0" step="100" [value]="row.opexForecast" (input)="updateBudgetMonthlyRow(row.id, 'opexForecast', $any($event.target).value)" aria-label="OPEX forecast for {{ row.month }}" /></label>
+                              <label><span>Actual</span><input type="number" min="0" step="100" [value]="row.opexActual" (input)="updateBudgetMonthlyRow(row.id, 'opexActual', $any($event.target).value)" aria-label="OPEX actual for {{ row.month }}" /></label>
+                              <label><span>Committed</span><input type="number" min="0" step="100" [value]="row.opexCommitted" (input)="updateBudgetMonthlyRow(row.id, 'opexCommitted', $any($event.target).value)" aria-label="OPEX committed for {{ row.month }}" /></label>
+                            </article>
                           </div>
-                          <div class="budget-month-card-list">
-                            @for (row of budgetMonthlyEditorRows; track row.id) {
-                              <article class="budget-month-card">
-                                <div class="budget-month-card-head">
-                                  <div>
-                                    <strong>{{ row.month }}</strong>
-                                    <small>{{ formatBudgetCurrency(budgetMonthlyTotal(row, 'budget')) }} baseline phasing</small>
-                                  </div>
-                                  <span class="dependency-register-count">{{ formatBudgetCurrency(budgetMonthlyAvailable(row)) }} available</span>
-                                </div>
-                                <div class="budget-month-card-grid">
-                                  <article class="budget-month-stream">
-                                    <strong>CAPEX</strong>
-                                    <label><span>Budget</span><input type="number" [value]="row.capexBudget" aria-label="CAPEX budget for {{ row.month }}" disabled /></label>
-                                    <label><span>Forecast</span><input type="number" min="0" step="100" [value]="row.capexForecast" (input)="updateBudgetMonthlyRow(row.id, 'capexForecast', $any($event.target).value)" aria-label="CAPEX forecast for {{ row.month }}" /></label>
-                                    <label><span>Actual</span><input type="number" min="0" step="100" [value]="row.capexActual" (input)="updateBudgetMonthlyRow(row.id, 'capexActual', $any($event.target).value)" aria-label="CAPEX actual for {{ row.month }}" /></label>
-                                    <label><span>Committed</span><input type="number" min="0" step="100" [value]="row.capexCommitted" (input)="updateBudgetMonthlyRow(row.id, 'capexCommitted', $any($event.target).value)" aria-label="CAPEX committed for {{ row.month }}" /></label>
-                                  </article>
-                                  <article class="budget-month-stream">
-                                    <strong>OPEX</strong>
-                                    <label><span>Budget</span><input type="number" [value]="row.opexBudget" aria-label="OPEX budget for {{ row.month }}" disabled /></label>
-                                    <label><span>Forecast</span><input type="number" min="0" step="100" [value]="row.opexForecast" (input)="updateBudgetMonthlyRow(row.id, 'opexForecast', $any($event.target).value)" aria-label="OPEX forecast for {{ row.month }}" /></label>
-                                    <label><span>Actual</span><input type="number" min="0" step="100" [value]="row.opexActual" (input)="updateBudgetMonthlyRow(row.id, 'opexActual', $any($event.target).value)" aria-label="OPEX actual for {{ row.month }}" /></label>
-                                    <label><span>Committed</span><input type="number" min="0" step="100" [value]="row.opexCommitted" (input)="updateBudgetMonthlyRow(row.id, 'opexCommitted', $any($event.target).value)" aria-label="OPEX committed for {{ row.month }}" /></label>
-                                  </article>
-                                </div>
-                              </article>
-                            }
-                          </div>
-                        </div>
-                        <div class="report-drawer-footer dependency-drawer-footer">
-                          <button class="report-secondary-button" type="button" (click)="closeBudgetMonthlyDrawer()">Cancel</button>
-                          <button class="report-submit-button" type="submit">Save monthly budget</button>
-                        </div>
-                      </form>
-                    </aside>
-                  </div>
+                        </article>
+                      }
+                    </div>
+                  </app-pm-console-plan-drawer>
                 }
                 @if (activeBenefitDrawer; as register) {
-                  <div class="dependency-drawer-shell" aria-hidden="false">
-                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close benefit drawer" (click)="closeBenefitDrawer()"></button>
-                    <aside class="dependency-drawer benefit-drawer" [attr.aria-label]="register.title">
-                      <form class="dependency-drawer-form benefit-drawer-form" (submit)="saveBenefitDrawer($event)">
-                        <div class="dependency-drawer-top benefit-drawer-top">
-                          <div class="dependency-drawer-title">
-                            <span class="dependency-register-eyebrow">{{ register.fieldName }} <small>AI ready</small></span>
-                            <h2>{{ register.title }}</h2>
-                            <p>{{ register.description }}</p>
+                  <app-pm-console-plan-drawer
+                    [title]="register.title"
+                    [eyebrow]="register.fieldName + ' · AI ready'"
+                    [description]="register.description"
+                    [summaryLabel]="benefitCountLabel(register)"
+                    summary="Capture the benefit statement first, then layer more evidence and realization commentary later through reporting."
+                    [submitLabel]="register.actionLabel"
+                    [submitDisabled]="!canSaveBenefitDraft(register)"
+                    closeAriaLabel="Close benefit drawer"
+                    panelClass="benefit-drawer"
+                    (close)="closeBenefitDrawer()"
+                    (submitForm)="saveBenefitDrawer($event)"
+                  >
+                          <div planDrawerBody class="dependency-drawer-grid benefit-drawer-grid">
+                            <app-pm-console-field label="Benefit Type" type="select" [value]="register.draft.benefitType" [options]="register.benefitTypeOptions" [placeholder]="register.benefitTypePlaceholder" ariaLabel="Benefit Type" fieldClass="dependency-drawer-field" (valueChange)="updateBenefitDraft('benefitType', $event)" />
+                            <app-pm-console-field label="Benefit Category" type="select" [value]="register.draft.category" [options]="register.benefitCategoryOptions" [placeholder]="register.benefitCategoryPlaceholder" ariaLabel="Benefit Category" fieldClass="dependency-drawer-field" (valueChange)="updateBenefitDraft('category', $event)" />
+                            <app-pm-console-field label="Benefit Name" [value]="register.draft.benefitName" placeholder="Enter benefit name" ariaLabel="Benefit Name" fieldClass="dependency-drawer-field" [mandatory]="true" [wide]="true" (valueChange)="updateBenefitDraft('benefitName', $event)" />
+                            <app-pm-console-field label="Description" type="textarea" [value]="register.draft.description" placeholder="Enter description" ariaLabel="Description" fieldClass="dependency-drawer-field" [wide]="true" (valueChange)="updateBenefitDraft('description', $event)" />
+                            <app-pm-console-field label="Benefit Owner" type="select" [value]="register.draft.owner" [options]="register.ownerOptions" [placeholder]="register.ownerPlaceholder" ariaLabel="Benefit Owner" fieldClass="dependency-drawer-field" (valueChange)="updateBenefitDraft('owner', $event)" />
+                            <app-pm-console-field label="Realisation Date" type="date" [value]="register.draft.realizationDate" ariaLabel="Realisation Date" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateBenefitDraft('realizationDate', $event)" />
                           </div>
-                          <button class="drawer-close" type="button" aria-label="Close benefit drawer" (click)="closeBenefitDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
+                  </app-pm-console-plan-drawer>
+                }
+                @if (activeRiskDrawer; as register) {
+                  <app-pm-console-plan-drawer
+                    [title]="riskDrawerTitle"
+                    [eyebrow]="register.fieldName"
+                    [description]="register.description"
+                    [summaryLabel]="riskCountLabel(register)"
+                    summary="Capture the quick risk record here. Use the full profile option when source, consequence, controls, and treatment detail need a richer assessment."
+                    [submitLabel]="riskDrawerOpenProfileAfterSave ? 'Save risk and open profile' : editingRiskPlanId ? 'Save changes' : register.actionLabel"
+                    [submitDisabled]="!canSaveRiskDraft(register)"
+                    closeAriaLabel="Close risk drawer"
+                    panelClass="risk-drawer"
+                    (close)="closeRiskDrawer()"
+                    (submitForm)="saveRiskDrawer($event)"
+                  >
+                    <div planDrawerBody class="risk-drawer-profile-cta" [class.is-selected]="riskDrawerOpenProfileAfterSave">
+                      <div>
+                        <strong>Complete risk profile</strong>
+                        <small>Open Identification, Analysis, and Treatment after saving this quick risk.</small>
+                      </div>
+                      <button type="button" (click)="markRiskDrawerForFullProfile()">
+                        <span pmConsoleIcon="chevron-right" aria-hidden="true"></span>
+                        Create full profile
+                      </button>
+                    </div>
+
+                    <div planDrawerBody class="risk-drawer-layout">
+                      <div class="dependency-drawer-grid risk-drawer-grid">
+                        <app-pm-console-field label="Risk Category" type="select" [value]="register.draft.riskCategory" [options]="register.categoryOptions" [placeholder]="register.categoryPlaceholder" ariaLabel="Risk Category" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateRiskDraft('riskCategory', $event)" />
+                        <app-pm-console-field label="Risk Status" type="select" [value]="register.draft.status" [options]="register.statusOptions" [placeholder]="register.statusPlaceholder" ariaLabel="Risk Status" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateRiskDraft('status', $event)" />
+                        <app-pm-console-field label="Risk Name" type="textarea" [value]="register.draft.riskName" placeholder="Type risk name here" ariaLabel="Risk Name" fieldClass="dependency-drawer-field" [mandatory]="true" [wide]="true" [maxLength]="500" [afterText]="riskDrawerCharacterCount + ' characters remaining'" (valueChange)="updateRiskDraft('riskName', $event)" />
+                        <app-pm-console-field label="Description" type="textarea" [value]="register.draft.description" placeholder="Type risk description here" ariaLabel="Description" fieldClass="dependency-drawer-field" [wide]="true" (valueChange)="updateRiskDraft('description', $event)" />
+                        <app-pm-console-field label="Risk Owner" type="select" [value]="register.draft.owner" [options]="register.ownerOptions" [placeholder]="register.ownerPlaceholder" ariaLabel="Risk Owner" fieldClass="dependency-drawer-field" (valueChange)="updateRiskDraft('owner', $event)" />
+                        <app-pm-console-field label="Risk Manager" type="select" [value]="register.draft.manager" [options]="register.ownerOptions" ariaLabel="Risk Manager" fieldClass="dependency-drawer-field" (valueChange)="updateRiskDraft('manager', $event)" />
+                        <app-pm-console-field label="Start Date" type="date" [value]="register.draft.startDate" ariaLabel="Start Date" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateRiskDraft('startDate', $event)" />
+                        <app-pm-console-field label="End Date" type="date" [value]="register.draft.endDate" ariaLabel="End Date" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateRiskDraft('endDate', $event)" />
+                        <app-pm-console-field label="Actual Risk Likelihood" type="select" [value]="register.draft.actualLikelihood" [options]="register.likelihoodOptions" placeholder="Select likelihood" ariaLabel="Actual Risk Likelihood" fieldClass="dependency-drawer-field" (valueChange)="updateRiskDraft('actualLikelihood', $event)" />
+                        <app-pm-console-field label="Actual Risk Consequence" type="select" [value]="register.draft.actualConsequence" [options]="register.consequenceOptions" placeholder="Select consequence" ariaLabel="Actual Risk Consequence" fieldClass="dependency-drawer-field" (valueChange)="updateRiskDraft('actualConsequence', $event)" />
+                        <app-pm-console-field label="Actual Risk Rating" [value]="register.draft.actualRating || '-'" ariaLabel="Actual Risk Rating" fieldClass="dependency-drawer-field" [disabled]="true" />
+                        <app-pm-console-field label="Residual Risk Likelihood" type="select" [value]="register.draft.residualLikelihood" [options]="register.likelihoodOptions" placeholder="Select likelihood" ariaLabel="Residual Risk Likelihood" fieldClass="dependency-drawer-field" (valueChange)="updateRiskDraft('residualLikelihood', $event)" />
+                        <app-pm-console-field label="Residual Risk Consequence" type="select" [value]="register.draft.residualConsequence" [options]="register.consequenceOptions" placeholder="Select consequence" ariaLabel="Residual Risk Consequence" fieldClass="dependency-drawer-field" (valueChange)="updateRiskDraft('residualConsequence', $event)" />
+                        <app-pm-console-field label="Residual Risk Rating" [value]="register.draft.residualRating || '-'" ariaLabel="Residual Risk Rating" fieldClass="dependency-drawer-field" [disabled]="true" />
+                        <section class="risk-radio-field wide" aria-label="Enterprise wide impact">
+                          <span class="matrix-field-label">Does this risk have an enterprise wide impact?</span>
+                          <label><input type="radio" name="risk-enterprise-drawer" [checked]="register.draft.enterpriseImpact" (change)="updateRiskDraftEnterpriseImpact(true)" /> Yes</label>
+                          <label><input type="radio" name="risk-enterprise-drawer" [checked]="!register.draft.enterpriseImpact" (change)="updateRiskDraftEnterpriseImpact(false)" /> No</label>
+                        </section>
+                      </div>
+
+                      <aside class="risk-drawer-matrix-stack">
+                        <app-pm-console-risk-matrix
+                          title="Actual risk rating"
+                          description="Click the consequence and likelihood cell."
+                          [likelihood]="register.draft.actualLikelihood"
+                          [consequence]="register.draft.actualConsequence"
+                          [compact]="true"
+                          (selectionChange)="updateRiskDraftMatrix('actual', $event)"
+                        ></app-pm-console-risk-matrix>
+                        <app-pm-console-risk-matrix
+                          title="Residual risk rating"
+                          description="Expected level after treatment."
+                          [likelihood]="register.draft.residualLikelihood"
+                          [consequence]="register.draft.residualConsequence"
+                          [compact]="true"
+                          (selectionChange)="updateRiskDraftMatrix('residual', $event)"
+                        ></app-pm-console-risk-matrix>
+                      </aside>
+                    </div>
+
+                    <section planDrawerBody class="risk-treatment-card risk-drawer-treatment-card">
+                      <header>
+                        <div>
+                          <span class="risk-profile-section-eyebrow">Treatment</span>
+                          <strong>{{ riskTreatmentCountLabel(register.draft.treatments) }}</strong>
                         </div>
-                        <div class="dependency-drawer-body benefit-drawer-body">
-                          <div class="dependency-drawer-summary">
-                            <span class="dependency-register-count">{{ benefitCountLabel(register) }}</span>
-                            <small>Capture the benefit statement first, then layer more evidence and realization commentary later through reporting.</small>
-                          </div>
-                          <div class="dependency-drawer-grid benefit-drawer-grid">
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Benefit Type</span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="register.draft.benefitType" (change)="updateBenefitDraft('benefitType', $any($event.target).value)" aria-label="Benefit Type">
-                                  <option value="" disabled>{{ register.benefitTypePlaceholder }}</option>
-                                  @for (option of register.benefitTypeOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Benefit Category</span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="register.draft.category" (change)="updateBenefitDraft('category', $any($event.target).value)" aria-label="Benefit Category">
-                                  <option value="" disabled>{{ register.benefitCategoryPlaceholder }}</option>
-                                  @for (option of register.benefitCategoryOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field dependency-drawer-field wide">
-                              <span class="matrix-field-label">Benefit Name <b>*</b></span>
-                              <input type="text" [value]="register.draft.benefitName" (input)="updateBenefitDraft('benefitName', $any($event.target).value)" aria-label="Benefit Name" placeholder="Enter benefit name" />
-                            </label>
-                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
-                              <span class="matrix-field-label">Description</span>
-                              <textarea [value]="register.draft.description" (input)="updateBenefitDraft('description', $any($event.target).value)" aria-label="Description" placeholder="Enter description"></textarea>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Benefit Owner</span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="register.draft.owner" (change)="updateBenefitDraft('owner', $any($event.target).value)" aria-label="Benefit Owner">
-                                  <option value="" disabled>{{ register.ownerPlaceholder }}</option>
-                                  @for (option of register.ownerOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field dependency-drawer-field">
-                              <span class="matrix-field-label">Realisation Date <b>*</b></span>
-                              <input type="date" [value]="register.draft.realizationDate" (input)="updateBenefitDraft('realizationDate', $any($event.target).value)" aria-label="Realisation Date" />
-                            </label>
-                          </div>
+                      </header>
+                      <div class="risk-treatment-compose">
+                        <app-pm-console-field label="Proposed Treatment" type="textarea" [value]="riskTreatmentDraft.treatment" placeholder="Describe the treatment action" ariaLabel="Proposed Treatment" fieldClass="risk-profile-field" [wide]="true" (valueChange)="updateRiskTreatmentDraft('treatment', $event)" />
+                        <app-pm-console-field label="Type" type="select" [value]="riskTreatmentDraft.type" [options]="register.treatmentTypeOptions" ariaLabel="Treatment Type" fieldClass="risk-profile-field" (valueChange)="updateRiskTreatmentDraft('type', $event)" />
+                        <app-pm-console-field label="Category" type="select" [value]="riskTreatmentDraft.category" [options]="register.treatmentCategoryOptions" ariaLabel="Treatment Category" fieldClass="risk-profile-field" (valueChange)="updateRiskTreatmentDraft('category', $event)" />
+                        <app-pm-console-field label="Owner" type="select" [value]="riskTreatmentDraft.owner" [options]="register.ownerOptions" [placeholder]="register.ownerPlaceholder" ariaLabel="Treatment Owner" fieldClass="risk-profile-field" (valueChange)="updateRiskTreatmentDraft('owner', $event)" />
+                        <app-pm-console-field label="End Date" type="date" [value]="riskTreatmentDraft.endDate" ariaLabel="Treatment End Date" fieldClass="risk-profile-field" (valueChange)="updateRiskTreatmentDraft('endDate', $event)" />
+                        <button class="risk-profile-add-treatment" type="button" [disabled]="!canAddRiskTreatmentDraft()" (click)="addRiskTreatmentToDraft()"><span pmConsoleIcon="plus" aria-hidden="true"></span>Add risk treatment</button>
+                      </div>
+                      @if (register.draft.treatments.length) {
+                        <div class="risk-treatment-pill-list">
+                          @for (treatment of register.draft.treatments; track treatment.id) {
+                            <span>
+                              {{ treatment.treatment }}
+                              <button type="button" (click)="removeRiskTreatmentFromDraft(treatment.id)" [attr.aria-label]="'Remove treatment'"><span pmConsoleIcon="x" aria-hidden="true"></span></button>
+                            </span>
+                          }
                         </div>
-                        <div class="report-drawer-footer dependency-drawer-footer">
-                          <button class="report-secondary-button" type="button" (click)="closeBenefitDrawer()">Cancel</button>
-                          <button class="report-submit-button" type="submit" [disabled]="!canSaveBenefitDraft(register)">{{ register.actionLabel }}</button>
-                        </div>
-                      </form>
-                    </aside>
-                  </div>
+                      }
+                    </section>
+                  </app-pm-console-plan-drawer>
                 }
                 @if (isIssueDrawerOpen) {
                   @let register = activeIssuePlan;
-                  <div class="dependency-drawer-shell" aria-hidden="false">
-                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close issue drawer" (click)="closeIssueDrawer()"></button>
-                    <aside class="dependency-drawer issue-drawer" [attr.aria-label]="register.title">
-                      <form class="dependency-drawer-form issue-drawer-form" (submit)="saveIssueDrawer($event)">
-                        <div class="dependency-drawer-top issue-drawer-top">
-                          <div class="dependency-drawer-title">
-                            <span class="dependency-register-eyebrow">{{ register.fieldName }}</span>
-                            <h2>{{ register.title }}</h2>
-                            <p>{{ register.description }}</p>
+                  <app-pm-console-plan-drawer
+                    [title]="register.title"
+                    [eyebrow]="register.fieldName"
+                    [description]="register.description"
+                    [summaryLabel]="issueCountLabel(register)"
+                    summary="Capture the issue once with owner, dates, and the current resolution path so project reviews can see what still needs action."
+                    [submitLabel]="register.actionLabel"
+                    [submitDisabled]="!canSaveIssueDraft(register)"
+                    closeAriaLabel="Close issue drawer"
+                    panelClass="issue-drawer"
+                    (close)="closeIssueDrawer()"
+                    (submitForm)="saveIssueDrawer($event)"
+                  >
+                          <div planDrawerBody class="dependency-drawer-grid issue-drawer-grid">
+                            <app-pm-console-field label="Issue Type" type="select" [value]="register.draft.issueType" [options]="register.issueTypeOptions" [placeholder]="register.issueTypePlaceholder" ariaLabel="Issue Type" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateIssueDraft('issueType', $event)" />
+                            <app-pm-console-field label="Criticality" type="select" [value]="register.draft.criticality" [options]="register.criticalityOptions" ariaLabel="Criticality" fieldClass="dependency-drawer-field" (valueChange)="updateIssueDraft('criticality', $event)" />
+                            <app-pm-console-field label="Issue" type="textarea" [value]="register.draft.issue" placeholder="Describe the issue or blocker" ariaLabel="Issue" fieldClass="dependency-drawer-field" [mandatory]="true" [wide]="true" (valueChange)="updateIssueDraft('issue', $event)" />
+                            <app-pm-console-field label="Description" type="textarea" [value]="register.draft.description" placeholder="Add supporting context" ariaLabel="Description" fieldClass="dependency-drawer-field" [wide]="true" (valueChange)="updateIssueDraft('description', $event)" />
+                            <app-pm-console-field label="Resolution" type="textarea" [value]="register.draft.resolution" placeholder="Describe the current resolution path" ariaLabel="Resolution" fieldClass="dependency-drawer-field" [mandatory]="true" [wide]="true" (valueChange)="updateIssueDraft('resolution', $event)" />
+                            <app-pm-console-field label="Status" type="select" [value]="register.draft.status" [options]="register.statusOptions" ariaLabel="Status" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateIssueDraft('status', $event)" />
+                            <app-pm-console-field label="Owner" type="select" [value]="register.draft.owner" [options]="register.ownerOptions" [placeholder]="register.ownerPlaceholder" ariaLabel="Owner" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateIssueDraft('owner', $event)" />
+                            <app-pm-console-field label="Date Raised" type="date" [value]="register.draft.dateRaised" ariaLabel="Date Raised" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateIssueDraft('dateRaised', $event)" />
+                            <app-pm-console-field label="Due Date" type="date" [value]="register.draft.dueDate" ariaLabel="Due Date" fieldClass="dependency-drawer-field" (valueChange)="updateIssueDraft('dueDate', $event)" />
+                            <app-pm-console-field label="Date Closed" type="date" [value]="register.draft.dateClosed" ariaLabel="Date Closed" fieldClass="dependency-drawer-field" (valueChange)="updateIssueDraft('dateClosed', $event)" />
                           </div>
-                          <button class="drawer-close" type="button" aria-label="Close issue drawer" (click)="closeIssueDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
-                        </div>
-                        <div class="dependency-drawer-body issue-drawer-body">
-                          <div class="dependency-drawer-summary">
-                            <span class="dependency-register-count">{{ issueCountLabel(register) }}</span>
-                            <small>Capture the issue once with owner, dates, and the current resolution path so project reviews can see what still needs action.</small>
-                          </div>
-                          <div class="dependency-drawer-grid issue-drawer-grid">
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Issue Type <b>*</b></span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="register.draft.issueType" (change)="updateIssueDraft('issueType', $any($event.target).value)" aria-label="Issue Type">
-                                  <option value="" disabled>{{ register.issueTypePlaceholder }}</option>
-                                  @for (option of register.issueTypeOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Criticality</span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="register.draft.criticality" (change)="updateIssueDraft('criticality', $any($event.target).value)" aria-label="Criticality">
-                                  @for (option of register.criticalityOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
-                              <span class="matrix-field-label">Issue <b>*</b></span>
-                              <textarea [value]="register.draft.issue" (input)="updateIssueDraft('issue', $any($event.target).value)" aria-label="Issue" placeholder="Describe the issue or blocker"></textarea>
-                            </label>
-                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
-                              <span class="matrix-field-label">Description</span>
-                              <textarea [value]="register.draft.description" (input)="updateIssueDraft('description', $any($event.target).value)" aria-label="Description" placeholder="Add supporting context"></textarea>
-                            </label>
-                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
-                              <span class="matrix-field-label">Resolution <b>*</b></span>
-                              <textarea [value]="register.draft.resolution" (input)="updateIssueDraft('resolution', $any($event.target).value)" aria-label="Resolution" placeholder="Describe the current resolution path"></textarea>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Status <b>*</b></span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="register.draft.status" (change)="updateIssueDraft('status', $any($event.target).value)" aria-label="Status">
-                                  @for (option of register.statusOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Owner <b>*</b></span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="register.draft.owner" (change)="updateIssueDraft('owner', $any($event.target).value)" aria-label="Owner">
-                                  <option value="" disabled>{{ register.ownerPlaceholder }}</option>
-                                  @for (option of register.ownerOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field dependency-drawer-field">
-                              <span class="matrix-field-label">Date Raised <b>*</b></span>
-                              <input type="date" [value]="register.draft.dateRaised" (input)="updateIssueDraft('dateRaised', $any($event.target).value)" aria-label="Date Raised" />
-                            </label>
-                            <label class="matrix-field dependency-drawer-field">
-                              <span class="matrix-field-label">Due Date</span>
-                              <input type="date" [value]="register.draft.dueDate" (input)="updateIssueDraft('dueDate', $any($event.target).value)" aria-label="Due Date" />
-                            </label>
-                            <label class="matrix-field dependency-drawer-field">
-                              <span class="matrix-field-label">Date Closed</span>
-                              <input type="date" [value]="register.draft.dateClosed" (input)="updateIssueDraft('dateClosed', $any($event.target).value)" aria-label="Date Closed" />
-                            </label>
-                          </div>
-                        </div>
-                        <div class="report-drawer-footer dependency-drawer-footer">
-                          <button class="report-secondary-button" type="button" (click)="closeIssueDrawer()">Cancel</button>
-                          <button class="report-submit-button" type="submit" [disabled]="!canSaveIssueDraft(register)">{{ register.actionLabel }}</button>
-                        </div>
-                      </form>
-                    </aside>
-                  </div>
+                  </app-pm-console-plan-drawer>
                 }
                 @if (isRelatedLinksDrawerOpen) {
                   @let register = activeRelatedLinksRegister;
-                  <div class="dependency-drawer-shell" aria-hidden="false">
-                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close related links drawer" (click)="closeRelatedLinksDrawer()"></button>
-                    <aside class="dependency-drawer" [attr.aria-label]="register.title">
-                      <form class="dependency-drawer-form" (submit)="saveRelatedLinksDrawer($event)">
-                        <div class="dependency-drawer-top">
-                          <div class="dependency-drawer-title">
-                            <span class="dependency-register-eyebrow">{{ register.fieldName }}</span>
-                            <h2>{{ register.title }}</h2>
-                            <p>{{ register.description }}</p>
+                  <app-pm-console-plan-drawer
+                    [title]="register.title"
+                    [eyebrow]="register.fieldName"
+                    [description]="register.description"
+                    [summaryLabel]="relatedLinksCountLabel(register)"
+                    summary="Capture the document name, destination link, and a quick note once so reviewers can open evidence directly from this tab."
+                    [submitLabel]="register.actionLabel"
+                    [submitDisabled]="!canSaveRelatedLinksDraft(register)"
+                    closeAriaLabel="Close related links drawer"
+                    (close)="closeRelatedLinksDrawer()"
+                    (submitForm)="saveRelatedLinksDrawer($event)"
+                  >
+                          <div planDrawerBody class="dependency-drawer-grid">
+                            <app-pm-console-field label="Name" [value]="register.draft.name" [placeholder]="register.namePlaceholder" ariaLabel="Name" fieldClass="dependency-drawer-field" [mandatory]="true" [wide]="true" (valueChange)="updateRelatedLinksDraft('name', $event)" />
+                            <app-pm-console-field label="Description" type="textarea" [value]="register.draft.description" [placeholder]="register.descriptionPlaceholder" ariaLabel="Description" fieldClass="dependency-drawer-field" [wide]="true" (valueChange)="updateRelatedLinksDraft('description', $event)" />
+                            <app-pm-console-field label="Link To Document" [value]="register.draft.documentLink" [placeholder]="register.documentPlaceholder" ariaLabel="Link To Document" fieldClass="dependency-drawer-field" [mandatory]="true" [wide]="true" (valueChange)="updateRelatedLinksDraft('documentLink', $event)" />
                           </div>
-                          <button class="drawer-close" type="button" aria-label="Close related links drawer" (click)="closeRelatedLinksDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
-                        </div>
-                        <div class="dependency-drawer-body">
-                          <div class="dependency-drawer-summary">
-                            <span class="dependency-register-count">{{ relatedLinksCountLabel(register) }}</span>
-                            <small>Capture the document name, destination link, and a quick note once so reviewers can open evidence directly from this tab.</small>
-                          </div>
-                          <div class="dependency-drawer-grid">
-                            <label class="matrix-field dependency-drawer-field wide">
-                              <span class="matrix-field-label">Name <b>*</b></span>
-                              <input type="text" [value]="register.draft.name" (input)="updateRelatedLinksDraft('name', $any($event.target).value)" aria-label="Name" [attr.placeholder]="register.namePlaceholder" />
-                            </label>
-                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
-                              <span class="matrix-field-label">Description</span>
-                              <textarea [value]="register.draft.description" (input)="updateRelatedLinksDraft('description', $any($event.target).value)" aria-label="Description" [attr.placeholder]="register.descriptionPlaceholder"></textarea>
-                            </label>
-                            <label class="matrix-field dependency-drawer-field wide">
-                              <span class="matrix-field-label">Link To Document <b>*</b></span>
-                              <input type="text" [value]="register.draft.documentLink" (input)="updateRelatedLinksDraft('documentLink', $any($event.target).value)" aria-label="Link To Document" [attr.placeholder]="register.documentPlaceholder" />
-                            </label>
-                          </div>
-                        </div>
-                        <div class="report-drawer-footer dependency-drawer-footer">
-                          <button class="report-secondary-button" type="button" (click)="closeRelatedLinksDrawer()">Cancel</button>
-                          <button class="report-submit-button" type="submit" [disabled]="!canSaveRelatedLinksDraft(register)">{{ register.actionLabel }}</button>
-                        </div>
-                      </form>
-                    </aside>
-                  </div>
+                  </app-pm-console-plan-drawer>
                 }
                 @if (isResourceDrawerOpen) {
                   @let register = activeResourcePlan;
-                  <div class="dependency-drawer-shell" aria-hidden="false">
-                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close resource drawer" (click)="closeResourceDrawer()"></button>
-                    <aside class="dependency-drawer" [attr.aria-label]="register.title">
-                      <form class="dependency-drawer-form" (submit)="saveResourceDrawer($event)">
-                        <div class="dependency-drawer-top">
-                          <div class="dependency-drawer-title">
-                            <span class="dependency-register-eyebrow">{{ register.fieldName }}</span>
-                            <h2>{{ register.title }}</h2>
-                            <p>{{ register.description }}</p>
+                  <app-pm-console-plan-drawer
+                    [title]="register.title"
+                    [eyebrow]="register.fieldName"
+                    [description]="register.description"
+                    [summaryLabel]="resourceCountLabel(register)"
+                    summary="Capture the role, FTE demand, and timing once so resourcing can be reviewed directly from this section."
+                    [submitLabel]="register.actionLabel"
+                    [submitDisabled]="!canSaveResourceDraft(register)"
+                    closeAriaLabel="Close resource drawer"
+                    (close)="closeResourceDrawer()"
+                    (submitForm)="saveResourceDrawer($event)"
+                  >
+                          <div planDrawerBody class="dependency-drawer-grid">
+                            <app-pm-console-field label="Resource" type="select" [value]="register.draft.resource" [options]="register.resourceOptions" [placeholder]="register.resourcePlaceholder" ariaLabel="Resource" fieldClass="dependency-drawer-field" [mandatory]="true" [wide]="true" (valueChange)="updateResourceDraft('resource', $event)" />
+                            <app-pm-console-field label="Resource type" type="select" [value]="register.draft.resourceType" [options]="register.resourceTypeOptions" [placeholder]="register.resourceTypePlaceholder" ariaLabel="Resource type" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateResourceDraft('resourceType', $event)" />
+                            <app-pm-console-field label="Level of Impact" type="select" [value]="register.draft.impact" [options]="register.impactOptions" [placeholder]="register.impactPlaceholder" ariaLabel="Level of Impact" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateResourceDraft('impact', $event)" />
+                            <app-pm-console-field label="Business Unit" type="select" [value]="register.draft.businessUnit" [options]="register.businessUnitOptions" [placeholder]="register.businessUnitPlaceholder" ariaLabel="Business Unit" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateResourceDraft('businessUnit', $event)" />
+                            <app-pm-console-field label="Resources (FTE Count)" [value]="register.draft.fteCount" [placeholder]="register.ftePlaceholder" ariaLabel="Resources" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateResourceDraft('fteCount', $event)" />
+                            <app-pm-console-field label="Baseline Start Date" type="date" [value]="register.draft.baselineStart" ariaLabel="Baseline Start Date" fieldClass="dependency-drawer-field" (valueChange)="updateResourceDraft('baselineStart', $event)" />
+                            <app-pm-console-field label="End Date" type="date" [value]="register.draft.baselineEnd" ariaLabel="End Date" fieldClass="dependency-drawer-field" (valueChange)="updateResourceDraft('baselineEnd', $event)" />
+                            <app-pm-console-field label="Comments" type="textarea" [value]="register.draft.comments" placeholder="Type comments here" ariaLabel="Comments" fieldClass="dependency-drawer-field" [wide]="true" (valueChange)="updateResourceDraft('comments', $event)" />
                           </div>
-                          <button class="drawer-close" type="button" aria-label="Close resource drawer" (click)="closeResourceDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
-                        </div>
-                        <div class="dependency-drawer-body">
-                          <div class="dependency-drawer-summary">
-                            <span class="dependency-register-count">{{ resourceCountLabel(register) }}</span>
-                            <small>Capture the role, FTE demand, and timing once so resourcing can be reviewed directly from this section.</small>
-                          </div>
-                          <div class="dependency-drawer-grid">
-                            <label class="matrix-field matrix-field-select dependency-drawer-field wide">
-                              <span class="matrix-field-label">Resource <b>*</b></span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="register.draft.resource" (change)="updateResourceDraft('resource', $any($event.target).value)" aria-label="Resource">
-                                  <option value="" disabled>{{ register.resourcePlaceholder }}</option>
-                                  @for (option of register.resourceOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Resource type <b>*</b></span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="register.draft.resourceType" (change)="updateResourceDraft('resourceType', $any($event.target).value)" aria-label="Resource type">
-                                  <option value="" disabled>{{ register.resourceTypePlaceholder }}</option>
-                                  @for (option of register.resourceTypeOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Level of Impact <b>*</b></span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="register.draft.impact" (change)="updateResourceDraft('impact', $any($event.target).value)" aria-label="Level of Impact">
-                                  <option value="" disabled>{{ register.impactPlaceholder }}</option>
-                                  @for (option of register.impactOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Business Unit <b>*</b></span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="register.draft.businessUnit" (change)="updateResourceDraft('businessUnit', $any($event.target).value)" aria-label="Business Unit">
-                                  <option value="" disabled>{{ register.businessUnitPlaceholder }}</option>
-                                  @for (option of register.businessUnitOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field dependency-drawer-field">
-                              <span class="matrix-field-label">Resources (FTE Count) <b>*</b></span>
-                              <input type="text" [value]="register.draft.fteCount" (input)="updateResourceDraft('fteCount', $any($event.target).value)" aria-label="Resources" [attr.placeholder]="register.ftePlaceholder" />
-                            </label>
-                            <label class="matrix-field dependency-drawer-field">
-                              <span class="matrix-field-label">Baseline Start Date</span>
-                              <input type="date" [value]="register.draft.baselineStart" (input)="updateResourceDraft('baselineStart', $any($event.target).value)" aria-label="Baseline Start Date" />
-                            </label>
-                            <label class="matrix-field dependency-drawer-field">
-                              <span class="matrix-field-label">End Date</span>
-                              <input type="date" [value]="register.draft.baselineEnd" (input)="updateResourceDraft('baselineEnd', $any($event.target).value)" aria-label="End Date" />
-                            </label>
-                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
-                              <span class="matrix-field-label">Comments</span>
-                              <textarea [value]="register.draft.comments" (input)="updateResourceDraft('comments', $any($event.target).value)" aria-label="Comments" placeholder="Type comments here"></textarea>
-                            </label>
-                          </div>
-                        </div>
-                        <div class="report-drawer-footer dependency-drawer-footer">
-                          <button class="report-secondary-button" type="button" (click)="closeResourceDrawer()">Cancel</button>
-                          <button class="report-submit-button" type="submit" [disabled]="!canSaveResourceDraft(register)">{{ register.actionLabel }}</button>
-                        </div>
-                      </form>
-                    </aside>
-                  </div>
+                  </app-pm-console-plan-drawer>
                 }
                 @if (activeChangeImpactDrawer; as register) {
-                  <div class="dependency-drawer-shell change-impact-drawer-shell" aria-hidden="false">
-                    <button class="dependency-drawer-backdrop change-impact-drawer-backdrop" type="button" aria-label="Close change impact drawer" (click)="closeChangeImpactDrawer()"></button>
-                    <aside class="dependency-drawer change-impact-drawer" [attr.aria-label]="register.title">
-                      <form class="dependency-drawer-form change-impact-drawer-form" (submit)="saveChangeImpactDrawer($event)">
-                        <div class="dependency-drawer-top change-impact-drawer-top">
-                          <div class="dependency-drawer-title">
-                            <span class="dependency-register-eyebrow">{{ register.fieldName }}</span>
-                            <h2>{{ register.title }}</h2>
-                            <p>{{ register.description }}</p>
-                          </div>
-                          <button class="drawer-close" type="button" aria-label="Close change impact drawer" (click)="closeChangeImpactDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
-                        </div>
-                        <div class="dependency-drawer-body change-impact-drawer-body">
-                          <div class="dependency-drawer-summary">
-                            <span class="dependency-register-count">{{ changeImpactCountLabel(register) }}</span>
-                            <small>Capture the impacted audience, the level of disruption, and the first change strategy before adoption risk starts landing in delivery.</small>
-                          </div>
-                          <div class="dependency-drawer-grid change-impact-drawer-grid">
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Change Impact Category <b>*</b></span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="register.draft.category" (change)="updateChangeImpactDraft('category', $any($event.target).value)" aria-label="Change Impact Category">
-                                  <option value="" disabled>{{ register.categoryPlaceholder }}</option>
-                                  @for (option of register.categoryOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Stakeholder Impacted <b>*</b></span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="register.draft.stakeholder" (change)="updateChangeImpactDraft('stakeholder', $any($event.target).value)" aria-label="Stakeholder Impacted">
-                                  <option value="" disabled>{{ register.stakeholderPlaceholder }}</option>
-                                  @for (option of register.stakeholderOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Level of Impact <b>*</b></span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="register.draft.level" (change)="updateChangeImpactDraft('level', $any($event.target).value)" aria-label="Level of Impact">
-                                  <option value="" disabled>{{ register.levelPlaceholder }}</option>
-                                  @for (option of register.levelOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
-                              <span class="matrix-field-label">Comment</span>
-                              <small class="matrix-field-description">Add the business context, behavior shift, or delivery friction this impact is likely to create.</small>
-                              <textarea maxlength="3000" [value]="register.draft.comment" (input)="updateChangeImpactDraft('comment', $any($event.target).value)" aria-label="Comment" placeholder="Describe the impact in plain language"></textarea>
-                              <small class="change-impact-comment-count">{{ changeImpactCommentCharactersRemaining }} characters remaining</small>
-                            </label>
+                  <app-pm-console-plan-drawer
+                    [title]="register.title"
+                    [eyebrow]="register.fieldName"
+                    [description]="register.description"
+                    [summaryLabel]="changeImpactCountLabel(register)"
+                    summary="Capture the impacted audience, the level of disruption, and the first change strategy before adoption risk starts landing in delivery."
+                    [submitLabel]="register.actionLabel"
+                    [submitDisabled]="!canSaveChangeImpactDraft(register)"
+                    closeAriaLabel="Close change impact drawer"
+                    panelClass="change-impact-drawer"
+                    (close)="closeChangeImpactDrawer()"
+                    (submitForm)="saveChangeImpactDrawer($event)"
+                  >
+                          <div planDrawerBody class="dependency-drawer-grid change-impact-drawer-grid">
+                            <app-pm-console-field label="Change Impact Category" type="select" [value]="register.draft.category" [options]="register.categoryOptions" [placeholder]="register.categoryPlaceholder" ariaLabel="Change Impact Category" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateChangeImpactDraft('category', $event)" />
+                            <app-pm-console-field label="Stakeholder Impacted" type="select" [value]="register.draft.stakeholder" [options]="register.stakeholderOptions" [placeholder]="register.stakeholderPlaceholder" ariaLabel="Stakeholder Impacted" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateChangeImpactDraft('stakeholder', $event)" />
+                            <app-pm-console-field label="Level of Impact" type="select" [value]="register.draft.level" [options]="register.levelOptions" [placeholder]="register.levelPlaceholder" ariaLabel="Level of Impact" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateChangeImpactDraft('level', $event)" />
+                            <app-pm-console-field label="Comment" type="textarea" [value]="register.draft.comment" placeholder="Describe the impact in plain language" description="Add the business context, behavior shift, or delivery friction this impact is likely to create." ariaLabel="Comment" fieldClass="dependency-drawer-field" [maxLength]="3000" [wide]="true" [afterText]="changeImpactCommentCharactersRemaining + ' characters remaining'" afterClass="change-impact-comment-count" (valueChange)="updateChangeImpactDraft('comment', $event)" />
                             <section class="change-impact-strategy-builder wide" aria-label="Change strategies">
                               <div class="change-impact-strategy-head">
                                 <div>
@@ -4795,754 +5833,383 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                               }
                             </section>
                           </div>
-                        </div>
-                        <div class="report-drawer-footer dependency-drawer-footer">
-                          <button class="report-secondary-button" type="button" (click)="closeChangeImpactDrawer()">Cancel</button>
-                          <button class="report-submit-button" type="submit" [disabled]="!canSaveChangeImpactDraft(register)">{{ register.actionLabel }}</button>
-                        </div>
-                      </form>
-                    </aside>
-                  </div>
+                  </app-pm-console-plan-drawer>
                 }
                 @if (activeDependencyRegister; as register) {
-                  <div class="dependency-drawer-shell" aria-hidden="false">
-                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close dependency drawer" (click)="closeDependencyDrawer()"></button>
-                    <aside class="dependency-drawer" [attr.aria-label]="register.title">
-                      <form class="dependency-drawer-form" (submit)="saveDependencyDrawer($event)">
-                        <div class="dependency-drawer-top">
-                          <div class="dependency-drawer-title">
-                            <span class="dependency-register-eyebrow">{{ register.fieldName }}</span>
-                            <h2>{{ register.title }}</h2>
-                            <p>{{ register.description }}</p>
+                  <app-pm-console-plan-drawer
+                    [title]="register.title"
+                    [eyebrow]="register.fieldName"
+                    [description]="register.description"
+                    [summaryLabel]="dependencyCountLabel(register)"
+                    summary="Add the relationship once, then manage it from the dependency table in this section."
+                    [submitLabel]="register.actionLabel"
+                    [submitDisabled]="!canSaveDependencyDraft(register)"
+                    closeAriaLabel="Close dependency drawer"
+                    (close)="closeDependencyDrawer()"
+                    (submitForm)="saveDependencyDrawer($event)"
+                  >
+                          <div planDrawerBody class="dependency-drawer-grid">
+                            <app-pm-console-field [label]="register.key === 'predecessor' ? 'Predecessor Project' : 'Successor Project'" type="select" [value]="register.draft.project" [options]="register.projectOptions" [placeholder]="register.projectPlaceholder" [ariaLabel]="register.key === 'predecessor' ? 'Predecessor Project' : 'Successor Project'" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateDependencyDraft('project', $event)" />
+                            <app-pm-console-field label="Impact of Dependency" type="select" [value]="register.draft.impact" [options]="register.impactOptions" [placeholder]="register.impactPlaceholder" ariaLabel="Impact of Dependency" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateDependencyDraft('impact', $event)" />
+                            <app-pm-console-field label="Dependent Product" type="select" [value]="register.draft.dependentProduct" [options]="register.dependentProductOptions" [placeholder]="register.dependentProductPlaceholder" ariaLabel="Dependent Product" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateDependencyDraft('dependentProduct', $event)" />
+                            <app-pm-console-field label="Project Manager" [value]="register.draft.projectManager" placeholder="Type project manager name" ariaLabel="Project Manager" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateDependencyDraft('projectManager', $event)" />
+                            <app-pm-console-field label="Baseline Start Date" type="date" [value]="register.draft.baselineStart" ariaLabel="Baseline Start Date" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateDependencyDraft('baselineStart', $event)" />
+                            <app-pm-console-field label="Baseline End Date" type="date" [value]="register.draft.baselineEnd" ariaLabel="Baseline End Date" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateDependencyDraft('baselineEnd', $event)" />
+                            <app-pm-console-field label="Nature of Dependency" type="textarea" [value]="register.draft.nature" placeholder="Describe how this dependency affects delivery" description="Explain the handoff, blocker, or downstream reliance in plain language." ariaLabel="Nature of Dependency" fieldClass="dependency-drawer-field" [mandatory]="true" [wide]="true" (valueChange)="updateDependencyDraft('nature', $event)" />
                           </div>
-                          <button class="drawer-close" type="button" aria-label="Close dependency drawer" (click)="closeDependencyDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
-                        </div>
-                        <div class="dependency-drawer-body">
-                          <div class="dependency-drawer-summary">
-                            <span class="dependency-register-count">{{ dependencyCountLabel(register) }}</span>
-                            <small>Add the relationship once, then manage it from the dependency table in this section.</small>
-                          </div>
-                          <div class="dependency-drawer-grid">
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">{{ register.key === 'predecessor' ? 'Predecessor Project' : 'Successor Project' }} <b>*</b></span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="register.draft.project" (change)="updateDependencyDraft('project', $any($event.target).value)" [attr.aria-label]="register.key === 'predecessor' ? 'Predecessor Project' : 'Successor Project'">
-                                  <option value="" disabled>{{ register.projectPlaceholder }}</option>
-                                  @for (option of register.projectOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Impact of Dependency <b>*</b></span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="register.draft.impact" (change)="updateDependencyDraft('impact', $any($event.target).value)" aria-label="Impact of Dependency">
-                                  <option value="" disabled>{{ register.impactPlaceholder }}</option>
-                                  @for (option of register.impactOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Dependent Product <b>*</b></span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="register.draft.dependentProduct" (change)="updateDependencyDraft('dependentProduct', $any($event.target).value)" aria-label="Dependent Product">
-                                  <option value="" disabled>{{ register.dependentProductPlaceholder }}</option>
-                                  @for (option of register.dependentProductOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field dependency-drawer-field">
-                              <span class="matrix-field-label">Project Manager <b>*</b></span>
-                              <input type="text" [value]="register.draft.projectManager" (input)="updateDependencyDraft('projectManager', $any($event.target).value)" aria-label="Project Manager" placeholder="Type project manager name" />
-                            </label>
-                            <label class="matrix-field dependency-drawer-field">
-                              <span class="matrix-field-label">Baseline Start Date <b>*</b></span>
-                              <input type="date" [value]="register.draft.baselineStart" (input)="updateDependencyDraft('baselineStart', $any($event.target).value)" aria-label="Baseline Start Date" />
-                            </label>
-                            <label class="matrix-field dependency-drawer-field">
-                              <span class="matrix-field-label">Baseline End Date <b>*</b></span>
-                              <input type="date" [value]="register.draft.baselineEnd" (input)="updateDependencyDraft('baselineEnd', $any($event.target).value)" aria-label="Baseline End Date" />
-                            </label>
-                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
-                              <span class="matrix-field-label">Nature of Dependency <b>*</b></span>
-                              <small class="matrix-field-description">Explain the handoff, blocker, or downstream reliance in plain language.</small>
-                              <textarea [value]="register.draft.nature" (input)="updateDependencyDraft('nature', $any($event.target).value)" aria-label="Nature of Dependency" placeholder="Describe how this dependency affects delivery"></textarea>
-                            </label>
-                          </div>
-                        </div>
-                        <div class="report-drawer-footer dependency-drawer-footer">
-                          <button class="report-secondary-button" type="button" (click)="closeDependencyDrawer()">Cancel</button>
-                          <button class="report-submit-button" type="submit" [disabled]="!canSaveDependencyDraft(register)">{{ register.actionLabel }}</button>
-                        </div>
-                      </form>
-                    </aside>
-                  </div>
+                  </app-pm-console-plan-drawer>
                 }
                 @if (isOverviewBusinessDriverDrawerOpen) {
-                  <div class="dependency-drawer-shell" aria-hidden="false">
-                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close business driver drawer" (click)="closeOverviewBusinessDriverDrawer()"></button>
-                    <aside class="dependency-drawer schedule-drawer overview-drawer" aria-label="Business driver drawer">
-                      <form class="dependency-drawer-form" (submit)="saveOverviewBusinessDriverDrawer($event)">
-                        <div class="dependency-drawer-top schedule-drawer-top overview-drawer-top">
-                          <div class="dependency-drawer-title">
-                            <span class="dependency-register-eyebrow">Business Drivers</span>
-                            <h2>{{ overviewDriverDrawerTitle }}</h2>
-                            <p>Capture the strategic reason cleanly in the drawer, then come back to the register to compare all drivers at a glance.</p>
-                          </div>
-                          <button class="drawer-close" type="button" aria-label="Close business driver drawer" (click)="closeOverviewBusinessDriverDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
-                        </div>
-                        <div class="dependency-drawer-body">
-                          <div class="schedule-drawer-summary-grid">
-                            <article class="schedule-drawer-summary-card">
-                              <span>Current drivers</span>
-                              <strong>{{ overviewCountLabel(overviewBusinessDriverRows.length, 'driver') }}</strong>
-                              <small>Saved in the overview register</small>
-                            </article>
-                            <article class="schedule-drawer-summary-card">
-                              <span>Priority</span>
-                              <strong>{{ overviewBusinessDriverDraft.priority || 'High' }}</strong>
-                              <small>Use this to show urgency in the register view</small>
-                            </article>
-                          </div>
-                          <div class="dependency-drawer-grid">
-                            <label class="matrix-field matrix-field-select dependency-drawer-field wide">
-                              <span class="matrix-field-label">Business driver <b>*</b></span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="overviewBusinessDriverDraft.driver" (change)="updateOverviewBusinessDriverDraft('driver', $any($event.target).value)" aria-label="Business driver">
-                                  <option value="" disabled>Select business driver</option>
-                                  @for (option of overviewBusinessDriverOptions; track option.driver) {
-                                    <option [value]="option.driver">{{ option.driver }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field dependency-drawer-field">
-                              <span class="matrix-field-label">Source</span>
-                              <input type="text" [value]="overviewBusinessDriverDraft.source" (input)="updateOverviewBusinessDriverDraft('source', $any($event.target).value)" aria-label="Source" placeholder="Strategy Office" />
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Priority</span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="overviewBusinessDriverDraft.priority" (change)="updateOverviewBusinessDriverDraft('priority', $any($event.target).value)" aria-label="Priority">
-                                  @for (option of scheduleScopePriorityOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
-                              <span class="matrix-field-label">Why it matters</span>
-                              <small class="matrix-field-description">Keep this short and specific so the driver reads well in the register table.</small>
-                              <textarea [value]="overviewBusinessDriverDraft.note" (input)="updateOverviewBusinessDriverDraft('note', $any($event.target).value)" aria-label="Why it matters" placeholder="Add the strategic or operational reason for this driver"></textarea>
-                            </label>
-                          </div>
-                        </div>
-                        <div class="report-drawer-footer dependency-drawer-footer">
-                          <button class="report-secondary-button" type="button" (click)="closeOverviewBusinessDriverDrawer()">Cancel</button>
-                          <button class="report-submit-button" type="submit" [disabled]="!canSaveOverviewBusinessDriverDraft()">{{ editingOverviewBusinessDriverId ? 'Save changes' : 'Add business driver' }}</button>
-                        </div>
-                      </form>
-                    </aside>
-                  </div>
+                  <app-pm-console-plan-drawer
+                    [title]="overviewDriverDrawerTitle"
+                    eyebrow="Business Drivers"
+                    description="Capture the strategic reason cleanly in the drawer, then come back to the register to compare all drivers at a glance."
+                    [summaryLabel]="overviewCountLabel(overviewBusinessDriverRows.length, 'driver')"
+                    [summary]="'Priority: ' + (overviewBusinessDriverDraft.priority || 'High')"
+                    [submitLabel]="editingOverviewBusinessDriverId ? 'Save changes' : 'Add business driver'"
+                    [submitDisabled]="!canSaveOverviewBusinessDriverDraft()"
+                    closeAriaLabel="Close business driver drawer"
+                    panelClass="overview-drawer"
+                    (close)="closeOverviewBusinessDriverDrawer()"
+                    (submitForm)="saveOverviewBusinessDriverDrawer($event)"
+                  >
+                    <div planDrawerBody class="dependency-drawer-grid">
+                      <app-pm-console-field label="Business driver" type="select" [value]="overviewBusinessDriverDraft.driver" [options]="overviewBusinessDriverOptionLabels" placeholder="Select business driver" ariaLabel="Business driver" fieldClass="dependency-drawer-field" [mandatory]="true" [wide]="true" (valueChange)="updateOverviewBusinessDriverDraft('driver', $event)" />
+                      <app-pm-console-field label="Source" [value]="overviewBusinessDriverDraft.source" placeholder="Strategy Office" ariaLabel="Source" fieldClass="dependency-drawer-field" (valueChange)="updateOverviewBusinessDriverDraft('source', $event)" />
+                      <app-pm-console-field label="Priority" type="select" [value]="overviewBusinessDriverDraft.priority" [options]="scheduleScopePriorityOptions" ariaLabel="Priority" fieldClass="dependency-drawer-field" (valueChange)="updateOverviewBusinessDriverDraft('priority', $event)" />
+                      <app-pm-console-field label="Why it matters" type="textarea" [value]="overviewBusinessDriverDraft.note" placeholder="Add the strategic or operational reason for this driver" description="Keep this short and specific so the driver reads well in the register table." ariaLabel="Why it matters" fieldClass="dependency-drawer-field" [wide]="true" (valueChange)="updateOverviewBusinessDriverDraft('note', $event)" />
+                    </div>
+                  </app-pm-console-plan-drawer>
                 }
                 @if (isOverviewOutcomeDrawerOpen) {
-                  <div class="dependency-drawer-shell" aria-hidden="false">
-                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close outcome drawer" (click)="closeOverviewOutcomeDrawer()"></button>
-                    <aside class="dependency-drawer schedule-drawer overview-drawer" aria-label="Outcome drawer">
-                      <form class="dependency-drawer-form" (submit)="saveOverviewOutcomeDrawer($event)">
-                        <div class="dependency-drawer-top schedule-drawer-top overview-drawer-top">
-                          <div class="dependency-drawer-title">
-                            <span class="dependency-register-eyebrow">Outcome</span>
-                            <h2>{{ overviewOutcomeDrawerTitle }}</h2>
-                            <p>Move the old inline outcome form into the drawer so the page stays focused on reading, while the form stays focused on writing.</p>
-                          </div>
-                          <button class="drawer-close" type="button" aria-label="Close outcome drawer" (click)="closeOverviewOutcomeDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
-                        </div>
-                        <div class="dependency-drawer-body">
-                          <div class="schedule-drawer-summary-grid">
-                            <article class="schedule-drawer-summary-card">
-                              <span>Current outcomes</span>
-                              <strong>{{ overviewCountLabel(overviewOutcomeRows.length, 'outcome') }}</strong>
-                              <small>Visible in the overview register</small>
-                            </article>
-                            <article class="schedule-drawer-summary-card">
-                              <span>Status</span>
-                              <strong>{{ overviewOutcomeDraft.status || 'Draft' }}</strong>
-                              <small>Use this to show how ready the outcome is</small>
-                            </article>
-                          </div>
-                          <div class="dependency-drawer-grid">
-                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
-                              <span class="matrix-field-label">Outcome <b>*</b></span>
-                              <textarea [value]="overviewOutcomeDraft.outcome" (input)="updateOverviewOutcomeDraft('outcome', $any($event.target).value)" aria-label="Outcome" placeholder="Describe the outcome users should see"></textarea>
-                            </label>
-                            <label class="matrix-field dependency-drawer-field wide">
-                              <span class="matrix-field-label">Measure</span>
-                              <input type="text" [value]="overviewOutcomeDraft.measure" (input)="updateOverviewOutcomeDraft('measure', $any($event.target).value)" aria-label="Measure" placeholder="How will this be measured?" />
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Owner</span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="overviewOutcomeDraft.owner" (change)="updateOverviewOutcomeDraft('owner', $any($event.target).value)" aria-label="Owner">
-                                  <option value="">Select owner</option>
-                                  @for (option of scheduleScopeOwnerOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Status</span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="overviewOutcomeDraft.status" (change)="updateOverviewOutcomeDraft('status', $any($event.target).value)" aria-label="Status">
-                                  @for (option of overviewOutcomeStatusOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                          </div>
-                        </div>
-                        <div class="report-drawer-footer dependency-drawer-footer">
-                          <button class="report-secondary-button" type="button" (click)="closeOverviewOutcomeDrawer()">Cancel</button>
-                          <button class="report-submit-button" type="submit" [disabled]="!canSaveOverviewOutcomeDraft()">{{ editingOverviewOutcomeId ? 'Save changes' : 'Add outcome' }}</button>
-                        </div>
-                      </form>
-                    </aside>
-                  </div>
+                  <app-pm-console-plan-drawer
+                    [title]="overviewOutcomeDrawerTitle"
+                    eyebrow="Outcome"
+                    description="Move the old inline outcome form into the drawer so the page stays focused on reading, while the form stays focused on writing."
+                    [summaryLabel]="overviewCountLabel(overviewOutcomeRows.length, 'outcome')"
+                    [summary]="'Status: ' + (overviewOutcomeDraft.status || 'Draft')"
+                    [submitLabel]="editingOverviewOutcomeId ? 'Save changes' : 'Add outcome'"
+                    [submitDisabled]="!canSaveOverviewOutcomeDraft()"
+                    closeAriaLabel="Close outcome drawer"
+                    panelClass="overview-drawer"
+                    (close)="closeOverviewOutcomeDrawer()"
+                    (submitForm)="saveOverviewOutcomeDrawer($event)"
+                  >
+                    <div planDrawerBody class="dependency-drawer-grid">
+                      <app-pm-console-field label="Outcome" type="textarea" [value]="overviewOutcomeDraft.outcome" placeholder="Describe the outcome users should see" ariaLabel="Outcome" fieldClass="dependency-drawer-field" [mandatory]="true" [wide]="true" (valueChange)="updateOverviewOutcomeDraft('outcome', $event)" />
+                      <app-pm-console-field label="Measure" [value]="overviewOutcomeDraft.measure" placeholder="How will this be measured?" ariaLabel="Measure" fieldClass="dependency-drawer-field" [wide]="true" (valueChange)="updateOverviewOutcomeDraft('measure', $event)" />
+                      <app-pm-console-field label="Owner" type="select" [value]="overviewOutcomeDraft.owner" [options]="scheduleScopeOwnerOptions" placeholder="Select owner" [placeholderDisabled]="false" ariaLabel="Owner" fieldClass="dependency-drawer-field" (valueChange)="updateOverviewOutcomeDraft('owner', $event)" />
+                      <app-pm-console-field label="Status" type="select" [value]="overviewOutcomeDraft.status" [options]="overviewOutcomeStatusOptions" ariaLabel="Status" fieldClass="dependency-drawer-field" (valueChange)="updateOverviewOutcomeDraft('status', $event)" />
+                    </div>
+                  </app-pm-console-plan-drawer>
                 }
                 @if (isOverviewObjectiveDrawerOpen) {
-                  <div class="dependency-drawer-shell" aria-hidden="false">
-                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close project objective drawer" (click)="closeOverviewObjectiveDrawer()"></button>
-                    <aside class="dependency-drawer schedule-drawer overview-drawer" aria-label="Project objective drawer">
-                      <form class="dependency-drawer-form" (submit)="saveOverviewObjectiveDrawer($event)">
-                        <div class="dependency-drawer-top schedule-drawer-top overview-drawer-top">
-                          <div class="dependency-drawer-title">
-                            <span class="dependency-register-eyebrow">Project Alignment (Objectives)</span>
-                            <h2>{{ overviewObjectiveDrawerTitle }}</h2>
-                            <p>Project objectives now sit in the same right-drawer pattern, with the linked strategic objective visible at the same time.</p>
-                          </div>
-                          <button class="drawer-close" type="button" aria-label="Close project objective drawer" (click)="closeOverviewObjectiveDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
-                        </div>
-                        <div class="dependency-drawer-body">
-                          <div class="schedule-drawer-summary-grid">
-                            <article class="schedule-drawer-summary-card">
-                              <span>Linked objectives</span>
-                              <strong>{{ overviewCountLabel(overviewObjectiveRows.length, 'objective') }}</strong>
-                              <small>Saved in the alignment register</small>
-                            </article>
-                            <article class="schedule-drawer-summary-card">
-                              <span>Status</span>
-                              <strong>{{ overviewObjectiveDraft.status || 'Draft' }}</strong>
-                              <small>Use when the objective is linked or approved</small>
-                            </article>
-                          </div>
-                          <div class="dependency-drawer-grid">
-                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
-                              <span class="matrix-field-label">Project objective <b>*</b></span>
-                              <textarea [value]="overviewObjectiveDraft.objective" (input)="updateOverviewObjectiveDraft('objective', $any($event.target).value)" aria-label="Project objective" placeholder="Describe the project objective"></textarea>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field wide">
-                              <span class="matrix-field-label">Linked strategic objective</span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="overviewObjectiveDraft.linkedObjective" (change)="updateOverviewObjectiveDraft('linkedObjective', $any($event.target).value)" aria-label="Linked strategic objective">
-                                  @for (option of overviewStrategicObjectiveLinks; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Status</span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="overviewObjectiveDraft.status" (change)="updateOverviewObjectiveDraft('status', $any($event.target).value)" aria-label="Objective status">
-                                  @for (option of overviewObjectiveStatusOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                          </div>
-                        </div>
-                        <div class="report-drawer-footer dependency-drawer-footer">
-                          <button class="report-secondary-button" type="button" (click)="closeOverviewObjectiveDrawer()">Cancel</button>
-                          <button class="report-submit-button" type="submit" [disabled]="!canSaveOverviewObjectiveDraft()">{{ editingOverviewObjectiveId ? 'Save changes' : 'Add project objective' }}</button>
-                        </div>
-                      </form>
-                    </aside>
-                  </div>
+                  <app-pm-console-plan-drawer
+                    [title]="overviewObjectiveDrawerTitle"
+                    eyebrow="Project Alignment (Objectives)"
+                    description="Project objectives now sit in the same right-drawer pattern, with the linked strategic objective visible at the same time."
+                    [summaryLabel]="overviewCountLabel(overviewObjectiveRows.length, 'objective')"
+                    [summary]="'Status: ' + (overviewObjectiveDraft.status || 'Draft')"
+                    [submitLabel]="editingOverviewObjectiveId ? 'Save changes' : 'Add project objective'"
+                    [submitDisabled]="!canSaveOverviewObjectiveDraft()"
+                    closeAriaLabel="Close project objective drawer"
+                    panelClass="overview-drawer"
+                    (close)="closeOverviewObjectiveDrawer()"
+                    (submitForm)="saveOverviewObjectiveDrawer($event)"
+                  >
+                    <div planDrawerBody class="dependency-drawer-grid">
+                      <app-pm-console-field label="Project objective" type="textarea" [value]="overviewObjectiveDraft.objective" placeholder="Describe the project objective" ariaLabel="Project objective" fieldClass="dependency-drawer-field" [mandatory]="true" [wide]="true" (valueChange)="updateOverviewObjectiveDraft('objective', $event)" />
+                      <app-pm-console-field label="Linked strategic objective" type="select" [value]="overviewObjectiveDraft.linkedObjective" [options]="overviewStrategicObjectiveLinks" ariaLabel="Linked strategic objective" fieldClass="dependency-drawer-field" [wide]="true" (valueChange)="updateOverviewObjectiveDraft('linkedObjective', $event)" />
+                      <app-pm-console-field label="Status" type="select" [value]="overviewObjectiveDraft.status" [options]="overviewObjectiveStatusOptions" ariaLabel="Objective status" fieldClass="dependency-drawer-field" (valueChange)="updateOverviewObjectiveDraft('status', $event)" />
+                    </div>
+                  </app-pm-console-plan-drawer>
                 }
                 @if (isOverviewCapabilityDrawerOpen) {
-                  <div class="dependency-drawer-shell" aria-hidden="false">
-                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close capability drawer" (click)="closeOverviewCapabilityDrawer()"></button>
-                    <aside class="dependency-drawer schedule-drawer overview-drawer" aria-label="Capability drawer">
-                      <form class="dependency-drawer-form" (submit)="saveOverviewCapabilityDrawer($event)">
-                        <div class="dependency-drawer-top schedule-drawer-top overview-drawer-top">
-                          <div class="dependency-drawer-title">
-                            <span class="dependency-register-eyebrow">Link Capabilities</span>
-                            <h2>{{ overviewCapabilityDrawerTitle }}</h2>
-                            <p>Keep capability mapping detailed and deliberate without forcing users to open an inline editor inside the page.</p>
-                          </div>
-                          <button class="drawer-close" type="button" aria-label="Close capability drawer" (click)="closeOverviewCapabilityDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
+                  <app-pm-console-plan-drawer
+                    [title]="overviewCapabilityDrawerTitle"
+                    eyebrow="Link Capabilities"
+                    description="Keep capability mapping detailed and deliberate without forcing users to open an inline editor inside the page."
+                    [summaryLabel]="overviewCountLabel(overviewCapabilityRows.length, 'capability')"
+                    [summary]="overviewCountLabel(overviewSelectedCapabilityCount, 'capability') + ' selected now'"
+                    [submitLabel]="editingOverviewCapabilityId ? 'Save changes' : 'Link capabilities'"
+                    [submitDisabled]="!canSaveOverviewCapabilityDraft()"
+                    closeAriaLabel="Close capability drawer"
+                    panelClass="overview-drawer"
+                    (close)="closeOverviewCapabilityDrawer()"
+                    (submitForm)="saveOverviewCapabilityDrawer($event)"
+                  >
+                    <section planDrawerBody class="schedule-drawer-section">
+                      <div class="schedule-drawer-section-head">
+                        <div>
+                          <strong>Choose capabilities</strong>
+                          <small>Select the capabilities this project influences. The register will add one row per selected capability.</small>
                         </div>
-                        <div class="dependency-drawer-body">
-                          <div class="schedule-drawer-summary-grid">
-                            <article class="schedule-drawer-summary-card">
-                              <span>Current links</span>
-                              <strong>{{ overviewCountLabel(overviewCapabilityRows.length, 'capability') }}</strong>
-                              <small>Detailed-only governance mapping</small>
-                            </article>
-                            <article class="schedule-drawer-summary-card">
-                              <span>Selected now</span>
-                              <strong>{{ overviewCountLabel(overviewSelectedCapabilityCount, 'capability') }}</strong>
-                              <small>You can add more than one in a single pass</small>
-                            </article>
-                          </div>
-                          <section class="schedule-drawer-section">
-                            <div class="schedule-drawer-section-head">
-                              <div>
-                                <strong>Choose capabilities</strong>
-                                <small>Select the capabilities this project influences. The register will add one row per selected capability.</small>
-                              </div>
-                            </div>
-                            <div class="overview-capability-selector" role="group" aria-label="Capability selection">
-                              @for (option of overviewCapabilityOptions; track option.capability) {
-                                <label class="overview-capability-option" [class.is-selected]="overviewCapabilityDraft.selectedCapabilities.includes(option.capability)">
-                                  <input type="checkbox" [checked]="overviewCapabilityDraft.selectedCapabilities.includes(option.capability)" (change)="toggleOverviewCapabilitySelection(option.capability)" />
-                                  <span>
-                                    <strong>{{ option.capability }}</strong>
-                                    <small>{{ option.domain }} · {{ option.owner }}</small>
-                                  </span>
-                                </label>
-                              }
-                            </div>
-                          </section>
-                        </div>
-                        <div class="report-drawer-footer dependency-drawer-footer">
-                          <button class="report-secondary-button" type="button" (click)="closeOverviewCapabilityDrawer()">Cancel</button>
-                          <button class="report-submit-button" type="submit" [disabled]="!canSaveOverviewCapabilityDraft()">{{ editingOverviewCapabilityId ? 'Save changes' : 'Link capabilities' }}</button>
-                        </div>
-                      </form>
-                    </aside>
-                  </div>
+                      </div>
+                      <div class="overview-capability-selector" role="group" aria-label="Capability selection">
+                        @for (option of overviewCapabilityOptions; track option.capability) {
+                          <label class="overview-capability-option" [class.is-selected]="overviewCapabilityDraft.selectedCapabilities.includes(option.capability)">
+                            <input type="checkbox" [checked]="overviewCapabilityDraft.selectedCapabilities.includes(option.capability)" (change)="toggleOverviewCapabilitySelection(option.capability)" />
+                            <span>
+                              <strong>{{ option.capability }}</strong>
+                              <small>{{ option.domain }} · {{ option.owner }}</small>
+                            </span>
+                          </label>
+                        }
+                      </div>
+                    </section>
+                  </app-pm-console-plan-drawer>
                 }
                 @if (isOverviewServiceDrawerOpen) {
-                  <div class="dependency-drawer-shell" aria-hidden="false">
-                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close service drawer" (click)="closeOverviewServiceDrawer()"></button>
-                    <aside class="dependency-drawer schedule-drawer overview-drawer" aria-label="Service drawer">
-                      <form class="dependency-drawer-form" (submit)="saveOverviewServiceDrawer($event)">
-                        <div class="dependency-drawer-top schedule-drawer-top overview-drawer-top">
-                          <div class="dependency-drawer-title">
-                            <span class="dependency-register-eyebrow">Link Services</span>
-                            <h2>{{ overviewServiceDrawerTitle }}</h2>
-                            <p>Keep the service mapping flow structured, but contained, so users can complete it without losing the overview context behind the drawer.</p>
-                          </div>
-                          <button class="drawer-close" type="button" aria-label="Close service drawer" (click)="closeOverviewServiceDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
-                        </div>
-                        <div class="dependency-drawer-body">
-                          <div class="schedule-drawer-summary-grid">
-                            <article class="schedule-drawer-summary-card">
-                              <span>Current services</span>
-                              <strong>{{ overviewCountLabel(overviewServiceRows.length, 'service') }}</strong>
-                              <small>Detailed-only service catalogue links</small>
-                            </article>
-                            <article class="schedule-drawer-summary-card">
-                              <span>Selected service</span>
-                              <strong>{{ overviewServiceDraft.service || 'Not chosen' }}</strong>
-                              <small>Choose the catalogue path from group to service</small>
-                            </article>
-                          </div>
-                          <div class="dependency-drawer-grid">
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Service group <b>*</b></span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="overviewServiceDraft.serviceGroup" (change)="updateOverviewServiceDraft('serviceGroup', $any($event.target).value)" aria-label="Service group">
-                                  <option value="" disabled>Select service group</option>
-                                  @for (option of overviewServiceGroupOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Value stream <b>*</b></span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="overviewServiceDraft.valueStream" (change)="updateOverviewServiceDraft('valueStream', $any($event.target).value)" aria-label="Value stream">
-                                  <option value="" disabled>Select value stream</option>
-                                  @for (option of overviewServiceValueStreamOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Phase</span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="overviewServiceDraft.phase" (change)="updateOverviewServiceDraft('phase', $any($event.target).value)" aria-label="Phase">
-                                  <option value="">Select phase</option>
-                                  @for (option of overviewServicePhaseOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Service <b>*</b></span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="overviewServiceDraft.service" (change)="updateOverviewServiceDraft('service', $any($event.target).value)" aria-label="Service">
-                                  <option value="" disabled>Select service</option>
-                                  @for (option of overviewServiceOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                          </div>
-                        </div>
-                        <div class="report-drawer-footer dependency-drawer-footer">
-                          <button class="report-secondary-button" type="button" (click)="closeOverviewServiceDrawer()">Cancel</button>
-                          <button class="report-submit-button" type="submit" [disabled]="!canSaveOverviewServiceDraft()">{{ editingOverviewServiceId ? 'Save changes' : 'Link service' }}</button>
-                        </div>
-                      </form>
-                    </aside>
-                  </div>
+                  <app-pm-console-plan-drawer
+                    [title]="overviewServiceDrawerTitle"
+                    eyebrow="Link Services"
+                    description="Keep the service mapping flow structured, but contained, so users can complete it without losing the overview context behind the drawer."
+                    [summaryLabel]="overviewCountLabel(overviewServiceRows.length, 'service')"
+                    [summary]="'Selected service: ' + (overviewServiceDraft.service || 'Not chosen')"
+                    [submitLabel]="editingOverviewServiceId ? 'Save changes' : 'Link service'"
+                    [submitDisabled]="!canSaveOverviewServiceDraft()"
+                    closeAriaLabel="Close service drawer"
+                    panelClass="overview-drawer"
+                    (close)="closeOverviewServiceDrawer()"
+                    (submitForm)="saveOverviewServiceDrawer($event)"
+                  >
+                    <div planDrawerBody class="dependency-drawer-grid">
+                      <app-pm-console-field label="Service group" type="select" [value]="overviewServiceDraft.serviceGroup" [options]="overviewServiceGroupOptions" placeholder="Select service group" ariaLabel="Service group" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateOverviewServiceDraft('serviceGroup', $event)" />
+                      <app-pm-console-field label="Value stream" type="select" [value]="overviewServiceDraft.valueStream" [options]="overviewServiceValueStreamOptions" placeholder="Select value stream" ariaLabel="Value stream" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateOverviewServiceDraft('valueStream', $event)" />
+                      <app-pm-console-field label="Phase" type="select" [value]="overviewServiceDraft.phase" [options]="overviewServicePhaseOptions" placeholder="Select phase" [placeholderDisabled]="false" ariaLabel="Phase" fieldClass="dependency-drawer-field" (valueChange)="updateOverviewServiceDraft('phase', $event)" />
+                      <app-pm-console-field label="Service" type="select" [value]="overviewServiceDraft.service" [options]="overviewServiceOptions" placeholder="Select service" ariaLabel="Service" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateOverviewServiceDraft('service', $event)" />
+                    </div>
+                  </app-pm-console-plan-drawer>
                 }
                 @if (isScheduleMilestoneDrawerOpen) {
-                  <div class="dependency-drawer-shell" aria-hidden="false">
-                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close milestone drawer" (click)="closeScheduleMilestoneDrawer()"></button>
-                    <aside class="dependency-drawer schedule-drawer" aria-label="Milestone drawer">
-                      <form class="dependency-drawer-form" (submit)="saveScheduleMilestoneDrawer($event)">
-                        <div class="dependency-drawer-top schedule-drawer-top">
-                          <div class="dependency-drawer-title">
-                            <span class="dependency-register-eyebrow">Milestones</span>
-                            <h2>{{ scheduleScopeMilestoneDrawerTitle }}</h2>
-                            <p>Keep schedule checkpoints focused, then manage them from the register instead of expanding an inline form.</p>
-                          </div>
-                          <button class="drawer-close" type="button" aria-label="Close milestone drawer" (click)="closeScheduleMilestoneDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
-                        </div>
-                        <div class="dependency-drawer-body">
-                          <div class="schedule-drawer-summary-grid">
-                            <article class="schedule-drawer-summary-card">
-                              <span>Current milestones</span>
-                              <strong>{{ scheduleScopeCountLabel(scheduleMilestoneRows.length, 'milestone') }}</strong>
-                              <small>Saved on the page beneath</small>
-                            </article>
-                            <article class="schedule-drawer-summary-card">
-                              <span>Due date</span>
-                              <strong>{{ scheduleMilestoneDraft.dueDate ? scheduleScopeDateLabel(scheduleMilestoneDraft.dueDate) : 'Not set' }}</strong>
-                              <small>Choose the governance checkpoint date</small>
-                            </article>
-                          </div>
-                          <div class="dependency-drawer-grid">
-                            <label class="matrix-field dependency-drawer-field wide">
-                              <span class="matrix-field-label">Milestone <b>*</b></span>
-                              <input type="text" [value]="scheduleMilestoneDraft.milestone" (input)="updateScheduleMilestoneDraft('milestone', $any($event.target).value)" aria-label="Milestone" placeholder="Name the milestone" />
-                            </label>
-                            <label class="matrix-field dependency-drawer-field">
-                              <span class="matrix-field-label">Due date <b>*</b></span>
-                              <input type="date" [value]="scheduleMilestoneDraft.dueDate" (input)="updateScheduleMilestoneDraft('dueDate', $any($event.target).value)" aria-label="Due date" />
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Person responsible</span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="scheduleMilestoneDraft.owner" (change)="updateScheduleMilestoneDraft('owner', $any($event.target).value)" aria-label="Person responsible">
-                                  <option value="">Select owner</option>
-                                  @for (option of scheduleScopeOwnerOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Milestone priority</span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="scheduleMilestoneDraft.priority" (change)="updateScheduleMilestoneDraft('priority', $any($event.target).value)" aria-label="Milestone priority">
-                                  @for (option of scheduleScopePriorityOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
-                              <span class="matrix-field-label">Milestone note</span>
-                              <small class="matrix-field-description">Optional context for PMO or delivery reviewers.</small>
-                              <textarea [value]="scheduleMilestoneDraft.note" (input)="updateScheduleMilestoneDraft('note', $any($event.target).value)" aria-label="Milestone note" placeholder="Add context, dependencies, or assumptions"></textarea>
-                            </label>
-                          </div>
-                        </div>
-                        <div class="report-drawer-footer dependency-drawer-footer">
-                          <button class="report-secondary-button" type="button" (click)="closeScheduleMilestoneDrawer()">Cancel</button>
-                          <button class="report-submit-button" type="submit" [disabled]="!canSaveScheduleMilestoneDraft()">{{ editingScheduleMilestoneId ? 'Save changes' : 'Add milestone' }}</button>
-                        </div>
-                      </form>
-                    </aside>
-                  </div>
+                  <app-pm-console-plan-drawer
+                    [title]="scheduleScopeMilestoneDrawerTitle"
+                    eyebrow="Milestones"
+                    description="Keep schedule checkpoints focused, then manage them from the register instead of expanding an inline form."
+                    [summaryLabel]="scheduleScopeCountLabel(scheduleMilestoneRows.length, 'milestone')"
+                    [summary]="'Due date: ' + (scheduleMilestoneDraft.dueDate ? scheduleScopeDateLabel(scheduleMilestoneDraft.dueDate) : 'Not set')"
+                    [submitLabel]="editingScheduleMilestoneId ? 'Save changes' : 'Add milestone'"
+                    [submitDisabled]="!canSaveScheduleMilestoneDraft()"
+                    closeAriaLabel="Close milestone drawer"
+                    panelClass="schedule-drawer"
+                    (close)="closeScheduleMilestoneDrawer()"
+                    (submitForm)="saveScheduleMilestoneDrawer($event)"
+                  >
+                    <div planDrawerBody class="dependency-drawer-grid">
+                      <app-pm-console-field label="Milestone" [value]="scheduleMilestoneDraft.milestone" placeholder="Name the milestone" ariaLabel="Milestone" fieldClass="dependency-drawer-field" [mandatory]="true" [wide]="true" (valueChange)="updateScheduleMilestoneDraft('milestone', $event)" />
+                      <app-pm-console-field label="Due date" type="date" [value]="scheduleMilestoneDraft.dueDate" ariaLabel="Due date" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateScheduleMilestoneDraft('dueDate', $event)" />
+                      <app-pm-console-field label="Person responsible" type="select" [value]="scheduleMilestoneDraft.owner" [options]="scheduleScopeOwnerOptions" placeholder="Select owner" [placeholderDisabled]="false" ariaLabel="Person responsible" fieldClass="dependency-drawer-field" (valueChange)="updateScheduleMilestoneDraft('owner', $event)" />
+                      <app-pm-console-field label="Milestone priority" type="select" [value]="scheduleMilestoneDraft.priority" [options]="scheduleScopePriorityOptions" ariaLabel="Milestone priority" fieldClass="dependency-drawer-field" (valueChange)="updateScheduleMilestoneDraft('priority', $event)" />
+                      <app-pm-console-field label="Milestone note" type="textarea" [value]="scheduleMilestoneDraft.note" placeholder="Add context, dependencies, or assumptions" description="Optional context for PMO or delivery reviewers." ariaLabel="Milestone note" fieldClass="dependency-drawer-field" [wide]="true" (valueChange)="updateScheduleMilestoneDraft('note', $event)" />
+                    </div>
+                  </app-pm-console-plan-drawer>
                 }
                 @if (isScheduleEndProductDrawerOpen) {
-                  <div class="dependency-drawer-shell" aria-hidden="false">
-                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close end product drawer" (click)="closeScheduleEndProductDrawer()"></button>
-                    <aside class="dependency-drawer schedule-drawer schedule-product-drawer" aria-label="End product drawer">
-                      <form class="dependency-drawer-form" (submit)="saveScheduleEndProductDrawer($event)">
-                        <div class="dependency-drawer-top schedule-drawer-top schedule-product-drawer-top">
-                          <div class="dependency-drawer-title">
-                            <span class="dependency-register-eyebrow">End Product (Deliverables)</span>
-                            <h2>{{ scheduleScopeEndProductDrawerTitle }}</h2>
-                            <p>Use the drawer for product setup, then come back to the register table for comparison and review.</p>
-                          </div>
-                          <button class="drawer-close" type="button" aria-label="Close end product drawer" (click)="closeScheduleEndProductDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
+                  <app-pm-console-plan-drawer
+                    [title]="scheduleScopeEndProductDrawerTitle"
+                    eyebrow="End Product (Deliverables)"
+                    description="Use the drawer for product setup, then come back to the register table for comparison and review."
+                    [summaryLabel]="scheduleScopeProductBudgetTotal(scheduleEndProductDraft.capex, scheduleEndProductDraft.opex)"
+                    [summary]="'Delivery timeline: ' + scheduleScopeDateRange(scheduleEndProductDraft.startDate, scheduleEndProductDraft.endDate)"
+                    [submitLabel]="editingScheduleEndProductId ? 'Save changes' : 'Add end product'"
+                    [submitDisabled]="!canSaveScheduleEndProductDraft()"
+                    closeAriaLabel="Close end product drawer"
+                    panelClass="schedule-product-drawer"
+                    (close)="closeScheduleEndProductDrawer()"
+                    (submitForm)="saveScheduleEndProductDrawer($event)"
+                  >
+                    <section planDrawerBody class="schedule-drawer-section">
+                      <div class="schedule-drawer-section-head">
+                        <div>
+                          <strong>Product source</strong>
+                          <small>Mirror the current workflow but keep it consistent with the new right-drawer pattern.</small>
                         </div>
-                        <div class="dependency-drawer-body">
-                          <div class="schedule-drawer-summary-grid">
-                            <article class="schedule-drawer-summary-card">
-                              <span>Total budget</span>
-                              <strong>{{ scheduleScopeProductBudgetTotal(scheduleEndProductDraft.capex, scheduleEndProductDraft.opex) }}</strong>
-                              <small>Calculated from CAPEX and OPEX</small>
-                            </article>
-                            <article class="schedule-drawer-summary-card">
-                              <span>Delivery timeline</span>
-                              <strong>{{ scheduleScopeDateRange(scheduleEndProductDraft.startDate, scheduleEndProductDraft.endDate) }}</strong>
-                              <small>Use real dates when known</small>
-                            </article>
-                          </div>
+                      </div>
+                      <div class="schedule-source-toggle" role="radiogroup" aria-label="End product source">
+                        <label>
+                          <input type="radio" name="end-product-source" [checked]="scheduleEndProductDraft.sourceType === 'new'" (change)="setScheduleEndProductSource('new')" />
+                          <span>Add product</span>
+                        </label>
+                        <label>
+                          <input type="radio" name="end-product-source" [checked]="scheduleEndProductDraft.sourceType === 'existing'" (change)="setScheduleEndProductSource('existing')" />
+                          <span>Add an existing product</span>
+                        </label>
+                      </div>
+                    </section>
 
-                          <section class="schedule-drawer-section">
-                            <div class="schedule-drawer-section-head">
-                              <div>
-                                <strong>Product source</strong>
-                                <small>Mirror the current workflow but keep it consistent with the new right-drawer pattern.</small>
-                              </div>
-                            </div>
-                            <div class="schedule-source-toggle" role="radiogroup" aria-label="End product source">
-                              <label>
-                                <input type="radio" name="end-product-source" [checked]="scheduleEndProductDraft.sourceType === 'new'" (change)="setScheduleEndProductSource('new')" />
-                                <span>Add product</span>
-                              </label>
-                              <label>
-                                <input type="radio" name="end-product-source" [checked]="scheduleEndProductDraft.sourceType === 'existing'" (change)="setScheduleEndProductSource('existing')" />
-                                <span>Add an existing product</span>
-                              </label>
-                            </div>
-                          </section>
+                    <div planDrawerBody class="dependency-drawer-grid">
+                      @if (scheduleEndProductDraft.sourceType === 'existing') {
+                        <label class="matrix-field matrix-field-select dependency-drawer-field wide">
+                          <span class="matrix-field-label">Existing product <b>*</b></span>
+                          <span class="matrix-select-wrap">
+                            <select [value]="scheduleEndProductDraft.product" (change)="applyExistingEndProductSelection($any($event.target).value)" aria-label="Existing product">
+                              <option value="" disabled>Select existing product</option>
+                              @for (option of scheduleScopeExistingEndProducts; track option.product) {
+                                <option [value]="option.product">{{ option.product }}</option>
+                              }
+                            </select>
+                            <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                          </span>
+                        </label>
+                      } @else {
+                        <label class="matrix-field dependency-drawer-field wide">
+                          <span class="matrix-field-label">Product <b>*</b></span>
+                          <input type="text" [value]="scheduleEndProductDraft.product" (input)="updateScheduleEndProductDraft('product', $any($event.target).value)" aria-label="Product" placeholder="Name the end product" />
+                        </label>
+                      }
 
-                          <div class="dependency-drawer-grid">
-                            @if (scheduleEndProductDraft.sourceType === 'existing') {
-                              <label class="matrix-field matrix-field-select dependency-drawer-field wide">
-                                <span class="matrix-field-label">Existing product <b>*</b></span>
-                                <span class="matrix-select-wrap">
-                                  <select [value]="scheduleEndProductDraft.product" (change)="applyExistingEndProductSelection($any($event.target).value)" aria-label="Existing product">
-                                    <option value="" disabled>Select existing product</option>
-                                    @for (option of scheduleScopeExistingEndProducts; track option.product) {
-                                      <option [value]="option.product">{{ option.product }}</option>
-                                    }
-                                  </select>
-                                  <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                                </span>
-                              </label>
-                            } @else {
-                              <label class="matrix-field dependency-drawer-field wide">
-                                <span class="matrix-field-label">Product <b>*</b></span>
-                                <input type="text" [value]="scheduleEndProductDraft.product" (input)="updateScheduleEndProductDraft('product', $any($event.target).value)" aria-label="Product" placeholder="Name the end product" />
-                              </label>
+                      <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
+                        <span class="matrix-field-label">Product description</span>
+                        <textarea [value]="scheduleEndProductDraft.description" (input)="updateScheduleEndProductDraft('description', $any($event.target).value)" aria-label="Product description" placeholder="Describe what the product delivers"></textarea>
+                      </label>
+                      <label class="matrix-field matrix-field-select dependency-drawer-field">
+                        <span class="matrix-field-label">Product owner <b>*</b></span>
+                        <span class="matrix-select-wrap">
+                          <select [value]="scheduleEndProductDraft.owner" (change)="updateScheduleEndProductDraft('owner', $any($event.target).value)" aria-label="Product owner">
+                            <option value="">Select owner</option>
+                            @for (option of scheduleScopeOwnerOptions; track option) {
+                              <option [value]="option">{{ option }}</option>
                             }
+                          </select>
+                          <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                        </span>
+                      </label>
+                      <label class="matrix-field matrix-field-select dependency-drawer-field">
+                        <span class="matrix-field-label">Product category</span>
+                        <span class="matrix-select-wrap">
+                          <select [value]="scheduleEndProductDraft.category" (change)="updateScheduleEndProductDraft('category', $any($event.target).value)" aria-label="Product category">
+                            @for (option of scheduleScopeCategoryOptions; track option) {
+                              <option [value]="option">{{ option }}</option>
+                            }
+                          </select>
+                          <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                        </span>
+                      </label>
+                      <label class="matrix-field matrix-field-select dependency-drawer-field wide">
+                        <span class="matrix-field-label">Capability</span>
+                        <span class="matrix-select-wrap">
+                          <select [value]="scheduleEndProductDraft.capability" (change)="updateScheduleEndProductDraft('capability', $any($event.target).value)" aria-label="Capability">
+                            <option value="">Select capability</option>
+                            @for (option of scheduleScopeCapabilityOptions; track option) {
+                              <option [value]="option">{{ option }}</option>
+                            }
+                          </select>
+                          <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                        </span>
+                      </label>
+                    </div>
 
-                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
-                              <span class="matrix-field-label">Product description</span>
-                              <textarea [value]="scheduleEndProductDraft.description" (input)="updateScheduleEndProductDraft('description', $any($event.target).value)" aria-label="Product description" placeholder="Describe what the product delivers"></textarea>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Product owner <b>*</b></span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="scheduleEndProductDraft.owner" (change)="updateScheduleEndProductDraft('owner', $any($event.target).value)" aria-label="Product owner">
-                                  <option value="">Select owner</option>
-                                  @for (option of scheduleScopeOwnerOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Product category</span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="scheduleEndProductDraft.category" (change)="updateScheduleEndProductDraft('category', $any($event.target).value)" aria-label="Product category">
-                                  @for (option of scheduleScopeCategoryOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field wide">
-                              <span class="matrix-field-label">Capability</span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="scheduleEndProductDraft.capability" (change)="updateScheduleEndProductDraft('capability', $any($event.target).value)" aria-label="Capability">
-                                  <option value="">Select capability</option>
-                                  @for (option of scheduleScopeCapabilityOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                          </div>
-
-                          <section class="schedule-drawer-section">
-                            <div class="schedule-drawer-section-head">
-                              <div>
-                                <strong>Timing and budget</strong>
-                                <small>These are still detailed-only fields, but now they’re grouped logically instead of stacked in one long modal.</small>
-                              </div>
-                            </div>
-                            <div class="dependency-drawer-grid">
-                              <label class="matrix-field dependency-drawer-field">
-                                <span class="matrix-field-label">Start date</span>
-                                <input type="date" [value]="scheduleEndProductDraft.startDate" (input)="updateScheduleEndProductDraft('startDate', $any($event.target).value)" aria-label="Start date" />
-                              </label>
-                              <label class="matrix-field dependency-drawer-field">
-                                <span class="matrix-field-label">End date</span>
-                                <input type="date" [value]="scheduleEndProductDraft.endDate" (input)="updateScheduleEndProductDraft('endDate', $any($event.target).value)" aria-label="End date" />
-                              </label>
-                              <label class="matrix-field dependency-drawer-field">
-                                <span class="matrix-field-label">CAPEX</span>
-                                <input type="text" [value]="scheduleEndProductDraft.capex" (input)="updateScheduleEndProductDraft('capex', $any($event.target).value)" aria-label="CAPEX" placeholder="0" />
-                              </label>
-                              <label class="matrix-field dependency-drawer-field">
-                                <span class="matrix-field-label">OPEX</span>
-                                <input type="text" [value]="scheduleEndProductDraft.opex" (input)="updateScheduleEndProductDraft('opex', $any($event.target).value)" aria-label="OPEX" placeholder="0" />
-                              </label>
-                            </div>
-                          </section>
-
-                          <section class="schedule-drawer-section">
-                            <div class="schedule-drawer-section-head">
-                              <div>
-                                <strong>Delivery links</strong>
-                                <small>Keep predecessor and successor relationships close to the product instead of pushing them into a separate modal context.</small>
-                              </div>
-                            </div>
-                            <div class="dependency-drawer-grid">
-                              <label class="matrix-field dependency-drawer-field wide">
-                                <span class="matrix-field-label">Predecessors</span>
-                                <input type="text" [value]="scheduleEndProductDraft.predecessors" (input)="updateScheduleEndProductDraft('predecessors', $any($event.target).value)" aria-label="Predecessors" placeholder="Comma-separated linked projects" />
-                              </label>
-                              <label class="matrix-field dependency-drawer-field wide">
-                                <span class="matrix-field-label">Successors</span>
-                                <input type="text" [value]="scheduleEndProductDraft.successors" (input)="updateScheduleEndProductDraft('successors', $any($event.target).value)" aria-label="Successors" placeholder="Comma-separated linked projects" />
-                              </label>
-                            </div>
-                          </section>
+                    <section planDrawerBody class="schedule-drawer-section">
+                      <div class="schedule-drawer-section-head">
+                        <div>
+                          <strong>Timing and budget</strong>
+                          <small>These are still detailed-only fields, but now they’re grouped logically instead of stacked in one long modal.</small>
                         </div>
-                        <div class="report-drawer-footer dependency-drawer-footer">
-                          <button class="report-secondary-button" type="button" (click)="closeScheduleEndProductDrawer()">Cancel</button>
-                          <button class="report-submit-button" type="submit" [disabled]="!canSaveScheduleEndProductDraft()">{{ editingScheduleEndProductId ? 'Save changes' : 'Add end product' }}</button>
+                      </div>
+                      <div class="dependency-drawer-grid">
+                        <label class="matrix-field dependency-drawer-field">
+                          <span class="matrix-field-label">Start date</span>
+                          <input type="date" [value]="scheduleEndProductDraft.startDate" (input)="updateScheduleEndProductDraft('startDate', $any($event.target).value)" aria-label="Start date" />
+                        </label>
+                        <label class="matrix-field dependency-drawer-field">
+                          <span class="matrix-field-label">End date</span>
+                          <input type="date" [value]="scheduleEndProductDraft.endDate" (input)="updateScheduleEndProductDraft('endDate', $any($event.target).value)" aria-label="End date" />
+                        </label>
+                        <label class="matrix-field dependency-drawer-field">
+                          <span class="matrix-field-label">CAPEX</span>
+                          <input type="text" [value]="scheduleEndProductDraft.capex" (input)="updateScheduleEndProductDraft('capex', $any($event.target).value)" aria-label="CAPEX" placeholder="0" />
+                        </label>
+                        <label class="matrix-field dependency-drawer-field">
+                          <span class="matrix-field-label">OPEX</span>
+                          <input type="text" [value]="scheduleEndProductDraft.opex" (input)="updateScheduleEndProductDraft('opex', $any($event.target).value)" aria-label="OPEX" placeholder="0" />
+                        </label>
+                      </div>
+                    </section>
+
+                    <section planDrawerBody class="schedule-drawer-section">
+                      <div class="schedule-drawer-section-head">
+                        <div>
+                          <strong>Delivery links</strong>
+                          <small>Keep predecessor and successor relationships close to the product instead of pushing them into a separate modal context.</small>
                         </div>
-                      </form>
-                    </aside>
-                  </div>
+                      </div>
+                      <div class="dependency-drawer-grid">
+                        <label class="matrix-field dependency-drawer-field wide">
+                          <span class="matrix-field-label">Predecessors</span>
+                          <input type="text" [value]="scheduleEndProductDraft.predecessors" (input)="updateScheduleEndProductDraft('predecessors', $any($event.target).value)" aria-label="Predecessors" placeholder="Comma-separated linked projects" />
+                        </label>
+                        <label class="matrix-field dependency-drawer-field wide">
+                          <span class="matrix-field-label">Successors</span>
+                          <input type="text" [value]="scheduleEndProductDraft.successors" (input)="updateScheduleEndProductDraft('successors', $any($event.target).value)" aria-label="Successors" placeholder="Comma-separated linked projects" />
+                        </label>
+                      </div>
+                    </section>
+                  </app-pm-console-plan-drawer>
                 }
                 @if (isScheduleManagementProductDrawerOpen) {
-                  <div class="dependency-drawer-shell" aria-hidden="false">
-                    <button class="dependency-drawer-backdrop" type="button" aria-label="Close management product drawer" (click)="closeScheduleManagementProductDrawer()"></button>
-                    <aside class="dependency-drawer schedule-drawer" aria-label="Management product drawer">
-                      <form class="dependency-drawer-form" (submit)="saveScheduleManagementProductDrawer($event)">
-                        <div class="dependency-drawer-top schedule-drawer-top schedule-management-drawer-top">
-                          <div class="dependency-drawer-title">
-                            <span class="dependency-register-eyebrow">Management Product</span>
-                            <h2>{{ scheduleScopeManagementProductDrawerTitle }}</h2>
-                            <p>Keep governance artefacts in the same drawer pattern so the experience stays consistent across the whole Schedule &amp; Scope tab.</p>
-                          </div>
-                          <button class="drawer-close" type="button" aria-label="Close management product drawer" (click)="closeScheduleManagementProductDrawer()"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
-                        </div>
-                        <div class="dependency-drawer-body">
-                          <div class="schedule-drawer-summary-grid">
-                            <article class="schedule-drawer-summary-card">
-                              <span>Total budget</span>
-                              <strong>{{ scheduleScopeProductBudgetTotal(scheduleManagementProductDraft.capex, scheduleManagementProductDraft.opex) }}</strong>
-                              <small>Calculated from CAPEX and OPEX</small>
-                            </article>
-                            <article class="schedule-drawer-summary-card">
-                              <span>Timeline</span>
-                              <strong>{{ scheduleScopeDateRange(scheduleManagementProductDraft.startDate, scheduleManagementProductDraft.endDate) }}</strong>
-                              <small>Use if dates are confirmed</small>
-                            </article>
-                          </div>
-                          <div class="dependency-drawer-grid">
-                            <label class="matrix-field dependency-drawer-field wide">
-                              <span class="matrix-field-label">Product <b>*</b></span>
-                              <input type="text" [value]="scheduleManagementProductDraft.product" (input)="updateScheduleManagementProductDraft('product', $any($event.target).value)" aria-label="Product" placeholder="Name the management product" />
-                            </label>
-                            <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
-                              <span class="matrix-field-label">Product description</span>
-                              <textarea [value]="scheduleManagementProductDraft.description" (input)="updateScheduleManagementProductDraft('description', $any($event.target).value)" aria-label="Product description" placeholder="Describe the governance artefact"></textarea>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Product owner <b>*</b></span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="scheduleManagementProductDraft.owner" (change)="updateScheduleManagementProductDraft('owner', $any($event.target).value)" aria-label="Product owner">
-                                  <option value="">Select owner</option>
-                                  @for (option of scheduleScopeOwnerOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field matrix-field-select dependency-drawer-field">
-                              <span class="matrix-field-label">Product category</span>
-                              <span class="matrix-select-wrap">
-                                <select [value]="scheduleManagementProductDraft.category" (change)="updateScheduleManagementProductDraft('category', $any($event.target).value)" aria-label="Product category">
-                                  @for (option of scheduleScopeCategoryOptions; track option) {
-                                    <option [value]="option">{{ option }}</option>
-                                  }
-                                </select>
-                                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                              </span>
-                            </label>
-                            <label class="matrix-field dependency-drawer-field">
-                              <span class="matrix-field-label">Start date</span>
-                              <input type="date" [value]="scheduleManagementProductDraft.startDate" (input)="updateScheduleManagementProductDraft('startDate', $any($event.target).value)" aria-label="Start date" />
-                            </label>
-                            <label class="matrix-field dependency-drawer-field">
-                              <span class="matrix-field-label">End date</span>
-                              <input type="date" [value]="scheduleManagementProductDraft.endDate" (input)="updateScheduleManagementProductDraft('endDate', $any($event.target).value)" aria-label="End date" />
-                            </label>
-                            <label class="matrix-field dependency-drawer-field">
-                              <span class="matrix-field-label">CAPEX</span>
-                              <input type="text" [value]="scheduleManagementProductDraft.capex" (input)="updateScheduleManagementProductDraft('capex', $any($event.target).value)" aria-label="CAPEX" placeholder="0" />
-                            </label>
-                            <label class="matrix-field dependency-drawer-field">
-                              <span class="matrix-field-label">OPEX</span>
-                              <input type="text" [value]="scheduleManagementProductDraft.opex" (input)="updateScheduleManagementProductDraft('opex', $any($event.target).value)" aria-label="OPEX" placeholder="0" />
-                            </label>
-                          </div>
-                        </div>
-                        <div class="report-drawer-footer dependency-drawer-footer">
-                          <button class="report-secondary-button" type="button" (click)="closeScheduleManagementProductDrawer()">Cancel</button>
-                          <button class="report-submit-button" type="submit" [disabled]="!canSaveScheduleManagementProductDraft()">{{ editingScheduleManagementProductId ? 'Save changes' : 'Add management product' }}</button>
-                        </div>
-                      </form>
-                    </aside>
-                  </div>
+                  <app-pm-console-plan-drawer
+                    [title]="scheduleScopeManagementProductDrawerTitle"
+                    eyebrow="Management Product"
+                    description="Keep governance artefacts in the same drawer pattern so the experience stays consistent across the whole Schedule & Scope tab."
+                    [summaryLabel]="scheduleScopeProductBudgetTotal(scheduleManagementProductDraft.capex, scheduleManagementProductDraft.opex)"
+                    [summary]="'Timeline: ' + scheduleScopeDateRange(scheduleManagementProductDraft.startDate, scheduleManagementProductDraft.endDate)"
+                    [submitLabel]="editingScheduleManagementProductId ? 'Save changes' : 'Add management product'"
+                    [submitDisabled]="!canSaveScheduleManagementProductDraft()"
+                    closeAriaLabel="Close management product drawer"
+                    panelClass="schedule-drawer"
+                    (close)="closeScheduleManagementProductDrawer()"
+                    (submitForm)="saveScheduleManagementProductDrawer($event)"
+                  >
+                    <div planDrawerBody class="dependency-drawer-grid">
+                      <label class="matrix-field dependency-drawer-field wide">
+                        <span class="matrix-field-label">Product <b>*</b></span>
+                        <input type="text" [value]="scheduleManagementProductDraft.product" (input)="updateScheduleManagementProductDraft('product', $any($event.target).value)" aria-label="Product" placeholder="Name the management product" />
+                      </label>
+                      <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
+                        <span class="matrix-field-label">Product description</span>
+                        <textarea [value]="scheduleManagementProductDraft.description" (input)="updateScheduleManagementProductDraft('description', $any($event.target).value)" aria-label="Product description" placeholder="Describe the governance artefact"></textarea>
+                      </label>
+                      <label class="matrix-field matrix-field-select dependency-drawer-field">
+                        <span class="matrix-field-label">Product owner <b>*</b></span>
+                        <span class="matrix-select-wrap">
+                          <select [value]="scheduleManagementProductDraft.owner" (change)="updateScheduleManagementProductDraft('owner', $any($event.target).value)" aria-label="Product owner">
+                            <option value="">Select owner</option>
+                            @for (option of scheduleScopeOwnerOptions; track option) {
+                              <option [value]="option">{{ option }}</option>
+                            }
+                          </select>
+                          <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                        </span>
+                      </label>
+                      <label class="matrix-field matrix-field-select dependency-drawer-field">
+                        <span class="matrix-field-label">Product category</span>
+                        <span class="matrix-select-wrap">
+                          <select [value]="scheduleManagementProductDraft.category" (change)="updateScheduleManagementProductDraft('category', $any($event.target).value)" aria-label="Product category">
+                            @for (option of scheduleScopeCategoryOptions; track option) {
+                              <option [value]="option">{{ option }}</option>
+                            }
+                          </select>
+                          <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                        </span>
+                      </label>
+                      <label class="matrix-field dependency-drawer-field">
+                        <span class="matrix-field-label">Start date</span>
+                        <input type="date" [value]="scheduleManagementProductDraft.startDate" (input)="updateScheduleManagementProductDraft('startDate', $any($event.target).value)" aria-label="Start date" />
+                      </label>
+                      <label class="matrix-field dependency-drawer-field">
+                        <span class="matrix-field-label">End date</span>
+                        <input type="date" [value]="scheduleManagementProductDraft.endDate" (input)="updateScheduleManagementProductDraft('endDate', $any($event.target).value)" aria-label="End date" />
+                      </label>
+                      <label class="matrix-field dependency-drawer-field">
+                        <span class="matrix-field-label">CAPEX</span>
+                        <input type="text" [value]="scheduleManagementProductDraft.capex" (input)="updateScheduleManagementProductDraft('capex', $any($event.target).value)" aria-label="CAPEX" placeholder="0" />
+                      </label>
+                      <label class="matrix-field dependency-drawer-field">
+                        <span class="matrix-field-label">OPEX</span>
+                        <input type="text" [value]="scheduleManagementProductDraft.opex" (input)="updateScheduleManagementProductDraft('opex', $any($event.target).value)" aria-label="OPEX" placeholder="0" />
+                      </label>
+                    </div>
+                  </app-pm-console-plan-drawer>
                 }
               } @else if (projectPlanEntry === 'reports') {
                 <div class="project-plan-shell plan-builder-shell quick-plan-shell project-report-shell project-reports-shell">
@@ -5563,6 +6230,696 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                             }
                           </tbody>
                         </table>
+                      </div>
+                    </section>
+                  </main>
+                </div>
+              } @else if (projectPlanEntry === 'stages') {
+                @let activeStage = projectPlanActiveStageRow;
+                @let nextStage = projectPlanNextStageRow;
+                <div class="project-plan-shell plan-builder-shell quick-plan-shell project-report-shell project-reports-shell project-stages-shell">
+                  <main class="project-plan-content plan-builder-workspace quick-plan-workspace project-report-workspace project-stages-workspace">
+                    <section class="project-stages-surface" [attr.aria-label]="scopedProjectName + ' stage roadmap'">
+                      <div class="project-stages-roadmap-band">
+                        <div class="project-stages-head">
+                          <div>
+                            <span class="project-stages-kicker">Stage roadmap</span>
+                            <h2>{{ scopedProjectName }}</h2>
+                            <p>Track every project stage, planned dates, PMO gate status, and the next handoff action from one place.</p>
+                          </div>
+                          <div class="project-stages-active-summary {{ activeStage.statusTone }}">
+                            <span>Active stage</span>
+                            <strong>{{ activeStage.stage.label }}</strong>
+                            <small>{{ activeStage.statusLabel }} · {{ activeStage.startDate }} - {{ activeStage.endDate }}</small>
+                          </div>
+                        </div>
+
+                        <div class="project-stages-progress-panel">
+                          <div class="project-stages-progress-copy">
+                            <span>{{ projectPlanApprovedStageCount }} of {{ projectPlanStageRows.length }} gates approved</span>
+                            <strong>{{ activeStage.stage.gate }}</strong>
+                            <small>{{ projectPlanStageReadinessLabel }}</small>
+                          </div>
+                          <div class="project-stages-progress-track" aria-hidden="true">
+                            <span [style.width]="projectPlanStageProgressWidth"></span>
+                          </div>
+                        </div>
+
+                        <div class="project-stage-roadmap" [style.--stage-count]="projectPlanStageRows.length">
+                          @for (row of projectPlanStageRows; track row.stage.id) {
+                            <article class="project-stage-node {{ row.statusTone }}" [class.is-active]="row.stageIndex === activeStage.stageIndex" [class.is-disabled]="row.actionDisabled">
+                              <div class="project-stage-node-top">
+                                <span class="project-stage-number">{{ row.stageIndex + 1 }}</span>
+                                <span class="project-stage-status-pill {{ row.statusTone }}">{{ row.statusLabel }}</span>
+                              </div>
+                              <h3>{{ row.stage.label }}</h3>
+                              <div class="project-stage-dates" aria-label="Planned stage dates">
+                                <span><small>Planned start</small><strong>{{ row.startDate }}</strong></span>
+                                <span><small>Planned end</small><strong>{{ row.endDate }}</strong></span>
+                              </div>
+                              <div class="project-stage-node-footer">
+                                <button class="project-stage-action-button {{ row.statusTone }}" type="button" (click)="handleProjectPlanStageAction(row)" [disabled]="row.actionDisabled">
+                                  <span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(row.actionIcon)"></i></span>
+                                  <span>{{ row.actionLabel }}</span>
+                                </button>
+                                @if (row.canRevoke) {
+                                  <button class="project-stage-revoke-button" type="button" (click)="openStageRevoke(row)" [attr.aria-label]="'Revoke ' + row.stage.label + ' stage approval'">
+                                    <span class="icon" aria-hidden="true"><i data-lucide="rotate-ccw"></i></span>
+                                    <span>Revoke</span>
+                                  </button>
+                                }
+                              </div>
+                            </article>
+                          }
+                        </div>
+                      </div>
+
+                      <aside class="project-stages-handoff-panel">
+                        <div class="project-stages-handoff-card {{ activeStage.statusTone }}">
+                          <span class="project-stages-handoff-icon" aria-hidden="true"><span class="icon"><i data-lucide="clipboard-check"></i></span></span>
+                          <div>
+                            <span>Next PMO handoff</span>
+                            <h3>{{ activeStage.stage.gate }}</h3>
+                            <p>{{ nextStage ? 'Complete the gate checklist and submit to PMO before moving into ' + nextStage.stage.label + '.' : 'Complete closure gate approval before project close-out.' }}</p>
+                          </div>
+                          <button type="button" (click)="handleProjectPlanStageAction(activeStage)" [disabled]="activeStage.actionDisabled">
+                            <span>{{ activeStage.actionLabel }}</span>
+                            <span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
+                          </button>
+                        </div>
+
+                        <div class="project-stages-mini-list project-stages-workflow-card">
+                          <div class="project-stages-workflow-head">
+                            <span>Gate workflow</span>
+                            <strong>{{ projectPlanWorkflowPositionLabel }}</strong>
+                          </div>
+                          <ol class="project-stages-workflow-steps">
+                            <li class="project-workflow-step" [class.current]="activeStage.status === 'current'" [class.complete]="activeStage.status === 'submitted' || activeStage.status === 'complete'">
+                              <i aria-hidden="true"><span class="icon"><i [attr.data-lucide]="activeStage.status === 'current' ? 'map-pin' : 'check'"></i></span></i>
+                              <div>
+                                <span>{{ activeStage.status === 'current' ? 'You are here' : 'Done' }}</span>
+                                <strong>Complete formalities</strong>
+                                <small>Checklist and evidence prepared</small>
+                              </div>
+                            </li>
+                            <li class="project-workflow-step" [class.current]="activeStage.status === 'submitted'" [class.complete]="activeStage.status === 'complete'" [class.pending]="activeStage.status === 'current'">
+                              <i aria-hidden="true"><span class="icon"><i [attr.data-lucide]="activeStage.status === 'submitted' ? 'hourglass' : activeStage.status === 'complete' ? 'check' : 'send'"></i></span></i>
+                              <div>
+                                <span>{{ activeStage.status === 'submitted' ? 'You are here' : activeStage.status === 'complete' ? 'Done' : 'Next' }}</span>
+                                <strong>Submitted to PMO</strong>
+                                <small>Gate waits for PMO review</small>
+                              </div>
+                            </li>
+                            <li class="project-workflow-step" [class.current]="activeStage.status === 'complete'" [class.pending]="activeStage.status !== 'complete'">
+                              <i aria-hidden="true"><span class="icon"><i [attr.data-lucide]="activeStage.status === 'complete' ? 'check' : 'badge-check'"></i></span></i>
+                              <div>
+                                <span>{{ activeStage.status === 'complete' ? 'You are here' : 'Final step' }}</span>
+                                <strong>Approved by PMO</strong>
+                                <small>Project moves to the next stage</small>
+                              </div>
+                            </li>
+                          </ol>
+                        </div>
+                      </aside>
+                    </section>
+                  </main>
+                </div>
+              } @else if (projectPlanEntry === 'change-request') {
+                <div class="project-plan-shell plan-builder-shell quick-plan-shell project-secondary-shell change-request-shell">
+                  <main class="project-plan-content plan-builder-workspace quick-plan-workspace project-report-workspace project-secondary-workspace change-request-workspace">
+                    <section class="change-request-surface" [attr.aria-label]="scopedProjectName + ' change requests'">
+                      <div class="change-request-board">
+                        <div class="pm-project-table-stats change-request-stats" aria-label="Change request summary">
+                          @for (metric of changeRequestMetrics; track metric.label) {
+                            <article class="pm-project-table-stat change-request-stat {{ metric.tone }}">
+                              <span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(metric.icon)"></i></span></span>
+                              <div><small>{{ metric.label }}</small><strong>{{ metric.value }}</strong></div>
+                            </article>
+                          }
+                        </div>
+
+                        <app-pm-console-toolbar toolbarClass="change-request-table-toolbar">
+                          <nav toolbarLabel class="change-request-tabs change-request-toolbar-tabs" role="tablist" aria-label="Change request status">
+                            @for (tab of changeRequestTabs; track tab.id) {
+                              <button
+                                type="button"
+                                role="tab"
+                                [class.active]="changeRequestStatusFilter === tab.id"
+                                [attr.aria-selected]="changeRequestStatusFilter === tab.id"
+                                (click)="setChangeRequestStatusFilter(tab.id)"
+                              >
+                                <span>{{ tab.label }}</span>
+                                <strong>{{ tab.count }}</strong>
+                              </button>
+                            }
+                          </nav>
+                          <button class="pm-table-tool square" type="button" aria-label="Search change requests"><span pmConsoleIcon="search" aria-hidden="true"></span></button>
+                          <button class="pm-table-tool" type="button"><span pmConsoleIcon="filter" aria-hidden="true"></span><span>Filter</span></button>
+                          <button class="pm-table-tool" type="button"><span pmConsoleIcon="download" aria-hidden="true"></span><span>Export</span></button>
+                          <button class="pm-table-add-project" type="button" (click)="openChangeRequestDrawer()"><span pmConsoleIcon="plus" aria-hidden="true"></span><span>Add new</span></button>
+                        </app-pm-console-toolbar>
+
+                        <div class="pm-project-table-scroll change-request-table-scroll" tabindex="0">
+                          <table class="pm-project-table change-request-table" aria-label="Project change requests">
+                            <thead>
+                              <tr>
+                                <th>PCR Number</th>
+                                <th>Type</th>
+                                <th>Created Date</th>
+                                <th>Due Date</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th aria-label="View"></th>
+                                <th aria-label="Edit"></th>
+                                <th aria-label="Delete"></th>
+                                <th aria-label="Print"></th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              @for (row of visibleChangeRequestRows; track row.id) {
+                                <tr>
+                                  <td><button class="change-request-code" type="button" (click)="openChangeRequestDrawer(row)">{{ row.pcrNumber }}</button></td>
+                                  <td>
+                                    <span class="change-request-type-list">
+                                      @for (type of row.types; track type) {
+                                        <span>{{ type }}</span>
+                                      }
+                                    </span>
+                                  </td>
+                                  <td>{{ changeRequestDateLabel(row.createdDate) }}</td>
+                                  <td>
+                                    <span class="change-request-due" [class.is-overdue]="isOverdueChangeRequest(row)">
+                                      {{ changeRequestDateLabel(row.dueDate) }}
+                                    </span>
+                                  </td>
+                                  <td><span class="change-request-priority {{ changeRequestPriorityTone(row.priority) }}">{{ row.priority }}</span></td>
+                                  <td><span [pmConsoleStatusPill]="row.status" baseClass="pm-table-row-status" [tone]="changeRequestStatusTone(row.status)"></span></td>
+                                  <td class="change-request-action-cell"><button pmConsoleTableAction iconName="eye" type="button" (click)="openChangeRequestDrawer(row)" [attr.aria-label]="'View ' + row.pcrNumber"></button></td>
+                                  <td class="change-request-action-cell"><button pmConsoleTableAction iconName="pencil" type="button" (click)="openChangeRequestDrawer(row)" [attr.aria-label]="'Edit ' + row.pcrNumber"></button></td>
+                                  <td class="change-request-action-cell"><button pmConsoleTableAction iconName="trash-2" actionClass="schedule-table-action danger" type="button" (click)="removeChangeRequest(row.id)" [attr.aria-label]="'Delete ' + row.pcrNumber"></button></td>
+                                  <td class="change-request-action-cell"><button pmConsoleTableAction iconName="printer" type="button" [attr.aria-label]="'Print ' + row.pcrNumber"></button></td>
+                                </tr>
+                              } @empty {
+                                <tr>
+                                  <td colspan="10">
+                                    <div class="change-request-empty">
+                                      <strong>No change requests in this view</strong>
+                                      <span>Create a change request or switch status tabs to review older PCRs.</span>
+                                    </div>
+                                  </td>
+                                </tr>
+                              }
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </section>
+
+                    @if (isChangeRequestDrawerOpen) {
+                      <app-pm-console-plan-drawer
+                        [title]="changeRequestDrawerTitle"
+                        eyebrow="Project change request"
+                        description="Create a single PCR with overview, impact assessment, and evidence links in one side drawer."
+                        [summaryLabel]="changeRequestDrawerSummary"
+                        summary="Save the request as a draft, then submit it to PMO once the impact tabs and supporting links are ready."
+                        [submitLabel]="editingChangeRequestId ? 'Save request' : 'Create request'"
+                        [submitDisabled]="!canSaveChangeRequestDraft()"
+                        closeAriaLabel="Close change request drawer"
+                        panelClass="change-request-drawer"
+                        (close)="closeChangeRequestDrawer()"
+                        (submitForm)="saveChangeRequestDrawer($event)"
+                      >
+                        <div planDrawerBody class="change-request-drawer-body">
+                          <nav class="change-request-drawer-nav" role="tablist" aria-label="Change request drawer sections">
+                            @for (tab of changeRequestDrawerTabs; track tab.id) {
+                              <button
+                                type="button"
+                                role="tab"
+                                [class.active]="changeRequestDrawerTab === tab.id"
+                                [attr.aria-selected]="changeRequestDrawerTab === tab.id"
+                                (click)="setChangeRequestDrawerTab(tab.id)"
+                              >
+                                <span [pmConsoleIcon]="iconName(tab.icon)" aria-hidden="true"></span>
+                                <span>{{ tab.label }}</span>
+                              </button>
+                            }
+                          </nav>
+
+                          @if (changeRequestDrawerTab === 'overview') {
+                            <section class="change-request-drawer-section" aria-label="Change request overview">
+                              <div class="change-request-context-grid">
+                                <div>
+                                  <span>Project</span>
+                                  <strong>{{ changeRequestDraft.project }}</strong>
+                                </div>
+                                <div>
+                                  <span>PMO</span>
+                                  <strong>{{ changeRequestDraft.pmo }}</strong>
+                                </div>
+                              </div>
+
+                              <div class="dependency-drawer-grid change-request-overview-grid">
+                                <app-pm-console-field label="Due Date" type="date" [value]="changeRequestDraft.dueDate" ariaLabel="Due Date" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateChangeRequestDraft('dueDate', $event)" />
+                                <app-pm-console-field label="Trigger" type="select" [value]="changeRequestDraft.trigger" [options]="changeRequestTriggerOptions" placeholder="Select trigger" ariaLabel="Trigger" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateChangeRequestDraft('trigger', $event)" />
+
+                                <section class="change-request-choice-card wide" aria-label="Priority">
+                                  <span class="matrix-field-label">Priority <b>*</b></span>
+                                  <div class="change-request-radio-row">
+                                    @for (priority of changeRequestPriorityOptions; track priority) {
+                                      <label>
+                                        <input type="radio" name="change-request-priority" [checked]="changeRequestDraft.priority === priority" (change)="updateChangeRequestDraft('priority', priority)" />
+                                        <span>{{ priority }}</span>
+                                      </label>
+                                    }
+                                  </div>
+                                </section>
+
+                                <section class="change-request-choice-card wide" aria-label="Change request type">
+                                  <span class="matrix-field-label">Type of change <b>*</b></span>
+                                  <div class="change-request-type-options">
+                                    @for (type of changeRequestTypeOptions; track type) {
+                                      <label [class.active]="isChangeRequestTypeSelected(type)">
+                                        <input type="checkbox" [checked]="isChangeRequestTypeSelected(type)" (change)="toggleChangeRequestType(type, $any($event.target).checked)" />
+                                        <span>{{ type }}</span>
+                                      </label>
+                                    }
+                                  </div>
+                                </section>
+
+                                <app-pm-console-field label="Change Details" type="textarea" [value]="changeRequestDraft.changeDetails" placeholder="Describe the requested change" ariaLabel="Change Details" fieldClass="dependency-drawer-field" [maxLength]="3000" [wide]="true" [afterText]="changeRequestCommentCharactersRemaining + ' characters remaining'" afterClass="change-impact-comment-count" (valueChange)="updateChangeRequestDraft('changeDetails', $event)" />
+                                <app-pm-console-field label="Business Justification" type="textarea" [value]="changeRequestDraft.businessJustification" placeholder="Explain why the project needs this change" ariaLabel="Business Justification" fieldClass="dependency-drawer-field" [maxLength]="3000" [wide]="true" (valueChange)="updateChangeRequestDraft('businessJustification', $event)" />
+                                <app-pm-console-field label="Risk / Impact of Change" type="textarea" [value]="changeRequestDraft.riskImpact" placeholder="Summarize delivery, governance, and adoption risk" ariaLabel="Risk / Impact of Change" fieldClass="dependency-drawer-field" [maxLength]="3000" [wide]="true" (valueChange)="updateChangeRequestDraft('riskImpact', $event)" />
+                                <app-pm-console-field label="Release(s) Impacted" type="textarea" [value]="changeRequestDraft.releasesImpacted" placeholder="List impacted releases or governance packs" ariaLabel="Releases Impacted" fieldClass="dependency-drawer-field" [maxLength]="3000" [wide]="true" (valueChange)="updateChangeRequestDraft('releasesImpacted', $event)" />
+                              </div>
+                            </section>
+                          } @else if (changeRequestDrawerTab === 'impact') {
+                            <section class="change-request-drawer-section" aria-label="Impact assessment">
+                              <div class="dependency-drawer-grid change-request-impact-fields">
+                                <app-pm-console-field label="Impact to Resource" type="textarea" [value]="changeRequestDraft.impactToResource" placeholder="Describe resource impact" ariaLabel="Impact to Resource" fieldClass="dependency-drawer-field" [maxLength]="3000" [wide]="true" (valueChange)="updateChangeRequestDraft('impactToResource', $event)" />
+                                <app-pm-console-field label="Impact to Quality" type="textarea" [value]="changeRequestDraft.impactToQuality" placeholder="Describe quality impact" ariaLabel="Impact to Quality" fieldClass="dependency-drawer-field" [maxLength]="3000" [wide]="true" (valueChange)="updateChangeRequestDraft('impactToQuality', $event)" />
+                              </div>
+
+                              <div class="change-request-impact-tabs" role="tablist" aria-label="Impact assessment tables">
+                                @for (tab of changeRequestImpactTabs; track tab.id) {
+                                  <button type="button" role="tab" [class.active]="changeRequestImpactTab === tab.id" [attr.aria-selected]="changeRequestImpactTab === tab.id" (click)="setChangeRequestImpactTab(tab.id)">{{ tab.label }}</button>
+                                }
+                              </div>
+
+                              @if (changeRequestImpactTab === 'benefits') {
+                                <div class="dependency-register-table-shell change-request-drawer-table-shell">
+                                  <table class="dependency-register-table change-request-drawer-table" aria-label="Impacted benefits">
+                                    <thead><tr><th>End Benefit</th><th>Benefit Profile</th><th>Benefit Owner</th><th>Product</th></tr></thead>
+                                    <tbody>
+                                      @for (row of changeRequestImpactBenefits; track row.benefit) {
+                                        <tr><td class="dependency-register-primary"><strong>{{ row.benefit }}</strong></td><td>{{ row.profile }}</td><td>{{ row.owner }}</td><td>{{ row.product }}</td></tr>
+                                      }
+                                    </tbody>
+                                  </table>
+                                </div>
+                              } @else if (changeRequestImpactTab === 'capabilities') {
+                                <div class="dependency-register-table-shell change-request-drawer-table-shell">
+                                  <table class="dependency-register-table change-request-drawer-table" aria-label="Impacted capabilities">
+                                    <thead><tr><th>Capability Group Name</th><th>Capability Name</th><th>Capability Manager</th><th>Products</th></tr></thead>
+                                    <tbody>
+                                      @for (row of changeRequestImpactCapabilities; track row.group + row.capability) {
+                                        <tr><td>{{ row.group }}</td><td class="dependency-register-primary"><strong>{{ row.capability }}</strong></td><td>{{ row.manager }}</td><td>{{ row.products }}</td></tr>
+                                      }
+                                    </tbody>
+                                  </table>
+                                </div>
+                              } @else {
+                                <div class="dependency-register-table-shell change-request-drawer-table-shell">
+                                  <table class="dependency-register-table change-request-drawer-table change-request-project-impact-table" aria-label="Impacted projects and products">
+                                    <thead><tr><th>Impacted Project</th><th>Project Manager</th><th>Products</th></tr></thead>
+                                    <tbody>
+                                      @for (row of changeRequestImpactProjects; track row.project) {
+                                        <tr>
+                                          <td class="dependency-register-primary"><strong>{{ row.project }}</strong></td>
+                                          <td>{{ row.manager }}</td>
+                                          <td>
+                                            <ul class="change-request-product-list">
+                                              @for (product of row.products; track product) {
+                                                <li>{{ product }}</li>
+                                              }
+                                            </ul>
+                                          </td>
+                                        </tr>
+                                      }
+                                    </tbody>
+                                  </table>
+                                </div>
+                              }
+                            </section>
+                          } @else {
+                            <section class="change-request-drawer-section" aria-label="Related links">
+                              <div class="dependency-drawer-grid change-request-link-grid">
+                                <app-pm-console-field label="Name" [value]="changeRequestDraft.relatedLinkName" placeholder="Enter link name" ariaLabel="Related link name" fieldClass="dependency-drawer-field" (valueChange)="updateChangeRequestRelatedLinkDraft('relatedLinkName', $event)" />
+                                <app-pm-console-field label="Link To Document" [value]="changeRequestDraft.relatedLinkUrl" placeholder="Paste document link" ariaLabel="Related link document" fieldClass="dependency-drawer-field" (valueChange)="updateChangeRequestRelatedLinkDraft('relatedLinkUrl', $event)" />
+                                <app-pm-console-field label="Description" type="textarea" [value]="changeRequestDraft.relatedLinkDescription" placeholder="Add description" ariaLabel="Related link description" fieldClass="dependency-drawer-field" [wide]="true" (valueChange)="updateChangeRequestRelatedLinkDraft('relatedLinkDescription', $event)" />
+                                <button class="change-request-add-link wide" type="button" [disabled]="!canAddChangeRequestRelatedLink()" (click)="addChangeRequestRelatedLink()">
+                                  <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>
+                                  <span>Add related link</span>
+                                </button>
+                              </div>
+
+                              @if (changeRequestDraft.relatedLinks.length) {
+                                <div class="dependency-register-table-shell change-request-drawer-table-shell">
+                                  <table class="dependency-register-table change-request-drawer-table" aria-label="Related links added to change request">
+                                    <thead><tr><th>Name</th><th>Description</th><th>Document</th><th></th></tr></thead>
+                                    <tbody>
+                                      @for (link of changeRequestDraft.relatedLinks; track link.id) {
+                                        <tr>
+                                          <td class="dependency-register-primary"><strong>{{ link.name }}</strong></td>
+                                          <td>{{ link.description || 'No description added' }}</td>
+                                          <td class="related-links-register-access"><strong><a [href]="relatedLinkHref(link.documentLink)" target="_blank" rel="noreferrer">Open document</a></strong><small>{{ link.documentLink }}</small></td>
+                                          <td class="schedule-table-actions"><button pmConsoleTableAction iconName="trash-2" actionClass="schedule-table-action danger" type="button" (click)="removeChangeRequestRelatedLink(link.id)" [attr.aria-label]="'Remove ' + link.name"></button></td>
+                                        </tr>
+                                      }
+                                    </tbody>
+                                  </table>
+                                </div>
+                              } @else {
+                                <div class="change-request-related-empty">
+                                  <span class="icon" aria-hidden="true"><i data-lucide="link-2-off"></i></span>
+                                  <strong>No related link(s) added.</strong>
+                                  <p>Add approvals, source packs, or supporting documents that PMO should review with this PCR.</p>
+                                </div>
+                              }
+                            </section>
+                          }
+                        </div>
+                      </app-pm-console-plan-drawer>
+                    }
+                  </main>
+                </div>
+              } @else if (projectPlanEntry === 'closure') {
+                <div class="project-plan-shell plan-builder-shell quick-plan-shell project-secondary-shell project-closure-shell">
+                  <main class="project-plan-content plan-builder-workspace quick-plan-workspace project-report-workspace project-secondary-workspace project-closure-workspace">
+                    <section class="project-closure-surface" [attr.aria-label]="scopedProjectName + ' closure workspace'">
+                      <aside class="project-closure-nav" aria-label="Closure sections">
+                        <div class="project-closure-nav-head">
+                          <span class="icon" aria-hidden="true"><i data-lucide="file-check-2"></i></span>
+                          <div>
+                            <strong>Closure report</strong>
+                            <small>Draft evidence pack</small>
+                          </div>
+                        </div>
+                        <div class="project-closure-nav-list" role="tablist" aria-label="Closure report sections">
+                          @for (item of closureNavigationItems; track item.id) {
+                            <button
+                              type="button"
+                              role="tab"
+                              [class.active]="activeClosureSection === item.id"
+                              [attr.aria-selected]="activeClosureSection === item.id"
+                              (click)="setClosureSection(item.id)"
+                            >
+                              <span class="project-closure-nav-icon" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="iconName(item.icon)"></i></span></span>
+                              <span>{{ item.label }}</span>
+                              @if (item.count !== undefined) { <strong>{{ item.count }}</strong> }
+                            </button>
+                          }
+                        </div>
+                      </aside>
+
+                      <div class="project-closure-board">
+                        <header class="project-closure-head">
+                          <div>
+                            <span class="change-request-kicker">Project closure</span>
+                            <h2>{{ activeClosureNavItem.label }}</h2>
+                            <p>Record final evidence, open actions, and handover notes for PMO review.</p>
+                          </div>
+                          <div class="project-closure-actions" aria-label="Closure actions">
+                            <button class="project-closure-secondary" type="button"><span pmConsoleIcon="save" aria-hidden="true"></span><span>Save draft</span></button>
+                            <button class="change-request-primary" type="button"><span pmConsoleIcon="send" aria-hidden="true"></span><span>Submit closure</span></button>
+                          </div>
+                        </header>
+
+                        <div class="project-closure-metric-grid" aria-label="Closure summary">
+                          @for (metric of closureOverviewMetrics; track metric.label) {
+                            <article class="project-closure-metric {{ metric.tone }}">
+                              <span class="project-closure-metric-icon" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="iconName(metric.icon)"></i></span></span>
+                              <div><small>{{ metric.label }}</small><strong>{{ metric.value }}</strong><p>{{ metric.helper }}</p></div>
+                            </article>
+                          }
+                        </div>
+
+                        @switch (activeClosureSection) {
+                          @case ('overview') {
+                            <section class="project-closure-section" aria-label="Closure overview">
+                              <div class="closure-overview-layout">
+                                <div class="closure-overview-main">
+                                  <article class="closure-form-card">
+                                    <div class="closure-form-head">
+                                      <div>
+                                        <span>Close-out controls</span>
+                                        <h3>Closure overview</h3>
+                                        <p>Confirm the reason, owner, reviewer, and target gate before completing the closure notes.</p>
+                                      </div>
+                                    </div>
+                                    <div class="closure-overview-fields">
+                                      <label class="matrix-field matrix-field-select closure-reason-field">
+                                        <span class="matrix-field-label">Reason for closure <b>*</b></span>
+                                        <span class="matrix-select-wrap">
+                                          <select aria-label="Reason for closure">
+                                            @for (option of closureReasonOptionsList; track option) {
+                                              <option [selected]="option === 'Delivered as planned'">{{ option }}</option>
+                                            }
+                                          </select>
+                                          <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                                        </span>
+                                      </label>
+                                      <div class="closure-readonly-field"><span>Closure owner</span><strong>Muna Hassan</strong></div>
+                                      <div class="closure-readonly-field"><span>PMO reviewer</span><strong>PMO Desk</strong></div>
+                                      <div class="closure-readonly-field"><span>Gate target</span><strong>31/12/2026</strong></div>
+                                    </div>
+                                  </article>
+
+                                  <div class="closure-editor-grid">
+                                    @for (block of closureOverviewBlockList; track block.id) {
+                                      <article class="closure-editor-card">
+                                        <header>
+                                          <span class="closure-editor-icon" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="iconName(block.icon)"></i></span></span>
+                                          <div><strong>{{ block.title }}</strong><small>{{ block.description }}</small></div>
+                                        </header>
+                                        <textarea [value]="block.value" [attr.aria-label]="block.title" [attr.maxlength]="block.maxLength"></textarea>
+                                        <span class="closure-character-count">Characters: {{ closureCharacterCount(block) }}</span>
+                                      </article>
+                                    }
+                                  </div>
+                                </div>
+
+                                <aside class="closure-readiness-panel" aria-label="Closure readiness checklist">
+                                  <div class="closure-readiness-head">
+                                    <span>{{ closureReadinessPercent }}%</span>
+                                    <div>
+                                      <strong>Readiness</strong>
+                                      <small>{{ closureReadyItemCount }} of {{ closureChecklistList.length }} checks ready</small>
+                                    </div>
+                                  </div>
+                                  <div class="closure-readiness-track" aria-hidden="true"><span [style.width.%]="closureReadinessPercent"></span></div>
+                                  <div class="closure-checklist">
+                                    @for (item of closureChecklistList; track item.label) {
+                                      <article class="{{ item.tone }}">
+                                        <span class="icon" aria-hidden="true"><i [attr.data-lucide]="item.tone === 'green' ? 'check' : item.tone === 'amber' ? 'clock-3' : 'circle-dot'"></i></span>
+                                        <div><strong>{{ item.label }}</strong><small>{{ item.state }}</small></div>
+                                      </article>
+                                    }
+                                  </div>
+                                </aside>
+                              </div>
+
+                              <div class="closure-two-column">
+                                <app-pm-console-plan-table
+                                  title="Follow up actions"
+                                  eyebrow="Closure"
+                                  description="Actions that remain open after closure submission."
+                                  [countLabel]="closureFollowUpActionList.length + ' actions'"
+                                  actionLabel="Add action"
+                                  [iconName]="iconName('todo')"
+                                  panelClass="closure-table-card"
+                                >
+                                  <div class="dependency-register-table-shell">
+                                    <table class="dependency-register-table closure-action-table" aria-label="Closure follow up actions">
+                                      <thead><tr><th>Action</th><th>Owner</th><th>Due date</th><th>Status</th></tr></thead>
+                                      <tbody>
+                                        @for (row of closureFollowUpActionList; track row.id) {
+                                          <tr><td class="dependency-register-primary"><strong>{{ row.action }}</strong></td><td>{{ row.owner }}</td><td>{{ closureDateLabel(row.dueDate) }}</td><td><span [pmConsoleStatusPill]="row.status" baseClass="dependency-register-pill" [tone]="row.tone"></span></td></tr>
+                                        }
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </app-pm-console-plan-table>
+
+                                <app-pm-console-plan-table
+                                  title="Recommendations"
+                                  eyebrow="Closure"
+                                  description="Recommendations carried into BAU or future projects."
+                                  [countLabel]="closureRecommendationList.length + ' recommendations'"
+                                  actionLabel="Add recommendation"
+                                  [iconName]="iconName('lessons')"
+                                  panelClass="closure-table-card"
+                                >
+                                  <div class="closure-recommendation-list">
+                                    @for (row of closureRecommendationList; track row.id) {
+                                      <article>
+                                        <span [pmConsoleStatusPill]="row.status" baseClass="dependency-register-pill" [tone]="row.tone"></span>
+                                        <strong>{{ row.recommendation }}</strong>
+                                        <small>{{ row.category }} · {{ row.owner }}</small>
+                                      </article>
+                                    }
+                                  </div>
+                                </app-pm-console-plan-table>
+                              </div>
+                            </section>
+                          }
+
+                          @case ('budget') {
+                            @let year = activeBudgetYear;
+                            <section class="project-closure-section closure-budget-section" aria-label="Closure budget">
+                              <article class="budget-section budget-overview-panel closure-budget-panel">
+                                <div class="budget-section-head">
+                                  <div>
+                                    <h3>Budget overview <span class="icon budget-info-icon" aria-hidden="true"><i data-lucide="info"></i></span></h3>
+                                    <p>Final budget position reused from the project plan budget model for closure reconciliation.</p>
+                                  </div>
+                                  <button class="budget-outline-action" type="button">View monthly evidence</button>
+                                </div>
+                                <div class="budget-overview-summary-grid closure-budget-summary-grid" aria-label="Closure budget overview totals">
+                                  @for (metric of activeBudgetOverviewMetrics; track metric.label) {
+                                    <article class="budget-summary-cell {{ metric.tone }}"><span>{{ metric.label }}</span><strong>{{ metric.value }}</strong><small>{{ metric.helper }}</small></article>
+                                  }
+                                </div>
+                              </article>
+
+                              <app-pm-console-plan-table
+                                title="Project budget at closure"
+                                eyebrow="Budget"
+                                [description]="closureBudgetSummaryLabel"
+                                [countLabel]="year ? year.fy : 'No FY selected'"
+                                [iconName]="iconName('dollar')"
+                                panelClass="budget-table-card closure-table-card"
+                              >
+                                <div class="budget-table-wrap">
+                                  <table class="budget-table budget-project-table" aria-label="Closure budget by stream">
+                                    <thead><tr><th></th><th>FY Baseline</th><th>FY Forecast</th><th>Forecast Variance</th><th>Committed</th><th>YTD Actual</th><th>Available Budget</th></tr></thead>
+                                    <tbody>
+                                      @for (row of activeBudgetBreakdownRows; track row.stream) {
+                                        <tr [class.is-total]="row.stream === 'Total'">
+                                          <th scope="row">{{ row.stream }}</th>
+                                          <td>{{ formatBudgetCurrency(row.baseline) }}</td>
+                                          <td>{{ formatBudgetCurrency(row.forecast) }}</td>
+                                          <td class="budget-variance-cell {{ budgetVarianceTone(budgetStreamVariance(row)) }}"><strong>{{ formatBudgetSignedCurrency(budgetStreamVariance(row)) }}</strong><small>{{ formatBudgetPercent(budgetStreamVariance(row), row.baseline) }}</small></td>
+                                          <td>{{ formatBudgetCurrency(row.committed) }}</td>
+                                          <td>{{ formatBudgetCurrency(row.actual) }}</td>
+                                          <td class="budget-available-cell {{ budgetStreamAvailable(row) < 0 ? 'red' : 'green' }}">{{ formatBudgetCurrency(budgetStreamAvailable(row)) }}</td>
+                                        </tr>
+                                      }
+                                    </tbody>
+                                  </table>
+                                </div>
+                                <div class="budget-table-footer"><span>{{ closureBudgetEvidenceCount }} linked across funding sources and monthly phasing.</span><button class="budget-primary-action" type="button">Confirm reconciliation</button></div>
+                              </app-pm-console-plan-table>
+
+                              <article class="closure-comment-card">
+                                <label class="matrix-field matrix-field-textarea wide"><span class="matrix-field-label">Overall budget comments</span><textarea aria-label="Overall budget comments">Final budget position is within tolerance. Finance reconciliation should confirm funding source allocation before PMO approval.</textarea></label>
+                              </article>
+                            </section>
+                          }
+
+                          @case ('benefits') {
+                            <section class="project-closure-section" aria-label="Closure benefits">
+                              <article class="closure-section-intro">
+                                <div><span>Benefit Manager</span><strong>{{ closureBenefitManager }}</strong></div>
+                                <p>Benefits are carried forward from the project plan register so realization ownership survives closure.</p>
+                              </article>
+                              <app-pm-console-plan-table
+                                title="Benefits"
+                                eyebrow="Closure"
+                                description="Benefit categories, owner, realization date, and measurement coverage."
+                                [countLabel]="closureBenefitRowList.length + ' benefits'"
+                                [iconName]="iconName('benefit')"
+                                panelClass="closure-table-card"
+                              >
+                                <div class="dependency-register-table-shell closure-wide-table">
+                                  <table class="dependency-register-table closure-benefit-table" aria-label="Closure benefits">
+                                    <thead><tr><th>Benefit category</th><th>Benefit name</th><th>Owner</th><th>Realization date</th><th>Measures</th><th>Status</th></tr></thead>
+                                    <tbody>
+                                      @for (row of closureBenefitRowList; track row.benefit) {
+                                        <tr><td>{{ row.category }}</td><td class="dependency-register-primary"><strong>{{ row.benefit }}</strong></td><td>{{ row.owner }}</td><td>{{ closureDateLabel(row.realizationDate) }}</td><td>{{ row.measures }}</td><td><span [pmConsoleStatusPill]="row.status" baseClass="dependency-register-pill" [tone]="row.tone"></span></td></tr>
+                                      }
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </app-pm-console-plan-table>
+                              <article class="closure-comment-card"><label class="matrix-field matrix-field-textarea wide"><span class="matrix-field-label">Overall benefits comments</span><textarea aria-label="Overall benefits comments">Realization tracking continues after close-out with the named benefit owners. Measures without targets should be reviewed in the first BAU checkpoint.</textarea></label></article>
+                            </section>
+                          }
+
+                          @case ('risk') {
+                            <section class="project-closure-section" aria-label="Closure risks">
+                              <app-pm-console-plan-table
+                                title="Major known risks"
+                                eyebrow="Closure"
+                                description="Residual risks that remain visible at closure."
+                                [countLabel]="closureRiskRowList.length + ' risks'"
+                                [iconName]="iconName('risks')"
+                                panelClass="closure-table-card"
+                              >
+                                <div class="dependency-register-table-shell closure-wide-table">
+                                  <table class="dependency-register-table closure-risk-table" aria-label="Closure risks">
+                                    <thead><tr><th>Risk ID</th><th>Risk name</th><th>AR</th><th>Treatment</th><th>RR</th><th>Start date</th><th>End date</th><th>Status</th></tr></thead>
+                                    <tbody>
+                                      @for (row of closureRiskRowList; track row.id) {
+                                        <tr><td><span class="pm-table-code">{{ row.id }}</span></td><td class="dependency-register-primary"><strong>{{ row.risk }}</strong></td><td><span class="risk-rating-swatch {{ riskRatingTone(row.actualRating) }}"></span></td><td>{{ row.treatments }}</td><td><span class="risk-rating-swatch {{ riskRatingTone(row.residualRating) }}"></span></td><td>{{ closureDateLabel(row.startDate) }}</td><td>{{ closureDateLabel(row.endDate) }}</td><td><span [pmConsoleStatusPill]="row.status" baseClass="dependency-register-pill" [tone]="riskStatusTone(row.status)"></span></td></tr>
+                                      }
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </app-pm-console-plan-table>
+                              <article class="closure-comment-card"><label class="matrix-field matrix-field-textarea wide"><span class="matrix-field-label">Overall risk comments</span><textarea aria-label="Overall risk comments">Residual risks are acceptable for closure once BAU ownership confirms the monitoring cadence and escalations path.</textarea></label></article>
+                            </section>
+                          }
+
+                          @case ('issues') {
+                            <section class="project-closure-section" aria-label="Closure issues">
+                              <app-pm-console-toolbar [itemLabel]="'Items: ' + closureIssueRowList.length">
+                                <button class="pm-table-tool square" type="button" aria-label="Search closure issues"><span pmConsoleIcon="search" aria-hidden="true"></span></button>
+                                <button class="pm-table-tool" type="button"><span pmConsoleIcon="filter" aria-hidden="true"></span><span>Filter</span></button>
+                                <button class="pm-table-tool" type="button"><span pmConsoleIcon="download" aria-hidden="true"></span><span>Export</span></button>
+                              </app-pm-console-toolbar>
+                              <div class="pm-project-table-scroll closure-issue-table-scroll" tabindex="0">
+                                <table class="pm-project-table closure-issue-table" aria-label="Closure issues">
+                                  <thead><tr><th>Issue ID</th><th>Issue</th><th>Issue type</th><th>Resolution</th><th>Criticality</th><th>Status</th><th>Owner</th><th>Due date</th></tr></thead>
+                                  <tbody>
+                                    @for (row of closureIssueRowList; track row.id) {
+                                      <tr><td>{{ row.id }}</td><td>{{ row.issue }}</td><td>{{ row.type }}</td><td>{{ row.resolution }}</td><td><span class="issue-register-criticality-pill {{ issueCriticalityTone(row.criticality) }}">{{ row.criticality }}</span></td><td><span [pmConsoleStatusPill]="row.status" baseClass="dependency-register-pill" [tone]="issueStatusTone(row.status)"></span></td><td>{{ row.owner }}</td><td>{{ closureDateLabel(row.dueDate) }}</td></tr>
+                                    }
+                                  </tbody>
+                                </table>
+                              </div>
+                              <article class="closure-comment-card"><label class="matrix-field matrix-field-textarea wide"><span class="matrix-field-label">Overall issue comments</span><textarea aria-label="Overall issue comments">Open issues have resolutions and owners. PMO should confirm no issue blocks sponsor acceptance before closure approval.</textarea></label></article>
+                            </section>
+                          }
+
+                          @case ('lessons') {
+                            <section class="project-closure-section" aria-label="Closure lessons learnt">
+                              <div class="closure-lessons-head">
+                                <div><span class="change-request-kicker">Lessons learnt</span><h3>Learning captured for future projects</h3></div>
+                                <button class="project-closure-secondary" type="button"><span pmConsoleIcon="plus" aria-hidden="true"></span><span>Add new</span></button>
+                              </div>
+                              <div class="dependency-register-table-shell closure-wide-table">
+                                <table class="dependency-register-table closure-lessons-table" aria-label="Closure lessons learnt">
+                                  <thead><tr><th>Title</th><th>Category</th><th>Issues</th><th>Recommendations</th><th aria-label="Edit"></th><th aria-label="Delete"></th></tr></thead>
+                                  <tbody>
+                                    @for (row of closureLessonRowList; track row.title) {
+                                      <tr><td>{{ row.title }}</td><td>{{ row.category }}</td><td>{{ row.issue }}</td><td>{{ row.recommendation }}</td><td class="change-request-action-cell"><button pmConsoleTableAction iconName="pencil" type="button" [attr.aria-label]="'Edit ' + row.title"></button></td><td class="change-request-action-cell"><button pmConsoleTableAction iconName="trash-2" actionClass="schedule-table-action danger" type="button" [attr.aria-label]="'Delete ' + row.title"></button></td></tr>
+                                    }
+                                  </tbody>
+                                </table>
+                              </div>
+                            </section>
+                          }
+                        }
                       </div>
                     </section>
                   </main>
@@ -6089,6 +7446,29 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
     </main>
 
     @if (activeReportProject) {
+      <app-pm-console-report-drawer
+        [projectName]="activeReport.project"
+        [details]="activeReportDetails"
+        [activeMode]="activeReportMode"
+        [activeSection]="activeReportSection"
+        [reportSections]="reportSections"
+        [statusOptions]="reportStatusOptions"
+        [trendOptions]="simpleReportTrendOptions"
+        [overviewCard]="simpleReportOverviewCard"
+        [simpleCards]="simpleReportCards"
+        [detailedCards]="detailedReportCards"
+        [overviewFields]="detailedOverviewFields"
+        [scopeProducts]="scopeProducts"
+        [sectionDetails]="reportSectionDetails"
+        [detailItemMap]="detailedReportItemMap"
+        (close)="closeReport()"
+        (save)="saveReport($event)"
+        (modeChange)="setReportMode($event)"
+        (sectionChange)="setReportSection($event)"
+      ></app-pm-console-report-drawer>
+    }
+
+    @if (false && activeReportProject) {
       <div class="report-drawer-shell" aria-live="polite">
         <button class="report-drawer-backdrop" type="button" (click)="closeReport()" aria-label="Close report drawer"></button>
         <aside class="report-drawer" [attr.aria-label]="activeReport.project + ' report draft'">
@@ -6416,32 +7796,76 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
             <div>
               <span class="eyebrow">{{ gate.profile.project }}</span>
               <h2>{{ gate.stage.gate }}</h2>
-              <p>{{ gate.stage.label }} stage gate submission</p>
+              <p>{{ gate.stage.label }} stage gate submission to PMO</p>
             </div>
           </div>
           <div class="drawer-status-card {{ gate.status }}">
             <strong>{{ stageStatusLabel(gate.status) }}</strong>
-            <span>{{ gateReadinessText(gate.profile, gate.status) }} • Due {{ gate.profile.gateDue }}</span>
+            <span>{{ gateReadinessText(gate) }} · Due {{ gate.profile.gateDue }}</span>
           </div>
-          <form class="stage-gate-form" (submit)="submitStageGate($event, gate.status)">
-            <div class="drawer-section">
-              <span class="drawer-section-title">Checklist</span>
+          <form class="stage-gate-form" (submit)="submitStageGate($event, gate)">
+            <div class="stage-gate-drawer-body">
+              <div class="drawer-section stage-checklist-section">
+                <div class="drawer-section-headline">
+                  <span class="drawer-section-title">PMO checklist</span>
+                  <small>{{ gate.checkedCount }}/{{ gate.profile.gateTotal }} complete</small>
+                </div>
               @for (item of gate.profile.checklist; track item; let index = $index) {
-                <label>
-                  <input type="checkbox" [checked]="index < gate.checkedCount" [disabled]="gate.status === 'complete'" />
+                <label class="stage-checklist-item" [class.checked]="isStageGateChecklistChecked(gate, index)">
+                  <input type="checkbox" [checked]="isStageGateChecklistChecked(gate, index)" [disabled]="!canEditStageGateChecklist(gate.status)" (change)="toggleStageGateChecklistItem(gate, index, $any($event.target).checked)" />
+                  <i aria-hidden="true"><span class="icon"><i data-lucide="check"></i></span></i>
                   <span>{{ item }}</span>
                 </label>
               }
+              </div>
+
+              <div class="drawer-section stage-evidence-section" [class.is-attached]="isStageGateEvidenceAttached(gate)">
+                <div class="drawer-section-headline">
+                  <span class="drawer-section-title">Evidence</span>
+                  <small>{{ stageGateEvidenceEnabled(gate) ? (isStageGateEvidenceAttached(gate) ? 'Attached' : 'Required') : 'Not required' }}</small>
+                </div>
+                @if (stageGateEvidenceEnabled(gate)) {
+                  <p>{{ gate.profile.checkpoint }}</p>
+                  <label class="stage-evidence-upload">
+                    <input type="file" (change)="markStageGateEvidenceAttached(gate)" [disabled]="!canEditStageGateChecklist(gate.status)" />
+                    <span class="icon" aria-hidden="true"><i [attr.data-lucide]="isStageGateEvidenceAttached(gate) ? 'file-check-2' : 'upload-cloud'"></i></span>
+                    <strong>{{ isStageGateEvidenceAttached(gate) ? 'Evidence pack attached' : 'Attach proof of work' }}</strong>
+                    <small>{{ isStageGateEvidenceAttached(gate) ? 'Ready to submit with checklist' : 'Upload artefact, sign-off, or work proof requested by PMO' }}</small>
+                  </label>
+                } @else {
+                  <p>PMO has not enabled evidence capture for this gate.</p>
+                }
+              </div>
+
+              <div class="stage-gate-review-flow" aria-label="Stage gate workflow">
+                <span [class.active]="gate.status === 'current'">Ready</span>
+                <i></i>
+                <span [class.active]="gate.status === 'submitted'">Submitted</span>
+                <i></i>
+                <span [class.active]="gate.status === 'complete'">Approved</span>
+              </div>
             </div>
-            <div class="drawer-section compact">
-              <span class="drawer-section-title">Evidence</span>
-              <p>{{ gate.profile.checkpoint }}</p>
-            </div>
-            <button class="drawer-submit" type="submit" [disabled]="!canSubmitStageGate(gate.status)">
+            <button class="drawer-submit" type="submit" [disabled]="!canSubmitStageGate(gate)">
               {{ stageGateSubmitLabel(gate.status) }}
             </button>
           </form>
         </aside>
+      </div>
+    }
+
+    @if (selectedStageRevokeContext; as revokeGate) {
+      <div class="stage-revoke-dialog-shell" aria-live="polite">
+        <button class="stage-revoke-backdrop" type="button" (click)="closeStageRevoke()" aria-label="Cancel stage revoke"></button>
+        <section class="stage-revoke-dialog" role="dialog" aria-modal="true" [attr.aria-label]="'Revoke ' + revokeGate.stage.label + ' stage approval'">
+          <button class="drawer-close stage-revoke-close" type="button" (click)="closeStageRevoke()" aria-label="Close revoke confirmation"><span class="icon" aria-hidden="true"><i data-lucide="x"></i></span></button>
+          <span class="project-stages-kicker">Revoke stage</span>
+          <h2>{{ revokeGate.stage.label }} approval will be revoked</h2>
+          <p>The project will move back to {{ revokeGate.stage.label }}. Later stage progress and PMO approvals will need to be resubmitted.</p>
+          <div class="stage-revoke-actions">
+            <button class="report-secondary-button" type="button" (click)="closeStageRevoke()">Cancel</button>
+            <button class="report-submit-button danger" type="button" (click)="confirmStageRevoke(revokeGate)">Revoke stage</button>
+          </div>
+        </section>
       </div>
     }
 
@@ -6543,7 +7967,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   readonly projectReportMetrics = ['Total Reports', 'Reports Overview', 'Reporting Compliance'];
   readonly projectReportsRows = projectReportsRows;
   readonly projectReportTrendPoints = projectReportTrendPoints;
-  readonly reportSections = ['Overview', 'Scope', 'Schedule', 'Budget', 'Benefits', 'Risks', 'Issues', 'Resource', 'Dependency'];
+  readonly reportSections = ['Overview', 'Scope', 'Schedule', 'Budget', 'Benefits', 'Risks', 'Issues', 'Resource', 'Dependencies'];
   readonly reportStatusOptions = [
     { label: 'On track', simpleLabel: 'On track', value: 'On track', tone: 'green', icon: 'checkMark' },
     { label: 'Alert/Discuss', simpleLabel: 'Alert', value: 'Alert', tone: 'amber', icon: 'alert' },
@@ -6556,27 +7980,415 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   ];
   readonly pastOverviewTrend = ['31/03/2026', '31/12/2025', '30/09/2025', '30/06/2025', '31/12/2024'];
   readonly scopePastStatuses = [
-    { date: '31/03/2026', tone: 'red', label: 'Off track' },
-    { date: '31/12/2025', tone: 'amber', label: 'Alert/Discuss' },
-    { date: '30/09/2025', tone: 'red', label: 'Off track' },
-    { date: '30/06/2025', tone: 'amber', label: 'Alert/Discuss' },
-    { date: '31/12/2024', tone: 'red', label: 'Off track' },
+    { date: '20/01/2025', tone: 'green', label: 'On track' },
+    { date: '20/01/2025', tone: 'amber', label: 'Alert/Discuss' },
+    { date: '20/01/2025', tone: 'red', label: 'Off track' },
+    { date: '20/01/2025', tone: 'amber', label: 'Alert/Discuss' },
+    { date: '20/01/2025', tone: 'red', label: 'Off track' },
   ];
+  readonly detailedReportSharedTimelineSections = new Set(['Scope', 'Schedule', 'Budget', 'Benefits', 'Issues', 'Resource', 'Dependencies']);
   readonly scopeProducts = [
-    { title: 'Collaboration platform', icon: 'dependencies', type: 'Technology', owner: 'Richelle Hilton', capability: 'Richelle Hilton', dates: '11/02/2026 - 26/06/2026', budget: '$0', status: '', actualStart: '11/02/2026', actualEnd: '26/06/2026', completed: '33' },
-    { title: 'National R&D database', icon: 'database', type: 'Technology', owner: 'Richelle Hilton', capability: 'Richelle Hilton', dates: '11/02/2026 - 26/06/2026', budget: '$0', status: '', actualStart: '11/02/2026', actualEnd: '26/06/2026', completed: '33' },
-    { title: 'Opportunity marketplace', icon: 'store', type: 'Technology', owner: 'Richelle Hilton', capability: 'Richelle Hilton', dates: '11/02/2026 - 26/06/2026', budget: '$0', status: '', actualStart: '11/02/2026', actualEnd: '26/06/2026', completed: '33' },
-    { title: 'CRM', icon: '', type: 'Technology', owner: 'Richelle Hilton', capability: 'Richelle Hilton', dates: '11/02/2026 - 26/06/2026', budget: '$0', status: '', actualStart: '11/02/2026', actualEnd: '26/06/2026', completed: '33' },
+    { title: 'Collaboration platform', icon: 'dependencies', type: 'Technology', owner: 'Richelle Hilton', ownerInitials: 'MH', capability: '-', dates: '11/02/2026 - 26/06/2026', budget: '$0', status: 'Not started', actualStart: '11/02/2026', actualEnd: '26/06/2026', completed: '33' },
+    { title: 'National R&D database', icon: 'database', type: 'Technology', owner: 'Richelle Hilton', ownerInitials: 'MH', capability: '-', dates: '11/02/2026 - 26/06/2026', budget: '$0', status: 'Not started', actualStart: '11/02/2026', actualEnd: '26/06/2026', completed: '33' },
+    { title: 'Opportunity marketplace', icon: 'store', type: 'Technology', owner: 'Richelle Hilton', ownerInitials: 'MH', capability: '-', dates: '11/02/2026 - 26/06/2026', budget: '$0', status: 'Not started', actualStart: '11/02/2026', actualEnd: '26/06/2026', completed: '33' },
+    { title: 'CRM', icon: '', type: 'Technology', owner: 'Richelle Hilton', ownerInitials: 'MH', capability: '-', dates: '11/02/2026 - 26/06/2026', budget: '$0', status: 'Not started', actualStart: '11/02/2026', actualEnd: '26/06/2026', completed: '33' },
   ];
+  readonly reportSectionDetails: Record<string, ReportSectionDetail> = {
+    Schedule: {
+      icon: 'calendarSearch',
+      metrics: [
+        { label: 'Baseline Start date', value: '01/01/2026' },
+        { label: 'Forecast Start date', value: '01/01/2026' },
+        { label: 'Baseline End date', value: '31/12/2026' },
+        { label: 'Forecast End date', value: '31/12/2026' },
+      ],
+      tables: [
+        {
+          id: 'schedule-milestones',
+          title: 'Milestones',
+          minWidth: 968,
+          columns: [
+            { key: 'selected', label: '', width: 44, align: 'center' },
+            { key: 'milestone', label: 'Milestone', width: 240 },
+            { key: 'dueDate', label: 'Due Date', width: 96 },
+            { key: 'owner', label: 'Person Responsible', width: 160 },
+            { key: 'priority', label: 'Priority', width: 96 },
+            { key: 'currentDueDate', label: 'Current Due Date', width: 160 },
+            { key: 'completionStatus', label: 'Completion Status', width: 160 },
+          ],
+          rows: [
+            {
+              id: 'platform-launch',
+              cells: {
+                selected: { type: 'checkbox', checked: true },
+                milestone: { type: 'text', value: 'Platform launch (2024) - Initial release of a centralized national R&D mapping portal' },
+                dueDate: { type: 'text', value: '31/08/2026' },
+                owner: { type: 'person', value: 'Muna Hasan', initials: 'MH' },
+                priority: { type: 'chip', value: 'High', tone: 'red' },
+                currentDueDate: { type: 'dateInput', value: '11/02/2026' },
+                completionStatus: { type: 'select', value: 'Pending', options: ['Pending', 'In progress', 'Complete'] },
+              },
+            },
+            {
+              id: 'ecosystem-onboarding',
+              cells: {
+                selected: { type: 'checkbox', checked: true },
+                milestone: { type: 'text', value: 'Ecosystem onboarding - Universities, research centers, and entities integrated into the platform' },
+                dueDate: { type: 'text', value: '31/08/2026' },
+                owner: { type: 'text', value: '-' },
+                priority: { type: 'chip', value: 'High', tone: 'red' },
+                currentDueDate: { type: 'dateInput', value: '11/02/2026' },
+                completionStatus: { type: 'select', value: 'Pending', options: ['Pending', 'In progress', 'Complete'] },
+              },
+            },
+            {
+              id: 'feature-expansion',
+              cells: {
+                selected: { type: 'checkbox', checked: true },
+                milestone: { type: 'text', value: 'Feature expansion - Addition of collaboration tools, funding listings, and analytics capabilities' },
+                dueDate: { type: 'text', value: '31/08/2026' },
+                owner: { type: 'text', value: '-' },
+                priority: { type: 'chip', value: 'Medium', tone: 'amber' },
+                currentDueDate: { type: 'dateInput', value: '11/02/2026' },
+                completionStatus: { type: 'select', value: 'Pending', options: ['Pending', 'In progress', 'Complete'] },
+              },
+            },
+          ],
+        },
+      ],
+    },
+    Budget: {
+      summaryGroups: [
+        {
+          title: 'Budget overview',
+          cards: [
+            {
+              title: 'Budget vs actual',
+              rows: [
+                { label: 'Total project budget', value: '$332k' },
+                { label: 'Original approved budget: $1.7M', chip: true, tone: 'indigo' },
+                { label: 'Actual spend', value: '$0' },
+                { label: 'Budget actual', value: '$332k', dividerBefore: true },
+              ],
+            },
+            {
+              title: 'Budget vs forecast',
+              rows: [
+                { label: 'Total project budget', value: '$332k' },
+                { label: 'Forecast (EAC)', value: '$25k' },
+                { label: 'Forecast variance', value: '$295k(92.19%)', tone: 'green' },
+                { label: 'Budget actual', value: '$332k', dividerBefore: true },
+              ],
+            },
+            {
+              title: 'Available funds',
+              wide: true,
+              rows: [
+                { label: 'Total project budget', value: '$332k' },
+                { label: 'Actual spent', value: '$0' },
+                { label: 'Committed (unspent)', value: '-' },
+                { label: 'Available budget', value: '-' },
+              ],
+              notice: {
+                tone: 'amber',
+                icon: 'info',
+                text: 'Committed budget no entered. Go to project plan - budget to enter committed values',
+              },
+            },
+          ],
+        },
+      ],
+      tables: [
+        {
+          id: 'budget-project-budget',
+          title: 'Project budget',
+          selectorLabel: 'FY 2025 - 2026',
+          minWidth: 1112,
+          columns: [
+            { key: 'category', label: '', width: 80 },
+            { key: 'fyBaseline', label: 'FY baseline', width: 144 },
+            { key: 'fyForecast', label: 'FY forecast', width: 144 },
+            { key: 'forecastVariance', label: 'Forecast Variance', width: 144 },
+            { key: 'committed', label: 'Committed', width: 144 },
+            { key: 'ytdBaseline', label: 'YTD baseline', width: 144 },
+            { key: 'ytdActual', label: 'YTD actual', width: 144 },
+            { key: 'availableBudget', label: 'Available Budget', width: 144 },
+          ],
+          rows: [
+            {
+              id: 'budget-capex',
+              cells: {
+                category: { type: 'text', value: 'CAPEX' },
+                fyBaseline: { type: 'text', value: '$100K' },
+                fyForecast: { type: 'text', value: '$100K' },
+                forecastVariance: { type: 'text', value: '$-20K(-20%)', tone: 'red' },
+                committed: { type: 'text', value: '$0' },
+                ytdBaseline: { type: 'text', value: '$0' },
+                ytdActual: { type: 'text', value: '$0' },
+                availableBudget: { type: 'text', value: '$100K' },
+              },
+            },
+            {
+              id: 'budget-opex',
+              cells: {
+                category: { type: 'text', value: 'OPEX' },
+                fyBaseline: { type: 'text', value: '$100K' },
+                fyForecast: { type: 'text', value: '$100K' },
+                forecastVariance: { type: 'text', value: '$-20K(-20%)', tone: 'red' },
+                committed: { type: 'text', value: '$0' },
+                ytdBaseline: { type: 'text', value: '$0' },
+                ytdActual: { type: 'text', value: '$0' },
+                availableBudget: { type: 'text', value: '$100K' },
+              },
+            },
+            {
+              id: 'budget-total',
+              cells: {
+                category: { type: 'text', value: 'Total' },
+                fyBaseline: { type: 'text', value: '$100K' },
+                fyForecast: { type: 'text', value: '$100K' },
+                forecastVariance: { type: 'text', value: '$-20K(-20%)', tone: 'red' },
+                committed: { type: 'text', value: '$0' },
+                ytdBaseline: { type: 'text', value: '$0' },
+                ytdActual: { type: 'text', value: '$0' },
+                availableBudget: { type: 'text', value: '$100K' },
+              },
+            },
+          ],
+          actions: [
+            { label: 'View funding sources' },
+            { label: 'View monthly budget' },
+          ],
+        },
+      ],
+    },
+    Benefits: {
+      tables: [
+        {
+          id: 'benefits-report',
+          title: 'Benefits',
+          minWidth: 556,
+          columns: [
+            { key: 'selected', label: '', width: 44, align: 'center' },
+            { key: 'benefitName', label: 'Benefit Name', width: 208 },
+            { key: 'type', label: 'Type', width: 88 },
+            { key: 'realisationDate', label: 'Realisation Date', width: 104 },
+            { key: 'status', label: 'Status', width: 112 },
+          ],
+          rows: [
+            {
+              id: 'benefit-ecosystem-visibility',
+              cells: {
+                selected: { type: 'checkbox', checked: true },
+                benefitName: {
+                  type: 'text',
+                  value: 'Improved ecosystem visibility - Single source of truth reduces fragmentation in research data',
+                  clampLines: 3,
+                },
+                type: { type: 'text', value: 'Financial' },
+                realisationDate: { type: 'text', value: '31/08/2026' },
+                status: { type: 'chip', value: 'To Commence', tone: 'indigo' },
+              },
+            },
+            {
+              id: 'benefit-funding-allocation',
+              cells: {
+                selected: { type: 'checkbox', checked: true },
+                benefitName: {
+                  type: 'text',
+                  value:
+                    'Better funding allocation - Centralized visibility enables policymakers and funding bodies to direct investments toward high-impact and underrepresented research areas',
+                  clampLines: 3,
+                },
+                type: { type: 'text', value: 'Financial' },
+                realisationDate: { type: 'text', value: '26/11/2026' },
+                status: { type: 'chip', value: 'To Commence', tone: 'indigo' },
+              },
+            },
+            {
+              id: 'benefit-policy-decisions',
+              cells: {
+                selected: { type: 'checkbox', checked: true },
+                benefitName: {
+                  type: 'text',
+                  value:
+                    'Stronger policy and strategic decision-making - Aggregated R&D data supports evidence-based planning and national innovation strategy development',
+                  clampLines: 3,
+                },
+                type: { type: 'text', value: 'Financial' },
+                realisationDate: { type: 'text', value: '07/03/2026' },
+                status: { type: 'chip', value: 'To Commence', tone: 'indigo' },
+              },
+            },
+          ],
+        },
+      ],
+    },
+    Risks: {
+      tables: [
+        {
+          id: 'risk-register-report',
+          title: 'Risks',
+          hideHeader: true,
+          minWidth: 1288,
+          selectFilters: [
+            {
+              label: 'Actual Risk Rating',
+              value: 'Select Residual Risk Rating',
+              options: ['Select Residual Risk Rating', 'Low', 'Medium', 'High', 'Extreme'],
+            },
+            {
+              label: 'Select Residual Risk Rating',
+              value: 'Pending',
+              options: ['Pending', 'Low', 'Medium', 'High', 'Extreme'],
+            },
+          ],
+          radioFilter: {
+            label: 'Show only',
+            options: [
+              { label: 'Overdue Risk(s)', value: 'overdue' },
+              { label: 'Closed Risk(s)', value: 'closed' },
+            ],
+          },
+          columns: [
+            { key: 'selected', label: '', width: 44, align: 'center' },
+            { key: 'riskId', label: 'Risk ID', width: 96 },
+            { key: 'riskName', label: 'Risk Name', width: 264 },
+            { key: 'owner', label: 'Risk Owner', width: 160 },
+            { key: 'actualRating', label: 'AR', width: 48, align: 'center' },
+            { key: 'treatment', label: 'Treatment', width: 96 },
+            { key: 'residualRating', label: 'RR', width: 48, align: 'center' },
+            { key: 'startDate', label: 'Start Date', width: 96 },
+            { key: 'endDate', label: 'End Date', width: 96 },
+            { key: 'reviewDueDate', label: 'Review Due Date', width: 144 },
+            { key: 'status', label: 'Risk Status', width: 120 },
+          ],
+          rows: [
+            {
+              id: 'risk-r839',
+              cells: {
+                selected: { type: 'checkbox', checked: true },
+                riskId: { type: 'text', value: 'R839' },
+                riskName: { type: 'text', value: 'Data quality risk - Inaccurate or outdated entries can reduce platform credibility' },
+                owner: { type: 'person', value: 'Muna Hasan', initials: 'MH' },
+                actualRating: { type: 'iconBadge', icon: 'alert', tone: 'amber' },
+                treatment: { type: 'text', value: '0' },
+                residualRating: { type: 'iconBadge', icon: 'closeCircle', tone: 'red' },
+                startDate: { type: 'text', value: '01/01/2026' },
+                endDate: { type: 'text', value: '31/08/2026' },
+                reviewDueDate: { type: 'text', value: 'N/A' },
+                status: { type: 'chip', value: 'Open', tone: 'indigo' },
+              },
+            },
+            {
+              id: 'risk-r822',
+              cells: {
+                selected: { type: 'checkbox', checked: true },
+                riskId: { type: 'text', value: 'R822' },
+                riskName: { type: 'text', value: "Low adoption risk - Value diminishes if key institutions/researchers don't actively participate" },
+                owner: { type: 'person', value: 'Muna Hasan', initials: 'MH' },
+                actualRating: { type: 'iconBadge', icon: 'checkCircle', tone: 'green' },
+                treatment: { type: 'text', value: '0' },
+                residualRating: { type: 'iconBadge', icon: 'minusCircle', tone: 'neutral' },
+                startDate: { type: 'text', value: '01/01/2026' },
+                endDate: { type: 'text', value: '31/08/2026' },
+                reviewDueDate: { type: 'text', value: 'N/A' },
+                status: { type: 'chip', value: 'Open', tone: 'indigo' },
+              },
+            },
+          ],
+        },
+      ],
+    },
+    Issues: {
+      recordBlocks: [
+        {
+          id: 'issues-report',
+          addLabel: 'Add to report',
+          filters: [
+            {
+              label: 'Issue Type',
+              value: 'Select Issue Type',
+              options: ['Select Issue Type', 'Stakeholders', 'Schedule', 'Budget', 'Scope'],
+            },
+            {
+              label: 'Status',
+              value: 'Select Issue Type',
+              options: ['Select Issue Type', 'Open', 'In progress', 'Closed'],
+            },
+            {
+              label: 'Priority',
+              value: 'Select Issue Type',
+              options: ['Select Issue Type', 'Low', 'Medium', 'High'],
+            },
+          ],
+          items: [
+            {
+              id: 'issue-i59',
+              selected: true,
+              idLabel: 'Issue ID',
+              idValue: 'I59',
+              status: 'Open',
+              statusTone: 'indigo',
+              priorityLabel: 'Priority: Low',
+              priorityTone: 'low',
+              fields: [
+                {
+                  label: 'Issue',
+                  value: 'Stakeholder alignment gaps - Different priorities across academia, government, and industry can slow usage',
+                  wide: true,
+                },
+                {
+                  label: 'Resolution',
+                  value: 'Create a cross-sector governance framework with clearly defined roles, incentives, and accountability mechanisms',
+                  wide: true,
+                },
+                { label: 'Issue Type', value: 'Stakeholders' },
+                { label: 'Owner', value: 'Richelle Hilton', initials: 'MH', type: 'person' },
+                { label: 'Due Date', value: '16/07/2026' },
+              ],
+            },
+            {
+              id: 'issue-i70',
+              selected: true,
+              idLabel: 'Issue ID',
+              idValue: 'I70',
+              status: 'Open',
+              statusTone: 'indigo',
+              priorityLabel: 'Priority: Medium',
+              priorityTone: 'medium',
+              fields: [
+                {
+                  label: 'Issue',
+                  value: 'Stakeholder alignment gaps - Different priorities across academia, government, and industry can slow usage',
+                  wide: true,
+                },
+                {
+                  label: 'Resolution',
+                  value: 'Create a cross-sector governance framework with clearly defined roles, incentives, and accountability mechanisms',
+                  wide: true,
+                },
+                { label: 'Issue Type', value: 'Stakeholders' },
+                { label: 'Owner', value: 'Richelle Hilton', initials: 'MH', type: 'person' },
+                { label: 'Due Date', value: '16/07/2026' },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    Resource: {},
+    Dependencies: {},
+  };
   readonly reportReviewAreas = [
     { label: 'Scope', status: 'On track', note: 'Baseline unchanged', tone: 'green' },
-    { label: 'Schedule', status: 'Alert', note: 'Gate evidence due this week', tone: 'amber' },
-    { label: 'Budget', status: 'On track', note: 'No variance reported', tone: 'green' },
-    { label: 'Benefits', status: 'Alert', note: 'Owner response pending', tone: 'amber' },
+    { label: 'Schedule', status: 'On track', note: '', tone: 'green' },
+    { label: 'Budget', status: 'On track', note: '', tone: 'green' },
+    { label: 'Benefits', status: 'On track', note: '', tone: 'green' },
     { label: 'Risks', status: 'Off track', note: 'RAID refresh required', tone: 'red' },
-    { label: 'Issues', status: 'On track', note: 'No blocker escalated', tone: 'green' },
-    { label: 'Resource', status: 'On track', note: 'Core team assigned', tone: 'green' },
-    { label: 'Dependency', status: 'Alert', note: 'External owner to confirm', tone: 'amber' },
+    { label: 'Issues', status: 'On track', note: '', tone: 'green' },
+    { label: 'Resource', status: 'On track', note: '', tone: 'green' },
+    { label: 'Dependencies', status: 'On track', note: '', tone: 'green' },
   ];
   readonly detailedReportItemMap: Record<string, ReportDetailItem[]> = {
     Schedule: [
@@ -6735,7 +8547,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
         comment: 'Shared resource approval is pending but not yet blocking delivery.',
       },
     ],
-    Dependency: [
+    Dependencies: [
       {
         title: 'Data source onboarding',
         body: 'Upstream onboarding must finish before validation and discovery build-out.',
@@ -6822,6 +8634,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   ];
   readonly simpleReportSections = this.simplePlanSections.slice(1);
   readonly budgetPlanConfig = budgetPlanConfig;
+  readonly riskPlanEmptyState = riskPlanEmptyState;
   readonly simpleReportGuides: SimpleReportGuide[] = [
     { focus: 'Overview', status: 'On track', tone: 'green', action: 'Attach outcome evidence' },
     { focus: 'Schedule & scope', status: 'Alert', tone: 'amber', action: 'Confirm forecast date or scope change' },
@@ -6837,6 +8650,22 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   readonly months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
   readonly overviewStrategicObjectiveLinks = overviewStrategicObjectiveLinkSeeds;
   readonly overviewBusinessPlanSignals = overviewBusinessPlanSignalSeeds;
+  readonly changeRequestTypeOptions = changeRequestTypeOptions;
+  readonly changeRequestPriorityOptions = changeRequestPriorityOptions;
+  readonly changeRequestTriggerOptions = changeRequestTriggerOptions;
+  readonly changeRequestImpactBenefits = changeRequestImpactBenefits;
+  readonly changeRequestImpactCapabilities = changeRequestImpactCapabilities;
+  readonly changeRequestImpactProjects = changeRequestImpactProjects;
+  readonly changeRequestDrawerTabs: { id: ChangeRequestDrawerTab; label: string; icon: string }[] = [
+    { id: 'overview', label: 'Overview', icon: 'info' },
+    { id: 'impact', label: 'Impact Assessment', icon: 'chart' },
+    { id: 'links', label: 'Related Links', icon: 'link' },
+  ];
+  readonly changeRequestImpactTabs: { id: ChangeRequestImpactTab; label: string }[] = [
+    { id: 'benefits', label: 'Impacted Benefits' },
+    { id: 'capabilities', label: 'Impacted Capabilities' },
+    { id: 'projects', label: 'Impacted Projects / Products' },
+  ];
 
   workspaceDisplay: WorkspaceDisplay = 'table';
   workspaceRegister: WorkspaceRegister = 'projects';
@@ -6851,8 +8680,13 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   quickLinksToast: string | null = null;
   selectedBoardFilter = 'all';
   activeReportProject: string | null = null;
-  activeReportMode: ReportDetailMode = 'simple';
+  activeReportMode: ReportDetailMode = 'detailed';
   selectedStageGateKey: string | null = null;
+  selectedStageRevokeKey: string | null = null;
+  submittedStageGateKeys: string[] = [];
+  attachedStageGateEvidenceKeys: string[] = [];
+  stageGateChecklistState: Record<string, boolean[]> = {};
+  projectStageOverrideIndex: Record<string, number> = {};
   overviewState: OverviewState = { ...overviewStateInitial };
   isOverviewBusinessDriverDrawerOpen = false;
   editingOverviewBusinessDriverId: string | null = null;
@@ -6898,18 +8732,37 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   isBudgetMonthlyDrawerOpen = false;
   isBudgetRulesOpen = false;
   isBenefitDrawerOpen = false;
+  isRiskDrawerOpen = false;
   isIssueDrawerOpen = false;
   isRelatedLinksDrawerOpen = false;
   isResourceDrawerOpen = false;
   isChangeImpactDrawerOpen = false;
+  isChangeRequestDrawerOpen = false;
+  editingChangeRequestId: string | null = null;
+  changeRequestStatusFilter: ChangeRequestStatusFilter = 'active';
+  changeRequestDrawerTab: ChangeRequestDrawerTab = 'overview';
+  changeRequestImpactTab: ChangeRequestImpactTab = 'benefits';
+  editingRiskPlanId: string | null = null;
+  activeRiskProfileId: string | null = null;
+  activeRiskProfileTab: RiskProfileTab = 'identification';
+  riskDrawerOpenProfileAfterSave = false;
   activeDependencyRegisterKey: DependencyRegisterKey | null = null;
   budgetPlanStates: Record<string, BudgetPlanState> = this.cloneBudgetPlanStateMap(budgetPlanSeeds);
   budgetYearDraft: BudgetYearDraft = { ...budgetPlanConfig.yearDraft };
   budgetFundingSourceDraft: BudgetFundingSourceDraft = { ...budgetPlanConfig.fundingDraft };
   budgetMonthlyEditorRows: BudgetMonthlyRow[] = [];
-  activeBudgetSubtab: BudgetSubtab = 'project';
+  activeBudgetSubtab: BudgetSubtab = 'funding';
   benefitPlanRows: BenefitPlanRow[] = benefitPlanConfig.rows.map((row) => ({ ...row }));
   benefitPlanDraft: BenefitPlanDraft = { ...benefitPlanConfig.draft };
+  riskPlanRows: RiskPlanRow[] = riskPlanConfig.rows.map((row) => ({
+    ...row,
+    treatments: row.treatments.map((treatment) => ({ ...treatment })),
+  }));
+  riskPlanDraft: RiskPlanDraft = {
+    ...riskPlanConfig.draft,
+    treatments: riskPlanConfig.draft.treatments.map((treatment) => ({ ...treatment })),
+  };
+  riskTreatmentDraft: RiskTreatmentDraft = { ...riskTreatmentDraftInitial };
   issuePlanRows: IssuePlanRow[] = issuePlanConfig.rows.map((row) => ({ ...row }));
   issuePlanDraft: IssuePlanDraft = { ...issuePlanConfig.draft };
   relatedLinkRows: RelatedLinkRow[] = relatedLinkConfig.rows.map((row) => ({ ...row }));
@@ -6918,6 +8771,25 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   resourcePlanDraft: ResourcePlanDraft = { ...resourcePlanConfig.draft };
   changeImpactRows: ChangeImpactRow[] = changeImpactConfig.rows.map((row) => ({ ...row, strategies: [...row.strategies] }));
   changeImpactDraft: ChangeImpactDraft = { ...changeImpactConfig.draft, strategies: [...changeImpactConfig.draft.strategies] };
+  readonly closureReasonOptionsList = closureReasonOptions;
+  readonly closureOverviewBlockList = closureOverviewBlocks;
+  readonly closureChecklistList = closureChecklistItems;
+  readonly closureFollowUpActionList = closureFollowUpActions;
+  readonly closureRecommendationList = closureRecommendations;
+  readonly closureBenefitRowList = closureBenefitRows;
+  readonly closureRiskRowList = closureRiskRows;
+  readonly closureIssueRowList = closureIssueRows;
+  readonly closureLessonRowList = closureLessonRows;
+  changeRequestRows: ChangeRequestRow[] = changeRequestRowsInitial.map((row) => ({
+    ...row,
+    types: [...row.types],
+    relatedLinks: row.relatedLinks.map((link) => ({ ...link })),
+  }));
+  changeRequestDraft: ChangeRequestDraft = {
+    ...changeRequestDraftInitial,
+    types: [...changeRequestDraftInitial.types],
+    relatedLinks: changeRequestDraftInitial.relatedLinks.map((link) => ({ ...link })),
+  };
   dependencyRegisterRows: Record<DependencyRegisterKey, DependencyRegisterRow[]> = {
     predecessor: dependencyRegisterConfigs.predecessor.rows.map((row) => ({ ...row })),
     successor: dependencyRegisterConfigs.successor.rows.map((row) => ({ ...row })),
@@ -6926,12 +8798,13 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     predecessor: { ...dependencyRegisterConfigs.predecessor.draft },
     successor: { ...dependencyRegisterConfigs.successor.draft },
   };
-  activeReportSection = 'Overview';
+  activeReportSection = 'Scope';
   projectPlanEntry: ProjectPlanEntry = 'quick';
   projectPlanDetailMode: ProjectPlanDetailMode = 'simple';
   projectPlanActiveSection = 'Overview';
   projectPlanSectionsExpanded = false;
-  projectPlanExpandedFieldSections: Record<string, boolean> = {};
+  projectPlanExpandedFieldSections: Record<string, boolean> = { 'Schedule & Scope': true };
+  activeClosureSection: ClosureSectionId = 'overview';
   guidedTourStep = 0;
 
   private iconsHydrated = false;
@@ -7037,6 +8910,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   get overviewBusinessDriverOptions(): OverviewBusinessDriverOption[] {
     return overviewBusinessDriverOptionSeeds;
+  }
+
+  get overviewBusinessDriverOptionLabels(): string[] {
+    return overviewBusinessDriverOptionSeeds.map((option) => option.driver);
   }
 
   get overviewOutcomeStatusOptions(): string[] {
@@ -7257,6 +9134,39 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return this.isBenefitDrawerOpen ? this.activeBenefitPlan : null;
   }
 
+  get activeRiskPlan(): RiskPlanConfig {
+    return {
+      ...riskPlanConfig,
+      rows: this.riskPlanRows,
+      draft: this.riskPlanDraft,
+    };
+  }
+
+  get activeRiskDrawer(): RiskPlanConfig | null {
+    return this.isRiskDrawerOpen ? this.activeRiskPlan : null;
+  }
+
+  get activeRiskProfile(): RiskPlanRow | null {
+    if (!this.activeRiskProfileId) return null;
+    return this.riskPlanRows.find((row) => row.id === this.activeRiskProfileId) || null;
+  }
+
+  get riskDrawerTitle(): string {
+    return this.editingRiskPlanId ? 'Edit risk' : 'Add risk';
+  }
+
+  get riskDrawerCharacterCount(): number {
+    return Math.max(0, 500 - this.riskPlanDraft.riskName.length);
+  }
+
+  get riskProfileTabs(): { id: RiskProfileTab; label: string; icon: string }[] {
+    return [
+      { id: 'identification', label: 'Identification', icon: 'info' },
+      { id: 'analysis', label: 'Analysis', icon: 'chart' },
+      { id: 'treatment', label: 'Treatment', icon: 'checklist' },
+    ];
+  }
+
   get activeIssuePlan(): IssuePlanConfig {
     return {
       ...issuePlanConfig,
@@ -7297,6 +9207,128 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return Math.max(0, 3000 - this.changeImpactDraft.comment.length);
   }
 
+  get activeChangeRequestRows(): ChangeRequestRow[] {
+    return this.changeRequestRows.filter((row) => !this.isClosedChangeRequest(row));
+  }
+
+  get visibleChangeRequestRows(): ChangeRequestRow[] {
+    if (this.changeRequestStatusFilter === 'closed') {
+      return this.changeRequestRows.filter((row) => this.isClosedChangeRequest(row));
+    }
+    if (this.changeRequestStatusFilter === 'overdue') {
+      return this.activeChangeRequestRows.filter((row) => this.isOverdueChangeRequest(row));
+    }
+    return this.activeChangeRequestRows;
+  }
+
+  get changeRequestTabs(): ChangeRequestTab[] {
+    return [
+      { id: 'active', label: 'Active', count: this.activeChangeRequestRows.length },
+      { id: 'overdue', label: 'Overdue', count: this.activeChangeRequestRows.filter((row) => this.isOverdueChangeRequest(row)).length },
+      { id: 'closed', label: 'Closed', count: this.changeRequestRows.filter((row) => this.isClosedChangeRequest(row)).length },
+    ];
+  }
+
+  get changeRequestMetrics(): ChangeRequestMetric[] {
+    return [
+      { label: 'Budget(s)', value: this.changeRequestTypeCount('Budget'), icon: 'dollar', tone: 'neutral' },
+      { label: 'Schedule(s)', value: this.changeRequestTypeCount('Schedule'), icon: 'calendar', tone: 'blue' },
+      { label: 'Scope(s)', value: this.changeRequestTypeCount('Scope'), icon: 'target', tone: 'green' },
+      { label: 'Total', value: this.activeChangeRequestRows.length, icon: 'changeRequest', tone: 'brand' },
+    ];
+  }
+
+  get changeRequestDrawerTitle(): string {
+    return this.editingChangeRequestId ? 'Edit change request' : 'Create change request';
+  }
+
+  get changeRequestDrawerSummary(): string {
+    const selectedTypes = this.changeRequestDraft.types.length ? this.changeRequestDraft.types.join(', ') : 'No type selected';
+    return `${selectedTypes} · ${this.changeRequestDraft.priority || 'Priority not set'}`;
+  }
+
+  get changeRequestCommentCharactersRemaining(): number {
+    return Math.max(0, 3000 - this.changeRequestDraft.changeDetails.length);
+  }
+
+  get closureNavigationItems(): ClosureNavItem[] {
+    return [
+      { id: 'overview', label: 'Overview', icon: 'closure' },
+      { id: 'budget', label: 'Budget', icon: 'dollar', count: this.activeBudgetBreakdownRows.length },
+      { id: 'benefits', label: 'Benefits', icon: 'benefit', count: this.closureBenefitRowList.length },
+      { id: 'risk', label: 'Risk', icon: 'risks', count: this.closureRiskRowList.length },
+      { id: 'issues', label: 'Issues', icon: 'issues', count: this.closureIssueRowList.length },
+      { id: 'lessons', label: 'Lessons learnt', icon: 'lessons', count: this.closureLessonRowList.length },
+    ];
+  }
+
+  get activeClosureNavItem(): ClosureNavItem {
+    return this.closureNavigationItems.find((item) => item.id === this.activeClosureSection) || this.closureNavigationItems[0];
+  }
+
+  get closureReadyItemCount(): number {
+    return this.closureChecklistList.filter((item) => item.tone === 'green').length;
+  }
+
+  get closureReadinessPercent(): number {
+    if (!this.closureChecklistList.length) return 0;
+    return Math.round((this.closureReadyItemCount / this.closureChecklistList.length) * 100);
+  }
+
+  get closureOpenActionCount(): number {
+    return this.closureFollowUpActionList.filter((row) => row.status.toLowerCase().includes('open')).length;
+  }
+
+  get closureOverviewMetrics(): ClosureMetric[] {
+    const budgetVariance = this.activeBudgetOverviewMetrics.find((metric) => metric.label.toLowerCase().includes('variance'));
+    return [
+      {
+        label: 'Closure status',
+        value: 'Draft',
+        helper: 'Ready for PMO review once open checks are cleared',
+        icon: 'closure',
+        tone: 'amber',
+      },
+      {
+        label: 'Readiness',
+        value: `${this.closureReadinessPercent}%`,
+        helper: `${this.closureReadyItemCount} of ${this.closureChecklistList.length} closure checks ready`,
+        icon: 'checklist',
+        tone: this.closureReadinessPercent >= 75 ? 'green' : 'amber',
+      },
+      {
+        label: 'Budget variance',
+        value: budgetVariance?.value || 'SAR 0',
+        helper: budgetVariance?.helper || 'No variance recorded',
+        icon: 'dollar',
+        tone: budgetVariance?.tone || 'neutral',
+      },
+      {
+        label: 'Open follow-ups',
+        value: String(this.closureOpenActionCount),
+        helper: `${this.closureFollowUpActionList.length} actions captured for closure`,
+        icon: 'todo',
+        tone: this.closureOpenActionCount ? 'amber' : 'green',
+      },
+    ];
+  }
+
+  get closureBudgetSummaryLabel(): string {
+    const year = this.activeBudgetYear;
+    return year ? `${year.fy} closure budget position` : 'Budget position';
+  }
+
+  get closureBudgetEvidenceCount(): string {
+    const year = this.activeBudgetYear;
+    if (!year) return 'No evidence';
+    const count = year.fundingSources.length + year.monthlyRows.length;
+    return count === 1 ? '1 evidence item' : `${count} evidence items`;
+  }
+
+  get closureBenefitManager(): string {
+    return this.closureBenefitRowList[0]?.owner || 'Benefit owner TBD';
+  }
+
   get visibleDependencyRegisters(): DependencyRegisterConfig[] {
     return this.projectPlanFieldsToDependencyRegisters(this.activeProjectPlanVisibleFields);
   }
@@ -7314,6 +9346,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     if (this.projectPlanEntry === 'change-request') return 'Change Request';
     if (this.projectPlanEntry === 'closure') return 'Closure';
     if (this.projectPlanEntry === 'reports') return 'Reports';
+    if (this.projectPlanEntry === 'stages') return 'Stages';
     return 'Project Plan';
   }
 
@@ -7346,7 +9379,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get isNormalPm101Workspace(): boolean {
-    return this.frontDoorMode === 'assigned' && !this.pmoAssignmentReady && !this.onboardingPm101Locked && this.selectedPage === 'workspace' && this.selectedProject === 'all' && this.selectedView === 'pm101';
+    return this.frontDoorMode === 'assigned' && !this.pmoAssignmentReady && !this.onboardingPm101Locked && this.selectedPage === 'workspace' && this.selectedProject === 'all';
   }
 
   get isPm101WelcomeWorkspace(): boolean {
@@ -7643,8 +9676,8 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       status: area.status,
       tone: area.tone,
       trend: this.reportTrendForTone(area.tone),
-      comments: area.note,
-      timeline: area.label === 'Scope' ? this.scopePastStatuses : this.reportTimelineForTone(area.tone),
+      comments: area.label === 'Scope' ? '' : area.note,
+      timeline: this.detailedReportSharedTimelineSections.has(area.label) ? this.scopePastStatuses : this.reportTimelineForTone(area.tone),
     }));
     return [overview, ...sections];
   }
@@ -7682,6 +9715,67 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   get selectedStageGateContext(): StageGateContext | null {
     return this.stageGateContext(this.selectedStageGateKey);
+  }
+
+  get selectedStageRevokeContext(): StageGateContext | null {
+    return this.stageGateContext(this.selectedStageRevokeKey);
+  }
+
+  get projectPlanStageProfile(): StageProfile {
+    return this.stageProfileForProject(this.scopedProjectName) || this.stageProfilesForSelection[0] || stageProfiles[0];
+  }
+
+  get projectPlanStageRows(): ProjectPlanStageRow[] {
+    const profile = this.projectPlanStageProfile;
+    return stageDefinitions.map((stage, stageIndex) => {
+      const status = this.stageStatus(profile, stageIndex);
+      const dates = projectPlanStageDateWindows[stage.id] || { start: 'TBD', end: 'TBD' };
+      return {
+        stage,
+        stageIndex,
+        status,
+        statusLabel: this.projectPlanStageStatusLabel(status),
+        statusTone: this.projectPlanStageStatusTone(status),
+        startDate: dates.start,
+        endDate: dates.end,
+        actionLabel: this.projectPlanStageActionLabel(profile, stageIndex, status),
+        actionIcon: this.projectPlanStageActionIcon(status),
+        actionDisabled: this.projectPlanStageActionDisabled(status),
+        canRevoke: this.canRevokeProjectPlanStage(profile, stageIndex, status),
+      };
+    });
+  }
+
+  get projectPlanActiveStageRow(): ProjectPlanStageRow {
+    return this.projectPlanStageRows.find((row) => row.status === 'current' || row.status === 'submitted' || row.status === 'revoked') || this.projectPlanStageRows[0];
+  }
+
+  get projectPlanNextStageRow(): ProjectPlanStageRow | null {
+    return this.projectPlanStageRows.find((row) => row.stageIndex === this.projectPlanActiveStageRow.stageIndex + 1) || null;
+  }
+
+  get projectPlanApprovedStageCount(): number {
+    return this.projectPlanStageRows.filter((row) => row.status === 'complete').length;
+  }
+
+  get projectPlanStageProgressWidth(): string {
+    const total = Math.max(1, this.projectPlanStageRows.length - 1);
+    const progress = Math.min(100, Math.max(0, (this.projectPlanActiveStageRow.stageIndex / total) * 100));
+    return `${progress}%`;
+  }
+
+  get projectPlanStageReadinessLabel(): string {
+    const profile = this.projectPlanStageProfile;
+    const key = this.stageGateKey(profile.project, this.projectPlanActiveStageRow.stage.id);
+    if (this.submittedStageGateKeys.includes(key)) return 'Submitted to PMO and awaiting approval';
+    return `${this.stageGateCheckedCount(profile, this.projectPlanActiveStageRow.stageIndex)}/${profile.gateTotal} PMO checklist items ready`;
+  }
+
+  get projectPlanWorkflowPositionLabel(): string {
+    const status = this.projectPlanActiveStageRow.status;
+    if (status === 'submitted') return 'Waiting on PMO';
+    if (status === 'complete') return 'Approved';
+    return 'Preparing gate';
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -7754,8 +9848,16 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       this.closeBudgetRulesPopover();
       return;
     }
-    if (this.isBudgetDrawerOpen || this.isBudgetFundingDrawerOpen || this.isBudgetMonthlyDrawerOpen || this.isBenefitDrawerOpen || this.isIssueDrawerOpen || this.isRelatedLinksDrawerOpen || this.isResourceDrawerOpen || this.isChangeImpactDrawerOpen || this.activeDependencyRegister) {
+    if (this.isBudgetDrawerOpen || this.isBudgetFundingDrawerOpen || this.isBudgetMonthlyDrawerOpen || this.isBenefitDrawerOpen || this.isIssueDrawerOpen || this.isRelatedLinksDrawerOpen || this.isResourceDrawerOpen || this.isChangeImpactDrawerOpen || this.isChangeRequestDrawerOpen || this.activeDependencyRegister) {
       this.closeProjectPlanDrawers();
+      return;
+    }
+    if (this.selectedStageGateKey) {
+      this.closeStageGate();
+      return;
+    }
+    if (this.selectedStageRevokeKey) {
+      this.closeStageRevoke();
       return;
     }
     if (this.guidedTourActive) {
@@ -7880,6 +9982,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       this.selectedBoardFilter = 'all';
       this.activeReportProject = null;
       this.selectedStageGateKey = null;
+      this.selectedStageRevokeKey = null;
       this.projectPlanEntry = 'quick';
       this.projectPlanDetailMode = 'simple';
       this.projectPlanActiveSection = 'Overview';
@@ -7895,6 +9998,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       this.selectedBoardFilter = 'all';
       this.activeReportProject = null;
       this.selectedStageGateKey = null;
+      this.selectedStageRevokeKey = null;
       this.projectPlanEntry = 'quick';
       this.projectPlanDetailMode = 'simple';
       this.projectPlanActiveSection = 'Overview';
@@ -7925,6 +10029,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.selectedBoardFilter = 'all';
     this.activeReportProject = null;
     this.selectedStageGateKey = null;
+    this.selectedStageRevokeKey = null;
     this.projectPlanEntry = 'quick';
     this.projectPlanDetailMode = 'simple';
     this.projectPlanActiveSection = 'Overview';
@@ -7942,6 +10047,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.selectedBoardFilter = 'all';
     this.activeReportProject = null;
     this.selectedStageGateKey = null;
+    this.selectedStageRevokeKey = null;
     this.emitState();
   }
 
@@ -7958,6 +10064,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.projectPlanExpandedFieldSections = {};
     this.activeReportProject = null;
     this.selectedStageGateKey = null;
+    this.selectedStageRevokeKey = null;
     this.emitState();
   }
 
@@ -8001,6 +10108,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.projectPlanEntry = entry;
     this.projectPlanActiveSection = 'Overview';
     this.projectPlanExpandedFieldSections = {};
+    if (entry === 'closure') this.activeClosureSection = 'overview';
     this.iconsHydrated = false;
   }
 
@@ -8016,6 +10124,35 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.iconsHydrated = false;
   }
 
+  setChangeRequestStatusFilter(filter: ChangeRequestStatusFilter): void {
+    this.changeRequestStatusFilter = filter;
+    this.iconsHydrated = false;
+  }
+
+  setClosureSection(section: ClosureSectionId): void {
+    if (this.activeClosureSection === section) return;
+    this.activeClosureSection = section;
+    this.iconsHydrated = false;
+  }
+
+  closureCharacterCount(block: ClosureTextBlock): string {
+    return `${block.value.length}/${block.maxLength}`;
+  }
+
+  closureDateLabel(value: string): string {
+    return this.formatProjectPlanDate(value);
+  }
+
+  setChangeRequestDrawerTab(tab: ChangeRequestDrawerTab): void {
+    this.changeRequestDrawerTab = tab;
+    this.iconsHydrated = false;
+  }
+
+  setChangeRequestImpactTab(tab: ChangeRequestImpactTab): void {
+    this.changeRequestImpactTab = tab;
+    this.iconsHydrated = false;
+  }
+
   projectPlanNavLabel(section: string): string {
     const labels: Record<string, string> = {
       'Change Impact': 'Change impact',
@@ -8025,13 +10162,14 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   isProjectPlanFieldSectionExpanded(section: string): boolean {
+    if (section === 'Schedule & Scope' && this.projectPlanExpandedFieldSections[section] === undefined) return true;
     return Boolean(this.projectPlanExpandedFieldSections[section]);
   }
 
   toggleProjectPlanFieldSection(section: string): void {
     this.projectPlanExpandedFieldSections = {
       ...this.projectPlanExpandedFieldSections,
-      [section]: !this.projectPlanExpandedFieldSections[section],
+      [section]: !this.isProjectPlanFieldSectionExpanded(section),
     };
     this.iconsHydrated = false;
   }
@@ -8050,6 +10188,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.closeProjectPlanDrawers();
     this.closeReport();
     this.closeStageGate();
+    this.closeStageRevoke();
     this.selectedView = view;
     this.selectedPage = 'workspace';
     this.emitState();
@@ -8060,6 +10199,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.closeProjectPlanDrawers();
     this.closeReport();
     this.closeStageGate();
+    this.closeStageRevoke();
     this.selectedPage = page;
     if (page === 'project-plan') {
       this.projectPlanEntry = projectPlanEntry;
@@ -8076,6 +10216,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.closeProjectPlanDrawers();
     this.closeReport();
     this.closeStageGate();
+    this.closeStageRevoke();
     this.selectedProject = projectId;
     this.selectedPage = 'project-plan';
     this.projectPlanEntry = 'quick';
@@ -8088,6 +10229,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.closeProjectPlanDrawers();
     this.closeReport();
     this.closeStageGate();
+    this.closeStageRevoke();
     if (action.view && !this.isOnboardingPm101BlockedView(action.view)) this.selectedView = action.view;
     if (this.onboardingPm101Locked && action.page === 'workspaces') return;
     if (action.page) this.navigate(action.page, this.projectPlanEntryFromAction(action.entry));
@@ -8097,9 +10239,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   openReport(project: string): void {
     this.closeProjectPlanDrawers();
     this.closeStageGate();
+    this.closeStageRevoke();
     this.activeReportProject = project;
-    this.activeReportMode = 'simple';
-    this.activeReportSection = 'Overview';
+    this.activeReportMode = 'detailed';
+    this.activeReportSection = 'Scope';
     this.iconsHydrated = false;
   }
 
@@ -8115,22 +10258,55 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   closeReport(): void {
     if (!this.activeReportProject) return;
     this.activeReportProject = null;
-    this.activeReportMode = 'simple';
-    this.activeReportSection = 'Overview';
+    this.activeReportMode = 'detailed';
+    this.activeReportSection = 'Scope';
     this.iconsHydrated = false;
   }
 
-  openStageGate(profile: StageProfile): void {
+  openStageGate(profile: StageProfile, stageIndex = this.stageCurrentIndex(profile)): void {
     this.closeProjectPlanDrawers();
     this.closeReport();
-    const currentStage = stageDefinitions[this.stageCurrentIndex(profile)] || stageDefinitions[0];
-    this.selectedStageGateKey = this.stageGateKey(profile.project, currentStage.id);
+    this.closeStageRevoke();
+    const stage = stageDefinitions[stageIndex] || stageDefinitions[this.stageCurrentIndex(profile)] || stageDefinitions[0];
+    this.ensureStageGateChecklistState(profile, stageIndex);
+    this.selectedStageGateKey = this.stageGateKey(profile.project, stage.id);
     this.iconsHydrated = false;
   }
 
   closeStageGate(): void {
     if (!this.selectedStageGateKey) return;
     this.selectedStageGateKey = null;
+    this.iconsHydrated = false;
+  }
+
+  handleProjectPlanStageAction(row: ProjectPlanStageRow): void {
+    if (row.actionDisabled) return;
+    const profile = this.projectPlanStageProfile;
+    this.openStageGate(profile, row.stageIndex);
+  }
+
+  openStageRevoke(row: ProjectPlanStageRow): void {
+    const profile = this.projectPlanStageProfile;
+    this.closeProjectPlanDrawers();
+    this.closeReport();
+    this.closeStageGate();
+    this.selectedStageRevokeKey = this.stageGateKey(profile.project, row.stage.id);
+    this.iconsHydrated = false;
+  }
+
+  closeStageRevoke(): void {
+    if (!this.selectedStageRevokeKey) return;
+    this.selectedStageRevokeKey = null;
+    this.iconsHydrated = false;
+  }
+
+  confirmStageRevoke(gate: StageGateContext): void {
+    this.projectStageOverrideIndex = {
+      ...this.projectStageOverrideIndex,
+      [gate.profile.project]: gate.stageIndex,
+    };
+    this.submittedStageGateKeys = this.submittedStageGateKeys.filter((key) => !key.startsWith(`${gate.profile.project}|`));
+    this.closeStageRevoke();
     this.iconsHydrated = false;
   }
 
@@ -8928,6 +11104,18 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     };
   }
 
+  updateScheduleScopeDateInput(field: keyof ScheduleScopeState, value: string): void {
+    this.updateScheduleScopeField(field, this.parseScheduleScopeDateInput(value));
+  }
+
+  scheduleScopeInputDate(value: string): string {
+    if (!value) return '';
+    const isoMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    if (!isoMatch) return value;
+    const [, year, month, day] = isoMatch;
+    return `${day}/${month}/${year}`;
+  }
+
   scheduleScopeCountLabel(count: number, singular: string, plural: string = `${singular}s`): string {
     return count === 1 ? `1 ${singular}` : `${count} ${plural}`;
   }
@@ -9238,6 +11426,409 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return Boolean(draft.benefitName.trim() && draft.realizationDate.trim());
   }
 
+  openRiskDrawer(row?: RiskPlanRow): void {
+    this.closeProjectPlanDrawers();
+    this.editingRiskPlanId = row?.id || null;
+    this.riskPlanDraft = row
+      ? this.riskDraftFromRow(row)
+      : {
+          ...riskPlanConfig.draft,
+          treatments: riskPlanConfig.draft.treatments.map((treatment) => ({ ...treatment })),
+        };
+    this.riskTreatmentDraft = { ...riskTreatmentDraftInitial };
+    this.riskDrawerOpenProfileAfterSave = false;
+    this.isRiskDrawerOpen = true;
+    this.iconsHydrated = false;
+  }
+
+  closeRiskDrawer(): void {
+    if (!this.isRiskDrawerOpen) return;
+    this.isRiskDrawerOpen = false;
+    this.editingRiskPlanId = null;
+    this.riskDrawerOpenProfileAfterSave = false;
+    this.iconsHydrated = false;
+  }
+
+  saveRiskDrawer(event: Event): void {
+    event.preventDefault();
+    const register = this.activeRiskDrawer;
+    if (!register || !this.canSaveRiskDraft(register)) return;
+
+    const draft = this.riskPlanDraft;
+    const rowId = this.editingRiskPlanId || this.nextRiskPlanId();
+    const existing = this.riskPlanRows.find((row) => row.id === rowId) || null;
+    const nextRow: RiskPlanRow = {
+      id: rowId,
+      riskCategory: draft.riskCategory.trim(),
+      riskName: draft.riskName.trim(),
+      description: draft.description.trim(),
+      owner: draft.owner.trim() || 'Owner to confirm',
+      manager: draft.manager.trim() || 'James T Kirk',
+      lead: draft.lead.trim() || draft.owner.trim() || 'Risk lead to confirm',
+      startDate: draft.startDate.trim(),
+      endDate: draft.endDate.trim(),
+      reviewDueDate: draft.reviewDueDate.trim(),
+      status: draft.status.trim() || 'Open',
+      strategicRisk: draft.strategicRisk.trim() || 'No',
+      enterpriseImpact: draft.enterpriseImpact,
+      actualLikelihood: draft.actualLikelihood.trim(),
+      actualConsequence: draft.actualConsequence.trim(),
+      actualRating: draft.actualRating.trim() || this.riskRatingFor(draft.actualLikelihood, draft.actualConsequence),
+      residualLikelihood: draft.residualLikelihood.trim(),
+      residualConsequence: draft.residualConsequence.trim(),
+      residualRating: draft.residualRating.trim() || this.riskRatingFor(draft.residualLikelihood, draft.residualConsequence),
+      impactedObjective: draft.impactedObjective.trim(),
+      sharedRisk: draft.sharedRisk,
+      source: draft.source.trim(),
+      consequence: draft.consequence.trim(),
+      controlSummary: draft.controlSummary.trim(),
+      overallControlEffectiveness: draft.overallControlEffectiveness.trim() || 'Not Rated',
+      analysisComment: draft.analysisComment.trim(),
+      treatmentApproach: draft.treatmentApproach.trim() || 'Mitigate the threat',
+      treatmentType: draft.treatmentType.trim() || 'Mitigate',
+      treatmentComment: draft.treatmentComment.trim(),
+      treatments: this.cloneRiskTreatments(draft.treatments),
+      createdOn: existing?.createdOn || this.todayIsoDate(),
+    };
+
+    this.riskPlanRows = existing
+      ? this.riskPlanRows.map((row) => (row.id === rowId ? nextRow : row))
+      : [...this.riskPlanRows, nextRow];
+
+    const shouldOpenProfile = this.riskDrawerOpenProfileAfterSave;
+    this.resetRiskDraft();
+    this.closeRiskDrawer();
+    if (shouldOpenProfile) {
+      this.openRiskProfile(nextRow);
+    }
+  }
+
+  updateRiskDraft(field: RiskPlanDraftField, value: string): void {
+    const nextDraft: RiskPlanDraft = {
+      ...this.riskPlanDraft,
+      [field]: value,
+    };
+
+    if (field === 'actualLikelihood' || field === 'actualConsequence') {
+      nextDraft.actualRating = this.riskRatingFor(nextDraft.actualLikelihood, nextDraft.actualConsequence);
+    }
+
+    if (field === 'residualLikelihood' || field === 'residualConsequence') {
+      nextDraft.residualRating = this.riskRatingFor(nextDraft.residualLikelihood, nextDraft.residualConsequence);
+    }
+
+    this.riskPlanDraft = nextDraft;
+  }
+
+  updateRiskDraftEnterpriseImpact(value: boolean): void {
+    this.riskPlanDraft = {
+      ...this.riskPlanDraft,
+      enterpriseImpact: value,
+    };
+  }
+
+  updateRiskDraftSharedRisk(value: boolean): void {
+    this.riskPlanDraft = {
+      ...this.riskPlanDraft,
+      sharedRisk: value,
+    };
+  }
+
+  updateRiskDraftMatrix(kind: 'actual' | 'residual', selection: PmConsoleRiskMatrixSelection): void {
+    this.riskPlanDraft =
+      kind === 'actual'
+        ? {
+            ...this.riskPlanDraft,
+            actualLikelihood: selection.likelihood,
+            actualConsequence: selection.consequence,
+            actualRating: selection.rating,
+          }
+        : {
+            ...this.riskPlanDraft,
+            residualLikelihood: selection.likelihood,
+            residualConsequence: selection.consequence,
+            residualRating: selection.rating,
+          };
+  }
+
+  canSaveRiskDraft(register: RiskPlanConfig | null): boolean {
+    if (!register) return false;
+    const draft = this.riskPlanDraft;
+    return Boolean(draft.riskCategory.trim() && draft.riskName.trim() && draft.startDate.trim() && draft.endDate.trim() && draft.status.trim());
+  }
+
+  markRiskDrawerForFullProfile(): void {
+    this.riskDrawerOpenProfileAfterSave = true;
+  }
+
+  openRiskProfile(row: RiskPlanRow): void {
+    this.closeProjectPlanDrawers();
+    this.activeRiskProfileId = row.id;
+    this.activeRiskProfileTab = 'identification';
+    this.riskTreatmentDraft = { ...riskTreatmentDraftInitial };
+    this.iconsHydrated = false;
+  }
+
+  closeRiskProfile(): void {
+    if (!this.activeRiskProfileId) return;
+    this.activeRiskProfileId = null;
+    this.activeRiskProfileTab = 'identification';
+    this.iconsHydrated = false;
+  }
+
+  setRiskProfileTab(tab: RiskProfileTab): void {
+    this.activeRiskProfileTab = tab;
+    this.iconsHydrated = false;
+  }
+
+  saveRiskProfile(): void {
+    this.iconsHydrated = false;
+  }
+
+  completeRiskAssessment(riskId: string): void {
+    this.riskPlanRows = this.riskPlanRows.map((row) =>
+      row.id === riskId
+        ? {
+            ...row,
+            status: row.status === 'Closed' ? row.status : 'Monitoring',
+            reviewDueDate: row.reviewDueDate || '2026-06-15',
+          }
+        : row,
+    );
+    this.iconsHydrated = false;
+  }
+
+  updateRiskProfileField(field: RiskPlanRowField, value: string): void {
+    const riskId = this.activeRiskProfileId;
+    if (!riskId) return;
+    this.riskPlanRows = this.riskPlanRows.map((row) => {
+      if (row.id !== riskId) return row;
+      const nextRow: RiskPlanRow = {
+        ...row,
+        [field]: value,
+      };
+      if (field === 'actualLikelihood' || field === 'actualConsequence') {
+        nextRow.actualRating = this.riskRatingFor(nextRow.actualLikelihood, nextRow.actualConsequence);
+      }
+      if (field === 'residualLikelihood' || field === 'residualConsequence') {
+        nextRow.residualRating = this.riskRatingFor(nextRow.residualLikelihood, nextRow.residualConsequence);
+      }
+      return nextRow;
+    });
+  }
+
+  updateRiskProfileEnterpriseImpact(value: boolean): void {
+    this.updateRiskProfileBoolean('enterpriseImpact', value);
+  }
+
+  updateRiskProfileSharedRisk(value: boolean): void {
+    this.updateRiskProfileBoolean('sharedRisk', value);
+  }
+
+  updateRiskProfileMatrix(kind: 'actual' | 'residual', selection: PmConsoleRiskMatrixSelection): void {
+    const riskId = this.activeRiskProfileId;
+    if (!riskId) return;
+    this.riskPlanRows = this.riskPlanRows.map((row) =>
+      row.id === riskId
+        ? kind === 'actual'
+          ? {
+              ...row,
+              actualLikelihood: selection.likelihood,
+              actualConsequence: selection.consequence,
+              actualRating: selection.rating,
+            }
+          : {
+              ...row,
+              residualLikelihood: selection.likelihood,
+              residualConsequence: selection.consequence,
+              residualRating: selection.rating,
+            }
+        : row,
+    );
+  }
+
+  updateRiskTreatmentDraft(field: keyof RiskTreatmentDraft, value: string): void {
+    this.riskTreatmentDraft = {
+      ...this.riskTreatmentDraft,
+      [field]: value,
+    };
+  }
+
+  canAddRiskTreatmentDraft(): boolean {
+    return Boolean(this.riskTreatmentDraft.treatment.trim());
+  }
+
+  addRiskTreatmentToDraft(): void {
+    if (!this.canAddRiskTreatmentDraft()) return;
+    this.riskPlanDraft = {
+      ...this.riskPlanDraft,
+      treatments: [...this.riskPlanDraft.treatments, this.riskTreatmentFromDraft()],
+    };
+    this.riskTreatmentDraft = { ...riskTreatmentDraftInitial };
+  }
+
+  addRiskTreatmentToProfile(): void {
+    const riskId = this.activeRiskProfileId;
+    if (!riskId || !this.canAddRiskTreatmentDraft()) return;
+    const nextTreatment = this.riskTreatmentFromDraft();
+    this.riskPlanRows = this.riskPlanRows.map((row) =>
+      row.id === riskId
+        ? {
+            ...row,
+            treatments: [...row.treatments, nextTreatment],
+          }
+        : row,
+    );
+    this.riskTreatmentDraft = { ...riskTreatmentDraftInitial };
+  }
+
+  removeRiskTreatmentFromDraft(id: string): void {
+    this.riskPlanDraft = {
+      ...this.riskPlanDraft,
+      treatments: this.riskPlanDraft.treatments.filter((treatment) => treatment.id !== id),
+    };
+  }
+
+  removeRiskTreatmentFromProfile(id: string): void {
+    const riskId = this.activeRiskProfileId;
+    if (!riskId) return;
+    this.riskPlanRows = this.riskPlanRows.map((row) =>
+      row.id === riskId
+        ? {
+            ...row,
+            treatments: row.treatments.filter((treatment) => treatment.id !== id),
+          }
+        : row,
+    );
+  }
+
+  riskCountLabel(register: RiskPlanConfig): string {
+    return register.rows.length === 1 ? '1 risk' : `${register.rows.length} risks`;
+  }
+
+  riskTreatmentCountLabel(treatments: RiskTreatmentRow[]): string {
+    return treatments.length === 1 ? '1 treatment' : `${treatments.length} treatments`;
+  }
+
+  riskDateLabel(value: string): string {
+    return value ? this.formatProjectPlanDate(value) : 'N/A';
+  }
+
+  riskStrategicLabel(row: RiskPlanRow): string {
+    return row.strategicRisk.toLowerCase() === 'yes' || row.enterpriseImpact ? 'Yes' : row.strategicRisk || 'No';
+  }
+
+  riskRatingTone(rating: string): string {
+    const normalized = rating.toLowerCase();
+    if (normalized === 'low') return 'low';
+    if (normalized === 'medium') return 'medium';
+    if (normalized === 'high') return 'high';
+    if (normalized === 'extreme') return 'extreme';
+    return 'neutral';
+  }
+
+  riskStatusTone(status: string): string {
+    const normalized = status.toLowerCase();
+    if (normalized.includes('closed')) return 'success';
+    if (normalized.includes('escalated')) return 'critical';
+    if (normalized.includes('monitor')) return 'amber';
+    if (normalized.includes('open')) return 'indigo';
+    return 'neutral';
+  }
+
+  riskRatingFor(likelihood: string, consequence: string): string {
+    const likelihoodOptions = ['Almost certain', 'Likely', 'Possible', 'Unlikely', 'Rare'];
+    const consequenceOptions = ['Insignificant', 'Minor', 'Moderate', 'Major', 'Severe'];
+    const row = likelihoodOptions.indexOf(likelihood);
+    const column = consequenceOptions.indexOf(consequence);
+    if (row < 0 || column < 0) return '';
+    const matrix = [
+      ['Medium', 'High', 'High', 'High', 'Extreme'],
+      ['Medium', 'Medium', 'High', 'High', 'Extreme'],
+      ['Low', 'Medium', 'Medium', 'High', 'Extreme'],
+      ['Low', 'Low', 'Medium', 'Medium', 'High'],
+      ['Low', 'Low', 'Low', 'Medium', 'Medium'],
+    ];
+    return matrix[row]?.[column] || '';
+  }
+
+  private updateRiskProfileBoolean(field: 'enterpriseImpact' | 'sharedRisk', value: boolean): void {
+    const riskId = this.activeRiskProfileId;
+    if (!riskId) return;
+    this.riskPlanRows = this.riskPlanRows.map((row) =>
+      row.id === riskId
+        ? {
+            ...row,
+            [field]: value,
+          }
+        : row,
+    );
+  }
+
+  private riskDraftFromRow(row: RiskPlanRow): RiskPlanDraft {
+    return {
+      riskCategory: row.riskCategory,
+      riskName: row.riskName,
+      description: row.description,
+      owner: row.owner,
+      manager: row.manager,
+      lead: row.lead,
+      startDate: row.startDate,
+      endDate: row.endDate,
+      reviewDueDate: row.reviewDueDate,
+      status: row.status,
+      strategicRisk: row.strategicRisk,
+      enterpriseImpact: row.enterpriseImpact,
+      actualLikelihood: row.actualLikelihood,
+      actualConsequence: row.actualConsequence,
+      actualRating: row.actualRating,
+      residualLikelihood: row.residualLikelihood,
+      residualConsequence: row.residualConsequence,
+      residualRating: row.residualRating,
+      impactedObjective: row.impactedObjective,
+      sharedRisk: row.sharedRisk,
+      source: row.source,
+      consequence: row.consequence,
+      controlSummary: row.controlSummary,
+      overallControlEffectiveness: row.overallControlEffectiveness,
+      analysisComment: row.analysisComment,
+      treatmentApproach: row.treatmentApproach,
+      treatmentType: row.treatmentType,
+      treatmentComment: row.treatmentComment,
+      treatments: this.cloneRiskTreatments(row.treatments),
+    };
+  }
+
+  private riskTreatmentFromDraft(): RiskTreatmentRow {
+    return {
+      id: `risk-treatment-${Date.now()}`,
+      treatment: this.riskTreatmentDraft.treatment.trim(),
+      type: this.riskTreatmentDraft.type.trim() || 'Mitigate',
+      category: this.riskTreatmentDraft.category.trim() || 'Preventive',
+      owner: this.riskTreatmentDraft.owner.trim() || 'Owner to confirm',
+      manager: this.riskTreatmentDraft.manager.trim() || 'James T Kirk',
+      startDate: this.riskTreatmentDraft.startDate.trim(),
+      endDate: this.riskTreatmentDraft.endDate.trim(),
+      status: this.riskTreatmentDraft.status.trim() || 'Planned',
+    };
+  }
+
+  private cloneRiskTreatments(treatments: RiskTreatmentRow[]): RiskTreatmentRow[] {
+    return treatments.map((treatment) => ({ ...treatment }));
+  }
+
+  private nextRiskPlanId(): string {
+    const highest = this.riskPlanRows.reduce((max, row) => {
+      const numeric = Number(row.id.replace(/\D/g, ''));
+      return Number.isFinite(numeric) ? Math.max(max, numeric) : max;
+    }, 840);
+    return `R${highest + 1}`;
+  }
+
+  private todayIsoDate(): string {
+    return new Date().toISOString().slice(0, 10);
+  }
+
   openIssueDrawer(): void {
     this.closeProjectPlanDrawers();
     this.resetIssueDraft();
@@ -9346,6 +11937,179 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     if (/^[a-z][a-z0-9+.-]*:/i.test(trimmed)) return trimmed;
     if (trimmed.startsWith('//')) return `https:${trimmed}`;
     return `https://${trimmed}`;
+  }
+
+  openChangeRequestDrawer(row?: ChangeRequestRow): void {
+    this.closeProjectPlanDrawers();
+    this.editingChangeRequestId = row?.id || null;
+    this.changeRequestDraft = row
+      ? {
+          project: row.project,
+          pmo: row.pmo,
+          dueDate: row.dueDate,
+          trigger: row.trigger,
+          priority: row.priority,
+          types: [...row.types],
+          changeDetails: row.changeDetails,
+          businessJustification: row.businessJustification,
+          riskImpact: row.riskImpact,
+          releasesImpacted: row.releasesImpacted,
+          impactToResource: row.impactToResource,
+          impactToQuality: row.impactToQuality,
+          relatedLinks: row.relatedLinks.map((link) => ({ ...link })),
+          relatedLinkName: '',
+          relatedLinkDescription: '',
+          relatedLinkUrl: '',
+        }
+      : this.createChangeRequestDraft();
+    this.changeRequestDrawerTab = 'overview';
+    this.changeRequestImpactTab = 'benefits';
+    this.isChangeRequestDrawerOpen = true;
+    this.iconsHydrated = false;
+  }
+
+  closeChangeRequestDrawer(): void {
+    if (!this.isChangeRequestDrawerOpen) return;
+    this.isChangeRequestDrawerOpen = false;
+    this.editingChangeRequestId = null;
+    this.changeRequestDrawerTab = 'overview';
+    this.changeRequestImpactTab = 'benefits';
+    this.resetChangeRequestDraft();
+    this.iconsHydrated = false;
+  }
+
+  saveChangeRequestDrawer(event: Event): void {
+    event.preventDefault();
+    if (!this.canSaveChangeRequestDraft()) return;
+
+    const existing = this.editingChangeRequestId ? this.changeRequestRows.find((row) => row.id === this.editingChangeRequestId) || null : null;
+    const draft = this.changeRequestDraft;
+    const nextRow: ChangeRequestRow = {
+      id: existing?.id || `change-request-${Date.now()}`,
+      pcrNumber: existing?.pcrNumber || this.nextChangeRequestNumber(),
+      project: draft.project.trim() || this.scopedProjectName,
+      pmo: draft.pmo.trim() || 'James T Kirk',
+      types: [...draft.types],
+      createdDate: existing?.createdDate || this.todayIsoDate(),
+      dueDate: draft.dueDate.trim(),
+      priority: draft.priority.trim(),
+      status: existing?.status || 'IN DRAFT',
+      trigger: draft.trigger.trim(),
+      changeDetails: draft.changeDetails.trim(),
+      businessJustification: draft.businessJustification.trim(),
+      riskImpact: draft.riskImpact.trim(),
+      releasesImpacted: draft.releasesImpacted.trim(),
+      impactToResource: draft.impactToResource.trim(),
+      impactToQuality: draft.impactToQuality.trim(),
+      relatedLinks: draft.relatedLinks.map((link) => ({ ...link })),
+    };
+
+    this.changeRequestRows = existing
+      ? this.changeRequestRows.map((row) => (row.id === existing.id ? nextRow : row))
+      : [nextRow, ...this.changeRequestRows];
+
+    this.closeChangeRequestDrawer();
+  }
+
+  updateChangeRequestDraft(field: ChangeRequestDraftField, value: string): void {
+    this.changeRequestDraft = {
+      ...this.changeRequestDraft,
+      [field]: value,
+    };
+  }
+
+  updateChangeRequestRelatedLinkDraft(field: ChangeRequestRelatedLinkDraftField, value: string): void {
+    this.changeRequestDraft = {
+      ...this.changeRequestDraft,
+      [field]: value,
+    };
+  }
+
+  toggleChangeRequestType(type: ChangeRequestType, checked: boolean): void {
+    const current = new Set(this.changeRequestDraft.types);
+    if (checked) {
+      current.add(type);
+    } else {
+      current.delete(type);
+    }
+    this.changeRequestDraft = {
+      ...this.changeRequestDraft,
+      types: changeRequestTypeOptions.filter((option) => current.has(option)),
+    };
+  }
+
+  isChangeRequestTypeSelected(type: ChangeRequestType): boolean {
+    return this.changeRequestDraft.types.includes(type);
+  }
+
+  canSaveChangeRequestDraft(): boolean {
+    const draft = this.changeRequestDraft;
+    return Boolean(draft.dueDate.trim() && draft.trigger.trim() && draft.priority.trim() && draft.types.length);
+  }
+
+  canAddChangeRequestRelatedLink(): boolean {
+    return Boolean(this.changeRequestDraft.relatedLinkName.trim() && this.changeRequestDraft.relatedLinkUrl.trim());
+  }
+
+  addChangeRequestRelatedLink(): void {
+    if (!this.canAddChangeRequestRelatedLink()) return;
+    const draft = this.changeRequestDraft;
+    const nextLink: RelatedLinkRow = {
+      id: `change-request-link-${Date.now()}`,
+      name: draft.relatedLinkName.trim(),
+      description: draft.relatedLinkDescription.trim(),
+      documentLink: draft.relatedLinkUrl.trim(),
+    };
+    this.changeRequestDraft = {
+      ...draft,
+      relatedLinks: [...draft.relatedLinks, nextLink],
+      relatedLinkName: '',
+      relatedLinkDescription: '',
+      relatedLinkUrl: '',
+    };
+  }
+
+  removeChangeRequestRelatedLink(id: string): void {
+    this.changeRequestDraft = {
+      ...this.changeRequestDraft,
+      relatedLinks: this.changeRequestDraft.relatedLinks.filter((link) => link.id !== id),
+    };
+  }
+
+  removeChangeRequest(id: string): void {
+    this.changeRequestRows = this.changeRequestRows.filter((row) => row.id !== id);
+    if (this.editingChangeRequestId === id) this.closeChangeRequestDrawer();
+    this.iconsHydrated = false;
+  }
+
+  changeRequestDateLabel(value: string): string {
+    return this.formatProjectPlanDate(value);
+  }
+
+  changeRequestStatusTone(status: string): string {
+    const normalized = status.toLowerCase();
+    if (normalized.includes('draft')) return 'neutral';
+    if (normalized.includes('endorsement') || normalized.includes('progress')) return 'blue';
+    if (normalized.includes('closed') || normalized.includes('approved')) return 'green';
+    if (normalized.includes('rejected')) return 'red';
+    return 'neutral';
+  }
+
+  changeRequestPriorityTone(priority: string): string {
+    const normalized = priority.toLowerCase();
+    if (normalized.includes('high')) return 'high';
+    if (normalized.includes('medium')) return 'medium';
+    if (normalized.includes('low')) return 'low';
+    return 'neutral';
+  }
+
+  isOverdueChangeRequest(row: ChangeRequestRow): boolean {
+    if (this.isClosedChangeRequest(row)) return false;
+    const due = new Date(`${row.dueDate}T00:00:00`);
+    if (Number.isNaN(due.getTime())) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return due.getTime() < today.getTime();
   }
 
   openResourceDrawer(): void {
@@ -9532,32 +12296,87 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     );
   }
 
-  submitStageGate(event: Event, status: StageGateStatus): void {
+  submitStageGate(event: Event, gate: StageGateContext): void {
     event.preventDefault();
-    if (!this.canSubmitStageGate(status)) return;
+    if (!this.canSubmitStageGate(gate)) return;
+    const key = this.stageGateKey(gate.profile.project, gate.stage.id);
+    if (!this.submittedStageGateKeys.includes(key)) {
+      this.submittedStageGateKeys = [...this.submittedStageGateKeys, key];
+    }
     this.closeStageGate();
   }
 
   stageStatusLabel(status: StageGateStatus): string {
     if (status === 'complete') return 'Complete';
+    if (status === 'submitted') return 'Stage gate submitted';
+    if (status === 'revoked') return 'Revoked';
     if (status === 'current') return 'Current stage';
     return 'Upcoming';
   }
 
-  gateReadinessText(profile: StageProfile, status: StageGateStatus): string {
-    if (status === 'complete') return `${profile.gateTotal}/${profile.gateTotal} submitted`;
-    if (status === 'current') return `${profile.gateDone}/${profile.gateTotal} ready`;
+  gateReadinessText(gate: StageGateContext): string {
+    if (gate.status === 'complete') return `${gate.profile.gateTotal}/${gate.profile.gateTotal} approved by PMO`;
+    if (gate.status === 'submitted') return 'Submitted to PMO and waiting for approval';
+    if (gate.status === 'current' || gate.status === 'revoked') return `${gate.checkedCount}/${gate.profile.gateTotal} ready`;
     return 'Not started';
   }
 
-  canSubmitStageGate(status: StageGateStatus): boolean {
-    return status === 'current';
+  canSubmitStageGate(gate: StageGateContext): boolean {
+    return (
+      gate.status === 'current' &&
+      this.isStageGateChecklistComplete(gate) &&
+      (!this.stageGateEvidenceEnabled(gate) || this.isStageGateEvidenceAttached(gate))
+    );
   }
 
   stageGateSubmitLabel(status: StageGateStatus): string {
-    if (status === 'current') return 'Submit and advance stage';
-    if (status === 'complete') return 'Gate already submitted';
+    if (status === 'current') return 'Submit stage gate to PMO';
+    if (status === 'submitted') return 'Already submitted to PMO';
+    if (status === 'complete') return 'Approved by PMO';
+    if (status === 'revoked') return 'Rework required before submit';
     return 'Current stage required first';
+  }
+
+  canEditStageGateChecklist(status: StageGateStatus): boolean {
+    return status === 'current';
+  }
+
+  isStageGateChecklistChecked(gate: StageGateContext, index: number): boolean {
+    const key = this.stageGateKey(gate.profile.project, gate.stage.id);
+    const state = this.stageGateChecklistState[key];
+    if (state) return Boolean(state[index]);
+    return index < gate.checkedCount;
+  }
+
+  toggleStageGateChecklistItem(gate: StageGateContext, index: number, checked: boolean): void {
+    if (!this.canEditStageGateChecklist(gate.status)) return;
+    const key = this.stageGateKey(gate.profile.project, gate.stage.id);
+    const current = this.stageGateChecklistState[key] || this.initialStageGateChecklistState(gate.profile, gate.stageIndex);
+    const next = [...current];
+    next[index] = checked;
+    this.stageGateChecklistState = {
+      ...this.stageGateChecklistState,
+      [key]: next,
+    };
+    this.iconsHydrated = false;
+  }
+
+  stageGateEvidenceEnabled(gate: StageGateContext): boolean {
+    return gate.status === 'current' || gate.status === 'submitted' || gate.status === 'complete';
+  }
+
+  isStageGateEvidenceAttached(gate: StageGateContext): boolean {
+    const key = this.stageGateKey(gate.profile.project, gate.stage.id);
+    return gate.status === 'complete' || this.attachedStageGateEvidenceKeys.includes(key);
+  }
+
+  markStageGateEvidenceAttached(gate: StageGateContext): void {
+    if (!this.canEditStageGateChecklist(gate.status)) return;
+    const key = this.stageGateKey(gate.profile.project, gate.stage.id);
+    if (!this.attachedStageGateEvidenceKeys.includes(key)) {
+      this.attachedStageGateEvidenceKeys = [...this.attachedStageGateEvidenceKeys, key];
+    }
+    this.iconsHydrated = false;
   }
 
   saveReport(event: Event): void {
@@ -9879,14 +12698,15 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   private reportSectionIcon(section: string): string {
     const icons: Record<string, string> = {
       Overview: 'info',
-      Scope: 'endProduct',
+      Scope: 'telescope',
       Schedule: 'calendar',
       Budget: 'dollar',
-      Benefits: 'benefitGraph',
+      Benefits: 'benefit',
       Risks: 'risks',
       Issues: 'issues',
       Resource: 'resources',
       Dependency: 'dependencies',
+      Dependencies: 'dependencies',
     };
     return icons[section] || 'info';
   }
@@ -9901,7 +12721,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       tone: area.tone,
       trend: this.reportTrendForTone(area.tone),
       comments: area.note,
-      timeline: area.label === 'Scope' ? this.scopePastStatuses : this.reportTimelineForTone(area.tone),
+      timeline: this.detailedReportSharedTimelineSections.has(area.label) ? this.scopePastStatuses : this.reportTimelineForTone(area.tone),
     };
   }
 
@@ -9924,6 +12744,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       Issues: 'Escalations, blockers, and decision points.',
       Resource: 'Capacity, roles, and delivery coverage.',
       Dependency: 'Cross-project handoffs, constraints, and owner follow-ups.',
+      Dependencies: 'Cross-project handoffs, constraints, and owner follow-ups.',
     };
     return descriptions[section] || 'Capture the latest delivery signal for this reporting area.';
   }
@@ -10163,7 +12984,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       stage: stageDefinitions[stageIndex],
       stageIndex,
       status,
-      checkedCount: status === 'complete' ? profile.gateTotal : profile.gateDone,
+      checkedCount: this.stageGateCheckedCount(profile, stageIndex, status),
     };
   }
 
@@ -10172,14 +12993,94 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   private stageCurrentIndex(profile: StageProfile): number {
-    return Math.min(Math.max(profile.currentStage, 0), stageDefinitions.length - 1);
+    const override = this.projectStageOverrideIndex[profile.project];
+    const currentStage = typeof override === 'number' ? override : profile.currentStage;
+    return Math.min(Math.max(currentStage, 0), stageDefinitions.length - 1);
   }
 
   private stageStatus(profile: StageProfile, stageIndex: number): StageGateStatus {
     const currentIndex = this.stageCurrentIndex(profile);
+    const stage = stageDefinitions[stageIndex];
+    const key = stage ? this.stageGateKey(profile.project, stage.id) : '';
     if (stageIndex < currentIndex) return 'complete';
-    if (stageIndex === currentIndex) return 'current';
+    if (stageIndex === currentIndex) return this.submittedStageGateKeys.includes(key) ? 'submitted' : 'current';
     return 'upcoming';
+  }
+
+  private stageGateCheckedCount(profile: StageProfile, stageIndex: number, status = this.stageStatus(profile, stageIndex)): number {
+    if (status === 'complete' || status === 'submitted') return profile.gateTotal;
+    const stage = stageDefinitions[stageIndex];
+    if (!stage) return 0;
+    const key = this.stageGateKey(profile.project, stage.id);
+    const state = this.stageGateChecklistState[key];
+    if (state) return state.filter(Boolean).length;
+    if (status === 'current') return Math.min(profile.gateDone, profile.gateTotal);
+    return 0;
+  }
+
+  private ensureStageGateChecklistState(profile: StageProfile, stageIndex: number): void {
+    const stage = stageDefinitions[stageIndex];
+    if (!stage) return;
+    const key = this.stageGateKey(profile.project, stage.id);
+    if (this.stageGateChecklistState[key]) return;
+    this.stageGateChecklistState = {
+      ...this.stageGateChecklistState,
+      [key]: this.initialStageGateChecklistState(profile, stageIndex),
+    };
+  }
+
+  private initialStageGateChecklistState(profile: StageProfile, stageIndex: number): boolean[] {
+    const status = this.stageStatus(profile, stageIndex);
+    const checkedCount = status === 'complete' || status === 'submitted' ? profile.gateTotal : status === 'current' ? profile.gateDone : 0;
+    return profile.checklist.map((_, index) => index < checkedCount);
+  }
+
+  private isStageGateChecklistComplete(gate: StageGateContext): boolean {
+    return gate.profile.checklist.every((_, index) => this.isStageGateChecklistChecked(gate, index));
+  }
+
+  private projectPlanStageStatusLabel(status: StageGateStatus): string {
+    if (status === 'complete') return 'Approved';
+    if (status === 'submitted') return 'Submitted to PMO';
+    if (status === 'current') return 'Not submitted';
+    if (status === 'revoked') return 'Revoked';
+    return 'Not submitted';
+  }
+
+  private projectPlanStageStatusTone(status: StageGateStatus): string {
+    if (status === 'complete') return 'green';
+    if (status === 'submitted') return 'blue';
+    if (status === 'current') return 'amber';
+    if (status === 'revoked') return 'red';
+    return 'neutral';
+  }
+
+  private projectPlanStageActionLabel(profile: StageProfile, stageIndex: number, status: StageGateStatus): string {
+    if (status === 'complete') return 'View approval';
+    if (status === 'submitted') return 'View submission';
+    if (status === 'current') {
+      const nextStage = stageDefinitions[stageIndex + 1];
+      return nextStage ? `Progress to ${nextStage.label} stage` : 'Submit closure gate';
+    }
+    if (status === 'revoked') return 'Rework gate';
+    const currentStage = stageDefinitions[this.stageCurrentIndex(profile)] || stageDefinitions[0];
+    return `Waiting for ${currentStage.gate}`;
+  }
+
+  private projectPlanStageActionIcon(status: StageGateStatus): string {
+    if (status === 'complete') return 'eye';
+    if (status === 'submitted') return 'send';
+    if (status === 'current') return 'stageGate';
+    if (status === 'revoked') return 'alert';
+    return 'lock';
+  }
+
+  private projectPlanStageActionDisabled(status: StageGateStatus): boolean {
+    return status === 'upcoming';
+  }
+
+  private canRevokeProjectPlanStage(profile: StageProfile, stageIndex: number, status: StageGateStatus): boolean {
+    return status === 'complete' && stageIndex === this.stageCurrentIndex(profile) - 1;
   }
 
   private stageProfileForProject(project: string): StageProfile | undefined {
@@ -10197,7 +13098,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   private projectPlanEntryFromAction(entry: string | undefined): ProjectPlanEntry {
-    return entry === 'reports' || entry === 'change-request' || entry === 'closure' ? entry : 'quick';
+    return entry === 'reports' || entry === 'stages' || entry === 'change-request' || entry === 'closure' ? entry : 'quick';
   }
 
   projectPlanFieldOptions(field: ProjectPlanField): string[] {
@@ -10206,7 +13107,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   dependencyCountLabel(register: DependencyRegisterConfig): string {
-    return register.rows.length === 1 ? '1 record' : `${register.rows.length} records`;
+    return register.rows.length === 1 ? '1 dependency' : `${register.rows.length} dependencies`;
   }
 
   benefitCountLabel(register: BenefitPlanConfig): string {
@@ -10389,6 +13290,15 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.benefitPlanDraft = { ...benefitPlanConfig.draft };
   }
 
+  private resetRiskDraft(): void {
+    this.riskPlanDraft = {
+      ...riskPlanConfig.draft,
+      treatments: riskPlanConfig.draft.treatments.map((treatment) => ({ ...treatment })),
+    };
+    this.riskTreatmentDraft = { ...riskTreatmentDraftInitial };
+    this.riskDrawerOpenProfileAfterSave = false;
+  }
+
   private resetIssueDraft(): void {
     this.issuePlanDraft = { ...issuePlanConfig.draft };
   }
@@ -10410,6 +13320,35 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       ...changeImpactConfig.draft,
       strategies: [...changeImpactConfig.draft.strategies],
     };
+  }
+
+  private createChangeRequestDraft(): ChangeRequestDraft {
+    return {
+      ...changeRequestDraftInitial,
+      project: this.isAllProjects ? changeRequestDraftInitial.project : this.scopedProjectName,
+      types: [...changeRequestDraftInitial.types],
+      relatedLinks: changeRequestDraftInitial.relatedLinks.map((link) => ({ ...link })),
+    };
+  }
+
+  private resetChangeRequestDraft(): void {
+    this.changeRequestDraft = this.createChangeRequestDraft();
+  }
+
+  private isClosedChangeRequest(row: ChangeRequestRow): boolean {
+    return row.status.toLowerCase().includes('closed');
+  }
+
+  private changeRequestTypeCount(type: ChangeRequestType): number {
+    return this.activeChangeRequestRows.filter((row) => row.types.includes(type)).length;
+  }
+
+  private nextChangeRequestNumber(): string {
+    const highest = this.changeRequestRows.reduce((max, row) => {
+      const numeric = Number(row.pcrNumber.replace(/\D/g, ''));
+      return Number.isFinite(numeric) ? Math.max(max, numeric) : max;
+    }, 226);
+    return `PCR${highest + 1}`;
   }
 
   private formatProjectPlanDate(value: string): string {
@@ -10451,6 +13390,14 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       .filter(Boolean);
   }
 
+  private parseScheduleScopeDateInput(value: string): string {
+    const trimmed = value.trim();
+    const displayMatch = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(trimmed);
+    if (!displayMatch) return trimmed;
+    const [, day, month, year] = displayMatch;
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+
   private scheduleScopeDateShiftLabel(baseline: string, forecast: string): string {
     if (!baseline || !forecast) return 'Dates incomplete';
     const baselineDate = new Date(`${baseline}T00:00:00`);
@@ -10477,10 +13424,13 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.closeBudgetFundingDrawer();
     this.closeBudgetMonthlyDrawer();
     this.closeBenefitDrawer();
+    this.closeRiskDrawer();
+    this.closeRiskProfile();
     this.closeIssueDrawer();
     this.closeRelatedLinksDrawer();
     this.closeResourceDrawer();
     this.closeChangeImpactDrawer();
+    this.closeChangeRequestDrawer();
     this.closeDependencyDrawer();
   }
 

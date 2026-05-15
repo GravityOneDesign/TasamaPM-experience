@@ -4,6 +4,7 @@ import { PmConsoleContentComponent } from './pm-console-content.component';
 import { PmConsoleIconService } from './pm-console-icon.service';
 import { PmConsoleMountOptions } from './pm-console.types';
 import { PmConsoleNotificationsComponent } from './pm-console-notifications.component';
+import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 
 interface ProjectOption {
   id: string;
@@ -24,7 +25,7 @@ const ONBOARDING_PM101_PROJECT_ID = 'all';
 @Component({
   selector: 'app-pm-console-shell',
   standalone: true,
-  imports: [FormsModule, PmConsoleContentComponent, PmConsoleNotificationsComponent],
+  imports: [FormsModule, PmConsoleContentComponent, PmConsoleIconComponent, PmConsoleNotificationsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="modern-shell" [class.playground-mode]="selectedPage === 'playground'" [class.wbs-mode]="selectedPage === 'wbs'" [class.project-plan-mode]="selectedPage === 'project-plan'" [class.unassigned-mode]="frontDoorMode === 'unassigned'">
@@ -48,7 +49,7 @@ const ONBOARDING_PM101_PROJECT_ID = 'all';
             <div class="project-switch no-project-switch" [class.is-ready]="pmoAssignmentReady" [attr.aria-label]="pmoAssignmentReady ? 'Project assigned' : 'No assigned projects'">
               <span class="project-switch-label">Status</span>
               <span class="no-project-switch-value">
-                <span class="icon" aria-hidden="true"><i [attr.data-lucide]="pmoAssignmentReady ? 'circle-check' : 'bell'"></i></span>
+                <span [pmConsoleIcon]="pmoAssignmentReady ? 'circle-check' : 'bell'" aria-hidden="true"></span>
                 {{ pmoAssignmentReady ? 'Project assigned' : 'No assigned projects' }}
               </span>
             </div>
@@ -61,7 +62,7 @@ const ONBOARDING_PM101_PROJECT_ID = 'all';
                     <option [value]="project.id">{{ project.name }}</option>
                   }
                 </select>
-                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
               </span>
             </label>
           }
@@ -70,15 +71,15 @@ const ONBOARDING_PM101_PROJECT_ID = 'all';
         <div class="header-actions">
           @if (usesConsoleHeader) {
             <label class="search-box global-console-search">
-              <span class="icon" aria-hidden="true"><i data-lucide="search"></i></span>
+              <span pmConsoleIcon="search" aria-hidden="true"></span>
               <input type="search" aria-label="Search documents, people, or departments" placeholder="Search documents, people, or departments..." />
             </label>
           }
           <button class="round-button" type="button" aria-label="Theme">
-            <span class="icon" aria-hidden="true"><i data-lucide="sun"></i></span>
+            <span pmConsoleIcon="sun" aria-hidden="true"></span>
           </button>
           <button class="round-button notification-button" [class.active]="notificationPanelOpen" type="button" aria-label="Notifications" [attr.aria-expanded]="notificationPanelOpen" (click)="toggleNotifications()">
-            <span class="icon" aria-hidden="true"><i data-lucide="bell"></i></span>
+            <span pmConsoleIcon="bell" aria-hidden="true"></span>
             <span class="notification-badge" aria-hidden="true"></span>
           </button>
           <button class="profile-chip" type="button">
@@ -101,13 +102,13 @@ const ONBOARDING_PM101_PROJECT_ID = 'all';
               [attr.title]="frontDoorMode === 'unassigned' && item.page !== 'workspace' ? 'Available after PMO assigns a project' : null"
               (click)="onRailItemClick(item)"
             >
-              <span class="icon" aria-hidden="true"><i [attr.data-lucide]="item.icon"></i></span>
+              <span [pmConsoleIcon]="item.icon" aria-hidden="true"></span>
             </button>
           }
         </nav>
         <nav>
-          <button class="rail-button" type="button" aria-label="Help"><span class="icon" aria-hidden="true"><i data-lucide="circle-help"></i></span></button>
-          <button class="rail-button" type="button" aria-label="Logout"><span class="icon" aria-hidden="true"><i data-lucide="log-out"></i></span></button>
+          <button class="rail-button" type="button" aria-label="Help"><span pmConsoleIcon="circle-help" aria-hidden="true"></span></button>
+          <button class="rail-button" type="button" aria-label="Logout"><span pmConsoleIcon="log-out" aria-hidden="true"></span></button>
         </nav>
       </aside>
 

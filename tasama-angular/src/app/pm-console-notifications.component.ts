@@ -1,5 +1,6 @@
 import { AfterViewChecked, ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 import { PmConsoleIconService } from './pm-console-icon.service';
+import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 
 interface NotificationItem {
   title: string;
@@ -13,6 +14,7 @@ interface NotificationItem {
 @Component({
   selector: 'app-pm-console-notifications',
   standalone: true,
+  imports: [PmConsoleIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (open) {
@@ -25,14 +27,14 @@ interface NotificationItem {
               <span>{{ unreadCount }} unread updates</span>
             </div>
             <button class="notification-close" type="button" aria-label="Close notifications" (click)="closePanel.emit()">
-              <span class="icon" aria-hidden="true"><i data-lucide="x"></i></span>
+              <span pmConsoleIcon="x" aria-hidden="true"></span>
             </button>
           </div>
           <div class="notification-list">
             @for (item of notifications; track item.title) {
               <article class="notification-item {{ item.tone }} {{ item.unread ? 'unread' : '' }}">
                 <span class="notification-item-icon">
-                  <span class="icon" aria-hidden="true"><i [attr.data-lucide]="lucideName(item.icon)"></i></span>
+                  <span [pmConsoleIcon]="lucideName(item.icon)" aria-hidden="true"></span>
                 </span>
                 <div>
                   <div class="notification-item-top">

@@ -11,14 +11,21 @@ declare global {
 @Injectable({ providedIn: 'root' })
 export class PmConsoleIconService {
   private loading?: Promise<void>;
+  private refreshScheduled = false;
 
   refresh(): void {
-    void this.load().then(() => {
-      window.lucide?.createIcons({
-        attrs: {
-          'stroke-width': '1.6',
-          'aria-hidden': 'true',
-        },
+    if (this.refreshScheduled) return;
+    this.refreshScheduled = true;
+
+    queueMicrotask(() => {
+      this.refreshScheduled = false;
+      void this.load().then(() => {
+        window.lucide?.createIcons({
+          attrs: {
+            'stroke-width': '1.6',
+            'aria-hidden': 'true',
+          },
+        });
       });
     });
   }
