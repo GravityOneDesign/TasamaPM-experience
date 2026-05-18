@@ -120,7 +120,9 @@ const ONBOARDING_PM101_PROJECT_ID = 'all';
         [pmoAssignmentReady]="pmoAssignmentReady"
         [guidedTourActive]="guidedTourActive"
         [guidedTourExitMode]="guidedTourExitMode"
+        [onboardingAssignmentFlow]="onboardingAssignmentFlow"
         [onboardingPm101Locked]="onboardingPm101Locked"
+        [onboardingProjectSetup]="onboardingProjectSetup"
         (consoleStateChange)="applyContentState($event)"
       />
       <app-pm-console-notifications [open]="notificationPanelOpen" (closePanel)="closeNotifications()" />
@@ -159,7 +161,9 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   pmoAssignmentReady = false;
   guidedTourActive = false;
   guidedTourExitMode: string | null = null;
+  onboardingAssignmentFlow = false;
   onboardingPm101Locked = false;
+  onboardingProjectSetup = false;
   private iconsHydrated = false;
 
   constructor(
@@ -182,6 +186,11 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
 
   get visibleProjects(): ProjectOption[] {
     if (this.onboardingPm101Locked) return this.projects.filter((project) => project.id === 'all');
+    if (this.onboardingProjectSetup) {
+      return this.isProjectScopedPage
+        ? this.projects.filter((project) => project.id === 'UAE Research Map')
+        : this.projects.filter((project) => project.id === 'all');
+    }
     return this.isProjectScopedPage ? this.projects.filter((project) => project.id !== 'all') : this.projects;
   }
 
@@ -193,7 +202,9 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     this.guidedTourActive = Boolean(this.initialState.guidedTourActive);
     this.guidedTourExitMode = this.initialState.guidedTourExitMode ?? null;
     this.pmoAssignmentReady = Boolean(this.initialState.pmoAssignmentReady);
+    this.onboardingAssignmentFlow = Boolean(this.initialState.onboardingAssignmentFlow);
     this.onboardingPm101Locked = Boolean(this.initialState.onboardingPm101Locked);
+    this.onboardingProjectSetup = Boolean(this.initialState.onboardingProjectSetup);
     if (this.onboardingPm101Locked) {
       this.selectedProject = ONBOARDING_PM101_PROJECT_ID;
       this.selectedView = 'pm101';
@@ -207,23 +218,43 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   }
 
   selectProject(value: string): void {
-    this.selectedProject = this.onboardingPm101Locked ? ONBOARDING_PM101_PROJECT_ID : value;
+    if (this.onboardingProjectSetup) {
+      this.selectedProject = this.isProjectScopedPage ? 'UAE Research Map' : 'all';
+    } else {
+      this.selectedProject = this.onboardingPm101Locked ? ONBOARDING_PM101_PROJECT_ID : value;
+    }
     this.markShellChanged();
   }
 
   setPage(page: ConsolePage): void {
     if (this.frontDoorMode === 'unassigned' && page !== 'workspace') return;
+    if (this.onboardingAssignmentFlow && this.pmoAssignmentReady && !this.onboardingProjectSetup && page === 'workspaces') {
+      this.onboardingProjectSetup = true;
+      this.onboardingPm101Locked = false;
+      this.selectedProject = 'all';
+      this.selectedView = 'pm101';
+    }
     this.selectedPage = page;
     if (this.isProjectScopedPage && this.selectedProject === 'all') {
-      this.selectedProject = 'Vision 2030';
+      this.selectedProject = this.onboardingProjectSetup ? 'UAE Research Map' : 'Vision 2030';
     }
     this.markShellChanged();
   }
 
   goHome(): void {
-    this.selectedProject = this.onboardingPm101Locked ? ONBOARDING_PM101_PROJECT_ID : 'all';
-    this.selectedPage = 'workspace';
-    this.selectedView = this.onboardingPm101Locked ? 'pm101' : 'calendar';
+    if (this.onboardingAssignmentFlow && !this.onboardingProjectSetup) {
+      this.frontDoorMode = 'assigned';
+      this.selectedProject = 'all';
+      this.selectedPage = 'workspace';
+      this.selectedView = 'pm101';
+      this.onboardingPm101Locked = !this.pmoAssignmentReady;
+      this.notificationPanelOpen = false;
+      this.markShellChanged();
+      return;
+    }
+    this.selectedProject = this.onboardingProjectSetup || this.onboardingPm101Locked ? ONBOARDING_PM101_PROJECT_ID : 'all';
+    this.selectedPage = this.onboardingProjectSetup ? 'workspaces' : 'workspace';
+    this.selectedView = this.onboardingProjectSetup || this.onboardingPm101Locked ? 'pm101' : 'calendar';
     this.notificationPanelOpen = false;
     this.markShellChanged();
   }
@@ -268,8 +299,14 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     if ('guidedTourExitMode' in state) {
       this.guidedTourExitMode = state.guidedTourExitMode ?? null;
     }
+    if ('onboardingAssignmentFlow' in state) {
+      this.onboardingAssignmentFlow = Boolean(state.onboardingAssignmentFlow);
+    }
     if ('onboardingPm101Locked' in state) {
       this.onboardingPm101Locked = Boolean(state.onboardingPm101Locked);
+    }
+    if ('onboardingProjectSetup' in state) {
+      this.onboardingProjectSetup = Boolean(state.onboardingProjectSetup);
     }
     this.markShellChanged();
   }

@@ -1,0 +1,663 @@
+import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostListener,
+  Input,
+  OnChanges,
+  OnDestroy,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
+import { PmConsoleIconComponent } from './pm-console-icon.component';
+import { PmConsoleStatusPillComponent } from './pm-console-status-pill.component';
+import { PmConsoleToolbarComponent } from './pm-console-toolbar.component';
+
+export interface PmConsoleRegisterTableColumn {
+  id: string;
+  label: string;
+  minWidth?: number;
+  maxWidth?: number;
+  visible?: boolean;
+  align?: 'left' | 'center' | 'right';
+}
+
+export interface PmConsoleRegisterTableCell {
+  kind: 'text' | 'primary' | 'status' | 'budget' | 'person' | 'action' | 'checkbox';
+  text?: string;
+  title?: string;
+  subtitle?: string;
+  label?: string;
+  value?: string;
+  suffix?: string;
+  icon?: string;
+  tone?: string;
+  initials?: string;
+  handle?: string;
+  avatarUrl?: string;
+  checked?: boolean;
+  muted?: boolean;
+  strong?: boolean;
+  ariaLabel?: string;
+}
+
+export interface PmConsoleRegisterTableRow {
+  id: string;
+  ariaLabel?: string;
+  clickable?: boolean;
+  selected?: boolean;
+  cells: Record<string, PmConsoleRegisterTableCell>;
+}
+
+export interface PmConsoleRegisterTableActionEvent {
+  row: PmConsoleRegisterTableRow;
+  column: PmConsoleRegisterTableColumn;
+  cell: PmConsoleRegisterTableCell;
+}
+
+type ColumnMotionState = 'visible' | 'entering' | 'exiting';
+
+const COLUMN_MOTION_MS = 280;
+let registerTableInstance = 0;
+
+@Component({
+  selector: 'app-pm-console-register-table',
+  standalone: true,
+  imports: [CommonModule, PmConsoleIconComponent, PmConsoleStatusPillComponent, PmConsoleToolbarComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      :host {
+        display: block;
+        min-height: 0;
+        min-width: 0;
+      }
+
+      .pm-main-register-table-view {
+        display: grid;
+        gap: 12px;
+        grid-template-rows: auto minmax(0, 1fr);
+        height: 100%;
+        min-height: 0;
+        min-width: 0;
+      }
+
+      .pm-main-register-table-view.without-toolbar {
+        grid-template-rows: minmax(0, 1fr);
+      }
+
+      .pm-main-register-table {
+        min-width: var(--register-table-min-width, 980px);
+        width: 100%;
+      }
+
+      .pm-main-register-table-row.is-clickable {
+        cursor: pointer;
+      }
+
+      .pm-main-register-table-row.is-clickable:hover td {
+        background: #fbfcff;
+      }
+
+      .pm-main-register-table-row.is-clickable:focus-visible {
+        outline: 2px solid rgba(16, 6, 159, 0.22);
+        outline-offset: -2px;
+      }
+
+      .pm-main-register-table .pm-table-column-cell.align-right .pm-table-column-frame {
+        justify-content: flex-end;
+      }
+
+      .pm-main-register-table .pm-table-column-cell.align-center .pm-table-column-frame {
+        justify-content: center;
+      }
+
+      .pm-register-cell-text {
+        color: #555555;
+        display: block;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .pm-register-cell-text.strong {
+        color: #252a34;
+        font-weight: 600;
+      }
+
+      .pm-register-cell-text.muted {
+        color: #777777;
+      }
+
+      .pm-register-primary-button {
+        align-items: flex-start;
+        background: transparent;
+        border: 0;
+        color: #354cb5;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        max-width: 100%;
+        min-width: 0;
+        padding: 0;
+        text-align: left;
+      }
+
+      .pm-register-primary-button strong {
+        color: #354cb5;
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 18px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 100%;
+      }
+
+      .pm-register-primary-button span {
+        color: #777777;
+        display: block;
+        font-size: 11px;
+        line-height: 14px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 100%;
+      }
+
+      .pm-register-person {
+        align-items: center;
+        display: flex;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .pm-register-person input {
+        accent-color: var(--brand);
+        flex: 0 0 auto;
+        margin: 0;
+      }
+
+      .pm-register-avatar {
+        align-items: center;
+        background: #f0eefc;
+        border: 1px solid #ffffff;
+        border-radius: 999px;
+        color: var(--brand);
+        display: inline-flex;
+        flex: 0 0 30px;
+        font-size: 11px;
+        font-weight: 700;
+        height: 30px;
+        justify-content: center;
+        overflow: hidden;
+        width: 30px;
+      }
+
+      .pm-register-avatar img {
+        height: 100%;
+        object-fit: cover;
+        width: 100%;
+      }
+
+      .pm-register-person-copy {
+        display: grid;
+        min-width: 0;
+      }
+
+      .pm-register-person-copy strong {
+        color: #252a34;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .pm-register-person-copy small {
+        color: #777777;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .pm-register-action-button {
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid #d3d3d3;
+        border-radius: 999px;
+        color: var(--brand);
+        display: inline-flex;
+        font-size: 12px;
+        font-weight: 600;
+        gap: 5px;
+        height: 36px;
+        justify-content: center;
+        line-height: 16px;
+        padding: 0 15px;
+        white-space: nowrap;
+      }
+
+      .pm-main-register-table .pm-table-actions-cell .pm-register-action-button {
+        height: 36px;
+        min-width: 94px;
+        padding: 0 15px;
+        width: auto;
+      }
+
+      .pm-register-action-button .icon {
+        height: 15px;
+        width: 15px;
+      }
+
+      .pm-main-register-table .pm-table-actions-cell .pm-register-action-button .icon {
+        height: 15px;
+        width: 15px;
+      }
+
+      .pm-register-checkbox-cell {
+        accent-color: var(--brand);
+        margin: 0;
+      }
+
+      @media (max-width: 860px) {
+        .pm-main-register-table-view {
+          gap: 10px;
+        }
+      }
+    `,
+  ],
+  template: `
+    <article class="pm-main-register-table-view" [class.without-toolbar]="!showToolbar">
+      @if (showToolbar) {
+        <app-pm-console-toolbar [itemLabel]="computedItemLabel" toolbarClass="pm-main-register-toolbar">
+          @if (showSearch) {
+            <button class="pm-table-tool square" type="button" [attr.aria-label]="'Search ' + itemName"><span pmConsoleIcon="search" aria-hidden="true"></span></button>
+          }
+          @if (showFilter) {
+            <button class="pm-table-tool" type="button"><span pmConsoleIcon="filter" aria-hidden="true"></span><span>Filter</span></button>
+          }
+          @if (showGroupBy) {
+            <button class="pm-table-tool" type="button"><span pmConsoleIcon="sliders-horizontal" aria-hidden="true"></span><span>Group by</span></button>
+          }
+          @if (showExport) {
+            <button class="pm-table-tool" type="button"><span pmConsoleIcon="download" aria-hidden="true"></span><span>Export</span></button>
+          }
+          <div class="pm-table-settings-menu" data-register-columns-menu>
+            <button class="pm-table-tool square" type="button" aria-label="Table settings" aria-haspopup="dialog" [attr.aria-expanded]="columnMenuOpen" [attr.aria-controls]="columnPickerId" (click)="toggleColumnMenu()"><span pmConsoleIcon="settings" aria-hidden="true"></span></button>
+            @if (columnMenuOpen) {
+              <section class="pm-table-column-popover" [id]="columnPickerId" role="dialog" [attr.aria-label]="'Choose visible ' + itemName + ' columns'">
+                <div class="pm-table-column-popover-head">
+                  <div>
+                    <strong>Visible columns</strong>
+                    <small>{{ visibleColumns.length }} of {{ columns.length }} selected</small>
+                  </div>
+                  <button class="pm-table-column-reset" type="button" [disabled]="visibleColumns.length === columns.length" (click)="resetColumns()">Reset</button>
+                </div>
+                <div class="pm-table-column-options" role="group" [attr.aria-label]="itemName + ' table columns'">
+                  @for (column of columns; track column.id) {
+                    <label class="pm-table-column-option" [class.is-locked]="isColumnLocked(column.id)">
+                      <input type="checkbox" [checked]="isColumnVisible(column.id)" [disabled]="isColumnLocked(column.id)" (change)="toggleColumn(column.id, $event)" />
+                      <span>{{ column.label }}</span>
+                    </label>
+                  }
+                </div>
+                <p class="pm-table-column-hint">Keep at least one column visible in the table.</p>
+              </section>
+            }
+          </div>
+        </app-pm-console-toolbar>
+      }
+
+      <div class="pm-project-table-scroll pm-main-register-table-scroll" tabindex="0">
+        <table class="pm-project-table pm-register-table pm-main-register-table" [attr.aria-label]="ariaLabel" [style.--register-table-min-width.px]="tableMinWidth()">
+          <thead>
+            <tr>
+              @if (selectable) {
+                <th class="pm-table-check-cell"><input type="checkbox" [attr.aria-label]="selectAllLabel" /></th>
+              }
+              @for (column of renderedColumns; track column.id) {
+                <th class="pm-table-column-cell {{ column.align ? 'align-' + column.align : '' }}" [class.is-entering]="columnMotionState(column.id) === 'entering'" [class.is-exiting]="columnMotionState(column.id) === 'exiting'" [style.--column-open-width]="columnWidth(column.id)">
+                  <div class="pm-table-column-frame">
+                    <span class="pm-table-column-header">{{ column.label }}</span>
+                  </div>
+                </th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows; track row.id) {
+              <tr class="pm-main-register-table-row" [class.is-clickable]="row.clickable !== false" role="button" tabindex="0" [attr.aria-label]="row.ariaLabel || 'Open row'" (click)="openRow(row)" (keydown.enter)="openRowFromKeyboard($event, row)" (keydown.space)="openRowFromKeyboard($event, row)">
+                @if (selectable) {
+                  <td class="pm-table-check-cell"><input type="checkbox" [checked]="row.selected" [attr.aria-label]="'Select ' + (row.ariaLabel || 'row')" (click)="$event.stopPropagation()" /></td>
+                }
+                @for (column of renderedColumns; track column.id) {
+                  @let cell = cellFor(row, column.id);
+                  <td class="pm-table-column-cell {{ column.align ? 'align-' + column.align : '' }}" [class.pm-table-project-cell]="cell?.kind === 'primary'" [class.pm-table-status-cell]="cell?.kind === 'status'" [class.pm-table-actions-cell]="cell?.kind === 'action'" [class.is-entering]="columnMotionState(column.id) === 'entering'" [class.is-exiting]="columnMotionState(column.id) === 'exiting'" [style.--column-open-width]="columnWidth(column.id)">
+                    <div class="pm-table-column-frame">
+                      @if (cell) {
+                        @switch (cell.kind) {
+                          @case ('primary') {
+                            <button class="pm-register-primary-button" type="button" [attr.aria-label]="cell.ariaLabel || cell.title" (click)="openRow(row); $event.stopPropagation()">
+                              @if (cell.subtitle) {
+                                <span>{{ cell.subtitle }}</span>
+                              }
+                              <strong>{{ cell.title || cell.text }}</strong>
+                            </button>
+                          }
+                          @case ('status') {
+                            <span [pmConsoleStatusPill]="cell.label || cell.text || ''" baseClass="pm-table-row-status" [tone]="cell.tone || 'neutral'"></span>
+                          }
+                          @case ('budget') {
+                            <span class="pm-table-budget"><strong>{{ cell.value || cell.text }}</strong>@if (cell.suffix) { <small>{{ cell.suffix }}</small> }</span>
+                          }
+                          @case ('person') {
+                            <span class="pm-register-person">
+                              @if (cell.checked !== undefined) {
+                                <input type="checkbox" [checked]="cell.checked" [attr.aria-label]="cell.ariaLabel || 'Submitted by ' + cell.title" (click)="$event.stopPropagation()" />
+                              }
+                              <span class="pm-register-avatar" aria-hidden="true">
+                                @if (cell.avatarUrl) {
+                                  <img [src]="cell.avatarUrl" alt="" />
+                                } @else {
+                                  {{ cell.initials || cell.title?.slice(0, 2) }}
+                                }
+                              </span>
+                              <span class="pm-register-person-copy">
+                                <strong>{{ cell.title }}</strong>
+                                @if (cell.handle) {
+                                  <small>{{ cell.handle }}</small>
+                                }
+                              </span>
+                            </span>
+                          }
+                          @case ('action') {
+                            <button class="pm-register-action-button {{ cell.tone || '' }}" type="button" [attr.aria-label]="cell.ariaLabel || cell.label" (click)="emitAction(row, column, cell, $event)">
+                              <span [pmConsoleIcon]="cell.icon || 'file-text'" aria-hidden="true"></span>
+                              <span>{{ cell.label }}</span>
+                            </button>
+                          }
+                          @case ('checkbox') {
+                            <input class="pm-register-checkbox-cell" type="checkbox" [checked]="cell.checked" [attr.aria-label]="cell.ariaLabel || cell.label" (click)="$event.stopPropagation()" />
+                          }
+                          @default {
+                            <span class="pm-register-cell-text" [class.strong]="cell.strong" [class.muted]="cell.muted">{{ cell.text || cell.label }}</span>
+                          }
+                        }
+                      }
+                    </div>
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </article>
+  `,
+})
+export class PmConsoleRegisterTableComponent implements OnChanges, OnDestroy {
+  @Input() columns: PmConsoleRegisterTableColumn[] = [];
+  @Input() rows: PmConsoleRegisterTableRow[] = [];
+  @Input() storageKey = '';
+  @Input() ariaLabel = 'Register table';
+  @Input() itemName = 'items';
+  @Input() itemLabel = '';
+  @Input() selectAllLabel = 'Select all rows';
+  @Input() selectable = true;
+  @Input() showToolbar = true;
+  @Input() showSearch = true;
+  @Input() showFilter = true;
+  @Input() showGroupBy = false;
+  @Input() showExport = true;
+
+  @Output() rowOpen = new EventEmitter<PmConsoleRegisterTableRow>();
+  @Output() cellAction = new EventEmitter<PmConsoleRegisterTableActionEvent>();
+
+  readonly columnPickerId = `pm-register-table-columns-${++registerTableInstance}`;
+  visibleColumnIds: string[] = [];
+  renderedColumnIds: string[] = [];
+  columnMotionStates: Record<string, ColumnMotionState | undefined> = {};
+  columnMenuOpen = false;
+
+  private columnTimers: Record<string, number | undefined> = {};
+  private columnFrames: Record<string, number | undefined> = {};
+
+  constructor(
+    private readonly elementRef: ElementRef<HTMLElement>,
+    private readonly changeDetector: ChangeDetectorRef,
+  ) {}
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if ('columns' in changes || 'storageKey' in changes) {
+      this.syncColumnsFromInputs();
+    }
+  }
+
+  ngOnDestroy(): void {
+    for (const handle of Object.values(this.columnTimers)) {
+      if (handle) window.clearTimeout(handle);
+    }
+    for (const handle of Object.values(this.columnFrames)) {
+      if (handle) window.cancelAnimationFrame(handle);
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  handleDocumentClick(event: MouseEvent): void {
+    if (!this.columnMenuOpen) return;
+    const target = event.target;
+    if (!(target instanceof Node)) return;
+    if (!this.elementRef.nativeElement.contains(target)) this.closeColumnMenu();
+  }
+
+  @HostListener('window:keydown.escape')
+  handleEscape(): void {
+    this.closeColumnMenu();
+  }
+
+  get computedItemLabel(): string {
+    return this.itemLabel || `Items: ${this.rows.length}`;
+  }
+
+  get visibleColumns(): PmConsoleRegisterTableColumn[] {
+    const visible = new Set(this.visibleColumnIds);
+    return this.columns.filter((column) => visible.has(column.id));
+  }
+
+  get renderedColumns(): PmConsoleRegisterTableColumn[] {
+    const rendered = new Set(this.renderedColumnIds);
+    return this.columns.filter((column) => rendered.has(column.id));
+  }
+
+  toggleColumnMenu(): void {
+    this.columnMenuOpen = !this.columnMenuOpen;
+  }
+
+  closeColumnMenu(): void {
+    if (!this.columnMenuOpen) return;
+    this.columnMenuOpen = false;
+    this.changeDetector.markForCheck();
+  }
+
+  isColumnVisible(id: string): boolean {
+    return this.visibleColumnIds.includes(id);
+  }
+
+  isColumnLocked(id: string): boolean {
+    return this.visibleColumnIds.length === 1 && this.visibleColumnIds[0] === id;
+  }
+
+  columnMotionState(id: string): ColumnMotionState {
+    return this.columnMotionStates[id] || 'visible';
+  }
+
+  columnWidth(id: string): string {
+    const column = this.columns.find((item) => item.id === id);
+    const min = column?.minWidth || 132;
+    const max = column?.maxWidth || Math.max(min, 190);
+    const visibleTotal = this.visibleColumns.reduce((total, item) => total + (item.maxWidth || Math.max(item.minWidth || 132, 190)), 0) || max;
+    const share = (max / visibleTotal) * 100;
+    return `clamp(${min}px, ${share.toFixed(3)}%, ${max}px)`;
+  }
+
+  tableMinWidth(): number {
+    const columnWidthTotal = this.visibleColumns.reduce((total, column) => total + (column.minWidth || 132), 0);
+    return (this.selectable ? 48 : 0) + columnWidthTotal;
+  }
+
+  toggleColumn(id: string, event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    const shouldShow = Boolean(input?.checked);
+    const isVisible = this.isColumnVisible(id);
+    if (shouldShow === isVisible) return;
+
+    if (shouldShow) {
+      this.visibleColumnIds = this.normalizeColumns([...this.visibleColumnIds, id]);
+      this.showColumn(id);
+    } else {
+      if (this.isColumnLocked(id)) return;
+      this.visibleColumnIds = this.normalizeColumns(this.visibleColumnIds.filter((columnId) => columnId !== id));
+      this.hideColumn(id);
+    }
+
+    this.persistColumns();
+  }
+
+  resetColumns(): void {
+    const nextVisible = this.defaultColumnIds();
+    const nextVisibleSet = new Set(nextVisible);
+    for (const id of nextVisible) {
+      if (!this.visibleColumnIds.includes(id)) this.showColumn(id);
+    }
+    for (const id of this.visibleColumnIds) {
+      if (!nextVisibleSet.has(id)) this.hideColumn(id);
+    }
+    this.visibleColumnIds = nextVisible;
+    this.persistColumns();
+  }
+
+  cellFor(row: PmConsoleRegisterTableRow, columnId: string): PmConsoleRegisterTableCell | null {
+    return row.cells[columnId] || null;
+  }
+
+  openRow(row: PmConsoleRegisterTableRow): void {
+    if (row.clickable === false) return;
+    this.rowOpen.emit(row);
+  }
+
+  openRowFromKeyboard(event: Event, row: PmConsoleRegisterTableRow): void {
+    event.preventDefault();
+    this.openRow(row);
+  }
+
+  emitAction(row: PmConsoleRegisterTableRow, column: PmConsoleRegisterTableColumn, cell: PmConsoleRegisterTableCell, event: Event): void {
+    event.stopPropagation();
+    this.cellAction.emit({ row, column, cell });
+  }
+
+  private syncColumnsFromInputs(): void {
+    const visible = this.loadColumns();
+    this.visibleColumnIds = visible;
+    this.renderedColumnIds = [...visible];
+    this.columnMotionStates = visible.reduce<Record<string, ColumnMotionState>>((states, id) => {
+      states[id] = 'visible';
+      return states;
+    }, {});
+  }
+
+  private loadColumns(): string[] {
+    if (this.storageKey) {
+      try {
+        const stored = window.localStorage.getItem(this.storageKey);
+        if (stored) return this.normalizeColumns(JSON.parse(stored));
+      } catch {
+        return this.defaultColumnIds();
+      }
+    }
+    return this.defaultColumnIds();
+  }
+
+  private persistColumns(): void {
+    if (!this.storageKey) return;
+    try {
+      window.localStorage.setItem(this.storageKey, JSON.stringify(this.visibleColumnIds));
+    } catch {
+      // In-memory column preferences still work when storage is unavailable.
+    }
+  }
+
+  private defaultColumnIds(): string[] {
+    const defaultIds = this.columns.filter((column) => column.visible !== false).map((column) => column.id);
+    return defaultIds.length ? defaultIds : this.columns.slice(0, 1).map((column) => column.id);
+  }
+
+  private normalizeColumns(ids: string[]): string[] {
+    const requested = new Set(ids);
+    const normalized = this.columns.filter((column) => requested.has(column.id)).map((column) => column.id);
+    return normalized.length ? normalized : this.defaultColumnIds();
+  }
+
+  private normalizeRenderedColumns(ids: string[]): string[] {
+    const requested = new Set(ids);
+    return this.columns.filter((column) => requested.has(column.id)).map((column) => column.id);
+  }
+
+  private showColumn(id: string): void {
+    this.clearColumnAnimation(id);
+    this.renderedColumnIds = this.normalizeRenderedColumns([...this.renderedColumnIds, id]);
+    this.columnMotionStates = {
+      ...this.columnMotionStates,
+      [id]: 'entering',
+    };
+    this.columnFrames[id] = window.requestAnimationFrame(() => {
+      this.columnFrames[id] = undefined;
+      this.columnMotionStates = {
+        ...this.columnMotionStates,
+        [id]: 'visible',
+      };
+      this.changeDetector.markForCheck();
+    });
+  }
+
+  private hideColumn(id: string): void {
+    this.clearColumnAnimation(id);
+    this.columnMotionStates = {
+      ...this.columnMotionStates,
+      [id]: 'exiting',
+    };
+    this.columnTimers[id] = window.setTimeout(() => {
+      this.columnTimers[id] = undefined;
+      this.renderedColumnIds = this.renderedColumnIds.filter((columnId) => columnId !== id);
+      const nextStates = { ...this.columnMotionStates };
+      delete nextStates[id];
+      this.columnMotionStates = nextStates;
+      this.changeDetector.markForCheck();
+    }, COLUMN_MOTION_MS);
+  }
+
+  private clearColumnAnimation(id: string): void {
+    const timer = this.columnTimers[id];
+    if (timer) {
+      window.clearTimeout(timer);
+      this.columnTimers[id] = undefined;
+    }
+
+    const frame = this.columnFrames[id];
+    if (frame) {
+      window.cancelAnimationFrame(frame);
+      this.columnFrames[id] = undefined;
+    }
+  }
+}

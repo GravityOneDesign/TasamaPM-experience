@@ -3596,6 +3596,14 @@ function isPm101OnboardingWorkspaceFlow(selectedProject) {
   return frontDoorMode === "assigned" && pmoAssignmentReady && !onboardingPm101Locked && selectedPage === "workspace" && isAllProjects(selectedProject);
 }
 
+function isPm101SelectedProjectWorkspace(selectedProject, selectedView) {
+  return frontDoorMode === "assigned" && !onboardingPm101Locked && selectedPage === "workspace" && selectedView === "pm101" && !isAllProjects(selectedProject);
+}
+
+function isSelectedProjectWorkspace(selectedProject) {
+  return frontDoorMode === "assigned" && !onboardingPm101Locked && selectedPage === "workspace" && !isAllProjects(selectedProject);
+}
+
 function PM101JourneyHead() {
   return `
     <div class="pm101-journey-head">
@@ -3632,7 +3640,7 @@ function PM101ProjectStrip() {
         <img class="pm101-project-card-art" src="./assets/pm101-vision-card-bg.jpg" alt="" aria-hidden="true" />
         <span class="pm101-project-chip">New project assigned by PMO</span>
         <strong>Vision 2030</strong>
-        <button class="pm101-project-cta" type="button" data-project-id="Vision 2030" data-page-target="workspace" data-workspace-view="calendar" aria-label="Go to Vision 2030 project">
+        <button class="pm101-project-cta" type="button" data-project-id="Vision 2030" data-page-target="project-plan" data-plan-entry="quick" data-project-plan-return="pm101-all" aria-label="Go to Vision 2030 project">
           <span>Go to Project</span>
           <span class="pm101-project-cta-arrow" aria-hidden="true">${icon("arrow")}</span>
         </button>
@@ -3677,6 +3685,31 @@ function PM101ReadyHeroGrid() {
   `;
 }
 
+function selectedPm101ProjectArt(selectedProject) {
+  if (selectedProject === firstAssignedProject.id) return "./assets/pm101-first-project-card-bg.png";
+  if (selectedProject === "Vision 2030") return "./assets/pm101-vision-card-bg.jpg";
+  return "./assets/pm101-active-card-bg.jpg";
+}
+
+function selectedPm101ProjectChip(selectedProject) {
+  return selectedProject === firstAssignedProject.id ? "New project assigned by PMO" : "Active Project";
+}
+
+function PM101SelectedProjectHero(selectedProject) {
+  const project = projectName(selectedProject);
+  return `
+    <article class="pm101-selected-project-hero" aria-label="Selected project PM101 overview">
+      <img class="pm101-selected-project-art" src="${escapeHtml(selectedPm101ProjectArt(selectedProject))}" alt="" aria-hidden="true" />
+      <span class="pm101-selected-project-chip">${escapeHtml(selectedPm101ProjectChip(selectedProject))}</span>
+      <strong class="pm101-selected-project-title">${escapeHtml(project)}</strong>
+      <button class="pm101-selected-project-cta" type="button" data-project-id="${escapeHtml(selectedProject)}" data-page-target="project-plan" aria-label="Go to ${escapeHtml(project)} project">
+        <span>Go to Project</span>
+        <span class="pm101-selected-project-cta-arrow" aria-hidden="true">${icon("arrow")}</span>
+      </button>
+    </article>
+  `;
+}
+
 function PM101CardFooter(step) {
   if (step.footerLabel && step.footerValue) {
     return `
@@ -3715,11 +3748,12 @@ function PM101CardFooter(step) {
   return "";
 }
 
-function PM101View(selectedView, isOperationalWorkspace = false, isAssignmentReadyWorkspace = false) {
+function PM101View(selectedView, isOperationalWorkspace = false, isAssignmentReadyWorkspace = false, isSelectedProjectWorkspace = false, selectedProject = "all") {
   return `
-    <div class="pm101-view ${isOperationalWorkspace ? "pm101-operational-view" : ""} ${selectedView === "pm101" ? "" : "is-hidden"}" data-work-view="pm101">
+    <div class="pm101-view ${isOperationalWorkspace || isSelectedProjectWorkspace ? "pm101-operational-view" : ""} ${selectedView === "pm101" ? "" : "is-hidden"}" data-work-view="pm101">
       ${onboardingPm101Locked ? `${PM101AssignmentBanner()}${PM101JourneyHead()}` : ""}
       ${isAssignmentReadyWorkspace ? `${PM101ReadyHeroGrid()}${PM101JourneyHead()}` : ""}
+      ${isSelectedProjectWorkspace ? `${PM101SelectedProjectHero(selectedProject)}${PM101JourneyHead()}` : ""}
       ${isOperationalWorkspace ? `${PM101ProjectStrip()}${PM101JourneyHead()}` : ""}
       <div class="pm101-flow" aria-label="PM 101 project delivery flow">
         <ol class="pm101-step-list">
@@ -3747,7 +3781,10 @@ function PM101View(selectedView, isOperationalWorkspace = false, isAssignmentRea
 function WorkspacePanel(selectedProject, selectedView, selectedRange, selectedBoardFilter, selectedCalendarMonth) {
   const isOperationalWorkspace = isPm101OperationalWorkspace(selectedProject, selectedView);
   const isAssignmentReadyWorkspace = isPm101OnboardingWorkspaceFlow(selectedProject);
-  const isPm101Shell = onboardingPm101Locked || isOperationalWorkspace || isAssignmentReadyWorkspace;
+  const isSelectedProjectWorkspaceShell = isSelectedProjectWorkspace(selectedProject);
+  const isSelectedProjectPm101Workspace = isPm101SelectedProjectWorkspace(selectedProject, selectedView);
+  const isPm101Shell = onboardingPm101Locked || isOperationalWorkspace || isAssignmentReadyWorkspace || isSelectedProjectWorkspaceShell;
+  const isOperationalLayout = isOperationalWorkspace || isSelectedProjectWorkspaceShell;
   const workspaceTitle = isPm101Shell
     ? "Welcome!"
     : isAllProjects(selectedProject)
@@ -3756,7 +3793,7 @@ function WorkspacePanel(selectedProject, selectedView, selectedRange, selectedBo
   const workspaceSubtitle = "Plan this month, clear overdue work, and track stage-gates without opening every project.";
   const headClasses = ["workspace-shell-head"];
   if (isPm101Shell) headClasses.push("pm101-locked-shell-head");
-  if (isOperationalWorkspace) headClasses.push("pm101-operational-shell-head");
+  if (isOperationalLayout) headClasses.push("pm101-operational-shell-head");
 
   const workspaceHead = isPm101Shell
     ? `
@@ -3788,7 +3825,7 @@ function WorkspacePanel(selectedProject, selectedView, selectedRange, selectedBo
       `;
 
   return `
-    <section class="workspace-panel ${!isAllProjects(selectedProject) && !isPm101Shell ? "project-workspace-panel" : ""} ${isPm101Shell ? "pm101-locked-workspace" : ""} ${isOperationalWorkspace ? "pm101-operational-workspace" : ""}">
+    <section class="workspace-panel ${!isAllProjects(selectedProject) && !isPm101Shell ? "project-workspace-panel" : ""} ${isPm101Shell ? "pm101-locked-workspace" : ""} ${isOperationalLayout ? "pm101-operational-workspace" : ""}">
       <div class="${headClasses.join(" ")}">
         ${workspaceHead}
         ${WorkspaceTabs(selectedView, onboardingPm101Locked || isAssignmentReadyWorkspace)}
@@ -3804,7 +3841,7 @@ function WorkspacePanel(selectedProject, selectedView, selectedRange, selectedBo
       <div class="workspace-body">
         ${BoardView(selectedProject, selectedView, selectedBoardFilter)}
         ${CalendarView(selectedProject, selectedView, selectedBoardFilter, selectedCalendarMonth)}
-        ${PM101View(selectedView, isOperationalWorkspace, isAssignmentReadyWorkspace)}
+        ${PM101View(selectedView, isOperationalWorkspace, isAssignmentReadyWorkspace, isSelectedProjectPm101Workspace, selectedProject)}
         ${StagesView(selectedProject, selectedView)}
       </div>
     </section>
@@ -6278,11 +6315,14 @@ function App(
   const isUnassigned = frontDoorMode === "unassigned";
   const isOperationalPm101 = isPm101OperationalWorkspace(selectedProject, selectedView);
   const isAssignmentReadyPm101 = isPm101OnboardingWorkspaceFlow(selectedProject);
+  const isSelectedProjectShell = isSelectedProjectWorkspace(selectedProject);
+  const usesPm101DesignShell = onboardingPm101Locked || isOperationalPm101 || isAssignmentReadyPm101 || isSelectedProjectShell;
+  const usesPm101OperationalLayout = isOperationalPm101 || isSelectedProjectShell;
   return `
     <div class="modern-shell ${isPlayground ? "playground-mode" : ""} ${isWbs ? "wbs-mode" : ""} ${isProjectPlan ? "project-plan-mode" : ""} ${isUnassigned ? "unassigned-mode" : ""}">
       ${AppHeader(selectedProject, notificationPanelOpen, selectedPage, frontDoorMode)}
       ${Sidebar(selectedPage, frontDoorMode)}
-      <main class="app-canvas ${isPlayground ? "playground-canvas" : ""} ${isWbs ? "wbs-canvas" : ""} ${isProjectPlan ? "project-plan-canvas" : ""} ${isWorkspaces ? "workspaces-canvas" : ""} ${isUnassigned ? "unassigned-canvas" : ""} ${onboardingPm101Locked || isOperationalPm101 || isAssignmentReadyPm101 ? "pm101-locked-canvas" : ""} ${isOperationalPm101 ? "pm101-operational-canvas" : ""}">
+      <main class="app-canvas ${isPlayground ? "playground-canvas" : ""} ${isWbs ? "wbs-canvas" : ""} ${isProjectPlan ? "project-plan-canvas" : ""} ${isWorkspaces ? "workspaces-canvas" : ""} ${isUnassigned ? "unassigned-canvas" : ""} ${usesPm101DesignShell ? "pm101-locked-canvas" : ""} ${usesPm101OperationalLayout ? "pm101-operational-canvas" : ""}">
         ${
           isUnassigned
             ? UnassignedFrontDoor()
@@ -6294,11 +6334,11 @@ function App(
                 ? ProjectPlanPage(selectedProject, projectPlanEntryPoint)
                 : isWorkspaces
                   ? WorkspacesPage()
-                : `<div class="content-grid ${onboardingPm101Locked || isOperationalPm101 || isAssignmentReadyPm101 ? "pm101-locked-grid" : ""} ${isOperationalPm101 ? "pm101-operational-grid" : ""}">
+                : `<div class="content-grid ${usesPm101DesignShell ? "pm101-locked-grid" : ""} ${usesPm101OperationalLayout ? "pm101-operational-grid" : ""}">
                 <div class="left-column">
                   ${WorkspacePanel(selectedProject, selectedView, selectedRange, selectedBoardFilter, selectedCalendarMonth)}
                 </div>
-                <div class="right-column ${isAllProjects(selectedProject) || onboardingPm101Locked ? "portfolio-frontdoor" : "project-frontdoor"} ${onboardingPm101Locked || isAssignmentReadyPm101 ? "pm101-locked-right" : ""}">
+                <div class="right-column ${isAllProjects(selectedProject) || onboardingPm101Locked ? "portfolio-frontdoor" : "project-frontdoor"} ${onboardingPm101Locked || isAssignmentReadyPm101 || isSelectedProjectShell ? "pm101-locked-right" : ""}">
                   ${RightRail(selectedProject, selectedView)}
                 </div>
               </div>`
@@ -6353,6 +6393,7 @@ let onboardingPm101Locked = false;
 let frontDoorMode = "assigned";
 let pmoAssignmentReady = false;
 let projectPlanEntryPoint = "quick";
+let projectPlanReturnState = null;
 let isAuthenticated = false;
 let onboardingActive = false;
 let aiInsightTimer = null;
@@ -6698,6 +6739,20 @@ function initPageNavigation() {
   document.querySelectorAll("[data-page-target]").forEach((button) => {
     button.addEventListener("click", () => {
       const targetPage = button.dataset.pageTarget;
+      const sourceState = { selectedProject, selectedPage, selectedView };
+      if (targetPage === "workspace" && selectedPage === "project-plan" && projectPlanReturnState) {
+        const returnState = projectPlanReturnState;
+        projectPlanReturnState = null;
+        selectedProject = returnState.selectedProject;
+        selectedPage = returnState.selectedPage;
+        selectedView = returnState.selectedView;
+        selectedStageGate = null;
+        selectedReportProject = null;
+        selectedPlaygroundDrawer = null;
+        notificationPanelOpen = false;
+        renderApp();
+        return;
+      }
       if (button.dataset.projectId) {
         selectedProject = onboardingPm101Locked ? firstAssignedProject.id : button.dataset.projectId;
       }
@@ -6705,12 +6760,19 @@ function initPageNavigation() {
         selectedView = onboardingPm101Locked && (button.dataset.workspaceView === "board" || button.dataset.workspaceView === "calendar") ? "pm101" : button.dataset.workspaceView;
       }
       if (targetPage === "project-plan") {
+        if (button.dataset.projectPlanReturn === "pm101-all") {
+          projectPlanReturnState = sourceState;
+        } else if (selectedPage !== "project-plan") {
+          projectPlanReturnState = null;
+        }
         projectPlanEntryPoint = button.dataset.planEntry || (button.closest(".quick-action-list") ? "quick" : "onboarding");
         projectPlanDetailMode = "simple";
         projectPlanActiveSection = "Overview";
         projectPlanReportActiveSection = "Overview";
         projectPlanSectionsExpanded = false;
         projectPlanExpandedFieldSections = {};
+      } else {
+        projectPlanReturnState = null;
       }
       if (onboardingPm101Locked && targetPage === "workspaces") return;
       if (frontDoorMode === "unassigned" && targetPage !== "workspace") {

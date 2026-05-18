@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core';
+import { PmConsoleAiGuideChipComponent, pmConsoleAiGuideFor } from './shared/pm-console-ai-guide-chip.component';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 import { PmConsoleStatusPillComponent } from './shared/pm-console-status-pill.component';
 
 @Component({
   selector: 'app-pm-console-plan-table',
   standalone: true,
-  imports: [CommonModule, PmConsoleIconComponent, PmConsoleStatusPillComponent],
+  imports: [CommonModule, PmConsoleAiGuideChipComponent, PmConsoleIconComponent, PmConsoleStatusPillComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -20,7 +21,17 @@ import { PmConsoleStatusPillComponent } from './shared/pm-console-status-pill.co
             @if (eyebrow) {
               <small class="plan-data-table-eyebrow">{{ eyebrow }}</small>
             }
-            <strong>{{ title }}</strong>
+            <span class="plan-data-table-heading-line">
+              <strong>{{ title }}</strong>
+              @if (hasAiGuide) {
+                <app-pm-console-ai-guide-chip
+                  [title]="resolvedAiGuideTitle"
+                  [what]="resolvedAiGuideWhat"
+                  [how]="resolvedAiGuideHow"
+                  [example]="resolvedAiGuideExample"
+                ></app-pm-console-ai-guide-chip>
+              }
+            </span>
             <small>{{ description }}</small>
           </span>
         </div>
@@ -63,7 +74,7 @@ import { PmConsoleStatusPillComponent } from './shared/pm-console-status-pill.co
         box-shadow: 0 2px 4px rgba(1, 10, 15, 0.08);
         display: flex;
         flex-direction: column;
-        overflow: clip;
+        overflow: visible;
         padding: 1px;
         width: 100%;
       }
@@ -104,6 +115,13 @@ import { PmConsoleStatusPillComponent } from './shared/pm-console-status-pill.co
       .plan-data-table-copy {
         display: grid;
         gap: 4px;
+        min-width: 0;
+      }
+
+      .plan-data-table-heading-line {
+        align-items: center;
+        display: flex;
+        gap: 8px;
         min-width: 0;
       }
 
@@ -373,6 +391,30 @@ export class PmConsolePlanTableComponent {
   @Input() actionIconName = 'plus';
   @Input() iconName = 'list';
   @Input() panelClass = '';
+  @Input() aiGuideTitle = '';
+  @Input() aiGuideWhat = '';
+  @Input() aiGuideHow = '';
+  @Input() aiGuideExample = '';
 
   @Output() action = new EventEmitter<void>();
+
+  get hasAiGuide(): boolean {
+    return Boolean(this.aiGuideWhat || this.aiGuideHow || this.aiGuideExample || pmConsoleAiGuideFor(this.title));
+  }
+
+  get resolvedAiGuideTitle(): string {
+    return this.aiGuideTitle || pmConsoleAiGuideFor(this.title)?.title || this.title;
+  }
+
+  get resolvedAiGuideWhat(): string {
+    return this.aiGuideWhat || pmConsoleAiGuideFor(this.title)?.what || '';
+  }
+
+  get resolvedAiGuideHow(): string {
+    return this.aiGuideHow || pmConsoleAiGuideFor(this.title)?.how || '';
+  }
+
+  get resolvedAiGuideExample(): string {
+    return this.aiGuideExample || pmConsoleAiGuideFor(this.title)?.example || '';
+  }
 }

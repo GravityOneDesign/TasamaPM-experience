@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
 import { NgClass } from '@angular/common';
 import { PmConsoleIconComponent } from './pm-console-icon.component';
 
-type PmConsoleFieldType = 'text' | 'number' | 'date' | 'password' | 'search' | 'textarea' | 'select' | 'money';
+export type PmConsoleFieldType = 'text' | 'number' | 'date' | 'password' | 'search' | 'textarea' | 'select' | 'money';
 
 @Component({
   selector: 'app-pm-console-field',

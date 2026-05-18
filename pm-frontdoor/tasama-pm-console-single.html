@@ -616,8 +616,10 @@ p {
 }
 
 .onboarding-primary-icon .icon {
+  align-items: center;
   color: #10069f;
   height: 24px;
+  justify-content: center;
   width: 24px;
 }
 
@@ -20461,6 +20463,7 @@ function ProjectPlanPage(selectedProject, entryPoint = "quick") {
     { label: "Overview & objectives", active: true },
     { label: "SETUP", type: "label" },
     { label: "Timeline & milestones" },
+    { label: "Management product" },
     "Budget",
     "Risks",
     "Issues",
@@ -20508,6 +20511,7 @@ function ProjectPlanPage(selectedProject, entryPoint = "quick") {
     ["Project basics", "Done", "done"],
     ["Overview", "In progress", "active"],
     ["Timeline", "Pending", "pending"],
+    ["Management product", "Pending", "pending"],
     ["Budget", "Pending", "pending"],
     ["Risks", "Pending", "pending"],
     ["Issues", "Pending", "pending"],

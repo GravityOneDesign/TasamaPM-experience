@@ -9,28 +9,30 @@ import { PmConsoleStatusPillComponent } from './shared/pm-console-status-pill.co
   imports: [CommonModule, PmConsoleIconComponent, PmConsoleStatusPillComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <article class="plan-empty-card" [attr.aria-label]="title">
-      <header class="plan-empty-card-head">
-        <div class="plan-empty-card-heading">
-          <span class="plan-empty-card-icon" aria-hidden="true">
-            <span [pmConsoleIcon]="iconName"></span>
-          </span>
-          <span class="plan-empty-card-copy">
-            <strong>{{ title }}</strong>
-            <small>{{ description }}</small>
-          </span>
-        </div>
+    <article class="plan-empty-card" [class.plan-empty-card-headerless]="hideHeader" [attr.aria-label]="title">
+      @if (!hideHeader) {
+        <header class="plan-empty-card-head">
+          <div class="plan-empty-card-heading">
+            <span class="plan-empty-card-icon" aria-hidden="true">
+              <span [pmConsoleIcon]="iconName"></span>
+            </span>
+            <span class="plan-empty-card-copy">
+              <strong>{{ title }}</strong>
+              <small>{{ description }}</small>
+            </span>
+          </div>
 
-        <div class="plan-empty-card-actions">
-          <span [pmConsoleStatusPill]="countLabel" baseClass="plan-empty-card-count"></span>
-          @if (actionLabel) {
-            <button class="plan-empty-card-button" type="button" [attr.aria-label]="actionAriaLabel || actionLabel" (click)="action.emit()">
-              <span pmConsoleIcon="plus" aria-hidden="true"></span>
-              <span>{{ actionLabel }}</span>
-            </button>
-          }
-        </div>
-      </header>
+          <div class="plan-empty-card-actions">
+            <span [pmConsoleStatusPill]="countLabel" baseClass="plan-empty-card-count"></span>
+            @if (actionLabel) {
+              <button class="plan-empty-card-button" type="button" [attr.aria-label]="actionAriaLabel || actionLabel" (click)="action.emit()">
+                <span pmConsoleIcon="plus" aria-hidden="true"></span>
+                <span>{{ actionLabel }}</span>
+              </button>
+            }
+          </div>
+        </header>
+      }
 
       <section class="plan-empty-card-body">
         <div class="plan-empty-card-art" aria-hidden="true">
@@ -195,6 +197,10 @@ import { PmConsoleStatusPillComponent } from './shared/pm-console-status-pill.co
         padding: 24px 28px;
       }
 
+      .plan-empty-card-headerless .plan-empty-card-body {
+        border-top: 0;
+      }
+
       .plan-empty-card-art {
         flex: 0 0 132px;
         height: 106px;
@@ -259,6 +265,7 @@ export class PmConsolePlanEmptyStateComponent {
   @Input() actionLabel = '';
   @Input() actionAriaLabel = '';
   @Input() iconName = 'plus';
+  @Input() hideHeader = false;
   @Input() emptyTitle = '';
   @Input() emptyBody = '';
 

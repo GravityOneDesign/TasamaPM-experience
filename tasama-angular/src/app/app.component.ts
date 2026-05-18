@@ -53,7 +53,8 @@ export class AppComponent {
       selectedView: 'calendar',
       frontDoorMode: 'assigned',
       guidedTourActive: true,
-      guidedTourExitMode: 'pm101-lock',
+      guidedTourExitMode: 'onboarding-assignment-flow',
+      onboardingAssignmentFlow: true,
     });
   }
 
@@ -64,6 +65,9 @@ export class AppComponent {
       selectedPage: 'workspace',
       selectedView: 'pm101',
       frontDoorMode: 'assigned',
+      pmoAssignmentReady: false,
+      onboardingAssignmentFlow: true,
+      onboardingPm101Locked: true,
     });
   }
 
