@@ -6504,9 +6504,9 @@ b {
   display: grid;
   gap: 16px;
   grid-template-columns: 1.9fr 1fr 1fr;
-  min-height: 204px;
+  min-height: clamp(160px, 18vh, 204px);
   overflow: visible;
-  padding: 18px 16px 12px;
+  padding: clamp(12px, 1.7vh, 18px) 16px 12px;
   transition: grid-template-columns 320ms var(--motion-ease);
 }
 
@@ -6519,10 +6519,10 @@ b {
 }
 
 .pm101-project-card-slot {
-  height: 120px;
+  height: clamp(96px, 12vh, 120px);
   min-width: 0;
   position: relative;
-  transform: translateY(22px) scale(0.96);
+  transform: translateY(clamp(14px, 2.4vh, 22px)) scale(0.96);
   transform-origin: center;
   transition:
     height 320ms var(--motion-ease),
@@ -6531,7 +6531,7 @@ b {
 }
 
 .pm101-project-card-slot.is-selected {
-  height: 160px;
+  height: clamp(132px, 14.2vh, 160px);
   transform: translateY(0) scale(1);
   z-index: 5;
 }
@@ -6541,9 +6541,8 @@ b {
   border: 1px solid #b0c7ff;
   border-bottom: 0;
   border-radius: 22px 22px 0 0;
-  box-shadow: 0 14px 34px rgba(25, 33, 61, 0.07);
   content: "";
-  inset: -18px -16px -30px;
+  inset: -10px 0 -30px;
   pointer-events: none;
   position: absolute;
   z-index: 0;
@@ -6551,13 +6550,17 @@ b {
 
 .pm101-project-card-slot.is-selected::after {
   background: #e7eeff;
-  bottom: -32px;
+  border-left: 1px solid #b0c7ff;
+  border-right: 1px solid #b0c7ff;
+  border-bottom-left-radius: 14px;
+  border-bottom-right-radius: 14px;
+  bottom: -31px;
   content: "";
-  height: 34px;
-  left: -15px;
+  height: 36px;
+  left: 0;
   pointer-events: none;
   position: absolute;
-  right: -15px;
+  right: 0;
   z-index: 1;
 }
 
@@ -6566,7 +6569,7 @@ b {
 }
 
 .pm101-project-card-slot.is-selected:hover {
-  transform: translateY(-1px) scale(1.002);
+  transform: translateY(0) scale(1);
 }
 
 .pm101-project-card {
@@ -7286,19 +7289,19 @@ b {
   border: 1px solid #b0c7ff;
   border-bottom: 0;
   margin: 0 -16px;
-  padding: 22px 16px 16px;
+  padding: clamp(14px, 2vh, 22px) 16px clamp(10px, 1.5vh, 16px);
   position: relative;
   z-index: 1;
 }
 
 .pm101-operational-view .pm101-flow {
   align-self: stretch;
-  flex: 0 0 auto;
-  height: clamp(275px, 36vh, 430px);
+  flex: 1 1 clamp(190px, 27vh, 275px);
+  height: auto;
   margin-left: -16px;
   margin-right: -16px;
   margin-top: 28px;
-  min-height: 275px;
+  min-height: 0;
   width: calc(100% + 32px);
 }
 
@@ -7315,7 +7318,7 @@ b {
 
 .pm101-operational-view .pm101-step-list {
   height: 100%;
-  min-height: 275px;
+  min-height: clamp(190px, 27vh, 275px);
 }
 
 .pm101-operational-view .pm101-card {
@@ -7323,14 +7326,14 @@ b {
   box-shadow: none;
   gap: 12px;
   height: 100%;
-  min-height: 275px;
+  min-height: clamp(190px, 27vh, 275px);
   padding: 16px;
 }
 
 .pm101-operational-view .pm101-ready-hero-grid ~ .pm101-flow,
 .pm101-operational-view .pm101-ready-hero-grid ~ .pm101-flow .pm101-step-list,
 .pm101-operational-view .pm101-ready-hero-grid ~ .pm101-flow .pm101-card {
-  min-height: 278px;
+  min-height: clamp(190px, 27vh, 278px);
 }
 
 .pm101-operational-view .pm101-ready-hero-grid ~ .pm101-flow {
