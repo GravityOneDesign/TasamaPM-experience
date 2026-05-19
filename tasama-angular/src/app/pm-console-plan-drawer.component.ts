@@ -90,6 +90,7 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
         flex-direction: column;
         height: 100%;
         min-height: 0;
+        overflow: hidden;
       }
 
       .plan-entry-drawer-head {
@@ -97,6 +98,7 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
         background: #f7f7fc;
         border-bottom: 1px solid #e4e7ef;
         display: flex;
+        flex: 0 0 auto;
         gap: 18px;
         justify-content: space-between;
         min-height: 99px;
@@ -159,8 +161,10 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 
       .plan-entry-drawer-body {
         display: grid;
+        flex: 1 1 auto;
         gap: 20px;
         min-height: 0;
+        overscroll-behavior: contain;
         overflow: auto;
         padding: 18px 20px;
       }
@@ -195,6 +199,7 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
         background: rgba(255, 255, 255, 0.96);
         border-top: 1px solid #e4e7ef;
         display: flex;
+        flex: 0 0 auto;
         gap: 10px;
         justify-content: flex-end;
         min-height: 56px;
