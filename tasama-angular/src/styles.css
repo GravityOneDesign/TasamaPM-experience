@@ -20403,7 +20403,7 @@ b {
 
 .project-plan-matrix-card.simple-plan-card {
   align-items: center;
-  background: #f7f7fc;
+  background: #ffffff;
   border-radius: 12px;
   display: flex;
   flex-direction: column;
@@ -20414,7 +20414,7 @@ b {
 
 .simple-plan-card .project-plan-matrix-head {
   margin-bottom: 8px;
-  width: min(1080px, calc(100% - 96px));
+  width: min(1680px, calc(100% - 32px));
 }
 
 .simple-plan-card .project-plan-matrix-head h2 {
@@ -20436,7 +20436,7 @@ b {
 .simple-plan-sections {
   display: grid;
   gap: 12px;
-  width: min(1080px, calc(100% - 96px));
+  width: min(1680px, calc(100% - 32px));
 }
 
 .simple-plan-section-card {
@@ -20447,8 +20447,8 @@ b {
     0 1px 1px rgba(1, 10, 15, 0.04),
     0 2px 4px rgba(1, 10, 15, 0.08);
   display: grid;
-  gap: 32px;
-  grid-template-columns: 264px minmax(0, 1fr);
+  gap: 24px;
+  grid-template-columns: 228px minmax(0, 1fr);
   min-height: 152px;
   padding: 15px;
 }
@@ -20462,6 +20462,7 @@ b {
   justify-content: flex-start;
   min-height: 0;
   padding: 0;
+  position: relative;
 }
 
 .simple-plan-section-icon {
@@ -21979,6 +21980,57 @@ b {
   color: #c03737;
 }
 
+@media (min-width: 761px) {
+  .project-plan-content td.schedule-table-actions,
+  .project-plan-content .plan-data-table-card td.schedule-table-actions {
+    display: table-cell;
+    min-width: 48px;
+    overflow-wrap: normal;
+    padding-left: 8px;
+    padding-right: 12px;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+    width: 48px;
+  }
+}
+
+.project-plan-content td.schedule-table-actions .pm-row-action-menu {
+  justify-content: center;
+  width: 100%;
+}
+
+.project-plan-content .schedule-table-action.pm-row-action-trigger,
+.project-plan-content .schedule-table-action.pm-row-action-trigger:hover,
+.project-plan-content .schedule-table-action.pm-row-action-trigger[aria-expanded='true'] {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.project-plan-content .schedule-table-action.pm-row-action-trigger {
+  border-radius: 6px;
+  color: #10069f;
+  height: 28px;
+  width: 28px;
+}
+
+.project-plan-content .schedule-table-action.pm-row-action-trigger:hover,
+.project-plan-content .schedule-table-action.pm-row-action-trigger:focus-visible,
+.project-plan-content .schedule-table-action.pm-row-action-trigger[aria-expanded='true'] {
+  color: #08036d;
+}
+
+.project-plan-content .schedule-table-action.pm-row-action-trigger:focus-visible {
+  outline: 2px solid rgba(16, 6, 159, 0.28);
+  outline-offset: 2px;
+}
+
+.project-plan-content .schedule-table-action.pm-row-action-trigger .icon {
+  height: 18px;
+  width: 18px;
+}
+
 .schedule-scope-additional {
   display: grid;
   gap: 16px;
@@ -22658,7 +22710,7 @@ b {
 }
 
 .risk-register-table {
-  min-width: 0;
+  min-width: 1120px;
   table-layout: fixed;
 }
 
@@ -22673,7 +22725,7 @@ b {
 
 .risk-register-table th:nth-child(1),
 .risk-register-table td:nth-child(1) {
-  width: 6%;
+  width: 7%;
 }
 
 .risk-register-table th:nth-child(2),
@@ -22683,46 +22735,101 @@ b {
 
 .risk-register-table th:nth-child(3),
 .risk-register-table td:nth-child(3) {
-  width: 30%;
+  width: 29%;
 }
 
 .risk-register-table th:nth-child(4),
-.risk-register-table td:nth-child(4) {
-  width: 8%;
+.risk-register-table td:nth-child(4),
+.risk-register-table th:nth-child(6),
+.risk-register-table td:nth-child(6) {
+  width: 5%;
 }
 
 .risk-register-table th:nth-child(5),
-.risk-register-table td:nth-child(5),
-.risk-register-table th:nth-child(7),
-.risk-register-table td:nth-child(7) {
-  width: 4.5%;
+.risk-register-table td:nth-child(5) {
+  width: 8%;
 }
 
-.risk-register-table th:nth-child(6),
-.risk-register-table td:nth-child(6) {
-  width: 6%;
+.risk-register-table th:nth-child(7),
+.risk-register-table td:nth-child(7) {
+  width: 10%;
 }
 
 .risk-register-table th:nth-child(8),
 .risk-register-table td:nth-child(8) {
-  width: 9%;
+  width: 7%;
 }
 
 .risk-register-table th:nth-child(9),
-.risk-register-table td:nth-child(9),
+.risk-register-table td:nth-child(9) {
+  width: 8%;
+}
+
 .risk-register-table th:nth-child(10),
 .risk-register-table td:nth-child(10) {
-  width: 7%;
+  width: 9.5%;
 }
 
 .risk-register-table th:nth-child(11),
 .risk-register-table td:nth-child(11) {
-  width: 6%;
+  width: 3.5%;
 }
 
-.risk-register-table th:nth-child(12),
-.risk-register-table td:nth-child(12) {
-  width: 7%;
+.plan-data-table-card .risk-register-table td.dependency-register-status,
+.risk-register-table td.dependency-register-status {
+  overflow-wrap: normal;
+  padding-right: 8px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.plan-data-table-card .risk-register-table td.schedule-table-actions,
+.risk-register-table td.schedule-table-actions {
+  display: table-cell;
+  min-width: 40px;
+  overflow-wrap: normal;
+  padding-left: 0;
+  padding-right: 8px;
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+  width: 3.5%;
+}
+
+.risk-register-table .pm-row-action-menu {
+  justify-content: center;
+  width: 100%;
+}
+
+.risk-register-table .pm-row-action-trigger,
+.risk-register-table .pm-row-action-trigger:hover,
+.risk-register-table .pm-row-action-trigger[aria-expanded='true'] {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.risk-register-table .pm-row-action-trigger {
+  border-radius: 6px;
+  color: #10069f;
+  height: 28px;
+  width: 28px;
+}
+
+.risk-register-table .pm-row-action-trigger:hover,
+.risk-register-table .pm-row-action-trigger:focus-visible,
+.risk-register-table .pm-row-action-trigger[aria-expanded='true'] {
+  color: #08036d;
+}
+
+.risk-register-table .pm-row-action-trigger:focus-visible {
+  outline: 2px solid rgba(16, 6, 159, 0.28);
+  outline-offset: 2px;
+}
+
+.risk-register-table .pm-row-action-trigger .icon {
+  height: 18px;
+  width: 18px;
 }
 
 .risk-rating-swatch {
@@ -25059,6 +25166,125 @@ b {
   line-height: 16px;
 }
 
+.simple-deliverables-menu {
+  display: inline-flex;
+  position: relative;
+}
+
+.simple-deliverables-section-head {
+  align-items: center;
+  border-top: 1px solid #edf0f6;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding-top: 18px;
+}
+
+.simple-deliverables-section-head > div:first-child {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.simple-deliverables-section-head h3 {
+  color: #0b0b0b;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.simple-deliverables-section-head p {
+  color: #777777;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  margin: 0;
+}
+
+.simple-deliverables-menu-right {
+  flex: 0 0 auto;
+  justify-content: flex-end;
+}
+
+.simple-deliverables-menu-right .simple-deliverables-popover {
+  left: auto;
+  right: 0;
+}
+
+.simple-watchlist-action-row {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.simple-deliverables-trigger {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #10069f;
+  border-radius: 999px;
+  color: #10069f;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 600;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 13px;
+  white-space: nowrap;
+}
+
+.simple-deliverables-trigger .icon,
+.simple-deliverables-popover .icon {
+  flex: 0 0 auto;
+  height: 14px;
+  width: 14px;
+}
+
+.simple-deliverables-trigger:hover,
+.simple-deliverables-trigger:focus-visible,
+.simple-deliverables-trigger[aria-expanded='true'] {
+  background: #f7f7ff;
+  outline: 0;
+}
+
+.simple-deliverables-popover {
+  background: #ffffff;
+  border: 1px solid #e1e7f0;
+  border-radius: 8px;
+  box-shadow: 0 14px 32px rgba(24, 31, 44, 0.14);
+  display: grid;
+  left: 0;
+  min-width: 218px;
+  padding: 6px;
+  position: absolute;
+  top: calc(100% + 8px);
+  z-index: 40;
+}
+
+.simple-deliverables-popover button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  color: #303645;
+  display: flex;
+  font-size: 12px;
+  font-weight: 600;
+  gap: 8px;
+  justify-content: flex-start;
+  min-height: 36px;
+  padding: 0 10px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.simple-deliverables-popover button:hover,
+.simple-deliverables-popover button:focus-visible {
+  background: #f7f7ff;
+  color: #10069f;
+  outline: none;
+}
+
 .simple-field-card .simple-plan-section-fields {
   gap: 16px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -25123,13 +25349,90 @@ b {
   min-height: 32px;
 }
 
+.simple-field-card .matrix-register-row.plan-table-clickable-row {
+  cursor: pointer;
+}
+
+.simple-field-card .matrix-register-row.plan-table-clickable-row:hover,
+.simple-field-card .matrix-register-row.plan-table-clickable-row:focus-visible {
+  background: #fbfcff;
+  outline: 2px solid rgba(16, 6, 159, 0.18);
+  outline-offset: -2px;
+}
+
+.simple-field-card .schedule-scope-design-table-shell {
+  border-color: #dddddd;
+}
+
+.simple-field-card .simple-watchlist-risk-table {
+  min-width: 1220px;
+}
+
+.simple-field-card .simple-watchlist-risk-table th,
+.simple-field-card .simple-watchlist-risk-table td {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.simple-field-card .simple-watchlist-risk-table th:nth-child(1),
+.simple-field-card .simple-watchlist-risk-table td:nth-child(1) {
+  width: 7%;
+}
+
+.simple-field-card .simple-watchlist-risk-table th:nth-child(2),
+.simple-field-card .simple-watchlist-risk-table td:nth-child(2) {
+  width: 11%;
+}
+
+.simple-field-card .simple-watchlist-risk-table th:nth-child(3),
+.simple-field-card .simple-watchlist-risk-table td:nth-child(3) {
+  width: 28%;
+}
+
+.simple-field-card .simple-watchlist-risk-table th:nth-child(4),
+.simple-field-card .simple-watchlist-risk-table td:nth-child(4),
+.simple-field-card .simple-watchlist-risk-table th:nth-child(6),
+.simple-field-card .simple-watchlist-risk-table td:nth-child(6) {
+  width: 5%;
+}
+
+.simple-field-card .simple-watchlist-risk-table th:nth-child(5),
+.simple-field-card .simple-watchlist-risk-table td:nth-child(5) {
+  width: 8%;
+}
+
+.simple-field-card .simple-watchlist-risk-table th:nth-child(7),
+.simple-field-card .simple-watchlist-risk-table td:nth-child(7) {
+  width: 10%;
+}
+
+.simple-field-card .simple-watchlist-risk-table th:nth-child(8),
+.simple-field-card .simple-watchlist-risk-table td:nth-child(8) {
+  width: 7%;
+}
+
+.simple-field-card .simple-watchlist-risk-table th:nth-child(9),
+.simple-field-card .simple-watchlist-risk-table td:nth-child(9) {
+  width: 8%;
+}
+
+.simple-field-card .simple-watchlist-risk-table th:nth-child(10),
+.simple-field-card .simple-watchlist-risk-table td:nth-child(10) {
+  width: 9.5%;
+}
+
+.simple-field-card .simple-watchlist-risk-table th:nth-child(11),
+.simple-field-card .simple-watchlist-risk-table td:nth-child(11) {
+  width: 3.5%;
+}
+
 .simple-field-card.read-only-card.simple-plan-section-card {
   background: #ffffff;
   border: 1px solid #e3e7ee;
   border-radius: 10px;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-  gap: 32px;
-  grid-template-columns: 264px minmax(0, 1fr);
+  gap: 24px;
+  grid-template-columns: 228px minmax(0, 1fr);
   min-height: 0;
   padding: 16px;
 }
@@ -25683,6 +25986,7 @@ b {
 
 .simple-plan-mode .project-plan-content-modebar {
   border-bottom: 0;
+  padding-inline: 31px;
 }
 
 .project-plan-content-modebar h2 {
@@ -27446,6 +27750,10 @@ b {
   .project-plan-matrix-card.simple-plan-card {
     padding: 16px 0 32px;
     width: calc(100% - 16px);
+  }
+
+  .simple-plan-mode .project-plan-content-modebar {
+    padding-inline: 20px;
   }
 
   .simple-plan-card .project-plan-matrix-head,

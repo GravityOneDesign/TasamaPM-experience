@@ -15792,7 +15792,6 @@ const projectQuickActions = [
     id: "wbs",
     title: "WBS",
     icon: "wbs",
-    page: "wbs",
   },
   {
     id: "stage-gate",
@@ -19699,27 +19698,27 @@ function projectPlanSimpleGroups() {
       fields: ["Project name", "Category", "Business Unit", "Project Manager", "PMO Contact"],
     },
     {
-      title: "Purpose and outcome",
+      title: "Overview",
       icon: "info",
       description: "Explain why this work exists and what success should produce.",
       fields: ["Opportunity or Problem Statement", "Outcome", "AI component"],
     },
     {
-      title: "Timeline and scope",
+      title: "Schedule & scope",
       icon: "calendar",
       description: "Set the baseline dates and make the included work easy to review.",
       fields: ["Baseline Start date", "Baseline End date", "In Scope"],
     },
     {
-      title: "Budget baseline",
+      title: "Budget",
       icon: "dollar",
       description: "Capture the first approved funding view before detailed phasing.",
       fields: ["CAPEX Baseline (FY)", "OPEX Baseline (FY)"],
     },
     {
-      title: "Deliverables",
+      title: "Mandatory watchlist",
       icon: "risks",
-      description: "Log the first risk PMO should see before endorsement.",
+      description: "Add at least one benefit, risk, or key watchlist item before endorsement.",
       fields: ["Risks Register"],
     },
   ];

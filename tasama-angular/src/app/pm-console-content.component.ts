@@ -508,6 +508,8 @@ interface OverviewServiceDraft {
 }
 
 type ScheduleScopeDrawerMode = 'create' | 'edit';
+type ScheduleDeliverableType = 'end-product' | 'management-product' | 'milestone';
+type MandatoryWatchlistItemType = 'benefit' | 'risk';
 type ScheduleScopeProductSource = 'new' | 'existing';
 
 interface ScheduleScopeState {
@@ -1343,7 +1345,7 @@ const iconMap: Record<string, string> = {
 
 const projectQuickActions: QuickAction[] = [
   { id: 'project-plan', title: 'Project plan', icon: 'plan', page: 'project-plan', entry: 'quick' },
-  { id: 'wbs', title: 'WBS', icon: 'wbs', page: 'wbs' },
+  { id: 'wbs', title: 'WBS', icon: 'wbs' },
   { id: 'stage-gate', title: 'Stage gate', icon: 'stageGate', view: 'stages' },
   { id: 'change-request', title: 'Change request', icon: 'changeRequest', page: 'project-plan', entry: 'change-request' },
   { id: 'dependencies', title: 'Dependencies', icon: 'dependencies' },
@@ -4145,7 +4147,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                             @for (section of simplePlanSections; track section.title) {
                               @if (section.readOnly) {
                                 <app-pm-console-project-profile-card
-                                  [title]="section.title"
+                                  [title]="simplePlanSectionTitle(section)"
                                   [description]="section.body"
                                   [iconName]="iconName(section.icon)"
                                   [fields]="section.fields"
@@ -4154,29 +4156,317 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                 <article class="matrix-field-group simple-plan-section-card simple-field-card">
                                   <div class="simple-field-card-head">
                                     <span class="simple-plan-section-icon" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="iconName(section.icon)"></i></span></span>
-                                    <span class="matrix-field-group-copy"><strong>{{ section.title }}</strong><small>{{ section.body }}</small></span>
+                                    <span class="matrix-field-group-copy"><strong>{{ simplePlanSectionTitle(section) }}</strong><small>{{ section.body }}</small></span>
                                   </div>
                                   <div class="matrix-field-group-grid simple-plan-section-fields">
                                     @for (field of section.fields; track field.label) {
                                       @if (field.kind === 'table') {
+                                        @let tableConfig = simplePlanTableConfig(field);
+                                        @if (isSimpleScheduleMilestoneField(field)) {
+                                          <div class="simple-deliverables-section-head simple-field-control wide">
+                                            <div>
+                                              <h3>Deliverables</h3>
+                                              <p>Milestones, end products, and management products for this project.</p>
+                                            </div>
+                                            <div class="simple-deliverables-menu simple-deliverables-menu-right" data-schedule-deliverables-menu>
+                                              <button
+                                                class="simple-deliverables-trigger"
+                                                type="button"
+                                                aria-haspopup="menu"
+                                                [attr.aria-expanded]="isScheduleDeliverablesMenuOpen"
+                                                (click)="toggleScheduleDeliverablesMenu($event)"
+                                              >
+                                                <span pmConsoleIcon="plus" aria-hidden="true"></span>
+                                                Add deliverables
+                                                <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
+                                              </button>
+                                              @if (isScheduleDeliverablesMenuOpen) {
+                                                <div class="simple-deliverables-popover" role="menu" aria-label="Add deliverables">
+                                                  <button type="button" role="menuitem" (click)="openScheduleDeliverableFromMenu('end-product', $event)">
+                                                    <span pmConsoleIcon="package" aria-hidden="true"></span>
+                                                    End product
+                                                  </button>
+                                                  <button type="button" role="menuitem" (click)="openScheduleDeliverableFromMenu('management-product', $event)">
+                                                    <span pmConsoleIcon="file-check-2" aria-hidden="true"></span>
+                                                    Management product
+                                                  </button>
+                                                  <button type="button" role="menuitem" (click)="openScheduleDeliverableFromMenu('milestone', $event)">
+                                                    <span pmConsoleIcon="milestone" aria-hidden="true"></span>
+                                                    Milestone
+                                                  </button>
+                                                </div>
+                                              }
+                                            </div>
+                                          </div>
+                                        }
+                                        @if (isSimpleWatchlistBenefitField(field)) {
+                                          <div class="simple-watchlist-action-row simple-field-control wide">
+                                            <div class="simple-deliverables-menu simple-deliverables-menu-right" data-mandatory-watchlist-menu>
+                                              <button
+                                                class="simple-deliverables-trigger"
+                                                type="button"
+                                                aria-haspopup="menu"
+                                                [attr.aria-expanded]="isMandatoryWatchlistMenuOpen"
+                                                (click)="toggleMandatoryWatchlistMenu($event)"
+                                              >
+                                                <span pmConsoleIcon="plus" aria-hidden="true"></span>
+                                                Add item
+                                                <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
+                                              </button>
+                                              @if (isMandatoryWatchlistMenuOpen) {
+                                                <div class="simple-deliverables-popover" role="menu" aria-label="Add mandatory watchlist item">
+                                                  <button type="button" role="menuitem" (click)="openMandatoryWatchlistItemFromMenu('benefit', $event)">
+                                                    <span pmConsoleIcon="thumbs-up" aria-hidden="true"></span>
+                                                    Benefit
+                                                  </button>
+                                                  <button type="button" role="menuitem" (click)="openMandatoryWatchlistItemFromMenu('risk', $event)">
+                                                    <span pmConsoleIcon="triangle-alert" aria-hidden="true"></span>
+                                                    Risk
+                                                  </button>
+                                                </div>
+                                              }
+                                            </div>
+                                          </div>
+                                        }
                                         <app-pm-console-plan-table
                                           [title]="field.label"
-                                          [description]="simplePlanTableConfig(field).description"
-                                          [countLabel]="simplePlanTableConfig(field).rows.length + ' records'"
-                                          [actionLabel]="simplePlanTableConfig(field).action"
+                                          [description]="tableConfig.description"
+                                          [countLabel]="tableConfig.rows.length + ' records'"
+                                          [actionLabel]="isSimpleHeaderManagedTableField(field) ? '' : tableConfig.action"
                                           [iconName]="iconName('table')"
                                           panelClass="matrix-field-table simple-field-control wide"
+                                          (action)="openSimplePlanTableAction(field)"
                                         >
-                                          <div class="matrix-register-table" role="table" [attr.aria-label]="field.label">
-                                            <div class="matrix-register-row head" [class.columns-2]="simplePlanTableConfig(field).columns.length === 2" [class.columns-3]="simplePlanTableConfig(field).columns.length === 3" [class.columns-4]="simplePlanTableConfig(field).columns.length === 4" [class.columns-5]="simplePlanTableConfig(field).columns.length >= 5" role="row">
-                                              @for (column of simplePlanTableConfig(field).columns; track column) { <span>{{ column }}</span> }
+                                          @if (isSimpleWatchlistBenefitField(field)) {
+                                            <div class="dependency-register-table-shell benefit-register-table-shell simple-watchlist-table-shell">
+                                              <table class="dependency-register-table benefit-register-table simple-watchlist-table" [attr.aria-label]="field.label">
+                                                <thead>
+                                                  <tr>
+                                                    <th>Benefit</th>
+                                                    <th>Type</th>
+                                                    <th>Category</th>
+                                                    <th>Owner</th>
+                                                    <th>Realisation Date</th>
+                                                  </tr>
+                                                </thead>
+                                                <tbody>
+                                                  @for (row of benefitPlanRows; track row.id) {
+                                                    <tr>
+                                                      <td class="dependency-register-primary">
+                                                        <strong>{{ row.benefitName }}</strong>
+                                                        <small>{{ row.description || 'No description added' }}</small>
+                                                      </td>
+                                                      <td><span class="benefit-register-type-pill">{{ row.benefitType }}</span></td>
+                                                      <td><span class="benefit-register-category-pill">{{ row.category }}</span></td>
+                                                      <td>{{ row.owner }}</td>
+                                                      <td class="dependency-register-baseline benefit-register-realization">
+                                                        <strong>{{ row.realizationDate || 'TBD' }}</strong>
+                                                        <small>Planned realization</small>
+                                                      </td>
+                                                    </tr>
+                                                  }
+                                                </tbody>
+                                              </table>
                                             </div>
-                                            @for (row of simplePlanTableConfig(field).rows; track row[0]) {
-                                              <div class="matrix-register-row" [class.columns-2]="simplePlanTableConfig(field).columns.length === 2" [class.columns-3]="simplePlanTableConfig(field).columns.length === 3" [class.columns-4]="simplePlanTableConfig(field).columns.length === 4" [class.columns-5]="simplePlanTableConfig(field).columns.length >= 5" role="row">
-                                                @for (cell of row; track $index) { <span>@if ($index === row.length - 1) { <b>{{ cell }}</b> } @else { <ng-container>{{ cell }}</ng-container> }</span> }
+                                          } @else if (isSimpleWatchlistRiskField(field)) {
+                                            <div class="dependency-register-table-shell risk-register-table-shell simple-watchlist-table-shell">
+                                              <table class="dependency-register-table risk-register-table simple-watchlist-risk-table" [attr.aria-label]="field.label">
+                                                <thead>
+                                                  <tr>
+                                                    <th>Risk ID</th>
+                                                    <th>Risk Category</th>
+                                                    <th>Risk Name</th>
+                                                    <th>AR</th>
+                                                    <th>Treatment</th>
+                                                    <th>RR</th>
+                                                    <th>Risk Owner</th>
+                                                    <th>End Date</th>
+                                                    <th>Review<br />Due Date</th>
+                                                    <th>Status</th>
+                                                    <th aria-label="Actions"></th>
+                                                  </tr>
+                                                </thead>
+                                                <tbody>
+                                                  @for (row of riskPlanRows; track row.id) {
+                                                    <tr class="plan-table-clickable-row" role="button" tabindex="0" [attr.aria-label]="'Edit quick risk for ' + row.id" (click)="openRiskDrawer(row)" (keydown.enter)="openRiskDrawer(row)" (keydown.space)="$event.preventDefault(); openRiskDrawer(row)">
+                                                      <td><span class="pm-table-code">{{ row.id }}</span></td>
+                                                      <td>{{ row.riskCategory }}</td>
+                                                      <td class="dependency-register-primary">
+                                                        <strong>{{ row.riskName }}</strong>
+                                                      </td>
+                                                      <td><span class="risk-rating-swatch {{ riskRatingTone(row.actualRating) }}" [attr.aria-label]="'Actual rating ' + (row.actualRating || 'not rated')"></span></td>
+                                                      <td>{{ row.treatments.length }}</td>
+                                                      <td><span class="risk-rating-swatch {{ riskRatingTone(row.residualRating) }}" [attr.aria-label]="'Residual rating ' + (row.residualRating || 'not rated')"></span></td>
+                                                      <td>{{ row.owner }}</td>
+                                                      <td>{{ riskDateLabel(row.endDate) }}</td>
+                                                      <td>{{ riskDateLabel(row.reviewDueDate) }}</td>
+                                                      <td class="dependency-register-status"><span [pmConsoleStatusPill]="row.status" baseClass="dependency-register-pill" [tone]="riskStatusTone(row.status)"></span></td>
+                                                      <td class="schedule-table-actions">
+                                                        <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + row.id">
+                                                          <button type="button" role="menuitem" (click)="openRiskDrawer(row)">
+                                                            <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                                            Edit
+                                                          </button>
+                                                        </app-pm-console-row-action-menu>
+                                                      </td>
+                                                    </tr>
+                                                  }
+                                                </tbody>
+                                              </table>
+                                            </div>
+                                          } @else if (isSimpleScheduleMilestoneField(field)) {
+                                            <div class="dependency-register-table-shell schedule-overview-table-shell schedule-scope-design-table-shell">
+                                              <table class="dependency-register-table schedule-milestone-table schedule-scope-design-table" aria-label="Milestones">
+                                                <thead>
+                                                  <tr>
+                                                    <th>Milestone</th>
+                                                    <th>Due Date</th>
+                                                    <th>Person Responsible</th>
+                                                    <th>Milestone Priority</th>
+                                                    <th>Actions</th>
+                                                  </tr>
+                                                </thead>
+                                                <tbody>
+                                                  @for (row of scheduleMilestoneRows; track row.id) {
+                                                    <tr class="plan-table-clickable-row" role="button" tabindex="0" [attr.aria-label]="'Open milestone details for ' + row.milestone" (click)="openScheduleMilestoneDrawer(row)" (keydown.enter)="openScheduleMilestoneDrawer(row)" (keydown.space)="$event.preventDefault(); openScheduleMilestoneDrawer(row)">
+                                                      <td class="dependency-register-primary">
+                                                        <strong>{{ row.milestone }}</strong>
+                                                        <small>{{ row.note || 'No additional milestone note' }}</small>
+                                                      </td>
+                                                      <td>{{ scheduleScopeDateLabel(row.dueDate) }}</td>
+                                                      <td>{{ row.owner || 'Owner to confirm' }}</td>
+                                                      <td><span [pmConsoleStatusPill]="row.priority || 'TBD'" baseClass="schedule-priority-pill" [tone]="scheduleMilestonePriorityTone(row.priority)"></span></td>
+                                                      <td class="schedule-table-actions">
+                                                        <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + row.milestone">
+                                                          <button type="button" role="menuitem" (click)="openScheduleMilestoneDrawer(row)">
+                                                            <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                                            Edit
+                                                          </button>
+                                                          <button class="danger" type="button" role="menuitem" (click)="removeScheduleMilestone(row.id)">
+                                                            <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                                            Delete
+                                                          </button>
+                                                        </app-pm-console-row-action-menu>
+                                                      </td>
+                                                    </tr>
+                                                  }
+                                                </tbody>
+                                              </table>
+                                            </div>
+                                          } @else if (isSimpleScheduleEndProductField(field)) {
+                                            <div class="dependency-register-table-shell schedule-overview-table-shell schedule-scope-design-table-shell schedule-product-table-shell">
+                                              <table class="dependency-register-table schedule-product-table schedule-scope-design-table schedule-scope-design-product-table" aria-label="End products">
+                                                <thead>
+                                                  <tr>
+                                                    <th>Product</th>
+                                                    <th>Type</th>
+                                                    <th>Product Owner</th>
+                                                    <th>Capability</th>
+                                                    <th>Start Date</th>
+                                                    <th>End Date</th>
+                                                    <th>Budget</th>
+                                                    <th>PRED</th>
+                                                    <th>SUCCR</th>
+                                                    <th>Actions</th>
+                                                  </tr>
+                                                </thead>
+                                                <tbody>
+                                                  @for (row of scheduleEndProductRows; track row.id) {
+                                                    <tr class="plan-table-clickable-row" role="button" tabindex="0" [attr.aria-label]="'Open end product details for ' + row.product" (click)="openScheduleEndProductDrawer(row)" (keydown.enter)="openScheduleEndProductDrawer(row)" (keydown.space)="$event.preventDefault(); openScheduleEndProductDrawer(row)">
+                                                      <td class="dependency-register-primary"><strong>{{ row.product }}</strong></td>
+                                                      <td>{{ row.category }}</td>
+                                                      <td>{{ row.owner || 'Owner to confirm' }}</td>
+                                                      <td>{{ row.capability || '-' }}</td>
+                                                      <td>{{ scheduleScopeDateLabel(row.startDate) }}</td>
+                                                      <td>{{ scheduleScopeDateLabel(row.endDate) }}</td>
+                                                      <td>{{ scheduleScopeProductBudgetTotal(row.capex, row.opex) }}</td>
+                                                      <td>{{ row.predecessors.length }}</td>
+                                                      <td>{{ row.successors.length }}</td>
+                                                      <td class="schedule-table-actions">
+                                                        <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + row.product">
+                                                          <button type="button" role="menuitem" (click)="openScheduleEndProductDrawer(row)">
+                                                            <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                                            Edit
+                                                          </button>
+                                                          <button class="danger" type="button" role="menuitem" (click)="removeScheduleEndProduct(row.id)">
+                                                            <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                                            Delete
+                                                          </button>
+                                                        </app-pm-console-row-action-menu>
+                                                      </td>
+                                                    </tr>
+                                                  }
+                                                </tbody>
+                                              </table>
+                                            </div>
+                                          } @else if (isSimpleScheduleManagementProductField(field)) {
+                                            <div class="dependency-register-table-shell schedule-overview-table-shell schedule-scope-design-table-shell schedule-product-table-shell">
+                                              <table class="dependency-register-table schedule-product-table schedule-scope-design-table schedule-scope-design-product-table" aria-label="Management products">
+                                                <thead>
+                                                  <tr>
+                                                    <th>Product</th>
+                                                    <th>Type</th>
+                                                    <th>Product Owner</th>
+                                                    <th>Start Date</th>
+                                                    <th>End Date</th>
+                                                    <th>Budget</th>
+                                                    <th>Actions</th>
+                                                  </tr>
+                                                </thead>
+                                                <tbody>
+                                                  @for (row of scheduleManagementProductRows; track row.id) {
+                                                    <tr class="plan-table-clickable-row" role="button" tabindex="0" [attr.aria-label]="'Open management product details for ' + row.product" (click)="openScheduleManagementProductDrawer(row)" (keydown.enter)="openScheduleManagementProductDrawer(row)" (keydown.space)="$event.preventDefault(); openScheduleManagementProductDrawer(row)">
+                                                      <td class="dependency-register-primary">
+                                                        <strong>{{ row.product }}</strong>
+                                                        <small>{{ row.description || 'No product description added' }}</small>
+                                                      </td>
+                                                      <td>{{ row.category }}</td>
+                                                      <td>{{ row.owner || 'Owner to confirm' }}</td>
+                                                      <td>{{ scheduleScopeDateLabel(row.startDate) }}</td>
+                                                      <td>{{ scheduleScopeDateLabel(row.endDate) }}</td>
+                                                      <td>{{ scheduleScopeProductBudgetTotal(row.capex, row.opex) }}</td>
+                                                      <td class="schedule-table-actions">
+                                                        <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + row.product">
+                                                          <button type="button" role="menuitem" (click)="openScheduleManagementProductDrawer(row)">
+                                                            <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                                            Edit
+                                                          </button>
+                                                          <button class="danger" type="button" role="menuitem" (click)="removeScheduleManagementProduct(row.id)">
+                                                            <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                                            Delete
+                                                          </button>
+                                                        </app-pm-console-row-action-menu>
+                                                      </td>
+                                                    </tr>
+                                                  }
+                                                </tbody>
+                                              </table>
+                                            </div>
+                                          } @else {
+                                            <div class="matrix-register-table" role="table" [attr.aria-label]="field.label">
+                                              <div class="matrix-register-row head" [class.columns-2]="tableConfig.columns.length === 2" [class.columns-3]="tableConfig.columns.length === 3" [class.columns-4]="tableConfig.columns.length === 4" [class.columns-5]="tableConfig.columns.length >= 5" role="row">
+                                                @for (column of tableConfig.columns; track column) { <span>{{ column }}</span> }
                                               </div>
-                                            }
-                                          </div>
+                                              @for (row of tableConfig.rows; track row[0] + $index) {
+                                                <div
+                                                  class="matrix-register-row"
+                                                  [class.columns-2]="tableConfig.columns.length === 2"
+                                                  [class.columns-3]="tableConfig.columns.length === 3"
+                                                  [class.columns-4]="tableConfig.columns.length === 4"
+                                                  [class.columns-5]="tableConfig.columns.length >= 5"
+                                                  [class.plan-table-clickable-row]="isSimpleScheduleDeliverableField(field)"
+                                                  role="row"
+                                                  [attr.tabindex]="isSimpleScheduleDeliverableField(field) ? '0' : null"
+                                                  [attr.aria-label]="isSimpleScheduleDeliverableField(field) ? 'Open details for ' + row[0] : null"
+                                                  (click)="openSimplePlanDeliverableRow(field, row)"
+                                                  (keydown.enter)="openSimplePlanDeliverableRow(field, row)"
+                                                  (keydown.space)="$event.preventDefault(); openSimplePlanDeliverableRow(field, row)"
+                                                >
+                                                  @for (cell of row; track $index) { <span>@if ($index === row.length - 1) { <b>{{ cell }}</b> } @else { <ng-container>{{ cell }}</ng-container> }</span> }
+                                                </div>
+                                              }
+                                            </div>
+                                          }
                                         </app-pm-console-plan-table>
                                       } @else if (field.kind === 'boolean') {
                                         <div class="matrix-field matrix-field-boolean simple-field-control">
@@ -5040,12 +5330,8 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                   title="Schedule and scope"
                                   description="Approved dates, current forecast, milestone checkpoints, and the core scope statement in one place."
                                   countLabel="0 links"
-                                  actionLabel="Manage WBS"
-                                  actionAriaLabel="Open WBS workspace"
-                                  [actionIconName]="iconName('settings')"
                                   [iconName]="iconName('plan')"
                                   panelClass="schedule-scope-design-card"
-                                  (action)="navigate('wbs')"
                                 >
                                   <div class="schedule-scope-design-body">
                                     <div class="schedule-scope-design-grid" aria-label="Forecast dates">
@@ -5562,7 +5848,6 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                             <th>Risk ID</th>
                                             <th>Risk Category</th>
                                             <th>Risk Name</th>
-                                            <th>Strategic<br />Impact</th>
                                             <th>AR</th>
                                             <th>Treatment</th>
                                             <th>RR</th>
@@ -5580,16 +5865,14 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                               <td>{{ row.riskCategory }}</td>
                                               <td class="dependency-register-primary">
                                                 <strong>{{ row.riskName }}</strong>
-                                                <small>{{ row.description || 'No description added' }}</small>
                                               </td>
-                                              <td>{{ riskStrategicLabel(row) }}</td>
                                               <td><span class="risk-rating-swatch {{ riskRatingTone(row.actualRating) }}" [attr.aria-label]="'Actual rating ' + (row.actualRating || 'not rated')"></span></td>
                                               <td>{{ row.treatments.length }}</td>
                                               <td><span class="risk-rating-swatch {{ riskRatingTone(row.residualRating) }}" [attr.aria-label]="'Residual rating ' + (row.residualRating || 'not rated')"></span></td>
                                               <td>{{ row.owner }}</td>
                                               <td>{{ riskDateLabel(row.endDate) }}</td>
                                               <td>{{ riskDateLabel(row.reviewDueDate) }}</td>
-                                              <td><span [pmConsoleStatusPill]="row.status" baseClass="dependency-register-pill" [tone]="riskStatusTone(row.status)"></span></td>
+                                              <td class="dependency-register-status"><span [pmConsoleStatusPill]="row.status" baseClass="dependency-register-pill" [tone]="riskStatusTone(row.status)"></span></td>
                                               <td class="schedule-table-actions">
                                                 <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + row.id">
                                                   <button type="button" role="menuitem" (click)="openRiskProfile(row)">
@@ -9594,6 +9877,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
         { label: 'Baseline Start date', value: '2026-05-01', kind: 'date' },
         { label: 'Baseline End date', value: '2026-12-31', kind: 'date' },
         { label: 'In Scope', value: 'Research entities, universities, government stakeholders, industry partners, funding bodies, and R&D capability records.', kind: 'textarea', wide: true },
+        { label: 'Milestones', value: 'Initiation gate', kind: 'table', wide: true },
         { label: 'End Product (Deliverables)', value: 'Research capability map', kind: 'table', wide: true },
         { label: 'Management Product', value: 'Project initiation documentation', kind: 'table', wide: true },
       ],
@@ -9609,9 +9893,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     },
     {
       title: 'Risks',
-      body: 'Log the first risk PMO should see before endorsement.',
+      body: 'Add at least one benefit, risk, or key watchlist item before endorsement.',
       icon: 'risks',
       fields: [
+        { label: 'Benefits Register', value: 'Improved research discovery', kind: 'table', wide: true },
         { label: 'Risks Register', value: 'Stakeholder data quality', kind: 'table', wide: true },
       ],
     },
@@ -9636,6 +9921,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
         { label: 'Baseline Start date', value: '', kind: 'date' },
         { label: 'Baseline End date', value: '', kind: 'date' },
         { label: 'In Scope', value: '', kind: 'textarea', wide: true },
+        { label: 'Milestones', value: '', kind: 'table', wide: true },
         { label: 'End Product (Deliverables)', value: '', kind: 'table', wide: true },
         { label: 'Management Product', value: '', kind: 'table', wide: true },
       ],
@@ -9651,9 +9937,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     },
     {
       title: 'Risks',
-      body: 'Log the first risk PMO should see before endorsement.',
+      body: 'Add at least one benefit, risk, or key watchlist item before endorsement.',
       icon: 'risks',
       fields: [
+        { label: 'Benefits Register', value: '', kind: 'table', wide: true },
         { label: 'Risks Register', value: '', kind: 'table', wide: true },
       ],
     },
@@ -9661,6 +9948,56 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   get simplePlanSections(): SimplePlanSection[] {
     return this.onboardingProjectSetup ? this.onboardingSimplePlanSections : this.baseSimplePlanSections;
+  }
+
+  simplePlanSectionTitle(section: SimplePlanSection): string {
+    const titles: Record<string, string> = {
+      'Purpose and outcome': 'Overview',
+      'Dates and scope': 'Schedule & scope',
+      'Budget baseline': 'Budget',
+      Risks: 'Mandatory watchlist',
+    };
+    return titles[section.title] || section.title;
+  }
+
+  isSimpleScheduleScopeSection(section: SimplePlanSection): boolean {
+    return section.title === 'Dates and scope';
+  }
+
+  isSimpleMandatoryWatchlistSection(section: SimplePlanSection): boolean {
+    return section.title === 'Risks';
+  }
+
+  isSimpleScheduleDeliverableField(field: SimplePlanField | ProjectPlanField): boolean {
+    return ['Milestones', 'End Product (Deliverables)', 'Management Product'].includes(this.simplePlanFieldName(field));
+  }
+
+  isSimpleScheduleMilestoneField(field: SimplePlanField | ProjectPlanField): boolean {
+    return this.simplePlanFieldName(field) === 'Milestones';
+  }
+
+  isSimpleScheduleEndProductField(field: SimplePlanField | ProjectPlanField): boolean {
+    return this.simplePlanFieldName(field) === 'End Product (Deliverables)';
+  }
+
+  isSimpleScheduleManagementProductField(field: SimplePlanField | ProjectPlanField): boolean {
+    return this.simplePlanFieldName(field) === 'Management Product';
+  }
+
+  isSimpleWatchlistBenefitField(field: SimplePlanField | ProjectPlanField): boolean {
+    return this.simplePlanFieldName(field) === 'Benefits Register';
+  }
+
+  isSimpleWatchlistRiskField(field: SimplePlanField | ProjectPlanField): boolean {
+    return this.simplePlanFieldName(field) === 'Risks Register';
+  }
+
+  isSimpleWatchlistField(field: SimplePlanField | ProjectPlanField): boolean {
+    return this.isSimpleWatchlistBenefitField(field) || this.isSimpleWatchlistRiskField(field);
+  }
+
+  isSimpleHeaderManagedTableField(field: SimplePlanField | ProjectPlanField): boolean {
+    return this.isSimpleScheduleDeliverableField(field) || this.isSimpleWatchlistField(field);
   }
 
   readonly simpleReportSections = this.baseSimplePlanSections.slice(1);
@@ -9765,6 +10102,8 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   overviewServiceRows: OverviewServiceRow[] = overviewServiceRowsInitial.map((row) => ({ ...row }));
   overviewServiceDraft: OverviewServiceDraft = { ...overviewServiceDraftInitial };
   scheduleScopeState: ScheduleScopeState = { ...scheduleScopeStateInitial };
+  isScheduleDeliverablesMenuOpen = false;
+  isMandatoryWatchlistMenuOpen = false;
   isScheduleMilestoneDrawerOpen = false;
   editingScheduleMilestoneId: string | null = null;
   scheduleMilestoneRows: ScheduleMilestoneRow[] = scheduleMilestoneRowsInitial.map((row) => ({ ...row }));
@@ -11089,6 +11428,14 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       const trigger = this.elementRef.nativeElement.querySelector<HTMLElement>('[data-budget-rules-trigger]');
       if (!popover?.contains(target) && !trigger?.contains(target)) this.closeBudgetRulesPopover();
     }
+    if (this.isScheduleDeliverablesMenuOpen) {
+      const menu = this.elementRef.nativeElement.querySelector<HTMLElement>('[data-schedule-deliverables-menu]');
+      if (!menu?.contains(target)) this.closeScheduleDeliverablesMenu();
+    }
+    if (this.isMandatoryWatchlistMenuOpen) {
+      const menu = this.elementRef.nativeElement.querySelector<HTMLElement>('[data-mandatory-watchlist-menu]');
+      if (!menu?.contains(target)) this.closeMandatoryWatchlistMenu();
+    }
     if (this.activeAiAssistSection) {
       const assist = this.elementRef.nativeElement.querySelector<HTMLElement>('[data-ai-section-assist]');
       if (!assist?.contains(target)) this.closeAiAssist();
@@ -11116,7 +11463,15 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       this.closeBudgetRulesPopover();
       return;
     }
-    if (this.isBudgetDrawerOpen || this.isBudgetFundingDrawerOpen || this.isBudgetMonthlyDrawerOpen || this.isBenefitDrawerOpen || this.isIssueDrawerOpen || this.isRelatedLinksDrawerOpen || this.isResourceDrawerOpen || this.isChangeImpactDrawerOpen || this.isChangeRequestDrawerOpen || this.activeDependencyRegister) {
+    if (this.isScheduleDeliverablesMenuOpen) {
+      this.closeScheduleDeliverablesMenu();
+      return;
+    }
+    if (this.isMandatoryWatchlistMenuOpen) {
+      this.closeMandatoryWatchlistMenu();
+      return;
+    }
+    if (this.isScheduleMilestoneDrawerOpen || this.isScheduleEndProductDrawerOpen || this.isScheduleManagementProductDrawerOpen || this.isBudgetDrawerOpen || this.isBudgetFundingDrawerOpen || this.isBudgetMonthlyDrawerOpen || this.isBenefitDrawerOpen || this.isRiskDrawerOpen || this.isIssueDrawerOpen || this.isRelatedLinksDrawerOpen || this.isResourceDrawerOpen || this.isChangeImpactDrawerOpen || this.isChangeRequestDrawerOpen || this.activeDependencyRegister) {
       this.closeProjectPlanDrawers();
       return;
     }
@@ -13334,6 +13689,79 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return `${startLabel} - ${endLabel}`;
   }
 
+  toggleScheduleDeliverablesMenu(event?: Event): void {
+    event?.stopPropagation();
+    this.closeMandatoryWatchlistMenu();
+    this.isScheduleDeliverablesMenuOpen = !this.isScheduleDeliverablesMenuOpen;
+    this.iconsHydrated = false;
+  }
+
+  closeScheduleDeliverablesMenu(): void {
+    if (!this.isScheduleDeliverablesMenuOpen) return;
+    this.isScheduleDeliverablesMenuOpen = false;
+    this.iconsHydrated = false;
+  }
+
+  openScheduleDeliverableFromMenu(type: ScheduleDeliverableType, event?: Event): void {
+    event?.stopPropagation();
+    this.closeScheduleDeliverablesMenu();
+    if (type === 'end-product') {
+      this.openScheduleEndProductDrawer();
+    } else if (type === 'management-product') {
+      this.openScheduleManagementProductDrawer();
+    } else {
+      this.openScheduleMilestoneDrawer();
+    }
+  }
+
+  toggleMandatoryWatchlistMenu(event?: Event): void {
+    event?.stopPropagation();
+    this.closeScheduleDeliverablesMenu();
+    this.isMandatoryWatchlistMenuOpen = !this.isMandatoryWatchlistMenuOpen;
+    this.iconsHydrated = false;
+  }
+
+  closeMandatoryWatchlistMenu(): void {
+    if (!this.isMandatoryWatchlistMenuOpen) return;
+    this.isMandatoryWatchlistMenuOpen = false;
+    this.iconsHydrated = false;
+  }
+
+  openMandatoryWatchlistItemFromMenu(type: MandatoryWatchlistItemType, event?: Event): void {
+    event?.stopPropagation();
+    this.closeMandatoryWatchlistMenu();
+    if (type === 'benefit') {
+      this.openBenefitDrawer();
+    } else {
+      this.openRiskDrawer();
+    }
+  }
+
+  openSimplePlanTableAction(field: SimplePlanField | ProjectPlanField): void {
+    if (!this.isSimpleScheduleDeliverableField(field)) return;
+    const fieldName = this.simplePlanFieldName(field);
+    if (fieldName === 'End Product (Deliverables)') {
+      this.openScheduleEndProductDrawer();
+    } else if (fieldName === 'Management Product') {
+      this.openScheduleManagementProductDrawer();
+    } else {
+      this.openScheduleMilestoneDrawer();
+    }
+  }
+
+  openSimplePlanDeliverableRow(field: SimplePlanField | ProjectPlanField, row: string[]): void {
+    if (!this.isSimpleScheduleDeliverableField(field)) return;
+    const fieldName = this.simplePlanFieldName(field);
+    const rowTitle = row[0];
+    if (fieldName === 'End Product (Deliverables)') {
+      this.openScheduleEndProductDrawer(this.scheduleEndProductRows.find((product) => product.product === rowTitle));
+    } else if (fieldName === 'Management Product') {
+      this.openScheduleManagementProductDrawer(this.scheduleManagementProductRows.find((product) => product.product === rowTitle));
+    } else {
+      this.openScheduleMilestoneDrawer(this.scheduleMilestoneRows.find((milestone) => milestone.milestone === rowTitle));
+    }
+  }
+
   scheduleScopeDateLabel(value: string): string {
     return value ? this.formatProjectPlanDate(value) : 'TBD';
   }
@@ -15072,7 +15500,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   simplePlanTableConfig(field: SimplePlanField | ProjectPlanField): SimplePlanTableConfig {
-    const fieldName = 'field' in field ? field.field : field.label;
+    const fieldName = this.simplePlanFieldName(field);
     const configs: Record<string, SimplePlanTableConfig> = {
       'Business Drivers': {
         action: 'Add driver',
@@ -15108,19 +15536,24 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
         action: 'Add milestone',
         description: 'Milestone, owner, and planned due date.',
         columns: ['Milestone', 'Owner', 'Due date', 'Status'],
-        rows: [[field.value || 'Initiation gate', 'Project Manager', '2026-06-12', 'Planned']],
+        rows: this.scheduleMilestoneRows.map((row) => [
+          row.milestone,
+          row.owner || 'Owner to confirm',
+          this.scheduleScopeDateLabel(row.dueDate),
+          row.priority || 'Planned',
+        ]),
       },
       'End Product (Deliverables)': {
         action: 'Add deliverable',
         description: 'End deliverables produced by the project.',
         columns: ['Deliverable', 'Owner', 'Status'],
-        rows: [[field.value || 'Research capability map', 'Delivery Office', 'Draft']],
+        rows: this.scheduleEndProductRows.map((row) => [row.product, row.owner || 'Owner to confirm', 'Draft']),
       },
       'Management Product': {
         action: 'Add product',
         description: 'Management products required for governance.',
         columns: ['Product', 'Owner', 'Status'],
-        rows: [[field.value || 'Project initiation documentation', 'PMO', 'Draft']],
+        rows: this.scheduleManagementProductRows.map((row) => [row.product, row.owner || 'Owner to confirm', 'Draft']),
       },
       'Detailed WBS': {
         action: 'Add WBS item',
@@ -15144,13 +15577,13 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
         action: 'Add benefit',
         description: 'Benefit, owner, and realization status.',
         columns: ['Benefit', 'Owner', 'Realization'],
-        rows: [[field.value || 'Improved research discovery', 'Research Office', 'Planned']],
+        rows: this.benefitPlanRows.map((row) => [row.benefitName, row.owner || 'Owner to confirm', row.realizationDate || 'TBD']),
       },
       'Risks Register': {
         action: 'Add risk',
         description: 'Risk, owner, and current exposure.',
         columns: ['Risk', 'Owner', 'Rating'],
-        rows: [[field.value || 'Stakeholder data quality', 'PMO', 'High']],
+        rows: this.riskPlanRows.map((row) => [row.riskName, row.owner || 'Owner to confirm', row.actualRating || 'Not rated']),
       },
       'Issues Register': {
         action: 'Add issue',
@@ -15196,10 +15629,14 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       columns: ['Name', 'Owner', 'Status'],
       rows: [[field.value || fieldName, 'Project Manager', 'Draft']],
     };
-    if (this.onboardingProjectSetup && !field.value.trim()) {
+    if (this.onboardingProjectSetup && !field.value.trim() && !this.isSimpleScheduleDeliverableField(field) && !this.isSimpleWatchlistField(field)) {
       return { ...config, rows: [] };
     }
     return config;
+  }
+
+  private simplePlanFieldName(field: SimplePlanField | ProjectPlanField): string {
+    return 'field' in field ? field.field : field.label;
   }
 
   private showGuidedTourStep(index: number): void {
@@ -15828,6 +16265,8 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   private closeProjectPlanDrawers(): void {
+    this.closeScheduleDeliverablesMenu();
+    this.closeMandatoryWatchlistMenu();
     this.closeOverviewBusinessDriverDrawer();
     this.closeOverviewOutcomeDrawer();
     this.closeOverviewObjectiveDrawer();
