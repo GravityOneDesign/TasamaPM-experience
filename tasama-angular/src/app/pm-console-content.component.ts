@@ -10995,7 +10995,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.workspaceRegister = 'projects';
     this.workspaceDisplay = 'table';
     this.projectPlanEntry = 'quick';
-    this.projectPlanDetailMode = 'detailed';
+    this.projectPlanDetailMode = 'simple';
     this.projectPlanActiveSection = 'Overview';
     this.projectPlanSectionsExpanded = false;
     this.projectPlanExpandedFieldSections = {};
@@ -11753,7 +11753,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.selectedPage = 'project-plan';
     this.selectedView = 'calendar';
     this.projectPlanEntry = 'quick';
-    this.projectPlanDetailMode = this.onboardingProjectSetup ? 'detailed' : 'simple';
+    this.projectPlanDetailMode = 'simple';
     this.projectPlanActiveSection = 'Overview';
     this.projectPlanSectionsExpanded = false;
     this.projectPlanExpandedFieldSections = {};
@@ -12798,7 +12798,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.selectedProject = projectId;
     this.selectedPage = 'project-plan';
     this.projectPlanEntry = 'quick';
-    this.projectPlanDetailMode = this.onboardingProjectSetup ? 'detailed' : this.projectPlanDetailMode;
+    this.projectPlanDetailMode = this.onboardingProjectSetup ? 'simple' : this.projectPlanDetailMode;
     this.projectPlanActiveSection = 'Overview';
     this.projectPlanExpandedFieldSections = {};
     this.emitState();
