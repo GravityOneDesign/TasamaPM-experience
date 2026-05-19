@@ -17629,7 +17629,7 @@ b {
 }
 
 .simple-plan-mode .project-plan-card-frame {
-  grid-template-rows: 108px minmax(0, 1fr) 56px;
+  grid-template-rows: 108px minmax(0, 1fr);
 }
 
 .project-report-card-frame {
@@ -17862,6 +17862,10 @@ b {
 .plan-builder-shell.quick-plan-shell {
   grid-template-columns: 231px minmax(0, 1fr);
   grid-template-rows: auto minmax(0, 1fr);
+}
+
+.onboarding-project-plan .plan-builder-shell.quick-plan-shell {
+  grid-template-rows: auto minmax(0, 1fr) auto;
 }
 
 .plan-builder-shell.quick-plan-shell.detailed-plan-shell {
@@ -20719,7 +20723,7 @@ b {
 .project-plan-flat-fields,
 .project-plan-section-fields {
   display: grid;
-  gap: 14px;
+  gap: 16px;
   min-height: 0;
 }
 
@@ -20734,7 +20738,7 @@ b {
 
 .overview-plan-workspace {
   display: grid;
-  gap: 8px;
+  gap: 16px;
 }
 
 .project-plan-matrix-card.detailed-plan-card:has(.overview-plan-workspace) {
@@ -21093,7 +21097,7 @@ b {
 
 .overview-hidden-stack {
   display: grid;
-  gap: 12px;
+  gap: 16px;
 }
 
 .overview-advanced-toggle {
@@ -21106,7 +21110,7 @@ b {
 .overview-alignment-card .matrix-hidden-fields {
   border: 0;
   border-radius: 0;
-  gap: 12px;
+  gap: 16px;
   margin: 0;
   padding: 0;
 }
@@ -21260,7 +21264,7 @@ b {
 
 .schedule-scope-workspace {
   display: grid;
-  gap: 14px;
+  gap: 16px;
 }
 
 .schedule-scope-design-workspace {
@@ -25291,6 +25295,10 @@ b {
   padding: 0;
 }
 
+.simple-field-card.simple-budget-section-card .simple-plan-section-fields {
+  align-content: center;
+}
+
 .simple-field-card .simple-plan-section-fields .matrix-field-label {
   color: #2f2f2f;
   font-size: 12px;
@@ -25526,24 +25534,25 @@ b {
   background: #ffffff;
   border-top: 1px solid #eeeeee;
   display: flex;
-  gap: 12px;
+  gap: 10px;
   grid-column: 1 / -1;
   grid-row: 3;
   justify-content: flex-end;
-  padding: 16px 15px;
+  min-height: 0;
+  padding: 8px 15px;
 }
 
 .project-plan-bottom-actions button {
   align-items: center;
   border-radius: 999px;
   display: inline-flex;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  gap: 8px;
-  height: 40px;
+  gap: 7px;
+  height: 36px;
   justify-content: center;
   line-height: 20px;
-  padding: 0 16px;
+  padding: 0 15px;
   white-space: nowrap;
 }
 
@@ -25564,7 +25573,7 @@ b {
 }
 
 .onboarding-plan-actions {
-  box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.05);
+  box-shadow: 0 -4px 14px rgba(15, 23, 42, 0.05);
   bottom: 0;
   position: sticky;
   z-index: 6;
@@ -25675,7 +25684,7 @@ b {
 
 .misc-plan-stack {
   display: grid;
-  gap: 8px;
+  gap: 16px;
   min-width: 0;
 }
 
@@ -29276,4 +29285,35 @@ b {
     border-radius: 12px;
     overflow: auto;
   }
+}
+
+/* Table rule: every visible table label, value, pill, and emphasized cell stays regular weight. */
+.pm-project-table th,
+.pm-project-table th *,
+.pm-project-table td,
+.pm-project-table td *,
+.dependency-register-table th,
+.dependency-register-table th *,
+.dependency-register-table td,
+.dependency-register-table td *,
+.budget-table th,
+.budget-table th *,
+.budget-table td,
+.budget-table td *,
+.report-detail-table th,
+.report-detail-table th *,
+.report-detail-table td,
+.report-detail-table td *,
+.matrix-register-table .matrix-register-row,
+.matrix-register-table .matrix-register-row *,
+.wbs-table-head,
+.wbs-table-head *,
+.wbs-table-row,
+.wbs-table-row *,
+.overview-table-head,
+.overview-table-head *,
+.overview-table-row,
+.overview-table-row *,
+.schedule-overview-table-shell .schedule-milestone-table td::before {
+  font-weight: 400 !important;
 }

@@ -1689,14 +1689,14 @@ const projectPlanFieldMatrix: ProjectPlanField[] = [
   },
   {
     section: 'Miscellaneous',
-    field: 'ADEO Status',
+    field: 'Status',
     simple: false,
     intermediate: false,
     detailed: true,
     type: 'choice',
     value: 'Not Tracked',
     options: ['On Track', 'Alert', 'Off Track', 'Not Tracked', 'NA'],
-    description: 'Use when ADEO tracking applies to the project.',
+    description: 'Use when tracking applies to the project.',
   },
   {
     section: 'Miscellaneous',
@@ -1787,12 +1787,12 @@ const projectPlanSectionFieldGroups: Record<string, ProjectPlanFieldGroupConfig[
     },
     {
       title: 'Assurance tracking',
-      description: 'Assurance counts, ADEO status, grants, and admin commentary used for extended reporting.',
+      description: 'Assurance counts, status, grants, and admin commentary used for extended reporting.',
       fields: [
         'Number of Assurance/Compliance Reviews Completed',
         'Number of Recommendations Open',
         'Number of Recommendations Closed',
-        'ADEO Status',
+        'Status',
         'Commentary of admins',
         'Number of Grants submitted',
       ],
@@ -4153,7 +4153,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                   [fields]="section.fields"
                                 />
                               } @else {
-                                <article class="matrix-field-group simple-plan-section-card simple-field-card">
+                                <article class="matrix-field-group simple-plan-section-card simple-field-card" [class.simple-budget-section-card]="section.title === 'Budget baseline'">
                                   <div class="simple-field-card-head">
                                     <span class="simple-plan-section-icon" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="iconName(section.icon)"></i></span></span>
                                     <span class="matrix-field-group-copy"><strong>{{ simplePlanSectionTitle(section) }}</strong><small>{{ section.body }}</small></span>
@@ -4231,7 +4231,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                         <app-pm-console-plan-table
                                           [title]="field.label"
                                           [description]="tableConfig.description"
-                                          [countLabel]="tableConfig.rows.length + ' records'"
+                                          [countLabel]="simplePlanTableCountLabel(field, tableConfig)"
                                           [actionLabel]="isSimpleHeaderManagedTableField(field) ? '' : tableConfig.action"
                                           [iconName]="iconName('table')"
                                           panelClass="matrix-field-table simple-field-control wide"
@@ -4314,6 +4314,58 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                                 </tbody>
                                               </table>
                                             </div>
+                                          } @else if (isSimpleOverviewOutcomeField(field)) {
+                                            @if (overviewOutcomeRows.length) {
+                                              <div class="dependency-register-table-shell">
+                                                <table class="dependency-register-table overview-outcome-table" aria-label="Outcomes">
+                                                  <thead>
+                                                    <tr>
+                                                      <th>Outcome</th>
+                                                      <th>Measure</th>
+                                                      <th>Owner</th>
+                                                      <th>Status</th>
+                                                      <th aria-label="Actions"></th>
+                                                    </tr>
+                                                  </thead>
+                                                  <tbody>
+                                                    @for (row of overviewOutcomeRows; track row.id) {
+                                                      <tr class="plan-table-clickable-row" role="button" tabindex="0" [attr.aria-label]="'Open outcome details for ' + row.outcome" (click)="openOverviewOutcomeDrawer(row)" (keydown.enter)="openOverviewOutcomeDrawer(row)" (keydown.space)="$event.preventDefault(); openOverviewOutcomeDrawer(row)">
+                                                        <td class="dependency-register-primary">
+                                                          <strong>{{ row.outcome }}</strong>
+                                                          <small>Outcome visible in the project overview</small>
+                                                        </td>
+                                                        <td>{{ row.measure }}</td>
+                                                        <td>{{ row.owner }}</td>
+                                                        <td><span [pmConsoleStatusPill]="row.status" baseClass="overview-status-pill" [tone]="overviewStatusTone(row.status)"></span></td>
+                                                        <td class="schedule-table-actions">
+                                                          <div class="overview-row-actions" aria-label="Outcome actions">
+                                                            <button class="overview-row-action-button" type="button" [attr.aria-label]="'Edit ' + row.outcome" (click)="$event.stopPropagation(); openOverviewOutcomeDrawer(row)">
+                                                              <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                                            </button>
+                                                            <button class="overview-row-action-button danger" type="button" [attr.aria-label]="'Delete ' + row.outcome" (click)="$event.stopPropagation(); removeOverviewOutcome(row.id)">
+                                                              <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                                            </button>
+                                                          </div>
+                                                        </td>
+                                                      </tr>
+                                                    }
+                                                  </tbody>
+                                                </table>
+                                              </div>
+                                            } @else {
+                                              <app-pm-console-plan-empty-state
+                                                title="Outcomes"
+                                                description="Expected results and measures that define what success should look like."
+                                                countLabel="0 outcomes"
+                                                actionLabel="Add outcome"
+                                                actionAriaLabel="Add outcome"
+                                                [iconName]="iconName('outcomes')"
+                                                [hideHeader]="true"
+                                                emptyTitle="No outcomes saved yet"
+                                                emptyBody="Use at least one outcome so the project brief stays tied to measurable value."
+                                                (action)="openOverviewOutcomeDrawer()"
+                                              ></app-pm-console-plan-empty-state>
+                                            }
                                           } @else if (isSimpleScheduleMilestoneField(field)) {
                                             <div class="dependency-register-table-shell schedule-overview-table-shell schedule-scope-design-table-shell">
                                               <table class="dependency-register-table schedule-milestone-table schedule-scope-design-table" aria-label="Milestones">
@@ -4610,7 +4662,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                         </tbody>
                                       </table>
                                     </div>
-                                  } @else if (onboardingProjectSetup) {
+                                  } @else {
                                     <app-pm-console-plan-empty-state
                                       title="Business drivers"
                                       description="Strategic and business reasons that explain why this project needs to move forward."
@@ -4623,14 +4675,6 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                       emptyBody="Add the main business reasons here so the overview does not read like an isolated request."
                                       (action)="openOverviewBusinessDriverDrawer()"
                                     ></app-pm-console-plan-empty-state>
-                                  } @else {
-                                    <div class="dependency-empty-state overview-empty-state">
-                                      <img src="./assets/project-card-line-art.svg" alt="" aria-hidden="true" />
-                                      <div class="dependency-empty-state-copy">
-                                        <strong>No business drivers linked yet</strong>
-                                        <p>Add the main business reasons here so the overview does not read like an isolated request.</p>
-                                      </div>
-                                    </div>
                                   }
                                 </app-pm-console-plan-table>
 
@@ -4681,7 +4725,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                         </tbody>
                                       </table>
                                     </div>
-                                  } @else if (onboardingProjectSetup) {
+                                  } @else {
                                     <app-pm-console-plan-empty-state
                                       title="Outcomes"
                                       description="Expected results and measures that define what success should look like."
@@ -4694,14 +4738,6 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                       emptyBody="Use at least one outcome so the project brief stays tied to measurable value."
                                       (action)="openOverviewOutcomeDrawer()"
                                     ></app-pm-console-plan-empty-state>
-                                  } @else {
-                                    <div class="dependency-empty-state overview-empty-state compact">
-                                      <img src="./assets/project-card-line-art.svg" alt="" aria-hidden="true" />
-                                      <div class="dependency-empty-state-copy">
-                                        <strong>No outcomes saved yet</strong>
-                                        <p>Use at least one outcome so the project brief stays tied to measurable value.</p>
-                                      </div>
-                                    </div>
                                   }
                                 </app-pm-console-plan-table>
 
@@ -4770,7 +4806,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                         </tbody>
                                       </table>
                                     </div>
-                                  } @else if (onboardingProjectSetup) {
+                                  } @else {
                                     <app-pm-console-plan-empty-state
                                       title="Project alignment"
                                       description="Connect project objectives to the strategic objectives the work is meant to support."
@@ -4783,14 +4819,6 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                       emptyBody="Add objectives here so the strategic intent becomes concrete and reviewable."
                                       (action)="openOverviewObjectiveDrawer()"
                                     ></app-pm-console-plan-empty-state>
-                                  } @else {
-                                    <div class="dependency-empty-state overview-empty-state compact">
-                                      <img src="./assets/project-card-line-art.svg" alt="" aria-hidden="true" />
-                                      <div class="dependency-empty-state-copy">
-                                        <strong>No project objectives linked yet</strong>
-                                        <p>Add objectives here so the strategic intent becomes concrete and reviewable.</p>
-                                      </div>
-                                    </div>
                                   }
                                 @if (activeProjectPlanHasVisibleFields && activeProjectPlanHiddenFields.length) {
                                   <button
@@ -4859,7 +4887,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                                 </tbody>
                                               </table>
                                             </div>
-                                          } @else if (onboardingProjectSetup) {
+                                          } @else {
                                             <app-pm-console-plan-empty-state
                                               title="Capabilities"
                                               description="Capability mapping for detailed governance, architecture, or operating model alignment."
@@ -4872,14 +4900,6 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                               emptyBody="Add capabilities only when the detailed plan needs that mapping."
                                               (action)="openOverviewCapabilityDrawer()"
                                             ></app-pm-console-plan-empty-state>
-                                          } @else {
-                                            <div class="dependency-empty-state overview-empty-state compact">
-                                              <img src="./assets/project-card-line-art.svg" alt="" aria-hidden="true" />
-                                              <div class="dependency-empty-state-copy">
-                                                <strong>No capabilities linked yet</strong>
-                                                <p>Add capabilities only when the detailed plan needs that mapping.</p>
-                                              </div>
-                                            </div>
                                           }
                                         </app-pm-console-plan-table>
 
@@ -4930,7 +4950,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                                 </tbody>
                                               </table>
                                             </div>
-                                          } @else if (onboardingProjectSetup) {
+                                          } @else {
                                             <app-pm-console-plan-empty-state
                                               title="Services"
                                               description="Service group, value stream, phase, and service mapping for the detailed layer."
@@ -4943,14 +4963,6 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                               emptyBody="Add services only when the detailed plan needs service catalogue traceability."
                                               (action)="openOverviewServiceDrawer()"
                                             ></app-pm-console-plan-empty-state>
-                                          } @else {
-                                            <div class="dependency-empty-state overview-empty-state compact">
-                                              <img src="./assets/project-card-line-art.svg" alt="" aria-hidden="true" />
-                                              <div class="dependency-empty-state-copy">
-                                                <strong>No services linked yet</strong>
-                                                <p>Add services only when the detailed plan needs service catalogue traceability.</p>
-                                              </div>
-                                            </div>
                                           }
                                         </app-pm-console-plan-table>
                                       </section>
@@ -5046,13 +5058,19 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                       ></app-pm-console-plan-empty-state>
                                     }
 
-                                    <button class="budget-view-less" type="button" aria-expanded="true">
-                                      <span pmConsoleIcon="chevron-up" aria-hidden="true"></span>
-                                      <strong>View less</strong>
+                                    <button
+                                      class="budget-view-less"
+                                      type="button"
+                                      (click)="toggleProjectPlanFieldSection(projectPlanActiveSection)"
+                                      [attr.aria-expanded]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection)"
+                                    >
+                                      <span [pmConsoleIcon]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection) ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></span>
+                                      <strong>{{ isProjectPlanFieldSectionExpanded(projectPlanActiveSection) ? 'View less' : 'View more' }}</strong>
                                       <span>(Advanced governance fields)</span>
                                     </button>
                                   </section>
 
+                                  @if (isProjectPlanFieldSectionExpanded(projectPlanActiveSection)) {
                                   @if (year) {
                                     <section class="budget-detail-card" aria-label="Project budget details">
                                       <header class="budget-project-head">
@@ -5321,6 +5339,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                       emptyBody="Start with the fiscal-year CAPEX and OPEX baseline. Funding sources and monthly budget rows can be added after that."
                                       (action)="openBudgetDrawer()"
                                     ></app-pm-console-plan-empty-state>
+                                  }
                                   }
                                 </article>
                               </section>
@@ -6206,7 +6225,6 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                               <tr>
                                                 <td class="dependency-register-primary">
                                                   <strong>{{ row.project }}</strong>
-                                                  <small>{{ row.nature }}</small>
                                                 </td>
                                                 <td>{{ row.impact }}</td>
                                                 <td>{{ row.dependentProduct }}</td>
@@ -6276,7 +6294,6 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                                     <tr>
                                                       <td class="dependency-register-primary">
                                                         <strong>{{ row.project }}</strong>
-                                                        <small>{{ row.nature }}</small>
                                                       </td>
                                                       <td>{{ row.impact }}</td>
                                                       <td>{{ row.dependentProduct }}</td>
@@ -9996,6 +10013,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return this.isSimpleWatchlistBenefitField(field) || this.isSimpleWatchlistRiskField(field);
   }
 
+  isSimpleOverviewOutcomeField(field: SimplePlanField | ProjectPlanField): boolean {
+    return this.simplePlanFieldName(field) === 'Outcome';
+  }
+
   isSimpleHeaderManagedTableField(field: SimplePlanField | ProjectPlanField): boolean {
     return this.isSimpleScheduleDeliverableField(field) || this.isSimpleWatchlistField(field);
   }
@@ -10199,7 +10220,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   projectPlanDetailMode: ProjectPlanDetailMode = 'simple';
   projectPlanActiveSection = 'Overview';
   projectPlanSectionsExpanded = false;
-  projectPlanExpandedFieldSections: Record<string, boolean> = { Overview: true, 'Schedule & Scope': true };
+  projectPlanExpandedFieldSections: Record<string, boolean> = {};
   activeClosureSection: ClosureSectionId = 'overview';
   guidedTourStep = 0;
 
@@ -10977,7 +10998,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.projectPlanDetailMode = 'detailed';
     this.projectPlanActiveSection = 'Overview';
     this.projectPlanSectionsExpanded = false;
-    this.projectPlanExpandedFieldSections = { Overview: true };
+    this.projectPlanExpandedFieldSections = {};
     this.onboardingPlanActionMessage = '';
     this.overviewState = { opportunityStatement: '', driverAnalysis: '', aiComponent: '' };
     this.overviewBusinessDriverRows = [];
@@ -11614,7 +11635,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       this.projectPlanDetailMode = 'simple';
       this.projectPlanActiveSection = 'Overview';
       this.projectPlanSectionsExpanded = false;
-      this.projectPlanExpandedFieldSections = { Overview: true };
+      this.projectPlanExpandedFieldSections = {};
       this.onboardingPm101Locked = false;
     } else if (this.guidedTourExitMode === 'pm101-lock') {
       this.frontDoorMode = 'assigned';
@@ -11630,7 +11651,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       this.projectPlanDetailMode = 'simple';
       this.projectPlanActiveSection = 'Overview';
       this.projectPlanSectionsExpanded = false;
-      this.projectPlanExpandedFieldSections = { Overview: true };
+      this.projectPlanExpandedFieldSections = {};
       this.onboardingPm101Locked = true;
     } else if (this.guidedTourExitMode === 'onboarding-assignment-flow') {
       this.onboardingAssignmentFlow = true;
@@ -11649,7 +11670,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       this.projectPlanDetailMode = 'simple';
       this.projectPlanActiveSection = 'Overview';
       this.projectPlanSectionsExpanded = false;
-      this.projectPlanExpandedFieldSections = { Overview: true };
+      this.projectPlanExpandedFieldSections = {};
       this.onboardingPm101Locked = true;
     } else if (this.guidedTourExitMode === 'onboarding-project-setup') {
       this.onboardingProjectSetup = true;
@@ -11685,7 +11706,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.projectPlanDetailMode = 'simple';
     this.projectPlanActiveSection = 'Overview';
     this.projectPlanSectionsExpanded = false;
-    this.projectPlanExpandedFieldSections = { Overview: true };
+    this.projectPlanExpandedFieldSections = {};
     this.emitState();
   }
 
@@ -11735,7 +11756,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.projectPlanDetailMode = this.onboardingProjectSetup ? 'detailed' : 'simple';
     this.projectPlanActiveSection = 'Overview';
     this.projectPlanSectionsExpanded = false;
-    this.projectPlanExpandedFieldSections = { Overview: true };
+    this.projectPlanExpandedFieldSections = {};
     this.activeReportProject = null;
     this.selectedStageGateKey = null;
     this.selectedStageRevokeKey = null;
@@ -12217,7 +12238,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.closeAiAssist();
     this.projectPlanEntry = entry;
     this.projectPlanActiveSection = 'Overview';
-    this.projectPlanExpandedFieldSections = { Overview: true };
+    this.projectPlanExpandedFieldSections = {};
     if (entry === 'closure') this.activeClosureSection = 'overview';
     this.iconsHydrated = false;
   }
@@ -12624,7 +12645,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       'Number of Assurance/Compliance Reviews Completed': '0',
       'Number of Recommendations Open': '0',
       'Number of Recommendations Closed': '0',
-      'ADEO Status': 'Not Tracked',
+      Status: 'Not Tracked',
       'Commentary of admins': 'AI draft: no extended governance exceptions identified yet.',
       'Number of Grants submitted': '0',
     });
@@ -12699,9 +12720,6 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   isProjectPlanFieldSectionExpanded(section: string): boolean {
-    if (section === 'Overview' && this.projectPlanExpandedFieldSections[section] === undefined) return true;
-    if (this.onboardingProjectSetup && this.projectPlanExpandedFieldSections[section] === undefined) return false;
-    if (section === 'Schedule & Scope' && this.projectPlanExpandedFieldSections[section] === undefined) return true;
     return Boolean(this.projectPlanExpandedFieldSections[section]);
   }
 
@@ -12763,7 +12781,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     if (page === 'project-plan') {
       this.projectPlanEntry = projectPlanEntry;
       this.projectPlanActiveSection = 'Overview';
-      this.projectPlanExpandedFieldSections = { Overview: true };
+      this.projectPlanExpandedFieldSections = {};
     }
     if ((page === 'project-plan' || page === 'wbs' || page === 'playground') && this.isAllProjects) {
       this.selectedProject = this.onboardingProjectSetup ? firstAssignedProject.id : 'Vision 2030';
@@ -12782,7 +12800,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.projectPlanEntry = 'quick';
     this.projectPlanDetailMode = this.onboardingProjectSetup ? 'detailed' : this.projectPlanDetailMode;
     this.projectPlanActiveSection = 'Overview';
-    this.projectPlanExpandedFieldSections = { Overview: true };
+    this.projectPlanExpandedFieldSections = {};
     this.emitState();
   }
 
@@ -13738,6 +13756,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   openSimplePlanTableAction(field: SimplePlanField | ProjectPlanField): void {
+    if (this.isSimpleOverviewOutcomeField(field)) {
+      this.openOverviewOutcomeDrawer();
+      return;
+    }
     if (!this.isSimpleScheduleDeliverableField(field)) return;
     const fieldName = this.simplePlanFieldName(field);
     if (fieldName === 'End Product (Deliverables)') {
@@ -15512,7 +15534,9 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
         action: 'Add outcome',
         description: 'Measurable outcomes expected from the project.',
         columns: ['Outcome', 'Measure', 'Status'],
-        rows: [[field.value || 'Reduce fragmentation in research efforts', 'Discovery coverage', 'Draft']],
+        rows: this.overviewOutcomeRows.length
+          ? this.overviewOutcomeRows.map((row) => [row.outcome, row.measure, row.status])
+          : [[field.value || 'Reduce fragmentation in research efforts', 'Discovery coverage', 'Draft']],
       },
       'Project Alignment (Objectives)': {
         action: 'Add objective',
@@ -15633,6 +15657,11 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       return { ...config, rows: [] };
     }
     return config;
+  }
+
+  simplePlanTableCountLabel(field: SimplePlanField | ProjectPlanField, config: SimplePlanTableConfig): string {
+    if (this.isSimpleOverviewOutcomeField(field)) return this.overviewCountLabel(this.overviewOutcomeRows.length, 'outcome');
+    return `${config.rows.length} ${config.rows.length === 1 ? 'record' : 'records'}`;
   }
 
   private simplePlanFieldName(field: SimplePlanField | ProjectPlanField): string {
