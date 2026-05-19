@@ -1812,7 +1812,7 @@ function ReportComposerDrawer(selectedReportProject) {
   if (!selectedReportProject) return "";
   const report = reportStatusHistory.find((item) => item.project === selectedReportProject) || nextReportTarget(reportStatusHistory);
   const latestStatus = report.trend.at(-1);
-  const details = reportCreationDetails[report.project] || reportCreationDetails["Vision 2030"];
+  const details = reportCreationDetails[report.project] || reportCreationDetails[firstAssignedProject.id];
   const currentStatus = reportVisualStatus(latestStatus?.status || "due").label;
   const statusOptions = [
     { label: "On track", value: "On track", tone: "green", icon: "checkMark" },
@@ -3637,10 +3637,10 @@ function PM101ProjectStrip() {
   return `
     <div class="pm101-project-strip" aria-label="PM101 project overview">
       <article class="pm101-project-card pm101-project-card-assigned">
-        <img class="pm101-project-card-art" src="./assets/pm101-vision-card-bg.jpg" alt="" aria-hidden="true" />
+        <img class="pm101-project-card-art" src="./assets/pm101-first-project-card-bg.png" alt="" aria-hidden="true" />
         <span class="pm101-project-chip">New project assigned by PMO</span>
-        <strong>Vision 2030</strong>
-        <button class="pm101-project-cta" type="button" data-project-id="Vision 2030" data-page-target="project-plan" data-plan-entry="quick" data-project-plan-return="pm101-all" aria-label="Go to Vision 2030 project">
+        <strong>${escapeHtml(firstAssignedProject.name)}</strong>
+        <button class="pm101-project-cta" type="button" data-project-id="${escapeHtml(firstAssignedProject.id)}" data-page-target="project-plan" data-plan-entry="quick" data-project-plan-return="pm101-all" aria-label="Go to ${escapeHtml(firstAssignedProject.name)} project">
           <span>Go to Project</span>
           <span class="pm101-project-cta-arrow" aria-hidden="true">${icon("arrow")}</span>
         </button>
@@ -3862,6 +3862,7 @@ function reportDueToneLabel(tone) {
 
 function reportFrontdoorTone(report) {
   const toneOverrides = {
+    [firstAssignedProject.id]: "green",
     "Vision 2030": "red",
     "NEOM Integration": "green",
     "PMO Capability": "amber",
@@ -3879,7 +3880,7 @@ function reportDueText(report) {
 }
 
 function portfolioReportRows(rows) {
-  const reportOrder = ["Vision 2030", "NEOM Integration", "PMO Capability"];
+  const reportOrder = [firstAssignedProject.id, "Vision 2030", "NEOM Integration"];
   const byProject = new Map(rows.map((report) => [report.project, report]));
   const ordered = reportOrder.map((project) => byProject.get(project)).filter(Boolean);
   return ordered.length ? ordered : rows.slice(0, 3);
@@ -5145,16 +5146,16 @@ function LockedReportIllustration() {
     <div class="locked-report-illustration" aria-hidden="true">
       <article class="locked-report-card locked-report-card-vision">
         <div class="locked-report-card-head">
-          <strong>Vision 2030</strong>
-          <span class="locked-report-chip off-track">Off track</span>
+          <strong>${escapeHtml(firstAssignedProject.name)}</strong>
+          <span class="locked-report-chip on-track">On track</span>
         </div>
         <div class="locked-report-status-bar">
-          <span>${icon("alert")}<small>Mar</small></span>
+          <span>${icon("check")}<small>Mar</small></span>
           <span>${icon("check")}<small>Apr</small></span>
-          <span>${icon("close")}<small>May</small></span>
+          <span>${icon("check")}<small>May</small></span>
         </div>
         <div class="locked-report-card-foot">
-          <span class="locked-report-foot-copy">${icon("history")}<small>Overdue by 5 days</small></span>
+          <span class="locked-report-foot-copy">${icon("history")}<small>On track</small></span>
           <span class="locked-report-create">${icon("plan")}<small>Create</small></span>
         </div>
       </article>

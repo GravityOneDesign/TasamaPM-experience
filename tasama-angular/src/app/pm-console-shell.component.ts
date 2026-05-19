@@ -187,9 +187,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   get visibleProjects(): ProjectOption[] {
     if (this.onboardingPm101Locked) return this.projects.filter((project) => project.id === 'all');
     if (this.onboardingProjectSetup) {
-      return this.isProjectScopedPage
-        ? this.projects.filter((project) => project.id === 'UAE Research Map')
-        : this.projects.filter((project) => project.id === 'all');
+      return this.projects.filter((project) => project.id === 'UAE Research Map');
     }
     return this.isProjectScopedPage ? this.projects.filter((project) => project.id !== 'all') : this.projects;
   }
@@ -219,7 +217,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
 
   selectProject(value: string): void {
     if (this.onboardingProjectSetup) {
-      this.selectedProject = this.isProjectScopedPage ? 'UAE Research Map' : 'all';
+      this.selectedProject = 'UAE Research Map';
     } else {
       this.selectedProject = this.onboardingPm101Locked ? ONBOARDING_PM101_PROJECT_ID : value;
     }
@@ -231,7 +229,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     if (this.onboardingAssignmentFlow && this.pmoAssignmentReady && !this.onboardingProjectSetup && page === 'workspaces') {
       this.onboardingProjectSetup = true;
       this.onboardingPm101Locked = false;
-      this.selectedProject = 'all';
+      this.selectedProject = 'UAE Research Map';
       this.selectedView = 'pm101';
     }
     this.selectedPage = page;
@@ -252,7 +250,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
       this.markShellChanged();
       return;
     }
-    this.selectedProject = this.onboardingProjectSetup || this.onboardingPm101Locked ? ONBOARDING_PM101_PROJECT_ID : 'all';
+    this.selectedProject = this.onboardingProjectSetup ? 'UAE Research Map' : this.onboardingPm101Locked ? ONBOARDING_PM101_PROJECT_ID : 'all';
     this.selectedPage = this.onboardingProjectSetup ? 'workspaces' : 'workspace';
     this.selectedView = this.onboardingProjectSetup || this.onboardingPm101Locked ? 'pm101' : 'calendar';
     this.notificationPanelOpen = false;

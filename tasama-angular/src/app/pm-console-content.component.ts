@@ -3452,6 +3452,8 @@ interface ProjectPlanStageRow {
   canRevoke: boolean;
 }
 
+type Pm101StepAction = 'project-plan' | 'project-workspace' | 'reports' | 'learning-hub';
+
 interface Pm101Step {
   title: string;
   body: string;
@@ -3461,6 +3463,9 @@ interface Pm101Step {
   footerLabel?: string;
   footerValue?: string;
   footerAction?: string;
+  footerActionId?: Pm101StepAction;
+  completedLabel?: string;
+  completedValue?: string;
   footerStandalone?: boolean;
   footerIconOnly?: boolean;
 }
@@ -3476,12 +3481,12 @@ interface Pm101ProjectPreview {
 
 const pm101ProjectPreviews: Pm101ProjectPreview[] = [
   {
-    id: 'Vision 2030',
-    title: 'Vision 2030',
+    id: firstAssignedProject.id,
+    title: firstAssignedProject.name,
     chip: 'New project assigned by PMO',
-    art: './assets/pm101-vision-card-bg.jpg',
+    art: './assets/pm101-first-project-card-bg.png',
     tone: 'assigned',
-    routeProjectId: 'Vision 2030',
+    routeProjectId: firstAssignedProject.id,
   },
   {
     id: 'NEOM Integration',
@@ -3648,8 +3653,10 @@ const pm101Steps: Pm101Step[] = [
     iconAsset: './assets/pm101/figma-step-2.svg',
     decor: 'rings',
     decorAssets: ['./assets/pm101/decor-2.svg'],
-    footerAction: 'Project Plan Created',
-    footerStandalone: true,
+    footerAction: 'Create project plan',
+    footerActionId: 'project-plan',
+    completedLabel: 'Project plan approved',
+    completedValue: 'Aug 01, 2026',
   },
   {
     title: 'Manage delivery',
@@ -3658,6 +3665,7 @@ const pm101Steps: Pm101Step[] = [
     decor: 'loops',
     decorAssets: ['./assets/pm101/decor-4.svg'],
     footerAction: 'Go to workspaces',
+    footerActionId: 'project-workspace',
   },
   {
     title: 'Report progress',
@@ -3666,6 +3674,7 @@ const pm101Steps: Pm101Step[] = [
     decor: 'hex',
     decorAssets: ['./assets/pm101/decor-5.svg'],
     footerAction: 'Create Report',
+    footerActionId: 'reports',
   },
   {
     title: 'Access Learning Hub',
@@ -3673,7 +3682,8 @@ const pm101Steps: Pm101Step[] = [
     iconAsset: './assets/pm101/figma-step-5.svg',
     decor: 'plus',
     decorAssets: ['./assets/pm101/decor-3-group-1.svg', './assets/pm101/decor-3-group-2.svg', './assets/pm101/decor-3-group-3.svg', './assets/pm101/decor-3-group-4.svg'],
-    footerIconOnly: true,
+    footerAction: 'Learn more',
+    footerActionId: 'learning-hub',
   },
 ];
 
@@ -7923,7 +7933,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                       </aside>
                     }
                     <div class="workspace-tabs" role="tablist" aria-label="Workspace view" data-tour-target="workspace-tabs">
-                      @if (onboardingPm101Locked || isPm101OnboardingWorkspaceFlow) {
+                      @if (onboardingPm101Locked) {
                         <button
                           [class.active]="selectedView === 'pm101'"
                           type="button"
@@ -7935,31 +7945,45 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                           <span>PM101</span>
                         </button>
                         <button
-                          [class.active]="isActionWorkspaceActive"
-                          [class.is-locked]="onboardingPm101Locked"
+                          [class.active]="selectedView === 'calendar'"
+                          class="is-locked"
                           type="button"
-                          data-view-target="actions"
-                          [attr.aria-selected]="isActionWorkspaceActive"
-                          (click)="setView(topActionWorkspaceView)"
-                          [disabled]="onboardingPm101Locked"
-                          [attr.aria-disabled]="onboardingPm101Locked ? 'true' : null"
-                          [attr.title]="onboardingPm101Locked ? 'Available after PM 101 onboarding' : null"
+                          data-view-target="calendar"
+                          [attr.aria-selected]="selectedView === 'calendar'"
+                          (click)="setView('calendar')"
+                          disabled
+                          aria-disabled="true"
+                          title="Available after PMO assignment"
                         >
-                          <span class="icon" aria-hidden="true"><i data-lucide="check-square"></i></span>
-                          <span>Actions</span>
+                          <span class="icon" aria-hidden="true"><i data-lucide="panels-top-left"></i></span>
+                          <span>Calendar</span>
+                        </button>
+                        <button
+                          [class.active]="selectedView === 'board'"
+                          class="is-locked"
+                          type="button"
+                          data-view-target="board"
+                          [attr.aria-selected]="selectedView === 'board'"
+                          (click)="setView('board')"
+                          disabled
+                          aria-disabled="true"
+                          title="Available after PMO assignment"
+                        >
+                          <span class="icon" aria-hidden="true"><i data-lucide="panels-top-left"></i></span>
+                          <span>Board</span>
                         </button>
                         <button
                           [class.active]="selectedView === 'stages'"
-                          [class.is-locked]="onboardingPm101Locked"
+                          class="is-locked"
                           type="button"
                           data-view-target="stages"
                           [attr.aria-selected]="selectedView === 'stages'"
                           (click)="setView('stages')"
-                          [disabled]="onboardingPm101Locked"
-                          [attr.aria-disabled]="onboardingPm101Locked ? 'true' : null"
-                          [attr.title]="onboardingPm101Locked ? 'Available after PM 101 onboarding' : null"
+                          disabled
+                          aria-disabled="true"
+                          title="Available after PMO assignment"
                         >
-                          <span class="icon" aria-hidden="true"><i data-lucide="list-tree"></i></span>
+                          <span class="icon" aria-hidden="true"><i data-lucide="radar"></i></span>
                           <span>Stages</span>
                         </button>
                       } @else {
@@ -8087,34 +8111,47 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                           <p>From assignment to regular reporting, these are the steps you will work through in TASAMA.</p>
                         </div>
                       } @else if (isNormalPm101Workspace) {
-                        <div class="pm101-project-strip" aria-label="PM101 project overview">
-                          @for (project of pm101ProjectPreviews; track project.id) {
-                            <button
-                              class="pm101-project-card"
-                              [class.pm101-project-card-assigned]="project.tone === 'assigned'"
-                              [class.pm101-project-card-active]="project.tone === 'active'"
-                              [class.is-selected]="project.id === activePm101ProjectId"
-                              [attr.aria-pressed]="project.id === activePm101ProjectId"
-                              [attr.aria-label]="project.id === activePm101ProjectId && project.routeProjectId ? 'Go to ' + project.title + ' project' : 'Show ' + project.title + ' PM101 journey'"
-                              type="button"
-                              (click)="handlePm101ProjectPreview(project)"
-                            >
-                              <img class="pm101-project-card-art" [src]="project.art" alt="" aria-hidden="true" />
-                              <span class="pm101-project-chip">{{ project.chip }}</span>
-                              <strong>{{ project.title }}</strong>
-                              @if (project.id === activePm101ProjectId) {
-                                @if (project.routeProjectId) {
-                                  <span class="pm101-project-cta">
-                                    <span>Go to Project</span>
-                                    <span class="pm101-project-cta-arrow" aria-hidden="true"></span>
-                                  </span>
-                                }
-                              } @else {
-                                <span class="pm101-project-ghost-arrow" aria-hidden="true"></span>
-                              }
-                            </button>
-                          }
-                        </div>
+                        <section
+                          class="pm101-selection-panel"
+                          [class.pm101-active-project-0]="activePm101ProjectIndex === 0"
+                          [class.pm101-active-project-1]="activePm101ProjectIndex === 1"
+                          [class.pm101-active-project-2]="activePm101ProjectIndex === 2"
+                          [attr.aria-label]="activePm101Project.title + ' PM101 path selected'"
+                        >
+                          <div class="pm101-project-strip" aria-label="PM101 project overview">
+                            @for (project of pm101ProjectPreviews; track project.id) {
+                              <div
+                                class="pm101-project-card-slot"
+                                [class.is-selected]="project.id === activePm101ProjectId"
+                              >
+                                <button
+                                  class="pm101-project-card"
+                                  [class.pm101-project-card-assigned]="project.tone === 'assigned'"
+                                  [class.pm101-project-card-active]="project.tone === 'active'"
+                                  [class.is-selected]="project.id === activePm101ProjectId"
+                                  [attr.aria-pressed]="project.id === activePm101ProjectId"
+                                  [attr.aria-label]="project.id === activePm101ProjectId && project.routeProjectId ? 'Go to ' + project.title + ' project' : 'Show ' + project.title + ' PM101 journey'"
+                                  type="button"
+                                  (click)="handlePm101ProjectPreview(project)"
+                                >
+                                  <img class="pm101-project-card-art" [src]="project.art" alt="" aria-hidden="true" />
+                                  <span class="pm101-project-chip">{{ project.chip }}</span>
+                                  <strong>{{ project.title }}</strong>
+                                  @if (project.id === activePm101ProjectId) {
+                                    @if (project.routeProjectId) {
+                                      <span class="pm101-project-cta">
+                                        <span>Go to Project</span>
+                                        <span class="pm101-project-cta-arrow" aria-hidden="true"></span>
+                                      </span>
+                                    }
+                                  } @else {
+                                    <span class="pm101-project-ghost-arrow" aria-hidden="true"></span>
+                                  }
+                                </button>
+                              </div>
+                            }
+                          </div>
+                        </section>
                         <div class="pm101-journey-head">
                           <span>{{ activePm101Project.title }} PM101 path</span>
                           <h3>Your project management journey</h3>
@@ -8123,7 +8160,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                       }
                       <div class="pm101-flow" aria-label="PM 101 project delivery flow">
                         <ol class="pm101-step-list">
-                          @for (step of pm101Steps; track step.title) {
+                          @for (step of pm101Steps; track step.title; let index = $index) {
                             <li class="pm101-step">
                               <article class="pm101-card">
                                 <span class="pm101-card-icon">
@@ -8136,24 +8173,31 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                     <img class="pm101-decor-asset pm101-decor-asset-{{ assetIndex + 1 }}" [src]="asset" alt="" />
                                   }
                                 </span>
-                                @if (step.footerLabel && step.footerValue) {
+                                @if (onboardingPm101Locked) {
+                                  <span class="pm101-card-step-number" aria-hidden="true">{{ index + 1 }}</span>
+                                } @else if (shouldShowCompletedPm101Step(step) && step.completedLabel && step.completedValue) {
+                                  <div class="pm101-card-footer pm101-card-footer-meta">
+                                    <span>{{ step.completedLabel }}</span>
+                                    <strong>{{ step.completedValue }}</strong>
+                                  </div>
+                                } @else if (step.footerLabel && step.footerValue) {
                                   <div class="pm101-card-footer pm101-card-footer-meta">
                                     <span>{{ step.footerLabel }}</span>
                                     <strong>{{ step.footerValue }}</strong>
                                   </div>
                                 } @else if (step.footerAction && step.footerStandalone) {
-                                  <div class="pm101-card-footer pm101-card-footer-link pm101-card-footer-text-only">
+                                  <button class="pm101-card-footer pm101-card-footer-link pm101-card-footer-text-only" type="button" (click)="handlePm101StepAction(step)">
                                     <span>{{ step.footerAction }}</span>
-                                  </div>
+                                  </button>
                                 } @else if (step.footerAction) {
-                                  <div class="pm101-card-footer pm101-card-footer-link">
+                                  <button class="pm101-card-footer pm101-card-footer-link" type="button" (click)="handlePm101StepAction(step)">
                                     <span>{{ step.footerAction }}</span>
                                     <span class="pm101-card-footer-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
-                                  </div>
+                                  </button>
                                 } @else if (step.footerIconOnly) {
-                                  <div class="pm101-card-footer pm101-card-footer-icon-only">
+                                  <button class="pm101-card-footer pm101-card-footer-icon-only" type="button" (click)="handlePm101StepAction(step)" [attr.aria-label]="pm101StepActionLabel(step)">
                                     <span class="pm101-card-footer-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
-                                  </div>
+                                  </button>
                                 }
                               </article>
                             </li>
@@ -8223,16 +8267,16 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                     <div class="locked-report-illustration" aria-hidden="true">
                       <article class="locked-report-card locked-report-card-vision">
                         <div class="locked-report-card-head">
-                          <strong>Vision 2030</strong>
-                          <span class="locked-report-chip off-track">Off track</span>
+                          <strong>{{ firstAssignedProject.name }}</strong>
+                          <span class="locked-report-chip on-track">On track</span>
                         </div>
                         <div class="locked-report-status-bar">
-                          <span><span class="icon"><i data-lucide="triangle-alert"></i></span><small>Mar</small></span>
+                          <span><span class="icon"><i data-lucide="circle-check"></i></span><small>Mar</small></span>
                           <span><span class="icon"><i data-lucide="circle-check"></i></span><small>Apr</small></span>
-                          <span><span class="icon"><i data-lucide="circle-x"></i></span><small>May</small></span>
+                          <span><span class="icon"><i data-lucide="circle-check"></i></span><small>May</small></span>
                         </div>
                         <div class="locked-report-card-foot">
-                          <span class="locked-report-foot-copy"><span class="icon"><i data-lucide="history"></i></span><small>Overdue by 5 days</small></span>
+                          <span class="locked-report-foot-copy"><span class="icon"><i data-lucide="history"></i></span><small>On track</small></span>
                           <span class="locked-report-create"><span class="icon"><i data-lucide="file-text"></i></span><small>Create</small></span>
                         </div>
                       </article>
@@ -8288,16 +8332,16 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                     <div class="locked-report-illustration" aria-hidden="true">
                       <article class="locked-report-card locked-report-card-vision">
                         <div class="locked-report-card-head">
-                          <strong>Vision 2030</strong>
-                          <span class="locked-report-chip off-track">Off track</span>
+                          <strong>{{ firstAssignedProject.name }}</strong>
+                          <span class="locked-report-chip on-track">On track</span>
                         </div>
                         <div class="locked-report-status-bar">
-                          <span><span class="icon"><i data-lucide="triangle-alert"></i></span><small>Mar</small></span>
+                          <span><span class="icon"><i data-lucide="circle-check"></i></span><small>Mar</small></span>
                           <span><span class="icon"><i data-lucide="circle-check"></i></span><small>Apr</small></span>
-                          <span><span class="icon"><i data-lucide="circle-x"></i></span><small>May</small></span>
+                          <span><span class="icon"><i data-lucide="circle-check"></i></span><small>May</small></span>
                         </div>
                         <div class="locked-report-card-foot">
-                          <span class="locked-report-foot-copy"><span class="icon"><i data-lucide="history"></i></span><small>Overdue by 5 days</small></span>
+                          <span class="locked-report-foot-copy"><span class="icon"><i data-lucide="history"></i></span><small>On track</small></span>
                           <span class="locked-report-create"><span class="icon"><i data-lucide="file-text"></i></span><small>Create</small></span>
                         </div>
                       </article>
@@ -9841,11 +9885,15 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   ) {}
 
   get workspaceTableProjects(): ProjectRow[] {
-    return this.onboardingProjectSetup ? onboardingWorkspaceTableProjects : workspaceTableProjects;
+    const rows = this.onboardingProjectSetup ? onboardingWorkspaceTableProjects : workspaceTableProjects;
+    return this.isAllProjects ? rows : rows.filter((project) => this.matchesSelectedProject(project.id || project.title));
   }
 
   get workspaceProjectCards(): ProjectCard[] {
-    return this.onboardingProjectSetup ? onboardingWorkspaceProjectCards : workspaceProjectCards;
+    const cards = this.onboardingProjectSetup ? onboardingWorkspaceProjectCards : workspaceProjectCards;
+    return this.isAllProjects
+      ? cards
+      : cards.filter((project) => this.matchesSelectedProject(project.title));
   }
 
   get onboardingPlanCompletionPercent(): number {
@@ -10482,7 +10530,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get usesPm101OperationalLayout(): boolean {
-    return this.isNormalPm101Workspace || this.isSelectedProjectWorkspaceShell;
+    return this.onboardingPm101Locked || this.isPm101WelcomeWorkspace || this.isSelectedProjectWorkspaceShell;
   }
 
   get selectedPm101ProjectPreview(): Pm101ProjectPreview | null {
@@ -10533,7 +10581,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   get workspaceRegisterSubtitle(): string {
     if (this.workspaceRegister === 'benefits') return `Tracking ${this.visibleBenefitRegisterRows.length} benefit records across the workspace`;
     if (this.workspaceRegister === 'risks') return `Monitoring ${this.visibleRiskRegisterRows.length} active risk records across the workspace`;
-    return `Showing all ${this.workspaceTableProjects.length} projects`;
+    return this.isAllProjects ? `Showing all ${this.workspaceTableProjects.length} projects` : `Showing ${this.scopedProjectName}`;
   }
 
   get workspaceRegisterSearchPlaceholder(): string {
@@ -10557,7 +10605,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   get workspaceRegisterFilterLabel(): string {
     if (this.workspaceRegister === 'benefits') return 'All benefits';
     if (this.workspaceRegister === 'risks') return 'All risks';
-    return 'All projects';
+    return this.isAllProjects ? 'All projects' : this.scopedProjectName;
   }
 
   get noAssignmentMessage(): string {
@@ -10581,7 +10629,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.frontDoorMode = 'assigned';
     this.pmoAssignmentReady = true;
     this.onboardingPm101Locked = false;
-    this.selectedProject = this.selectedPage === 'project-plan' ? firstAssignedProject.id : 'all';
+    this.selectedProject = firstAssignedProject.id;
     this.selectedPage = this.selectedPage === 'project-plan' ? 'project-plan' : 'workspaces';
     this.selectedView = 'pm101';
     this.workspaceRegister = 'projects';
@@ -10747,17 +10795,17 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   get visibleReportRows(): typeof reportStatusHistory {
     const rows = reportStatusHistory.filter((report) => this.isAllProjects || report.project === this.selectedProject);
     if (!this.isAllProjects) return rows;
-    const order = ['Vision 2030', 'NEOM Integration', 'PMO Capability'];
+    const order = [firstAssignedProject.id, 'Vision 2030', 'NEOM Integration'];
     return order.map((project) => rows.find((row) => row.project === project)).filter((row): row is (typeof reportStatusHistory)[number] => Boolean(row));
   }
 
   get activeReport(): (typeof reportStatusHistory)[number] {
-    const project = this.activeReportProject || 'Vision 2030';
+    const project = this.activeReportProject || firstAssignedProject.id;
     return reportStatusHistory.find((report) => report.project === project) || reportStatusHistory[0];
   }
 
   get activeReportDetails(): ReportCreationDetail {
-    return reportCreationDetails[this.activeReport.project] || reportCreationDetails['Vision 2030'];
+    return reportCreationDetails[this.activeReport.project] || reportCreationDetails[firstAssignedProject.id];
   }
 
   get activeReportStatus(): string {
@@ -11303,6 +11351,11 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return pm101ProjectPreviews.find((project) => project.id === this.activePm101ProjectId) || pm101ProjectPreviews[0];
   }
 
+  get activePm101ProjectIndex(): number {
+    const index = pm101ProjectPreviews.findIndex((project) => project.id === this.activePm101ProjectId);
+    return index >= 0 ? index : 0;
+  }
+
   handlePm101ProjectPreview(project: Pm101ProjectPreview): void {
     if (project.id !== this.activePm101ProjectId) {
       this.activePm101ProjectId = project.id;
@@ -11316,8 +11369,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   openAssignedProjectPlan(): void {
     if (this.onboardingAssignmentFlow && !this.onboardingProjectSetup) {
-      this.openOnboardingProjectSetupWorkspace();
-      return;
+      this.ensureAssignedProjectSetupState();
     }
     this.frontDoorMode = 'assigned';
     this.pmoAssignmentReady = true;
@@ -11333,6 +11385,68 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.selectedStageGateKey = null;
     this.selectedStageRevokeKey = null;
     this.emitState();
+  }
+
+  handlePm101StepAction(step: Pm101Step): void {
+    switch (step.footerActionId) {
+      case 'project-plan':
+        this.openAssignedProjectPlan();
+        return;
+      case 'project-workspace':
+        this.openAssignedProjectWorkspace();
+        return;
+      case 'reports':
+        this.openAssignedProjectReports();
+        return;
+      case 'learning-hub':
+        this.openPm101OnboardingWorkspace();
+        return;
+      default:
+        return;
+    }
+  }
+
+  pm101StepActionLabel(step: Pm101Step): string {
+    if (step.footerAction) return step.footerAction;
+    if (step.footerActionId === 'learning-hub') return 'Open Learning Hub';
+    return step.title;
+  }
+
+  shouldShowCompletedPm101Step(step: Pm101Step): boolean {
+    return step.footerActionId === 'project-plan' && !this.onboardingAssignmentFlow && !this.onboardingProjectSetup;
+  }
+
+  openAssignedProjectWorkspace(): void {
+    if (this.onboardingAssignmentFlow && !this.onboardingProjectSetup) {
+      this.ensureAssignedProjectSetupState();
+    }
+    this.closeProjectPlanDrawers();
+    this.closeReport();
+    this.closeStageGate();
+    this.closeStageRevoke();
+    this.frontDoorMode = 'assigned';
+    this.pmoAssignmentReady = true;
+    this.onboardingPm101Locked = false;
+    this.selectedProject = firstAssignedProject.id;
+    this.selectedPage = 'workspaces';
+    this.selectedView = 'pm101';
+    this.workspaceRegister = 'projects';
+    this.workspaceDisplay = 'table';
+    this.selectedBoardFilter = 'all';
+    this.projectPlanReturnState = null;
+    this.activeReportProject = null;
+    this.selectedStageGateKey = null;
+    this.selectedStageRevokeKey = null;
+    this.emitState();
+  }
+
+  openAssignedProjectReports(): void {
+    this.openReport(firstAssignedProject.id);
+  }
+
+  private ensureAssignedProjectSetupState(): void {
+    this.onboardingProjectSetup = true;
+    this.applyOnboardingProjectSetupState();
   }
 
   private openOnboardingProjectSetupWorkspace(): void {
@@ -11384,7 +11498,15 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     const prompt = this.aiInlineRewrite.prompt.trim();
     if (!target || !prompt || this.aiInlineRewrite.status === 'rewriting') return;
 
-    this.startAiInlineRewrite(target, this.aiInlineRewrite.start, this.aiInlineRewrite.end, this.aiInlineRewrite.selectedText, prompt, 1);
+    const sourceText = target.value.slice(this.aiInlineRewrite.start, this.aiInlineRewrite.end) || this.aiInlineRewrite.selectedText;
+    this.startAiInlineRewrite(
+      target,
+      this.aiInlineRewrite.start,
+      this.aiInlineRewrite.end,
+      sourceText,
+      prompt,
+      this.aiInlineRewrite.revision + 1,
+    );
   }
 
   acceptAiInlineRewrite(): void {
@@ -11404,17 +11526,19 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   regenerateAiInlineRewrite(): void {
     const target = this.aiInlineRewriteTarget;
-    const prompt = this.aiInlineRewrite.prompt.trim();
-    if (!target || !prompt || this.aiInlineRewrite.status === 'rewriting') return;
+    if (!target || this.aiInlineRewrite.status === 'rewriting') return;
 
-    this.startAiInlineRewrite(
-      target,
-      this.aiInlineRewrite.start,
-      this.aiInlineRewrite.end,
-      this.aiInlineRewrite.selectedText,
-      prompt,
-      this.aiInlineRewrite.revision + 1,
-    );
+    target.focus();
+    target.setSelectionRange(this.aiInlineRewrite.start, this.aiInlineRewrite.end);
+    this.aiInlineRewrite = {
+      ...this.aiInlineRewrite,
+      mode: 'prompt',
+      prompt: '',
+      status: 'idle',
+    };
+    this.iconsHydrated = false;
+    this.changeDetector.markForCheck();
+    this.focusAiInlineRewriteInput();
   }
 
   closeAiInlineRewrite(): void {
@@ -11580,7 +11704,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.setAiInlineRewriteWave(target, true);
     this.aiInlineRewrite = {
       ...this.aiInlineRewrite,
-      mode: revision === 1 ? 'prompt' : 'review',
+      mode: 'prompt',
       status: 'rewriting',
       revision,
     };
@@ -14839,7 +14963,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   reportFrontdoorTone(report: { project: string; dueTone: string }): string {
-    return ({ 'Vision 2030': 'red', 'NEOM Integration': 'green', 'PMO Capability': 'amber' } as Record<string, string>)[report.project] || report.dueTone;
+    return ({ [firstAssignedProject.id]: 'green', 'Vision 2030': 'red', 'NEOM Integration': 'green', 'PMO Capability': 'amber' } as Record<string, string>)[report.project] || report.dueTone;
   }
 
   reportDueToneLabel(tone: string): string {
@@ -15873,6 +15997,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   private isActionWorkspaceView(view: WorkspaceView): view is ActionWorkspaceView {
     return view === 'board' || view === 'calendar';
+  }
+
+  private matchesSelectedProject(projectId: string | undefined): boolean {
+    return Boolean(projectId && projectId === this.selectedProject);
   }
 
   private syncLastActionWorkspaceView(view: WorkspaceView): void {
