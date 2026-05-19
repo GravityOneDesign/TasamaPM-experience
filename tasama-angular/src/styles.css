@@ -5597,6 +5597,16 @@ b {
   padding: 6px 8px;
 }
 
+.board-view > .board-filter {
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.board-view > .board-filter .work-filter-menu {
+  left: auto;
+  right: 0;
+}
+
 .board-filter > span {
   color: var(--muted);
   flex: 0 0 auto;
