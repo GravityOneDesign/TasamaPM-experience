@@ -1,6 +1,7 @@
 import { AfterViewChecked, ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PmConsoleIconService } from './pm-console-icon.service';
+import { PmConsoleDateFieldComponent } from './shared/pm-console-date-field.component';
 
 type ReportDetailMode = 'simple' | 'detailed';
 
@@ -205,6 +206,20 @@ interface ReportDetailItem {
   comment: string;
 }
 
+interface ScopeProductDateChange {
+  productTitle: string;
+  field: 'actualStart' | 'actualEnd';
+  value: string;
+}
+
+interface ReportTableDateChange {
+  section: string;
+  tableId: string;
+  rowId: string;
+  columnKey: string;
+  value: string;
+}
+
 const reportIconMap: Record<string, string> = {
   alert: 'triangle-alert',
   arrowDown: 'arrow-down',
@@ -240,7 +255,7 @@ const reportIconMap: Record<string, string> = {
 @Component({
   selector: 'app-pm-console-report-drawer',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, PmConsoleDateFieldComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (details; as reportDetails) {
@@ -417,11 +432,19 @@ const reportIconMap: Record<string, string> = {
                                         </label>
                                         <label class="scope-product-field">
                                           <span>Actual start</span>
-                                          <span class="scope-field-control scope-field-control-input"><input type="text" [value]="product.actualStart" /><span class="icon" aria-hidden="true"><i data-lucide="calendar-days"></i></span></span>
+                                          <app-pm-console-date-field
+                                            [value]="product.actualStart"
+                                            [ariaLabel]="'Actual start for ' + product.title"
+                                            (valueChange)="scopeProductDateChange.emit({ productTitle: product.title, field: 'actualStart', value: $event })"
+                                          />
                                         </label>
                                         <label class="scope-product-field">
                                           <span>Actual end</span>
-                                          <span class="scope-field-control scope-field-control-input"><input type="text" [value]="product.actualEnd" /><span class="icon" aria-hidden="true"><i data-lucide="calendar-days"></i></span></span>
+                                          <app-pm-console-date-field
+                                            [value]="product.actualEnd"
+                                            [ariaLabel]="'Actual end for ' + product.title"
+                                            (valueChange)="scopeProductDateChange.emit({ productTitle: product.title, field: 'actualEnd', value: $event })"
+                                          />
                                         </label>
                                         <label class="scope-product-field scope-product-field-completed">
                                           <span>Completed</span>
@@ -652,10 +675,11 @@ const reportIconMap: Record<string, string> = {
                                                       <span class="report-table-chip {{ cell.tone || 'neutral' }}">{{ cell.value }}</span>
                                                     }
                                                     @case ('dateInput') {
-                                                      <span class="report-table-input">
-                                                        <input type="text" [value]="cell.value" [attr.aria-label]="column.label" />
-                                                        <span class="icon" aria-hidden="true"><i data-lucide="calendar-days"></i></span>
-                                                      </span>
+                                                      <app-pm-console-date-field
+                                                        [value]="cell.value"
+                                                        [ariaLabel]="column.label"
+                                                        (valueChange)="tableDateChange.emit({ section: card.title, tableId: block.id, rowId: row.id, columnKey: column.key, value: $event })"
+                                                      />
                                                     }
                                                     @case ('select') {
                                                       <span class="report-table-input report-table-select">
@@ -840,6 +864,8 @@ export class PmConsoleReportDrawerComponent implements AfterViewChecked {
   @Output() save = new EventEmitter<Event>();
   @Output() modeChange = new EventEmitter<ReportDetailMode>();
   @Output() sectionChange = new EventEmitter<string>();
+  @Output() scopeProductDateChange = new EventEmitter<ScopeProductDateChange>();
+  @Output() tableDateChange = new EventEmitter<ReportTableDateChange>();
 
   private iconsHydrated = false;
 
@@ -940,8 +966,10 @@ export class PmConsoleReportDrawerComponent implements AfterViewChecked {
 
   simpleReportSectionTitle(title: string): string {
     const titles: Record<string, string> = {
-      'Purpose and outcome': 'Purpose & outcome',
-      'Dates and scope': 'Dates & scope',
+      'Purpose and outcome': 'Overview',
+      'Dates and scope': 'Schedule and scope',
+      'Budget baseline': 'Budget',
+      Risks: 'Mandatory watchlist',
     };
     return titles[title] || title;
   }

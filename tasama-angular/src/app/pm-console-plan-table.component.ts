@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { PmConsoleAiGuideChipComponent, pmConsoleAiGuideFor } from './shared/pm-console-ai-guide-chip.component';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 import { PmConsoleStatusPillComponent } from './shared/pm-console-status-pill.component';
@@ -11,7 +11,7 @@ import { PmConsoleStatusPillComponent } from './shared/pm-console-status-pill.co
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   template: `
-    <article class="plan-data-table-card" [ngClass]="panelClass">
+    <article class="plan-data-table-card" [ngClass]="panelClass" [class.is-collapsible]="collapsible" [class.is-collapsed]="collapsible && !isOpen">
       <header class="plan-data-table-head">
         <div class="plan-data-table-title">
           <span class="plan-data-table-icon" aria-hidden="true">
@@ -45,12 +45,19 @@ import { PmConsoleStatusPillComponent } from './shared/pm-console-status-pill.co
               {{ actionLabel }}
             </button>
           }
+          @if (collapsible) {
+            <button class="plan-data-table-collapse-toggle" type="button" [attr.aria-label]="isOpen ? 'Collapse ' + title : 'Expand ' + title" [attr.aria-expanded]="isOpen" (click)="toggleOpen()">
+              <span [pmConsoleIcon]="isOpen ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></span>
+            </button>
+          }
         </div>
       </header>
 
-      <section class="plan-data-table-body">
-        <ng-content></ng-content>
-      </section>
+      @if (!collapsible || isOpen) {
+        <section class="plan-data-table-body">
+          <ng-content></ng-content>
+        </section>
+      }
     </article>
   `,
   styles: [
@@ -77,6 +84,10 @@ import { PmConsoleStatusPillComponent } from './shared/pm-console-status-pill.co
         overflow: visible;
         padding: 1px;
         width: 100%;
+      }
+
+      .plan-data-table-card.is-collapsible.is-collapsed .plan-data-table-head {
+        border-bottom: 0;
       }
 
       .plan-data-table-head {
@@ -154,6 +165,31 @@ import { PmConsoleStatusPillComponent } from './shared/pm-console-status-pill.co
         flex: 0 0 auto;
         gap: 10px;
         justify-content: flex-end;
+      }
+
+      .plan-data-table-collapse-toggle {
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid #dfe4ee;
+        border-radius: 999px;
+        color: #10069f;
+        display: inline-flex;
+        flex: 0 0 auto;
+        height: 32px;
+        justify-content: center;
+        width: 32px;
+      }
+
+      .plan-data-table-collapse-toggle:hover,
+      .plan-data-table-collapse-toggle:focus-visible {
+        background: #f7f7ff;
+        border-color: #c7d0f6;
+        outline: none;
+      }
+
+      .plan-data-table-collapse-toggle .icon {
+        height: 16px;
+        width: 16px;
       }
 
       .plan-data-table-count {
@@ -380,7 +416,7 @@ import { PmConsoleStatusPillComponent } from './shared/pm-console-status-pill.co
     `,
   ],
 })
-export class PmConsolePlanTableComponent {
+export class PmConsolePlanTableComponent implements OnChanges {
   @Input() title = '';
   @Input() eyebrow = '';
   @Input() description = '';
@@ -395,8 +431,25 @@ export class PmConsolePlanTableComponent {
   @Input() aiGuideWhat = '';
   @Input() aiGuideHow = '';
   @Input() aiGuideExample = '';
+  @Input() collapsible = false;
+  @Input() expanded = true;
 
   @Output() action = new EventEmitter<void>();
+  @Output() expandedChange = new EventEmitter<boolean>();
+
+  isOpen = true;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['collapsible'] || changes['expanded']) {
+      this.isOpen = !this.collapsible || this.expanded;
+    }
+  }
+
+  toggleOpen(): void {
+    if (!this.collapsible) return;
+    this.isOpen = !this.isOpen;
+    this.expandedChange.emit(this.isOpen);
+  }
 
   get hasAiGuide(): boolean {
     return Boolean(this.aiGuideWhat || this.aiGuideHow || this.aiGuideExample || pmConsoleAiGuideFor(this.title));

@@ -9,7 +9,7 @@ export interface PmConsoleAiGuideCopy {
 }
 
 const pmConsoleAiGuideCopy: Record<string, PmConsoleAiGuideCopy> = {
-  'Case for change': {
+  'Opportunity or Problem Statement': {
     what: 'The short narrative that explains the problem or opportunity the project exists to solve.',
     how: 'Write the context first, then the impact of doing nothing, then the change the project is expected to create.',
     example: 'Example: current teams duplicate research intake, causing delays and inconsistent visibility for leadership.',

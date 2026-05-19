@@ -4330,7 +4330,7 @@ const projectPlanSectionFieldGroups = {
   ],
   Overview: [
     {
-      title: "Case for change",
+      title: "Opportunity or Problem Statement",
       description: "Why this project exists and what it is expected to achieve.",
       fields: ["Opportunity or Problem Statement", "Business Drivers", "Driver for change / Analysis undertaken", "Outcome", "AI component"],
     },
@@ -5028,7 +5028,7 @@ function projectPlanTableConfig(field) {
       rows: [[field.value || "Boost regional sustainability and growth through partnerships and investment", "Strategic", "Linked"]],
     },
     "Link Capabilities": {
-      action: "Link capability",
+      action: "Link capabilities",
       description: "Business capabilities affected by the project.",
       columns: ["Capability", "Owner", "Status"],
       rows: [[field.value || "Regulatory Assurance", "Strategy", "Linked"]],

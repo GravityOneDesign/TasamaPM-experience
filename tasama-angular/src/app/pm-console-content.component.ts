@@ -318,6 +318,35 @@ interface ReportTableBlock {
   actions?: ReportSectionAction[];
 }
 
+interface ReportScopeProduct {
+  title: string;
+  icon: string;
+  type: string;
+  owner: string;
+  ownerInitials: string;
+  capability: string;
+  dates: string;
+  budget: string;
+  status: string;
+  actualStart: string;
+  actualEnd: string;
+  completed: string;
+}
+
+interface ReportScopeProductDateChange {
+  productTitle: string;
+  field: 'actualStart' | 'actualEnd';
+  value: string;
+}
+
+interface ReportTableDateChange {
+  section: string;
+  tableId: string;
+  rowId: string;
+  columnKey: string;
+  value: string;
+}
+
 interface ReportRecordField {
   label: string;
   value?: string;
@@ -1761,7 +1790,7 @@ const projectPlanSectionFieldGroups: Record<string, ProjectPlanFieldGroupConfig[
     { title: 'Ownership and governance', description: 'People and forums accountable for delivery, change, and PMO coordination.', fields: ['Business Unit', 'Project Initiator', 'Project Director', 'Project Manager', 'Senior User', 'Delivery Manager', 'PMO Contact', 'Change Manager', 'Senior Supplier'] },
   ],
   Overview: [
-    { title: 'Case for change', description: 'Why this project exists and what it is expected to achieve.', fields: ['Opportunity or Problem Statement', 'Business Drivers', 'Driver for change / Analysis undertaken', 'Outcome', 'AI component'] },
+    { title: 'Opportunity or Problem Statement', description: 'Why this project exists and what it is expected to achieve.', fields: ['Opportunity or Problem Statement', 'Business Drivers', 'Driver for change / Analysis undertaken', 'Outcome', 'AI component'] },
     { title: 'Strategic alignment', description: 'Objectives, capabilities, and services linked to the plan.', fields: ['Project Alignment (Objectives)', 'Link Capabilities', 'Link Services'] },
   ],
   'Schedule & Scope': [
@@ -4563,37 +4592,47 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                 [description]="identitySection.body"
                                 [iconName]="iconName(identitySection.icon)"
                                 [fields]="identitySection.fields"
+                                [collapsible]="true"
+                                [expanded]="isProjectPlanCardExpanded(projectPlanActiveSection, identitySection.title, 0)"
+                                (expandedChange)="setProjectPlanCardExpanded(projectPlanActiveSection, identitySection.title, $event)"
                               />
                             }
                             @if (projectPlanActiveSection === 'Overview') {
                               <section class="overview-plan-workspace" aria-label="Overview workspace">
-                                <article class="overview-form-card">
-                                  <div class="overview-form-head">
+                                <details
+                                  class="overview-form-card overview-collapsible-card"
+                                  [open]="isProjectPlanCardExpanded(projectPlanActiveSection, 'Opportunity or Problem Statement', 1)"
+                                  (toggle)="setProjectPlanCardExpanded(projectPlanActiveSection, 'Opportunity or Problem Statement', $event)"
+                                >
+                                  <summary class="overview-form-head">
                                     <div class="overview-form-title">
                                       <span class="overview-form-title-icon" aria-hidden="true">
                                         <span [pmConsoleIcon]="iconName('fileCheck')"></span>
                                       </span>
                                       <div>
-                                        @let caseForChangeGuide = aiGuideFor('Case for change');
+                                        @let opportunityStatementGuide = aiGuideFor('Opportunity or Problem Statement');
                                         <div class="plan-subsection-title-row">
-                                          <h3>Case for change</h3>
-                                          @if (caseForChangeGuide) {
+                                          <h3>Opportunity or Problem Statement</h3>
+                                          @if (opportunityStatementGuide) {
                                             <app-pm-console-ai-guide-chip
-                                              title="Case for change"
-                                              [what]="caseForChangeGuide.what"
-                                              [how]="caseForChangeGuide.how"
-                                              [example]="caseForChangeGuide.example"
+                                              title="Opportunity or Problem Statement"
+                                              [what]="opportunityStatementGuide.what"
+                                              [how]="opportunityStatementGuide.how"
+                                              [example]="opportunityStatementGuide.example"
                                             ></app-pm-console-ai-guide-chip>
                                           }
                                         </div>
                                         <p>Capture the project narrative first, then confirm the AI governance flag before moving into drivers, outcomes, and alignment.</p>
                                       </div>
                                     </div>
-                                  </div>
+                                    <span class="matrix-field-group-meta" aria-label="2 fields">
+                                      <b>2</b>
+                                      <span [pmConsoleIcon]="isProjectPlanCardExpanded(projectPlanActiveSection, 'Opportunity or Problem Statement', 1) ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></span>
+                                    </span>
+                                  </summary>
                                   <div class="overview-form-body">
                                     <label class="matrix-field wide">
-                                      <span class="matrix-field-label">Opportunity or Problem Statement</span>
-                                      <textarea [value]="overviewState.opportunityStatement" (input)="updateOverviewState('opportunityStatement', $any($event.target).value)"></textarea>
+                                      <textarea aria-label="Opportunity or Problem Statement" [value]="overviewState.opportunityStatement" (input)="updateOverviewState('opportunityStatement', $any($event.target).value)"></textarea>
                                     </label>
                                     <div class="overview-form-helper">
                                       Keep this concise and readable. This is the first thing a reviewer should understand on the page.
@@ -4613,7 +4652,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                       </div>
                                     </div>
                                   </div>
-                                </article>
+                                </details>
 
                                 <app-pm-console-plan-table
                                   title="Business drivers"
@@ -4623,6 +4662,9 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                   actionAriaLabel="Add business driver"
                                   [iconName]="iconName('fileCheck')"
                                   panelClass="overview-register-card"
+                                  [collapsible]="true"
+                                  [expanded]="isProjectPlanCardExpanded(projectPlanActiveSection, 'Business drivers', 2)"
+                                  (expandedChange)="setProjectPlanCardExpanded(projectPlanActiveSection, 'Business drivers', $event)"
                                   (action)="openOverviewBusinessDriverDrawer()"
                                 >
                                   @if (overviewBusinessDriverRows.length) {
@@ -4676,6 +4718,10 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                       (action)="openOverviewBusinessDriverDrawer()"
                                     ></app-pm-console-plan-empty-state>
                                   }
+                                  <label class="matrix-field wide overview-driver-analysis-field">
+                                    <span class="matrix-field-label">Driver for change / Analysis undertaken</span>
+                                    <textarea aria-label="Driver for change / Analysis undertaken" [value]="overviewState.driverAnalysis" (input)="updateOverviewState('driverAnalysis', $any($event.target).value)"></textarea>
+                                  </label>
                                 </app-pm-console-plan-table>
 
                                 <app-pm-console-plan-table
@@ -4686,6 +4732,9 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                   actionAriaLabel="Add outcome"
                                   [iconName]="iconName('fileCheck')"
                                   panelClass="overview-register-card"
+                                  [collapsible]="true"
+                                  [expanded]="isProjectPlanCardExpanded(projectPlanActiveSection, 'Outcomes', 3)"
+                                  (expandedChange)="setProjectPlanCardExpanded(projectPlanActiveSection, 'Outcomes', $event)"
                                   (action)="openOverviewOutcomeDrawer()"
                                 >
                                   @if (overviewOutcomeRows.length) {
@@ -4749,6 +4798,9 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                   actionAriaLabel="Add project objective"
                                   [iconName]="iconName('fileCheck')"
                                   panelClass="overview-register-card overview-alignment-card"
+                                  [collapsible]="true"
+                                  [expanded]="isProjectPlanCardExpanded(projectPlanActiveSection, 'Project alignment', 4)"
+                                  (expandedChange)="setProjectPlanCardExpanded(projectPlanActiveSection, 'Project alignment', $event)"
                                   (action)="openOverviewObjectiveDrawer()"
                                 >
 
@@ -4837,11 +4889,6 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                   @if (isProjectPlanFieldSectionExpanded(projectPlanActiveSection)) {
                                     <div class="matrix-hidden-fields is-expanded">
                                       <section class="overview-hidden-stack" aria-label="Additional overview fields">
-                                        <label class="matrix-field wide overview-advanced-field">
-                                          <span class="matrix-field-label">Driver for change / Analysis undertaken</span>
-                                          <input type="text" [value]="overviewState.driverAnalysis" (input)="updateOverviewState('driverAnalysis', $any($event.target).value)" />
-                                        </label>
-
                                         <app-pm-console-plan-table
                                           title="Capabilities"
                                           description="Capability mapping for detailed governance, architecture, or operating model alignment."
@@ -6330,8 +6377,12 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                             } @else {
                               @if (projectPlanActiveSection === 'Miscellaneous') {
                                 <section class="misc-plan-stack" aria-label="Miscellaneous detailed fields">
-                                  @for (group of activeProjectPlanVisibleGroups; track group.title) {
-                                    <details class="matrix-field-group misc-plan-card" open>
+                                  @for (group of activeProjectPlanVisibleGroups; track group.title; let groupIndex = $index) {
+                                    <details
+                                      class="matrix-field-group misc-plan-card"
+                                      [open]="isProjectPlanCardExpanded(projectPlanActiveSection, group.title, groupIndex)"
+                                      (toggle)="setProjectPlanCardExpanded(projectPlanActiveSection, group.title, $event)"
+                                    >
                                       <summary>
                                         <span class="misc-plan-card-title">
                                           <span class="simple-plan-section-icon misc-plan-card-icon" aria-hidden="true">
@@ -6589,8 +6640,6 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                     [title]="budgetPlanConfig.drawerTitle"
                     [eyebrow]="budgetPlanConfig.fieldName"
                     [description]="budgetPlanConfig.drawerBody"
-                    [summaryLabel]="activeBudgetHasData ? budgetPlanYearCountLabel(activeBudgetPlan) : 'New FY budget'"
-                    summary="Use this only when the FY baseline or forecast split needs a focused edit."
                     [submitLabel]="budgetPlanConfig.actionLabel"
                     [submitDisabled]="!canSaveBudgetYearDraft()"
                     closeAriaLabel="Close budget drawer"
@@ -7116,7 +7165,6 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                     [title]="overviewCapabilityDrawerTitle"
                     eyebrow="Link Capabilities"
                     description="Keep capability mapping detailed and deliberate without forcing users to open an inline editor inside the page."
-                    [summaryLabel]="overviewCountLabel(overviewCapabilityRows.length, 'capability')"
                     [summary]="overviewCountLabel(overviewSelectedCapabilityCount, 'capability') + ' selected now'"
                     [submitLabel]="editingOverviewCapabilityId ? 'Save changes' : 'Link capabilities'"
                     [submitDisabled]="!canSaveOverviewCapabilityDraft()"
@@ -7421,7 +7469,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                 </div>
               } @else if (projectPlanEntry === 'stages') {
                 @let activeStage = projectPlanActiveStageRow;
-                @let nextStage = projectPlanNextStageRow;
+                @let activeGate = projectPlanActiveStageGateContext;
                 <div class="project-plan-shell plan-builder-shell quick-plan-shell project-report-shell project-reports-shell project-stages-shell">
                   <main class="project-plan-content plan-builder-workspace quick-plan-workspace project-report-workspace project-stages-workspace">
                     <section class="project-stages-surface" [attr.aria-label]="scopedProjectName + ' stage roadmap'">
@@ -7430,23 +7478,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                           <div>
                             <span class="project-stages-kicker">Stage roadmap</span>
                             <h2>{{ scopedProjectName }}</h2>
-                            <p>Track every project stage, planned dates, PMO gate status, and the next handoff action from one place.</p>
-                          </div>
-                          <div class="project-stages-active-summary {{ activeStage.statusTone }}">
-                            <span>Active stage</span>
-                            <strong>{{ activeStage.stage.label }}</strong>
-                            <small>{{ activeStage.statusLabel }} · {{ activeStage.startDate }} - {{ activeStage.endDate }}</small>
-                          </div>
-                        </div>
-
-                        <div class="project-stages-progress-panel">
-                          <div class="project-stages-progress-copy">
-                            <span>{{ projectPlanApprovedStageCount }} of {{ projectPlanStageRows.length }} gates approved</span>
-                            <strong>{{ activeStage.stage.gate }}</strong>
-                            <small>{{ projectPlanStageReadinessLabel }}</small>
-                          </div>
-                          <div class="project-stages-progress-track" aria-hidden="true">
-                            <span [style.width]="projectPlanStageProgressWidth"></span>
+                            <p>Track every project stage, planned dates, PMO gate status, and readiness notes from one place.</p>
                           </div>
                         </div>
 
@@ -7479,52 +7511,49 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                         </div>
                       </div>
 
-                      <aside class="project-stages-handoff-panel">
-                        <div class="project-stages-handoff-card {{ activeStage.statusTone }}">
-                          <span class="project-stages-handoff-icon" aria-hidden="true"><span class="icon"><i data-lucide="clipboard-check"></i></span></span>
-                          <div>
-                            <span>Next PMO handoff</span>
-                            <h3>{{ activeStage.stage.gate }}</h3>
-                            <p>{{ nextStage ? 'Complete the gate checklist and submit to PMO before moving into ' + nextStage.stage.label + '.' : 'Complete closure gate approval before project close-out.' }}</p>
+                      <aside class="project-stages-readiness-panel" [attr.aria-label]="activeGate.stage.gate + ' readiness panel'">
+                        <section class="project-stages-readiness-card project-stages-status-card {{ activeStage.statusTone }}">
+                          <div class="project-stages-panel-head">
+                            <div>
+                              <span>Gate readiness</span>
+                              <h3>{{ activeGate.stage.gate }}</h3>
+                            </div>
+                            <strong>{{ activeGate.checkedCount }}/{{ activeGate.profile.gateTotal }}</strong>
                           </div>
-                          <button type="button" (click)="handleProjectPlanStageAction(activeStage)" [disabled]="activeStage.actionDisabled">
-                            <span>{{ activeStage.actionLabel }}</span>
-                            <span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
-                          </button>
-                        </div>
+                          <div class="project-stages-panel-status">
+                            <span class="project-stage-status-pill {{ activeStage.statusTone }}">{{ stageStatusLabel(activeGate.status) }}</span>
+                            <small>Due {{ activeGate.profile.gateDue }}</small>
+                          </div>
+                          <div class="project-stages-panel-progress" aria-hidden="true">
+                            <span [style.width]="stageGateChecklistProgressWidth(activeGate)"></span>
+                          </div>
+                        </section>
 
-                        <div class="project-stages-mini-list project-stages-workflow-card">
-                          <div class="project-stages-workflow-head">
-                            <span>Gate workflow</span>
-                            <strong>{{ projectPlanWorkflowPositionLabel }}</strong>
+                        <section class="project-stages-readiness-card">
+                          <div class="project-stages-panel-head compact">
+                            <div>
+                              <span>Checklist</span>
+                              <h3>PMO checklist</h3>
+                            </div>
+                            <small>{{ activeGate.checkedCount }}/{{ activeGate.profile.gateTotal }} complete</small>
                           </div>
-                          <ol class="project-stages-workflow-steps">
-                            <li class="project-workflow-step" [class.current]="activeStage.status === 'current'" [class.complete]="activeStage.status === 'submitted' || activeStage.status === 'complete'">
-                              <i aria-hidden="true"><span class="icon"><i [attr.data-lucide]="activeStage.status === 'current' ? 'map-pin' : 'check'"></i></span></i>
-                              <div>
-                                <span>{{ activeStage.status === 'current' ? 'You are here' : 'Done' }}</span>
-                                <strong>Complete formalities</strong>
-                                <small>Checklist and evidence prepared</small>
-                              </div>
-                            </li>
-                            <li class="project-workflow-step" [class.current]="activeStage.status === 'submitted'" [class.complete]="activeStage.status === 'complete'" [class.pending]="activeStage.status === 'current'">
-                              <i aria-hidden="true"><span class="icon"><i [attr.data-lucide]="activeStage.status === 'submitted' ? 'hourglass' : activeStage.status === 'complete' ? 'check' : 'send'"></i></span></i>
-                              <div>
-                                <span>{{ activeStage.status === 'submitted' ? 'You are here' : activeStage.status === 'complete' ? 'Done' : 'Next' }}</span>
-                                <strong>Submitted to PMO</strong>
-                                <small>Gate waits for PMO review</small>
-                              </div>
-                            </li>
-                            <li class="project-workflow-step" [class.current]="activeStage.status === 'complete'" [class.pending]="activeStage.status !== 'complete'">
-                              <i aria-hidden="true"><span class="icon"><i [attr.data-lucide]="activeStage.status === 'complete' ? 'check' : 'badge-check'"></i></span></i>
-                              <div>
-                                <span>{{ activeStage.status === 'complete' ? 'You are here' : 'Final step' }}</span>
-                                <strong>Approved by PMO</strong>
-                                <small>Project moves to the next stage</small>
-                              </div>
-                            </li>
-                          </ol>
-                        </div>
+                          <div class="project-stages-checklist">
+                            @for (item of activeGate.profile.checklist; track item; let index = $index) {
+                              <label class="stage-checklist-item" [class.checked]="isStageGateChecklistChecked(activeGate, index)" [class.is-disabled]="!canEditStageGateChecklist(activeGate.status)">
+                                <input type="checkbox" [checked]="isStageGateChecklistChecked(activeGate, index)" [disabled]="!canEditStageGateChecklist(activeGate.status)" (change)="toggleStageGateChecklistItem(activeGate, index, $any($event.target).checked)" />
+                                <i aria-hidden="true"><span class="icon"><i data-lucide="check"></i></span></i>
+                                <span>{{ item }}</span>
+                              </label>
+                            }
+                          </div>
+                        </section>
+
+                        <section class="project-stages-readiness-card project-stages-comments-card" aria-label="Comments">
+                          <label class="project-stages-comment-field">
+                            <span>Comments</span>
+                            <textarea rows="6" maxlength="1200" [value]="stageGateCommentFor(activeGate)" [disabled]="!canEditStageGateComments(activeGate.status)" (input)="updateStageGateComment(activeGate, $any($event.target).value)" placeholder="Add review notes or PMO feedback"></textarea>
+                          </label>
+                        </section>
                       </aside>
                     </section>
                   </main>
@@ -8706,6 +8735,8 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
         (save)="saveReport($event)"
         (modeChange)="setReportMode($event)"
         (sectionChange)="setReportSection($event)"
+        (scopeProductDateChange)="updateReportScopeProductDate($event)"
+        (tableDateChange)="updateReportTableDate($event)"
       ></app-pm-console-report-drawer>
     }
 
@@ -9232,7 +9263,18 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   readonly primaryProjectPlanSections = ['Overview', 'Schedule & Scope', 'Budget', 'Benefits', 'Risk', 'Resource'];
   readonly additionalProjectPlanSections = ['Issues', 'Change Impact', 'Related Links', 'Dependency', 'Miscellaneous'];
   readonly projectReportOverviewCards: PmConsoleOverviewCard[] = [
-    { id: 'total-reports', label: 'Total Reports', value: '10 / 16', icon: 'file-text', tone: 'brand', progressPercent: 62.5 },
+    {
+      id: 'total-reports',
+      label: 'Total Reports',
+      value: '10 / 16',
+      icon: 'file-text',
+      tone: 'brand',
+      progressPercent: 62.5,
+      breakdown: [
+        { label: 'Submitted', value: '10', tone: 'green' },
+        { label: 'Due', value: '6', tone: 'red' },
+      ],
+    },
     { id: 'reporting-compliance', label: 'Reporting Compliance', value: '75%', icon: 'circle-alert', tone: 'brand', trendLabel: '26%', trendIcon: 'arrow-up', trendTone: 'green' },
     {
       id: 'project-health',
@@ -9269,13 +9311,13 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     { date: '20/01/2025', tone: 'red', label: 'Off track' },
   ];
   readonly detailedReportSharedTimelineSections = new Set(['Scope', 'Schedule', 'Budget', 'Benefits', 'Issues', 'Resource', 'Dependencies']);
-  readonly scopeProducts = [
+  scopeProducts: ReportScopeProduct[] = [
     { title: 'Collaboration platform', icon: 'dependencies', type: 'Technology', owner: 'Richelle Hilton', ownerInitials: 'MH', capability: '-', dates: '11/02/2026 - 26/06/2026', budget: '$0', status: 'Not started', actualStart: '11/02/2026', actualEnd: '26/06/2026', completed: '33' },
     { title: 'National R&D database', icon: 'database', type: 'Technology', owner: 'Richelle Hilton', ownerInitials: 'MH', capability: '-', dates: '11/02/2026 - 26/06/2026', budget: '$0', status: 'Not started', actualStart: '11/02/2026', actualEnd: '26/06/2026', completed: '33' },
     { title: 'Opportunity marketplace', icon: 'store', type: 'Technology', owner: 'Richelle Hilton', ownerInitials: 'MH', capability: '-', dates: '11/02/2026 - 26/06/2026', budget: '$0', status: 'Not started', actualStart: '11/02/2026', actualEnd: '26/06/2026', completed: '33' },
     { title: 'CRM', icon: '', type: 'Technology', owner: 'Richelle Hilton', ownerInitials: 'MH', capability: '-', dates: '11/02/2026 - 26/06/2026', budget: '$0', status: 'Not started', actualStart: '11/02/2026', actualEnd: '26/06/2026', completed: '33' },
   ];
-  readonly reportSectionDetails: Record<string, ReportSectionDetail> = {
+  reportSectionDetails: Record<string, ReportSectionDetail> = {
     Schedule: {
       icon: 'calendarSearch',
       metrics: [
@@ -10098,6 +10140,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   submittedStageGateKeys: string[] = [];
   stageGateAttachments: Record<string, AttachmentItem[]> = {};
   stageGateChecklistState: Record<string, boolean[]> = {};
+  stageGateComments: Record<string, string> = {};
   projectStageOverrideIndex: Record<string, number> = {};
   overviewState: OverviewState = { ...overviewStateInitial };
   isOverviewBusinessDriverDrawerOpen = false;
@@ -10221,6 +10264,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   projectPlanActiveSection = 'Overview';
   projectPlanSectionsExpanded = false;
   projectPlanExpandedFieldSections: Record<string, boolean> = {};
+  projectPlanExpandedCards: Record<string, boolean> = {};
   activeClosureSection: ClosureSectionId = 'overview';
   guidedTourStep = 0;
 
@@ -11335,25 +11379,20 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return this.projectPlanStageRows.find((row) => row.status === 'current' || row.status === 'submitted' || row.status === 'revoked') || this.projectPlanStageRows[0];
   }
 
+  get projectPlanActiveStageGateContext(): StageGateContext {
+    const profile = this.projectPlanStageProfile;
+    const row = this.projectPlanActiveStageRow;
+    return {
+      profile,
+      stage: row.stage,
+      stageIndex: row.stageIndex,
+      status: row.status,
+      checkedCount: this.stageGateCheckedCount(profile, row.stageIndex, row.status),
+    };
+  }
+
   get projectPlanNextStageRow(): ProjectPlanStageRow | null {
     return this.projectPlanStageRows.find((row) => row.stageIndex === this.projectPlanActiveStageRow.stageIndex + 1) || null;
-  }
-
-  get projectPlanApprovedStageCount(): number {
-    return this.projectPlanStageRows.filter((row) => row.status === 'complete').length;
-  }
-
-  get projectPlanStageProgressWidth(): string {
-    const total = Math.max(1, this.projectPlanStageRows.length - 1);
-    const progress = Math.min(100, Math.max(0, (this.projectPlanActiveStageRow.stageIndex / total) * 100));
-    return `${progress}%`;
-  }
-
-  get projectPlanStageReadinessLabel(): string {
-    const profile = this.projectPlanStageProfile;
-    const key = this.stageGateKey(profile.project, this.projectPlanActiveStageRow.stage.id);
-    if (this.submittedStageGateKeys.includes(key)) return 'Submitted to PMO and awaiting approval';
-    return `${this.stageGateCheckedCount(profile, this.projectPlanActiveStageRow.stageIndex)}/${profile.gateTotal} PMO checklist items ready`;
   }
 
   get projectPlanWorkflowPositionLabel(): string {
@@ -12731,6 +12770,24 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.iconsHydrated = false;
   }
 
+  isProjectPlanCardExpanded(section: string, cardTitle: string, index: number): boolean {
+    const key = this.projectPlanCardStateKey(section, cardTitle);
+    return this.projectPlanExpandedCards[key] ?? index === 0;
+  }
+
+  setProjectPlanCardExpanded(section: string, cardTitle: string, expanded: boolean | Event): void {
+    const isExpanded = typeof expanded === 'boolean' ? expanded : Boolean((expanded.currentTarget as HTMLDetailsElement).open);
+    this.projectPlanExpandedCards = {
+      ...this.projectPlanExpandedCards,
+      [this.projectPlanCardStateKey(section, cardTitle)]: isExpanded,
+    };
+    this.iconsHydrated = false;
+  }
+
+  private projectPlanCardStateKey(section: string, cardTitle: string): string {
+    return `${section}::${cardTitle}`;
+  }
+
   toggleProjectPlanSections(): void {
     this.projectPlanSectionsExpanded = !this.projectPlanSectionsExpanded;
     if (!this.projectPlanSectionsExpanded && this.additionalProjectPlanSections.includes(this.projectPlanActiveSection)) {
@@ -13305,8 +13362,9 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     };
   }
 
-  overviewCountLabel(count: number, singular: string, plural: string = `${singular}s`): string {
-    return count === 1 ? `1 ${singular}` : `${count} ${plural}`;
+  overviewCountLabel(count: number, singular: string, plural?: string): string {
+    const resolvedPlural = plural ?? (/[bcdfghjklmnpqrstvwxyz]y$/i.test(singular) ? `${singular.slice(0, -1)}ies` : `${singular}s`);
+    return count === 1 ? `1 ${singular}` : `${count} ${resolvedPlural}`;
   }
 
   overviewStatusTone(status: string): string {
@@ -15070,6 +15128,28 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return status === 'current';
   }
 
+  canEditStageGateComments(status: StageGateStatus): boolean {
+    return status === 'current' || status === 'submitted' || status === 'revoked';
+  }
+
+  stageGateChecklistProgressWidth(gate: StageGateContext): string {
+    const total = Math.max(1, gate.profile.gateTotal);
+    const progress = Math.min(100, Math.max(0, (gate.checkedCount / total) * 100));
+    return `${progress}%`;
+  }
+
+  stageGateCommentFor(gate: StageGateContext): string {
+    return this.stageGateComments[this.stageGateKey(gate.profile.project, gate.stage.id)] || '';
+  }
+
+  updateStageGateComment(gate: StageGateContext, value: string): void {
+    const key = this.stageGateKey(gate.profile.project, gate.stage.id);
+    this.stageGateComments = {
+      ...this.stageGateComments,
+      [key]: value,
+    };
+  }
+
   isStageGateChecklistChecked(gate: StageGateContext, index: number): boolean {
     const key = this.stageGateKey(gate.profile.project, gate.stage.id);
     const state = this.stageGateChecklistState[key];
@@ -15148,6 +15228,46 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.iconsHydrated = false;
   }
 
+  updateReportScopeProductDate(change: ReportScopeProductDateChange): void {
+    this.scopeProducts = this.scopeProducts.map((product) =>
+      product.title === change.productTitle ? { ...product, [change.field]: change.value } : product,
+    );
+  }
+
+  updateReportTableDate(change: ReportTableDateChange): void {
+    const detail = this.reportSectionDetails[change.section];
+    if (!detail?.tables?.length) return;
+
+    this.reportSectionDetails = {
+      ...this.reportSectionDetails,
+      [change.section]: {
+        ...detail,
+        tables: detail.tables.map((table) => {
+          if (table.id !== change.tableId) return table;
+
+          return {
+            ...table,
+            rows: table.rows.map((row) => {
+              if (row.id !== change.rowId) return row;
+              const currentCell: ReportTableCell = row.cells[change.columnKey] || { type: 'dateInput' };
+
+              return {
+                ...row,
+                cells: {
+                  ...row.cells,
+                  [change.columnKey]: {
+                    ...currentCell,
+                    value: change.value,
+                  },
+                },
+              };
+            }),
+          };
+        }),
+      },
+    };
+  }
+
   setReportMode(mode: ReportDetailMode): void {
     this.activeReportMode = mode;
     if (mode === 'simple') {
@@ -15162,8 +15282,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   simpleReportSectionTitle(title: string): string {
     const titles: Record<string, string> = {
-      'Purpose and outcome': 'Purpose & outcome',
-      'Dates and scope': 'Dates & scope',
+      'Purpose and outcome': 'Overview',
+      'Dates and scope': 'Schedule and scope',
+      'Budget baseline': 'Budget',
+      Risks: 'Mandatory watchlist',
     };
     return titles[title] || title;
   }
@@ -15545,7 +15667,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
         rows: [[field.value || 'Boost regional sustainability and growth through partnerships and investment', 'Strategic', 'Linked']],
       },
       'Link Capabilities': {
-        action: 'Link capability',
+        action: 'Link capabilities',
         description: 'Business capabilities affected by the project.',
         columns: ['Capability', 'Owner', 'Status'],
         rows: [[field.value || 'Regulatory Assurance', 'Strategy', 'Linked']],

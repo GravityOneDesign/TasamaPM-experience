@@ -9,6 +9,12 @@ export interface PmConsoleOverviewCardSegment {
   tone: 'green' | 'amber' | 'red' | 'blue' | 'neutral' | string;
 }
 
+export interface PmConsoleOverviewCardBreakdown {
+  label: string;
+  value: string;
+  tone?: 'green' | 'amber' | 'red' | 'blue' | 'neutral' | string;
+}
+
 export interface PmConsoleOverviewCard {
   id: string;
   label: string;
@@ -19,6 +25,7 @@ export interface PmConsoleOverviewCard {
   trendLabel?: string;
   trendIcon?: string;
   trendTone?: 'green' | 'amber' | 'red' | 'blue' | 'neutral' | string;
+  breakdown?: PmConsoleOverviewCardBreakdown[];
   segments?: PmConsoleOverviewCardSegment[];
 }
 
@@ -37,7 +44,7 @@ export interface PmConsoleOverviewCard {
       .pm-overview-card-grid {
         display: grid;
         gap: 12px;
-        grid-template-columns: minmax(210px, 0.78fr) minmax(250px, 0.9fr) minmax(420px, 3fr);
+        grid-template-columns: minmax(340px, 1.25fr) minmax(230px, 0.85fr) minmax(420px, 2.6fr);
         min-width: 0;
       }
 
@@ -98,6 +105,7 @@ export interface PmConsoleOverviewCard {
 
       .pm-overview-card-copy {
         display: grid;
+        flex: 0 1 auto;
         gap: 4px;
         min-width: 0;
       }
@@ -157,6 +165,58 @@ export interface PmConsoleOverviewCard {
 
       .pm-overview-card-trend.amber {
         color: #b85f00;
+      }
+
+      .pm-overview-card-breakdown {
+        align-items: center;
+        display: inline-flex;
+        flex: 0 0 auto;
+        gap: 8px;
+        margin-left: auto;
+        min-width: 0;
+      }
+
+      .pm-overview-card-breakdown-item {
+        align-items: center;
+        color: #777777;
+        display: inline-flex;
+        font-size: 11px;
+        font-weight: 500;
+        gap: 4px;
+        line-height: 14px;
+        white-space: nowrap;
+      }
+
+      .pm-overview-card-breakdown-item i {
+        background: #d0d5dd;
+        border-radius: 999px;
+        display: inline-flex;
+        flex: 0 0 7px;
+        height: 7px;
+        width: 7px;
+      }
+
+      .pm-overview-card-breakdown-item strong {
+        color: #0b0b0b;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 16px;
+      }
+
+      .pm-overview-card-breakdown-item.green i {
+        background: #b6ead1;
+      }
+
+      .pm-overview-card-breakdown-item.red i {
+        background: #f1cfd2;
+      }
+
+      .pm-overview-card-breakdown-item.amber i {
+        background: #f8d49b;
+      }
+
+      .pm-overview-card.has-breakdown .pm-overview-card-progress-ring {
+        margin-left: 0;
       }
 
       .pm-overview-card-progress-ring {
@@ -243,10 +303,36 @@ export interface PmConsoleOverviewCard {
       }
 
       .pm-overview-segment-legend i {
-        border-radius: 2px;
+        background: #d0d5dd;
+        border-radius: 999px;
         display: inline-flex;
-        height: 8px;
-        width: 8px;
+        flex: 0 0 7px;
+        height: 7px;
+        width: 7px;
+      }
+
+      .pm-overview-segment-legend i.green {
+        background: #b6ead1;
+      }
+
+      .pm-overview-segment-legend i.red {
+        background: #f1cfd2;
+      }
+
+      .pm-overview-segment-legend i.amber {
+        background: #f8d49b;
+      }
+
+      .pm-overview-segment-legend i.blue {
+        background: #bcd2ff;
+      }
+
+      .pm-overview-segment-legend i.neutral {
+        background: #d0d5dd;
+      }
+
+      .pm-overview-segment-legend i:not(.green, .red, .amber, .blue, .neutral) {
+        background: currentColor;
       }
 
       .pm-overview-segment-legend strong {
@@ -258,7 +344,7 @@ export interface PmConsoleOverviewCard {
 
       @media (max-width: 1120px) {
         .pm-overview-card-grid {
-          grid-template-columns: repeat(2, minmax(190px, 1fr));
+          grid-template-columns: repeat(2, minmax(240px, 1fr));
         }
 
         .pm-overview-card.is-wide {
@@ -269,6 +355,15 @@ export interface PmConsoleOverviewCard {
       @media (max-width: 720px) {
         .pm-overview-card-grid {
           grid-template-columns: minmax(0, 1fr);
+        }
+
+        .pm-overview-card.has-breakdown {
+          align-items: flex-start;
+          flex-wrap: wrap;
+        }
+
+        .pm-overview-card-breakdown {
+          margin-left: 58px;
         }
 
         .pm-overview-card-health {
@@ -285,7 +380,7 @@ export interface PmConsoleOverviewCard {
   template: `
     <section class="pm-overview-card-grid" [attr.aria-label]="ariaLabel">
       @for (card of cards; track card.id) {
-        <article class="pm-overview-card" [class.is-wide]="card.segments?.length">
+        <article class="pm-overview-card" [class.is-wide]="card.segments?.length" [class.has-breakdown]="card.breakdown?.length">
           <span class="pm-overview-card-icon {{ card.tone || 'brand' }}" aria-hidden="true">
             <span [pmConsoleIcon]="card.icon"></span>
           </span>
@@ -322,6 +417,17 @@ export interface PmConsoleOverviewCard {
                 }
               </span>
             </div>
+            @if (card.breakdown?.length) {
+              <div class="pm-overview-card-breakdown" [attr.aria-label]="card.label + ' breakdown'">
+                @for (item of card.breakdown; track item.label) {
+                  <span class="pm-overview-card-breakdown-item {{ item.tone || 'neutral' }}">
+                    <i aria-hidden="true"></i>
+                    <small>{{ item.label }}</small>
+                    <strong>{{ item.value }}</strong>
+                  </span>
+                }
+              </div>
+            }
             @if (card.progressPercent !== undefined) {
               <span class="pm-overview-card-progress-ring" [style.--pm-overview-progress]="card.progressPercent + '%'"></span>
             }

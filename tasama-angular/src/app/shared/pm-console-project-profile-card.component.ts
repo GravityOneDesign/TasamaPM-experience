@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { PmConsoleIconComponent } from './pm-console-icon.component';
 
 export interface PmConsoleProjectProfileField {
@@ -37,10 +37,25 @@ export interface PmConsoleProjectProfileField {
         padding: 16px 16px 16px 12px;
       }
 
+      .project-profile-card.is-collapsible {
+        grid-template-columns: 264px minmax(0, 1fr) auto;
+      }
+
+      .project-profile-card.is-collapsed {
+        grid-template-columns: minmax(0, 1fr) auto;
+        min-height: 74px;
+        padding: 16px;
+      }
+
       .project-profile-intro {
         display: grid;
         gap: 12px;
         min-width: 0;
+      }
+
+      .project-profile-card.is-collapsed .project-profile-intro {
+        align-items: center;
+        display: flex;
       }
 
       .project-profile-icon {
@@ -149,10 +164,57 @@ export interface PmConsoleProjectProfileField {
         width: 24px;
       }
 
+      .project-profile-toggle {
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid #dfe4ee;
+        border-radius: 999px;
+        color: #10069f;
+        display: inline-flex;
+        gap: 8px;
+        height: 32px;
+        justify-content: center;
+        padding: 0 9px;
+      }
+
+      .project-profile-toggle:hover,
+      .project-profile-toggle:focus-visible {
+        background: #f7f7ff;
+        border-color: #c7d0f6;
+        outline: none;
+      }
+
+      .project-profile-toggle b {
+        align-items: center;
+        background: #f1f0ff;
+        border-radius: 999px;
+        display: inline-flex;
+        font-size: 10.5px;
+        font-weight: 600;
+        height: 20px;
+        justify-content: center;
+        min-width: 20px;
+        padding: 0 6px;
+      }
+
+      .project-profile-toggle .icon {
+        height: 16px;
+        width: 16px;
+      }
+
       @media (max-width: 980px) {
         .project-profile-card {
           gap: 22px;
           grid-template-columns: minmax(0, 1fr);
+        }
+
+        .project-profile-card.is-collapsible,
+        .project-profile-card.is-collapsed {
+          grid-template-columns: minmax(0, 1fr) auto;
+        }
+
+        .project-profile-card.is-collapsible .project-profile-fields {
+          grid-column: 1 / -1;
         }
 
         .project-profile-fields {
@@ -172,7 +234,7 @@ export interface PmConsoleProjectProfileField {
     `,
   ],
   template: `
-    <article class="project-profile-card">
+    <article class="project-profile-card" [class.is-collapsible]="collapsible" [class.is-collapsed]="collapsible && !isOpen">
       <section class="project-profile-intro" aria-label="Project profile summary">
         <span class="project-profile-icon" aria-hidden="true">
           <span [pmConsoleIcon]="iconName"></span>
@@ -183,25 +245,52 @@ export interface PmConsoleProjectProfileField {
         </div>
       </section>
 
-      <dl class="project-profile-fields">
-        @for (field of fields; track field.label) {
-          <div class="project-profile-field" [class.wide]="field.wide">
-            <dt>{{ field.label }}</dt>
-            <dd [class.has-avatar]="field.avatarInitials">
-              @if (field.avatarInitials) {
-                <span class="project-profile-avatar" aria-hidden="true">{{ field.avatarInitials }}</span>
-              }
-              <strong>{{ field.value }}</strong>
-            </dd>
-          </div>
-        }
-      </dl>
+      @if (!collapsible || isOpen) {
+        <dl class="project-profile-fields">
+          @for (field of fields; track field.label) {
+            <div class="project-profile-field" [class.wide]="field.wide">
+              <dt>{{ field.label }}</dt>
+              <dd [class.has-avatar]="field.avatarInitials">
+                @if (field.avatarInitials) {
+                  <span class="project-profile-avatar" aria-hidden="true">{{ field.avatarInitials }}</span>
+                }
+                <strong>{{ field.value }}</strong>
+              </dd>
+            </div>
+          }
+        </dl>
+      }
+
+      @if (collapsible) {
+        <button class="project-profile-toggle" type="button" [attr.aria-label]="isOpen ? 'Collapse ' + title : 'Expand ' + title" [attr.aria-expanded]="isOpen" (click)="toggleOpen()">
+          <b>{{ fields.length }}</b>
+          <span [pmConsoleIcon]="isOpen ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></span>
+        </button>
+      }
     </article>
   `,
 })
-export class PmConsoleProjectProfileCardComponent {
+export class PmConsoleProjectProfileCardComponent implements OnChanges {
   @Input() title = 'Project Profile';
   @Input() description = 'Browse your project setup';
   @Input() iconName = 'rocket';
   @Input() fields: PmConsoleProjectProfileField[] = [];
+  @Input() collapsible = false;
+  @Input() expanded = true;
+
+  @Output() expandedChange = new EventEmitter<boolean>();
+
+  isOpen = true;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['collapsible'] || changes['expanded']) {
+      this.isOpen = !this.collapsible || this.expanded;
+    }
+  }
+
+  toggleOpen(): void {
+    if (!this.collapsible) return;
+    this.isOpen = !this.isOpen;
+    this.expandedChange.emit(this.isOpen);
+  }
 }

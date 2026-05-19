@@ -160,6 +160,7 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
       }
 
       .plan-entry-drawer-body {
+        align-content: start;
         display: grid;
         flex: 1 1 auto;
         gap: 20px;
@@ -170,8 +171,10 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
       }
 
       .plan-entry-drawer-summary {
+        align-content: start;
         display: grid;
         gap: 5px;
+        justify-items: start;
       }
 
       .plan-entry-drawer-summary span,
@@ -184,6 +187,7 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 
       .plan-entry-drawer-summary span {
         align-items: center;
+        align-self: start;
         background: #f4f7fb;
         border-radius: 999px;
         color: #556072;
