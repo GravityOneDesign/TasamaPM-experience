@@ -6481,10 +6481,10 @@ b {
   border-radius: 0;
   box-shadow: none;
   flex: 0 0 auto;
-  margin: 0 -16px -2px;
+  margin: 0 -16px;
   overflow: visible;
   position: relative;
-  z-index: 2;
+  z-index: 1;
 }
 
 .pm101-project-strip {
@@ -6534,34 +6534,6 @@ b {
   height: clamp(132px, 14.2vh, 160px);
   transform: translateY(0) scale(1);
   z-index: 5;
-}
-
-.pm101-project-card-slot.is-selected::before {
-  background: #e7eeff;
-  border: 1px solid #b0c7ff;
-  border-bottom: 0;
-  border-radius: 22px 22px 0 0;
-  content: "";
-  inset: -10px 0 -30px;
-  pointer-events: none;
-  position: absolute;
-  z-index: 0;
-}
-
-.pm101-project-card-slot.is-selected::after {
-  background: #e7eeff;
-  border-left: 1px solid #b0c7ff;
-  border-right: 1px solid #b0c7ff;
-  border-bottom-left-radius: 14px;
-  border-bottom-right-radius: 14px;
-  bottom: -31px;
-  content: "";
-  height: 36px;
-  left: 0;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  z-index: 1;
 }
 
 .pm101-project-card-slot:not(.is-selected):hover {
@@ -7284,16 +7256,6 @@ b {
   margin: 0;
 }
 
-.pm101-operational-view .pm101-selection-panel + .pm101-journey-head {
-  background: #e7eeff;
-  border: 1px solid #b0c7ff;
-  border-bottom: 0;
-  margin: 0 -16px;
-  padding: clamp(14px, 2vh, 22px) 16px clamp(10px, 1.5vh, 16px);
-  position: relative;
-  z-index: 1;
-}
-
 .pm101-operational-view .pm101-flow {
   align-self: stretch;
   flex: 1 1 clamp(190px, 27vh, 275px);
@@ -7303,17 +7265,6 @@ b {
   margin-top: 28px;
   min-height: 0;
   width: calc(100% + 32px);
-}
-
-.pm101-operational-view .pm101-selection-panel + .pm101-journey-head + .pm101-flow {
-  background: #ffffff;
-  border-bottom: 2px solid #cdd1dc;
-  border-left: 2px solid #cdd1dc;
-  border-radius: 0 0 16px 16px;
-  border-right: 2px solid #cdd1dc;
-  box-shadow: 0 18px 40px rgba(25, 33, 61, 0.07);
-  margin-top: 0;
-  overflow: hidden;
 }
 
 .pm101-operational-view .pm101-step-list {
@@ -28776,11 +28727,6 @@ b {
 
   .pm101-project-card-slot.is-selected {
     height: 150px;
-  }
-
-  .pm101-project-card-slot.is-selected::before,
-  .pm101-project-card-slot.is-selected::after {
-    content: none;
   }
 
   .pm101-project-card,
