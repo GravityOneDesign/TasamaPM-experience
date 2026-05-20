@@ -3708,7 +3708,7 @@ const pm101Steps: Pm101Step[] = [
     footerActionId: 'reports',
   },
   {
-    title: 'Learning Hub',
+    title: 'Project Stages',
     body: 'Understand & align with latest PIF guidelines.',
     iconAsset: './assets/pm101/figma-step-5.svg',
     decor: 'plus',
