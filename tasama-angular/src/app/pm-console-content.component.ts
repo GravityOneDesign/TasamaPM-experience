@@ -1575,8 +1575,8 @@ const onboardingWorkspaceProjectCards: ProjectCard[] = [
 ];
 
 const actions = [
-  { column: 'Overdue', tone: 'red', items: [{ type: 'Project Status Report', title: 'Submit Vision 2030 weekly report', project: 'Vision 2030', meta: 'Overdue by 5 days', owner: 'SA', cta: 'Submit' }, { type: 'Risk Escalation', title: 'Budget overrun response', project: 'NEOM Integration', meta: 'High priority', owner: 'AH', cta: 'Resolve' }] },
-  { column: 'This week', tone: 'blue', items: [{ type: 'Dependency', title: 'Confirm API dependency owner', project: 'Smart City Alpha', meta: 'Due today', owner: 'FA', cta: 'Chase' }, { type: 'Benefit', title: 'Benefits owner response', project: 'Smart City Alpha', meta: 'Due in 2 days', owner: 'FA', cta: 'Review' }] },
+  { column: 'Overdue', tone: 'red', items: [{ type: 'Project Status Report', title: 'Submit Vision 2030 weekly report', project: 'Vision 2030', meta: 'Overdue by 5 days', owner: 'SA', cta: 'Submit' }, { type: 'Risk Escalation', title: 'Budget overrun response', project: 'NEOM Integration', meta: 'High priority', owner: 'AH', cta: 'Resolve' }, { type: 'Project Status Report', title: 'Submit UAE Research Map weekly report', project: 'UAE Research Map', meta: 'Overdue by 2 days', owner: 'MH', cta: 'Submit' }, { type: 'Dependency', title: 'Confirm research partner data owners', project: 'UAE Research Map', meta: 'Escalate today', owner: 'MH', cta: 'Chase' }] },
+  { column: 'This week', tone: 'blue', items: [{ type: 'Dependency', title: 'Confirm API dependency owner', project: 'Smart City Alpha', meta: 'Due today', owner: 'FA', cta: 'Chase' }, { type: 'Benefit', title: 'Benefits owner response', project: 'Smart City Alpha', meta: 'Due in 2 days', owner: 'FA', cta: 'Review' }, { type: 'Milestone', title: 'Complete initiation gate evidence pack', project: 'UAE Research Map', meta: 'Due Friday', owner: 'MH', cta: 'Open' }, { type: 'Risk', title: 'Review stakeholder data quality risk', project: 'UAE Research Map', meta: 'Due in 3 days', owner: 'MH', cta: 'Review' }] },
   { column: 'Upcoming', tone: 'amber', items: [{ type: 'Milestone', title: 'Execution gate readiness', project: 'Vision 2030', meta: 'Due Jun 12', owner: 'MH', cta: 'Open' }, { type: 'Risk', title: 'Initial RAID refresh', project: 'NEOM Integration', meta: 'Next week', owner: 'AH', cta: 'Plan' }] },
 ];
 
@@ -3277,7 +3277,7 @@ const guidedTourSteps: GuidedTourStep[] = [
   {
     target: 'side-navigation',
     title: 'Navigate the PM console',
-    body: 'The left rail keeps core spaces one click away: workspace, rooms, reports, messages, help, and logout.',
+    body: 'The left rail keeps core spaces one click away: home, register, dashboards, help, and settings.',
     daily: 'Use it when you need to leave the front door without losing the project context.',
   },
 ];
@@ -3709,7 +3709,7 @@ const pm101Steps: Pm101Step[] = [
   },
   {
     title: 'Project Stages',
-    body: 'Understand & align with latest PIF guidelines.',
+    body: 'See lifecycle stage, gate evidence, and next steps.',
     iconAsset: './assets/pm101/figma-step-5.svg',
     decor: 'plus',
     decorAssets: ['./assets/pm101/decor-3-group-1.svg', './assets/pm101/decor-3-group-2.svg', './assets/pm101/decor-3-group-3.svg', './assets/pm101/decor-3-group-4.svg'],
@@ -7731,12 +7731,6 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                           </div>
                         </section>
 
-                        <section class="project-stages-readiness-card project-stages-comments-card" aria-label="Comments">
-                          <label class="project-stages-comment-field">
-                            <span>Comments</span>
-                            <textarea rows="6" maxlength="1200" [value]="stageGateCommentFor(activeGate)" [disabled]="!canEditStageGateComments(activeGate.status)" (input)="updateStageGateComment(activeGate, $any($event.target).value)" placeholder="Add review notes or PMO feedback"></textarea>
-                          </label>
-                        </section>
                       </aside>
                     </section>
                   </main>
@@ -9310,18 +9304,15 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
           </div>
           <form class="stage-gate-form" (submit)="submitStageGate($event, gate)">
             <div class="stage-gate-drawer-body">
-              <div class="drawer-section stage-checklist-section">
+              <div class="drawer-section stage-comment-section">
                 <div class="drawer-section-headline">
-                  <span class="drawer-section-title">PMO checklist</span>
-                  <small>{{ gate.checkedCount }}/{{ gate.profile.gateTotal }} complete</small>
+                  <span class="drawer-section-title">Comments</span>
+                  <small>{{ isStageGateCommentAdded(gate) ? 'Added' : 'Required' }}</small>
                 </div>
-              @for (item of gate.profile.checklist; track item; let index = $index) {
-                <label class="stage-checklist-item" [class.checked]="isStageGateChecklistChecked(gate, index)">
-                  <input type="checkbox" [checked]="isStageGateChecklistChecked(gate, index)" [disabled]="!canEditStageGateChecklist(gate.status)" (change)="toggleStageGateChecklistItem(gate, index, $any($event.target).checked)" />
-                  <i aria-hidden="true"><span class="icon"><i data-lucide="check"></i></span></i>
-                  <span>{{ item }}</span>
+                <label class="project-stages-comment-field">
+                  <span>Submission comments</span>
+                  <textarea rows="7" maxlength="1200" [value]="stageGateCommentFor(gate)" [disabled]="!canEditStageGateComments(gate.status)" (input)="updateStageGateComment(gate, $any($event.target).value)" placeholder="Add PMO review notes before submitting" aria-label="Stage gate submission comments"></textarea>
                 </label>
-              }
               </div>
 
               <div class="drawer-section stage-evidence-section" [class.is-attached]="isStageGateEvidenceAttached(gate)">
@@ -9335,7 +9326,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                     <input type="file" multiple (change)="addStageGateAttachments($event, gate)" [disabled]="!canEditStageGateChecklist(gate.status)" />
                     <span class="icon" aria-hidden="true"><i [attr.data-lucide]="isStageGateEvidenceAttached(gate) ? 'file-check-2' : 'upload-cloud'"></i></span>
                     <strong>{{ isStageGateEvidenceAttached(gate) ? stageGateEvidenceLabel(gate) : 'Attach proof of work' }}</strong>
-                    <small>{{ isStageGateEvidenceAttached(gate) ? 'Ready to submit with checklist' : 'Upload artefact, sign-off, or work proof requested by PMO' }}</small>
+                    <small>{{ isStageGateEvidenceAttached(gate) ? 'Evidence attached for PMO review' : 'Upload artefact, sign-off, or work proof requested by PMO' }}</small>
                   </label>
                   @if (stageGateAttachmentsFor(gate).length) {
                     <div class="attachment-list stage-attachment-list" aria-label="Stage gate evidence attachments">
@@ -9495,7 +9486,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   @Input() projectOptions: readonly ProjectOption[] = [];
   @Input() selectedProject = 'all';
   @Input() selectedPage: ConsolePage = 'workspace';
-  @Input() selectedView: WorkspaceView = 'calendar';
+  @Input() selectedView: WorkspaceView = 'board';
   @Input() frontDoorMode = 'assigned';
   @Input() pmoAssignmentReady = false;
   @Input() guidedTourActive = false;
@@ -10537,7 +10528,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   guidedTourStep = 0;
 
   private iconsHydrated = false;
-  private lastActionWorkspaceView: ActionWorkspaceView = 'calendar';
+  private lastActionWorkspaceView: ActionWorkspaceView = 'board';
   private quickLinksLayoutFrame: number | null = null;
   private quickLinksPagerBlockHeight = 0;
   private quickLinksToastTimer: number | null = null;
@@ -11955,7 +11946,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       this.pmoAssignmentReady = false;
       this.selectedPage = 'workspace';
       this.selectedProject = 'all';
-      this.selectedView = 'calendar';
+      this.selectedView = 'board';
       this.selectedBoardFilter = 'all';
       this.activeReportProject = null;
       this.selectedStageGateKey = null;
@@ -12044,7 +12035,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.onboardingPm101Locked = false;
     this.selectedProject = projectId;
     this.selectedPage = 'workspace';
-    this.selectedView = 'calendar';
+    this.selectedView = 'board';
     this.selectedBoardFilter = 'all';
     this.activeReportProject = null;
     this.selectedStageGateKey = null;
@@ -12080,7 +12071,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.pmoAssignmentReady = true;
     this.selectedProject = firstAssignedProject.id;
     this.selectedPage = 'project-plan';
-    this.selectedView = 'calendar';
+    this.selectedView = 'board';
     this.projectPlanEntry = entry;
     this.projectPlanDetailMode = 'simple';
     this.projectPlanActiveSection = 'Overview';
@@ -15469,6 +15460,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return (
       gate.status === 'current' &&
       this.isStageGateChecklistComplete(gate) &&
+      this.isStageGateCommentAdded(gate) &&
       (!this.stageGateEvidenceEnabled(gate) || this.isStageGateEvidenceAttached(gate))
     );
   }
@@ -15497,6 +15489,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   stageGateCommentFor(gate: StageGateContext): string {
     return this.stageGateComments[this.stageGateKey(gate.profile.project, gate.stage.id)] || '';
+  }
+
+  isStageGateCommentAdded(gate: StageGateContext): boolean {
+    return this.stageGateCommentFor(gate).trim().length > 0;
   }
 
   updateStageGateComment(gate: StageGateContext, value: string): void {
@@ -16327,11 +16323,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     if (status === 'submitted') return 'View submission';
     if (status === 'current') {
       const nextStage = stageDefinitions[stageIndex + 1];
-      return nextStage ? `Progress to ${nextStage.label} stage` : 'Submit closure gate';
+      return nextStage ? 'Progress Stage' : 'Submit closure gate';
     }
     if (status === 'revoked') return 'Rework gate';
-    const currentStage = stageDefinitions[this.stageCurrentIndex(profile)] || stageDefinitions[0];
-    return `Waiting for ${currentStage.gate}`;
+    return 'Progress Stage';
   }
 
   private projectPlanStageActionIcon(status: StageGateStatus): string {
@@ -16339,7 +16334,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     if (status === 'submitted') return 'send';
     if (status === 'current') return 'stageGate';
     if (status === 'revoked') return 'alert';
-    return 'lock';
+    return 'stageGate';
   }
 
   private projectPlanStageActionDisabled(status: StageGateStatus): boolean {

@@ -4,11 +4,11 @@ import { PmConsoleIconService } from './pm-console-icon.service';
 import { PmConsoleMountOptions, ProjectOption } from './pm-console.types';
 import { PmConsoleNotificationsComponent } from './pm-console-notifications.component';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
+import { PmConsoleSideNavComponent, type PmConsoleSideNavItem } from './shared/pm-console-side-nav.component';
 
-interface RailItem {
-  icon: string;
-  label: string;
+interface RailItem extends PmConsoleSideNavItem {
   page?: ConsolePage;
+  view?: WorkspaceView;
   home?: boolean;
 }
 
@@ -19,7 +19,7 @@ const ONBOARDING_PM101_PROJECT_ID = 'all';
 @Component({
   selector: 'app-pm-console-shell',
   standalone: true,
-  imports: [PmConsoleContentComponent, PmConsoleIconComponent, PmConsoleNotificationsComponent],
+  imports: [PmConsoleContentComponent, PmConsoleIconComponent, PmConsoleNotificationsComponent, PmConsoleSideNavComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="modern-shell" [class.playground-mode]="selectedPage === 'playground'" [class.wbs-mode]="selectedPage === 'wbs'" [class.project-plan-mode]="selectedPage === 'project-plan'" [class.unassigned-mode]="frontDoorMode === 'unassigned'">
@@ -71,28 +71,12 @@ const ONBOARDING_PM101_PROJECT_ID = 'all';
         </div>
       </header>
 
-      <aside class="side-rail" data-tour-target="side-navigation">
-        <nav>
-          @for (item of topRailItems; track item.label) {
-            <button
-              class="rail-button"
-              [class.active]="isRailActive(item.page)"
-              type="button"
-              [attr.aria-label]="item.label"
-              [disabled]="frontDoorMode === 'unassigned' && item.page !== 'workspace'"
-              [attr.aria-disabled]="frontDoorMode === 'unassigned' && item.page !== 'workspace' ? 'true' : null"
-              [attr.title]="frontDoorMode === 'unassigned' && item.page !== 'workspace' ? 'Available after PMO assigns a project' : null"
-              (click)="onRailItemClick(item)"
-            >
-              <span [pmConsoleIcon]="item.icon" aria-hidden="true"></span>
-            </button>
-          }
-        </nav>
-        <nav>
-          <button class="rail-button" type="button" aria-label="Help"><span pmConsoleIcon="circle-help" aria-hidden="true"></span></button>
-          <button class="rail-button" type="button" aria-label="Logout"><span pmConsoleIcon="log-out" aria-hidden="true"></span></button>
-        </nav>
-      </aside>
+      <app-pm-console-side-nav
+        [primaryItems]="primaryRailItems"
+        [utilityItems]="utilityRailItems"
+        [activeItemId]="activeRailItemId"
+        (itemSelected)="onRailItemClick($event)"
+      />
 
       <app-pm-console-content
         [projectOptions]="projects"
@@ -127,18 +111,19 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   ];
 
   readonly topRailItems: RailItem[] = [
-    { icon: 'house', label: 'Home', page: 'workspace', home: true },
-    { icon: 'layout-grid', label: 'Project Register', page: 'workspaces' },
-    { icon: 'chart-column', label: 'Reports', page: undefined },
-    { icon: 'building-2', label: 'Departments', page: undefined },
-    { icon: 'circle-dollar-sign', label: 'Benefits', page: undefined },
-    { icon: 'user-round', label: 'People', page: undefined },
-    { icon: 'settings', label: 'Settings', page: undefined },
+    { id: 'home', icon: 'house', label: 'Home', page: 'workspace', home: true },
+    { id: 'register', icon: 'layout-grid', label: 'Register', page: 'workspaces' },
+    { id: 'dashboards', icon: 'chart-column', label: 'Dashboards', page: 'workspace', view: 'board' },
+  ];
+
+  readonly bottomRailItems: RailItem[] = [
+    { id: 'help', icon: 'circle-help', label: 'Help' },
+    { id: 'settings', icon: 'settings', label: 'Settings' },
   ];
 
   selectedProject = 'all';
   selectedPage: ConsolePage = 'workspace';
-  selectedView: WorkspaceView = 'calendar';
+  selectedView: WorkspaceView = 'board';
   frontDoorMode = 'assigned';
   notificationPanelOpen = false;
   pmoAssignmentReady = false;
@@ -162,10 +147,29 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     return this.frontDoorMode !== 'unassigned' && (this.selectedPage === 'workspace' || this.selectedPage === 'workspaces');
   }
 
+  get primaryRailItems(): readonly RailItem[] {
+    return this.topRailItems.map((item) => ({
+      ...item,
+      disabled: this.isRailItemDisabled(item),
+      disabledTitle: this.railItemDisabledTitle(item),
+    }));
+  }
+
+  get utilityRailItems(): readonly RailItem[] {
+    return this.bottomRailItems;
+  }
+
+  get activeRailItemId(): string {
+    if (this.selectedPage === 'workspaces' || ['wbs', 'project-plan', 'playground'].includes(this.selectedPage)) return 'register';
+    if (this.selectedPage === 'workspace' && this.selectedView === 'board') return 'dashboards';
+    if (this.selectedPage === 'workspace') return 'home';
+    return '';
+  }
+
   ngOnInit(): void {
     this.selectedProject = this.initialState.projectId || 'all';
     this.selectedPage = (this.initialState.selectedPage as ConsolePage) || 'workspace';
-    this.selectedView = (this.initialState.selectedView as WorkspaceView) || 'calendar';
+    this.selectedView = (this.initialState.selectedView as WorkspaceView) || 'board';
     this.frontDoorMode = this.initialState.frontDoorMode || 'assigned';
     this.guidedTourActive = Boolean(this.initialState.guidedTourActive);
     this.guidedTourExitMode = this.initialState.guidedTourExitMode ?? null;
@@ -213,18 +217,25 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     }
     this.selectedProject = this.onboardingProjectSetup ? 'UAE Research Map' : this.onboardingPm101Locked ? ONBOARDING_PM101_PROJECT_ID : 'all';
     this.selectedPage = this.onboardingProjectSetup ? 'workspaces' : 'workspace';
-    this.selectedView = this.onboardingProjectSetup || this.onboardingPm101Locked ? 'pm101' : 'calendar';
+    this.selectedView = this.onboardingProjectSetup || this.onboardingPm101Locked ? 'pm101' : 'board';
     this.notificationPanelOpen = false;
     this.markShellChanged();
   }
 
-  onRailItemClick(item: RailItem): void {
-    if (item.home) {
+  onRailItemClick(item: PmConsoleSideNavItem): void {
+    const railItem = [...this.topRailItems, ...this.bottomRailItems].find((candidate) => candidate.id === item.id);
+    if (!railItem) return;
+
+    if (railItem.home) {
       this.goHome();
       return;
     }
-    if (item.page) {
-      this.setPage(item.page);
+    if (railItem.view) {
+      this.setWorkspaceView(railItem.view);
+      return;
+    }
+    if (railItem.page) {
+      this.setPage(railItem.page);
     }
   }
 
@@ -239,9 +250,12 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     this.markShellChanged();
   }
 
-  isRailActive(page: ConsolePage | undefined): boolean {
-    if (!page) return false;
-    return page === this.selectedPage || (page === 'workspaces' && ['wbs', 'project-plan'].includes(this.selectedPage));
+  setWorkspaceView(view: WorkspaceView): void {
+    if (this.frontDoorMode === 'unassigned' || this.onboardingPm101Locked) return;
+    this.selectedPage = 'workspace';
+    this.selectedView = view;
+    this.notificationPanelOpen = false;
+    this.markShellChanged();
   }
 
   applyContentState(state: Partial<PmConsoleMountOptions>): void {
@@ -273,5 +287,16 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   private markShellChanged(): void {
     this.iconsHydrated = false;
     this.changeDetector.markForCheck();
+  }
+
+  private isRailItemDisabled(item: RailItem): boolean {
+    if (!item.page && !item.view) return false;
+    if (item.home) return false;
+    return this.frontDoorMode === 'unassigned' || this.onboardingPm101Locked;
+  }
+
+  private railItemDisabledTitle(item: RailItem): string | null {
+    if (!this.isRailItemDisabled(item)) return null;
+    return this.onboardingPm101Locked ? 'Available after PM 101 onboarding' : 'Available after PMO assigns a project';
   }
 }

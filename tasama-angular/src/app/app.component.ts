@@ -50,7 +50,7 @@ export class AppComponent {
       authenticated: true,
       projectId: 'all',
       selectedPage: 'workspace',
-      selectedView: 'calendar',
+      selectedView: 'board',
       frontDoorMode: 'assigned',
       guidedTourActive: true,
       guidedTourExitMode: 'onboarding-assignment-flow',
