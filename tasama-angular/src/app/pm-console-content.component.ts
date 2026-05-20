@@ -4006,6 +4006,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
             [class.change-request-plan-mode]="projectPlanEntry === 'change-request'"
             [class.closure-plan-mode]="projectPlanEntry === 'closure'"
             [class.onboarding-project-plan]="onboardingProjectSetup"
+            [class.is-plan-header-condensed]="projectPlanHeaderCondensed"
             aria-label="Project plan"
           >
             <div class="project-plan-card-frame" [class.project-report-card-frame]="projectPlanEntry !== 'quick'" [class.project-secondary-card-frame]="projectPlanEntry === 'change-request' || projectPlanEntry === 'closure'">
@@ -4034,7 +4035,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                 <div class="project-plan-shell plan-builder-shell quick-plan-shell" [class.simple-plan-shell]="projectPlanDetailMode === 'simple'" [class.detailed-plan-shell]="projectPlanDetailMode === 'detailed'">
                   <div class="project-plan-content-modebar" [class.has-section-title]="true">
                     <div class="project-plan-content-heading">
-                      <h2>{{ projectPlanDetailMode === 'simple' ? 'Project Plan' : projectPlanActiveSection }}</h2>
+                      <h2>Project Plan</h2>
                       @if (onboardingProjectSetup && projectPlanEntry === 'quick') {
                         <div class="section-ai-assist" [class.is-open]="isAiAssistOpen(projectPlanActiveSection)" [class.is-drafted]="aiAssistStatus === 'drafted' || aiAssistStatus === 'refining'" data-ai-section-assist>
                           <button
@@ -4115,20 +4116,29 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                         </div>
                       }
                     </div>
-                    @if (onboardingProjectSetup) {
-                      <div class="onboarding-plan-progress" role="progressbar" [attr.aria-valuenow]="onboardingPlanCompletionPercent" aria-valuemin="0" aria-valuemax="100" aria-label="Project plan completion">
-                        <div class="onboarding-plan-progress-copy">
-                          <span>{{ onboardingPlanCompletionPercent }}% complete</span>
-                          <small>{{ onboardingPlanProgressLabel }}</small>
+                    <div class="project-plan-topbar-actions">
+                      @if (onboardingProjectSetup) {
+                        <div class="onboarding-plan-progress" role="progressbar" [attr.aria-valuenow]="onboardingPlanCompletionPercent" aria-valuemin="0" aria-valuemax="100" aria-label="Project plan completion">
+                          <div class="onboarding-plan-progress-copy">
+                            <span>{{ onboardingPlanCompletionPercent }}% complete</span>
+                            <small>{{ onboardingPlanProgressLabel }}</small>
+                          </div>
+                          <div class="onboarding-plan-progress-track" aria-hidden="true">
+                            <span [style.width.%]="onboardingPlanCompletionPercent"></span>
+                          </div>
                         </div>
-                        <div class="onboarding-plan-progress-track" aria-hidden="true">
-                          <span [style.width.%]="onboardingPlanCompletionPercent"></span>
-                        </div>
+                      }
+                      <div class="project-plan-detail-toggle" role="tablist" aria-label="Project plan detail mode">
+                        <button [class.active]="projectPlanDetailMode === 'simple'" type="button" role="tab" [attr.aria-selected]="projectPlanDetailMode === 'simple'" (click)="setProjectPlanDetailMode('simple')">Simple</button>
+                        <button [class.active]="projectPlanDetailMode === 'detailed'" type="button" role="tab" [attr.aria-selected]="projectPlanDetailMode === 'detailed'" (click)="setProjectPlanDetailMode('detailed')">
+                          <span>Detailed</span>
+                          <span pmConsoleIcon="eye" aria-hidden="true"></span>
+                        </button>
                       </div>
-                    }
-                    <div class="project-plan-detail-toggle" role="tablist" aria-label="Project plan detail mode">
-                      <button [class.active]="projectPlanDetailMode === 'simple'" type="button" role="tab" [attr.aria-selected]="projectPlanDetailMode === 'simple'" (click)="setProjectPlanDetailMode('simple')">Simple view</button>
-                      <button [class.active]="projectPlanDetailMode === 'detailed'" type="button" role="tab" [attr.aria-selected]="projectPlanDetailMode === 'detailed'" (click)="setProjectPlanDetailMode('detailed')">Detailed view</button>
+                      <button class="project-plan-topbar-submit" type="button" (click)="submitProjectPlan()">
+                        <span pmConsoleIcon="send" aria-hidden="true"></span>
+                        <span>Submit</span>
+                      </button>
                     </div>
                   </div>
                   @if (projectPlanDetailMode === 'detailed') {
@@ -4138,40 +4148,67 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                       [class.is-additional-collapsed]="!projectPlanSectionsExpanded"
                       aria-label="Project plan sections"
                     >
-                      <div class="matrix-nav-group">
-                        <span class="matrix-nav-label">Core Planning</span>
-                        <div class="matrix-nav-list">
-                          @for (section of primaryProjectPlanSections; track section) {
-                            <button [class.active]="projectPlanActiveSection === section" type="button" (click)="setProjectPlanSection(section)"><span>{{ projectPlanNavLabel(section) }}</span></button>
+                      <div class="matrix-nav-scroll">
+                        <div class="matrix-nav-group">
+                          <span class="matrix-nav-label">Core Planning</span>
+                          <div class="matrix-nav-list">
+                            @for (section of primaryProjectPlanSections; track section) {
+                              <button [class.active]="projectPlanActiveSection === section" type="button" (click)="setProjectPlanSection(section)">
+                                <span class="matrix-nav-item-label">{{ projectPlanNavLabel(section) }}</span>
+                                @if (isProjectPlanNavSectionComplete(section)) {
+                                  <span class="matrix-nav-status is-complete" pmConsoleIcon="circle-check" aria-hidden="true"></span>
+                                } @else if (projectPlanNavCountLabel(section)) {
+                                  <span class="matrix-nav-count">{{ projectPlanNavCountLabel(section) }}</span>
+                                }
+                              </button>
+                            }
+                          </div>
+                        </div>
+                        <span class="matrix-nav-divider" aria-hidden="true"></span>
+                        <div class="matrix-nav-group matrix-nav-actions">
+                          <button
+                            class="matrix-nav-heading"
+                            type="button"
+                            (click)="toggleProjectPlanSections()"
+                            [attr.aria-expanded]="projectPlanSectionsExpanded"
+                            aria-controls="project-plan-extra-sections"
+                          >
+                            <span class="matrix-nav-label">Additional Actions</span>
+                            <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
+                          </button>
+                          @if (projectPlanSectionsExpanded) {
+                            <div id="project-plan-extra-sections" class="matrix-nav-list matrix-extra-sections">
+                              @for (section of additionalProjectPlanSections; track section) {
+                                <button class="detailed-only" [class.active]="projectPlanActiveSection === section" type="button" (click)="setProjectPlanSection(section)">
+                                  <span class="matrix-nav-item-label">{{ projectPlanNavLabel(section) }}</span>
+                                </button>
+                              }
+                            </div>
                           }
                         </div>
                       </div>
-                      <span class="matrix-nav-divider" aria-hidden="true"></span>
-                      <div class="matrix-nav-group matrix-nav-actions">
-                        <button
-                          class="matrix-nav-heading"
-                          type="button"
-                          (click)="toggleProjectPlanSections()"
-                          [attr.aria-expanded]="projectPlanSectionsExpanded"
-                          aria-controls="project-plan-extra-sections"
-                        >
-                          <span class="matrix-nav-label">Additional Actions</span>
-                          <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
-                        </button>
-                        @if (projectPlanSectionsExpanded) {
-                          <div id="project-plan-extra-sections" class="matrix-nav-list matrix-extra-sections">
-                            @for (section of additionalProjectPlanSections; track section) {
-                              <button class="detailed-only" [class.active]="projectPlanActiveSection === section" type="button" (click)="setProjectPlanSection(section)"><span>{{ projectPlanNavLabel(section) }}</span></button>
-                            }
-                          </div>
-                        }
+                      <div
+                        class="matrix-nav-progress"
+                        role="progressbar"
+                        [attr.aria-valuenow]="projectPlanNavProgressPercent"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                        aria-label="Project plan section completion"
+                      >
+                        <div class="matrix-nav-progress-track" aria-hidden="true">
+                          <span [style.width.%]="projectPlanNavProgressPercent"></span>
+                        </div>
+                        <div class="matrix-nav-progress-copy">
+                          <strong>{{ projectPlanNavProgressPercent }}%</strong>
+                          <span>Sections done {{ projectPlanNavCompletedSections }}/{{ projectPlanNavTotalSections }}</span>
+                        </div>
                       </div>
                     </aside>
                   }
                   <main class="project-plan-content plan-builder-workspace quick-plan-workspace" [class.simple-plan-workspace]="projectPlanDetailMode === 'simple'" [class.detailed-plan-workspace]="projectPlanDetailMode === 'detailed'">
-                    <div class="plan-builder-main quick-plan-main project-plan-matrix-main">
+                    <div class="plan-builder-main quick-plan-main project-plan-matrix-main" (scroll)="handleProjectPlanContentScroll($event)" (wheel)="handleProjectPlanContentWheel($event)">
                       @if (projectPlanDetailMode === 'simple') {
-                        <section class="project-plan-form-card plan-builder-card project-plan-matrix-card simple-plan-card">
+                        <section class="project-plan-form-card plan-builder-card project-plan-matrix-card simple-plan-card" (scroll)="handleProjectPlanContentScroll($event)" (wheel)="handleProjectPlanContentWheel($event)">
                           <div class="simple-plan-sections">
                             @for (section of simplePlanSections; track section.title) {
                               @if (section.readOnly) {
@@ -4583,7 +4620,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                           </div>
                         </section>
                       } @else {
-                        <section class="project-plan-form-card plan-builder-card project-plan-matrix-card detailed-plan-card" [class.ai-section-filled]="aiRecentlyFilledSection === projectPlanActiveSection">
+                        <section class="project-plan-form-card plan-builder-card project-plan-matrix-card detailed-plan-card" [class.ai-section-filled]="aiRecentlyFilledSection === projectPlanActiveSection" (scroll)="handleProjectPlanContentScroll($event)" (wheel)="handleProjectPlanContentWheel($event)">
                           <div class="project-plan-section-fields">
                             @if (projectPlanActiveSection === 'Overview') {
                               @let identitySection = projectPlanIdentityCard;
@@ -4592,16 +4629,13 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                 [description]="identitySection.body"
                                 [iconName]="iconName(identitySection.icon)"
                                 [fields]="identitySection.fields"
-                                [collapsible]="true"
-                                [expanded]="isProjectPlanCardExpanded(projectPlanActiveSection, identitySection.title, 0)"
-                                (expandedChange)="setProjectPlanCardExpanded(projectPlanActiveSection, identitySection.title, $event)"
                               />
                             }
                             @if (projectPlanActiveSection === 'Overview') {
                               <section class="overview-plan-workspace" aria-label="Overview workspace">
                                 <details
                                   class="overview-form-card overview-collapsible-card"
-                                  [open]="isProjectPlanCardExpanded(projectPlanActiveSection, 'Opportunity or Problem Statement', 1)"
+                                  [open]="isProjectPlanCardExpanded(projectPlanActiveSection, 'Opportunity or Problem Statement', 0)"
                                   (toggle)="setProjectPlanCardExpanded(projectPlanActiveSection, 'Opportunity or Problem Statement', $event)"
                                 >
                                   <summary class="overview-form-head">
@@ -4627,7 +4661,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                     </div>
                                     <span class="matrix-field-group-meta" aria-label="2 fields">
                                       <b>2</b>
-                                      <span [pmConsoleIcon]="isProjectPlanCardExpanded(projectPlanActiveSection, 'Opportunity or Problem Statement', 1) ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></span>
+                                      <span [pmConsoleIcon]="isProjectPlanCardExpanded(projectPlanActiveSection, 'Opportunity or Problem Statement', 0) ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></span>
                                     </span>
                                   </summary>
                                   <div class="overview-form-body">
@@ -4663,7 +4697,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                   [iconName]="iconName('fileCheck')"
                                   panelClass="overview-register-card"
                                   [collapsible]="true"
-                                  [expanded]="isProjectPlanCardExpanded(projectPlanActiveSection, 'Business drivers', 2)"
+                                  [expanded]="isProjectPlanCardExpanded(projectPlanActiveSection, 'Business drivers', 1)"
                                   (expandedChange)="setProjectPlanCardExpanded(projectPlanActiveSection, 'Business drivers', $event)"
                                   (action)="openOverviewBusinessDriverDrawer()"
                                 >
@@ -4733,7 +4767,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                   [iconName]="iconName('fileCheck')"
                                   panelClass="overview-register-card"
                                   [collapsible]="true"
-                                  [expanded]="isProjectPlanCardExpanded(projectPlanActiveSection, 'Outcomes', 3)"
+                                  [expanded]="isProjectPlanCardExpanded(projectPlanActiveSection, 'Outcomes', 2)"
                                   (expandedChange)="setProjectPlanCardExpanded(projectPlanActiveSection, 'Outcomes', $event)"
                                   (action)="openOverviewOutcomeDrawer()"
                                 >
@@ -4799,7 +4833,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                   [iconName]="iconName('fileCheck')"
                                   panelClass="overview-register-card overview-alignment-card"
                                   [collapsible]="true"
-                                  [expanded]="isProjectPlanCardExpanded(projectPlanActiveSection, 'Project alignment', 4)"
+                                  [expanded]="isProjectPlanCardExpanded(projectPlanActiveSection, 'Project alignment', 3)"
                                   (expandedChange)="setProjectPlanCardExpanded(projectPlanActiveSection, 'Project alignment', $event)"
                                   (action)="openOverviewObjectiveDrawer()"
                                 >
@@ -5392,14 +5426,65 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                               </section>
                             } @else if (projectPlanActiveSection === 'Schedule & Scope') {
                               <section class="schedule-scope-workspace schedule-scope-design-workspace" aria-label="Schedule and scope workspace">
-                                <app-pm-console-plan-table
-                                  title="Schedule and scope"
-                                  description="Approved dates, current forecast, milestone checkpoints, and the core scope statement in one place."
-                                  countLabel="0 links"
-                                  [iconName]="iconName('plan')"
-                                  panelClass="schedule-scope-design-card"
+                                <header class="schedule-scope-design-top">
+                                  <div class="overview-form-title">
+                                    <span class="overview-form-title-icon" aria-hidden="true">
+                                      <span [pmConsoleIcon]="iconName('plan')"></span>
+                                    </span>
+                                    <div>
+                                      <h3>Schedule &amp; Scope</h3>
+                                      <p>Approved dates, current forecast, milestone checkpoints, and the core scope statement in one place.</p>
+                                    </div>
+                                  </div>
+                                  <button
+                                    class="schedule-scope-ai-fill"
+                                    type="button"
+                                    [class.is-loading]="aiAssistStatus === 'filling' && isAiAssistOpen(projectPlanActiveSection)"
+                                    [disabled]="aiAssistStatus === 'filling' || aiAssistStatus === 'refining'"
+                                    (click)="fillAiSectionDraft()"
+                                  >
+                                    <span pmConsoleIcon="wand-sparkles" aria-hidden="true"></span>
+                                    <span>{{ aiAssistStatus === 'filling' && isAiAssistOpen(projectPlanActiveSection) ? 'Autofilling...' : 'Autofill with AI' }}</span>
+                                  </button>
+                                </header>
+
+                                <details
+                                  class="overview-form-card overview-collapsible-card schedule-scope-detail-card"
+                                  [open]="isProjectPlanCardExpanded(projectPlanActiveSection, 'Overall project schedule', 0)"
+                                  (toggle)="setProjectPlanCardExpanded(projectPlanActiveSection, 'Overall project schedule', $event)"
                                 >
-                                  <div class="schedule-scope-design-body">
+                                  <summary class="overview-form-head schedule-scope-card-head">
+                                    <div class="overview-form-title">
+                                      <span class="overview-form-title-icon" aria-hidden="true">
+                                        <span [pmConsoleIcon]="iconName('calendar')"></span>
+                                      </span>
+                                      <div>
+                                        <div class="plan-subsection-title-row">
+                                          <h3>Overall project schedule</h3>
+                                          @let scheduleScopeGuide = aiGuideFor('Schedule and scope');
+                                          @if (scheduleScopeGuide) {
+                                            <app-pm-console-ai-guide-chip
+                                              title="Schedule & Scope"
+                                              [what]="scheduleScopeGuide.what"
+                                              [how]="scheduleScopeGuide.how"
+                                              [example]="scheduleScopeGuide.example"
+                                            ></app-pm-console-ai-guide-chip>
+                                          }
+                                        </div>
+                                        <p>Forecast dates, delivery boundaries, and the scope exclusions reviewers need before they inspect deliverables.</p>
+                                      </div>
+                                    </div>
+                                    <div class="schedule-scope-card-actions">
+                                      <button class="schedule-scope-wbs-entry" type="button" (click)="$event.stopPropagation(); navigate('wbs')" aria-label="Manage WBS in Gantt view">
+                                        <span pmConsoleIcon="settings" aria-hidden="true"></span>
+                                        <span>Manage WBS</span>
+                                      </button>
+                                      <span class="schedule-scope-collapse-toggle" aria-hidden="true">
+                                        <span [pmConsoleIcon]="isProjectPlanCardExpanded(projectPlanActiveSection, 'Overall project schedule', 0) ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></span>
+                                      </span>
+                                    </div>
+                                  </summary>
+                                  <div class="overview-form-body schedule-scope-design-body">
                                     <div class="schedule-scope-design-grid" aria-label="Forecast dates">
                                       <label class="schedule-scope-design-field">
                                         <span>Forecast start date</span>
@@ -5446,6 +5531,84 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                       </span>
                                     </label>
 
+                                    <label class="schedule-scope-design-field schedule-scope-design-field-wide">
+                                      <span>Out of Scope</span>
+                                      <span class="schedule-scope-design-input">
+                                        <input
+                                          type="text"
+                                          [value]="scheduleScopeState.outOfScope"
+                                          placeholder="Start typing"
+                                          aria-label="Out of Scope"
+                                          (input)="updateScheduleScopeField('outOfScope', $any($event.target).value)"
+                                        />
+                                      </span>
+                                    </label>
+                                  </div>
+                                </details>
+
+                                <details
+                                  class="overview-form-card overview-collapsible-card schedule-scope-detail-card schedule-scope-deliverables-card"
+                                  [open]="isProjectPlanCardExpanded(projectPlanActiveSection, 'Deliverables', 1)"
+                                  (toggle)="setProjectPlanCardExpanded(projectPlanActiveSection, 'Deliverables', $event)"
+                                >
+                                  <summary class="overview-form-head schedule-scope-card-head">
+                                    <div class="overview-form-title">
+                                      <span class="overview-form-title-icon" aria-hidden="true">
+                                        <span [pmConsoleIcon]="iconName('endProduct')"></span>
+                                      </span>
+                                      <div>
+                                        <div class="plan-subsection-title-row">
+                                          <h3>Deliverables</h3>
+                                          @let deliverablesGuide = aiGuideFor('End Product');
+                                          @if (deliverablesGuide) {
+                                            <app-pm-console-ai-guide-chip
+                                              title="Deliverables"
+                                              [what]="deliverablesGuide.what"
+                                              [how]="deliverablesGuide.how"
+                                              [example]="deliverablesGuide.example"
+                                            ></app-pm-console-ai-guide-chip>
+                                          }
+                                        </div>
+                                        <p>Milestones, end products, and management products are managed from one entry point.</p>
+                                      </div>
+                                    </div>
+                                    <div class="schedule-scope-card-actions">
+                                      <div class="simple-deliverables-menu simple-deliverables-menu-right" data-schedule-deliverables-menu>
+                                        <button
+                                          class="simple-deliverables-trigger"
+                                          type="button"
+                                          aria-haspopup="menu"
+                                          [attr.aria-expanded]="isScheduleDeliverablesMenuOpen"
+                                          (click)="toggleScheduleDeliverablesMenu($event)"
+                                        >
+                                          <span pmConsoleIcon="plus" aria-hidden="true"></span>
+                                          Add deliverables
+                                          <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
+                                        </button>
+                                        @if (isScheduleDeliverablesMenuOpen) {
+                                          <div class="simple-deliverables-popover" role="menu" aria-label="Add deliverables">
+                                            <button type="button" role="menuitem" (click)="openScheduleDeliverableFromMenu('milestone', $event)">
+                                              <span pmConsoleIcon="milestone" aria-hidden="true"></span>
+                                              Add milestone
+                                            </button>
+                                            <button type="button" role="menuitem" (click)="openScheduleDeliverableFromMenu('end-product', $event)">
+                                              <span pmConsoleIcon="package" aria-hidden="true"></span>
+                                              Add end product
+                                            </button>
+                                            <button type="button" role="menuitem" (click)="openScheduleDeliverableFromMenu('management-product', $event)">
+                                              <span pmConsoleIcon="file-check-2" aria-hidden="true"></span>
+                                              Add management product
+                                            </button>
+                                          </div>
+                                        }
+                                      </div>
+                                      <span class="schedule-scope-collapse-toggle" aria-hidden="true">
+                                        <span [pmConsoleIcon]="isProjectPlanCardExpanded(projectPlanActiveSection, 'Deliverables', 1) ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></span>
+                                      </span>
+                                    </div>
+                                  </summary>
+
+                                  <div class="overview-form-body schedule-scope-design-body schedule-scope-deliverables-body">
                                     <section class="schedule-scope-design-section" aria-label="Milestones">
                                       <div class="schedule-scope-design-section-head">
                                         @let milestonesGuide = aiGuideFor('Milestones');
@@ -5460,13 +5623,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                             ></app-pm-console-ai-guide-chip>
                                           }
                                         </div>
-                                        <div class="schedule-scope-design-section-actions">
-                                          <span class="schedule-scope-design-count">0 links</span>
-                                          <button class="schedule-scope-design-add" type="button" (click)="openScheduleMilestoneDrawer()" aria-label="Add milestone">
-                                            <span pmConsoleIcon="plus" aria-hidden="true"></span>
-                                            Add Milestone
-                                          </button>
-                                        </div>
+                                        <span class="schedule-scope-design-count">{{ scheduleScopeCountLabel(scheduleMilestoneRows.length, 'milestone') }}</span>
                                       </div>
                                       @if (scheduleMilestoneRows.length || !onboardingProjectSetup) {
                                         <div class="dependency-register-table-shell schedule-overview-table-shell schedule-scope-design-table-shell">
@@ -5523,124 +5680,160 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                       }
                                     </section>
 
-                                    @if (activeProjectPlanHiddenFields.length) {
-                                      <button
-                                        class="schedule-scope-advanced-toggle"
-                                        [class.is-expanded]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection)"
-                                        type="button"
-                                        (click)="toggleProjectPlanFieldSection(projectPlanActiveSection)"
-                                        [attr.aria-expanded]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection)"
-                                      >
-                                        <span [pmConsoleIcon]="isProjectPlanFieldSectionExpanded(projectPlanActiveSection) ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></span>
-                                        <span>
-                                          {{ isProjectPlanFieldSectionExpanded(projectPlanActiveSection) ? 'View less' : 'View more' }}
-                                          <small>(Advanced governance fields)</small>
-                                        </span>
-                                      </button>
-
-                                      @if (isProjectPlanFieldSectionExpanded(projectPlanActiveSection)) {
-                                        <div class="schedule-scope-advanced-content">
-                                          <label class="schedule-scope-design-field schedule-scope-design-field-wide">
-                                            <span>Out of Scope</span>
-                                            <span class="schedule-scope-design-input">
-                                              <input
-                                                type="text"
-                                                [value]="scheduleScopeState.outOfScope"
-                                                placeholder="Start typing"
-                                                aria-label="Out of Scope"
-                                                (input)="updateScheduleScopeField('outOfScope', $any($event.target).value)"
-                                              />
-                                            </span>
-                                          </label>
-
-                                          <section class="schedule-scope-design-section" aria-label="End products">
-                                            <div class="schedule-scope-design-section-head">
-                                              @let endProductGuide = aiGuideFor('End Product');
-                                              <div class="plan-subsection-title-row">
-                                                <h3>End Product</h3>
-                                                @if (endProductGuide) {
-                                                  <app-pm-console-ai-guide-chip
-                                                    title="End Product"
-                                                    [what]="endProductGuide.what"
-                                                    [how]="endProductGuide.how"
-                                                    [example]="endProductGuide.example"
-                                                  ></app-pm-console-ai-guide-chip>
-                                                }
-                                              </div>
-                                              <div class="schedule-scope-design-section-actions">
-                                                <span class="schedule-scope-design-count">0 links</span>
-                                                <button class="schedule-scope-design-add" type="button" (click)="openScheduleEndProductDrawer()" aria-label="Add end product">
-                                                  <span pmConsoleIcon="plus" aria-hidden="true"></span>
-                                                  Add End Product
-                                                </button>
-                                              </div>
-                                            </div>
-                                            @if (scheduleEndProductRows.length || !onboardingProjectSetup) {
-                                              <div class="dependency-register-table-shell schedule-overview-table-shell schedule-scope-design-table-shell schedule-product-table-shell">
-                                                <table class="dependency-register-table schedule-product-table schedule-scope-design-table schedule-scope-design-product-table" aria-label="End products">
-                                                  <thead>
-                                                    <tr>
-                                                      <th>Product</th>
-                                                      <th>Type</th>
-                                                      <th>Product Owner</th>
-                                                      <th>Capability</th>
-                                                      <th>Start Date</th>
-                                                      <th>End Date</th>
-                                                      <th>Budget</th>
-                                                      <th>PRED</th>
-                                                      <th>SUCCR</th>
-                                                      <th>Actions</th>
-                                                    </tr>
-                                                  </thead>
-                                                  <tbody>
-                                                    @for (row of scheduleEndProductRows; track row.id) {
-                                                      <tr class="plan-table-clickable-row" role="button" tabindex="0" [attr.aria-label]="'Open end product details for ' + row.product" (click)="openScheduleEndProductDrawer(row)" (keydown.enter)="openScheduleEndProductDrawer(row)" (keydown.space)="$event.preventDefault(); openScheduleEndProductDrawer(row)">
-                                                        <td class="dependency-register-primary"><strong>{{ row.product }}</strong></td>
-                                                        <td>{{ row.category }}</td>
-                                                        <td>{{ row.owner || 'Owner to confirm' }}</td>
-                                                        <td>{{ row.capability || '-' }}</td>
-                                                        <td>{{ scheduleScopeDateLabel(row.startDate) }}</td>
-                                                        <td>{{ scheduleScopeDateLabel(row.endDate) }}</td>
-                                                        <td>{{ scheduleScopeProductBudgetTotal(row.capex, row.opex) }}</td>
-                                                        <td>{{ row.predecessors.length }}</td>
-                                                        <td>{{ row.successors.length }}</td>
-                                                        <td class="schedule-table-actions">
-                                                          <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + row.product">
-                                                            <button type="button" role="menuitem" (click)="openScheduleEndProductDrawer(row)">
-                                                              <span pmConsoleIcon="pencil" aria-hidden="true"></span>
-                                                              Edit
-                                                            </button>
-                                                            <button class="danger" type="button" role="menuitem" (click)="removeScheduleEndProduct(row.id)">
-                                                              <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
-                                                              Delete
-                                                            </button>
-                                                          </app-pm-console-row-action-menu>
-                                                        </td>
-                                                      </tr>
-                                                    }
-                                                  </tbody>
-                                                </table>
-                                              </div>
-                                            } @else {
-                                              <app-pm-console-plan-empty-state
-                                                title="End products"
-                                                description="List the deliverables that define what the project will create."
-                                                countLabel="0 products"
-                                                actionLabel="Add end product"
-                                                actionAriaLabel="Add end product"
-                                                [iconName]="iconName('products')"
-                                                [hideHeader]="true"
-                                                emptyTitle="No end products added yet"
-                                                emptyBody="Add the main deliverable, owner, timing, and budget so the scope has something concrete to govern."
-                                                (action)="openScheduleEndProductDrawer()"
-                                              ></app-pm-console-plan-empty-state>
-                                            }
-                                          </section>
+                                    <section class="schedule-scope-design-section" aria-label="End products">
+                                      <div class="schedule-scope-design-section-head">
+                                        @let endProductGuide = aiGuideFor('End Product');
+                                        <div class="plan-subsection-title-row">
+                                          <h3>End products</h3>
+                                          @if (endProductGuide) {
+                                            <app-pm-console-ai-guide-chip
+                                              title="End Product"
+                                              [what]="endProductGuide.what"
+                                              [how]="endProductGuide.how"
+                                              [example]="endProductGuide.example"
+                                            ></app-pm-console-ai-guide-chip>
+                                          }
                                         </div>
+                                        <span class="schedule-scope-design-count">{{ scheduleScopeCountLabel(scheduleEndProductRows.length, 'product') }}</span>
+                                      </div>
+                                      @if (scheduleEndProductRows.length || !onboardingProjectSetup) {
+                                        <div class="dependency-register-table-shell schedule-overview-table-shell schedule-scope-design-table-shell schedule-product-table-shell">
+                                          <table class="dependency-register-table schedule-product-table schedule-scope-design-table schedule-scope-design-product-table" aria-label="End products">
+                                            <thead>
+                                              <tr>
+                                                <th>Product</th>
+                                                <th>Type</th>
+                                                <th>Product Owner</th>
+                                                <th>Capability</th>
+                                                <th>Start Date</th>
+                                                <th>End Date</th>
+                                                <th>Budget</th>
+                                                <th>PRED</th>
+                                                <th>SUCCR</th>
+                                                <th>Actions</th>
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              @for (row of scheduleEndProductRows; track row.id) {
+                                                <tr class="plan-table-clickable-row" role="button" tabindex="0" [attr.aria-label]="'Open end product details for ' + row.product" (click)="openScheduleEndProductDrawer(row)" (keydown.enter)="openScheduleEndProductDrawer(row)" (keydown.space)="$event.preventDefault(); openScheduleEndProductDrawer(row)">
+                                                  <td class="dependency-register-primary"><strong>{{ row.product }}</strong></td>
+                                                  <td>{{ row.category }}</td>
+                                                  <td>{{ row.owner || 'Owner to confirm' }}</td>
+                                                  <td>{{ row.capability || '-' }}</td>
+                                                  <td>{{ scheduleScopeDateLabel(row.startDate) }}</td>
+                                                  <td>{{ scheduleScopeDateLabel(row.endDate) }}</td>
+                                                  <td>{{ scheduleScopeProductBudgetTotal(row.capex, row.opex) }}</td>
+                                                  <td>{{ row.predecessors.length }}</td>
+                                                  <td>{{ row.successors.length }}</td>
+                                                  <td class="schedule-table-actions">
+                                                    <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + row.product">
+                                                      <button type="button" role="menuitem" (click)="openScheduleEndProductDrawer(row)">
+                                                        <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                                        Edit
+                                                      </button>
+                                                      <button class="danger" type="button" role="menuitem" (click)="removeScheduleEndProduct(row.id)">
+                                                        <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                                        Delete
+                                                      </button>
+                                                    </app-pm-console-row-action-menu>
+                                                  </td>
+                                                </tr>
+                                              }
+                                            </tbody>
+                                          </table>
+                                        </div>
+                                      } @else {
+                                        <app-pm-console-plan-empty-state
+                                          title="End products"
+                                          description="List the deliverables that define what the project will create."
+                                          countLabel="0 products"
+                                          actionLabel="Add end product"
+                                          actionAriaLabel="Add end product"
+                                          [iconName]="iconName('products')"
+                                          [hideHeader]="true"
+                                          emptyTitle="No end products added yet"
+                                          emptyBody="Add the main deliverable, owner, timing, and budget so the scope has something concrete to govern."
+                                          (action)="openScheduleEndProductDrawer()"
+                                        ></app-pm-console-plan-empty-state>
                                       }
-                                    }
+                                    </section>
+
+                                    <section class="schedule-scope-design-section" aria-label="Management products">
+                                      <div class="schedule-scope-design-section-head">
+                                        @let managementProductGuide = aiGuideFor('Management Product');
+                                        <div class="plan-subsection-title-row">
+                                          <h3>Management products</h3>
+                                          @if (managementProductGuide) {
+                                            <app-pm-console-ai-guide-chip
+                                              title="Management Product"
+                                              [what]="managementProductGuide.what"
+                                              [how]="managementProductGuide.how"
+                                              [example]="managementProductGuide.example"
+                                            ></app-pm-console-ai-guide-chip>
+                                          }
+                                        </div>
+                                        <span class="schedule-scope-design-count">{{ scheduleScopeCountLabel(scheduleManagementProductRows.length, 'product') }}</span>
+                                      </div>
+                                      @if (scheduleManagementProductRows.length || !onboardingProjectSetup) {
+                                        <div class="dependency-register-table-shell schedule-overview-table-shell schedule-scope-design-table-shell schedule-product-table-shell">
+                                          <table class="dependency-register-table schedule-product-table schedule-scope-design-table schedule-scope-design-management-table" aria-label="Management products">
+                                            <thead>
+                                              <tr>
+                                                <th>Product</th>
+                                                <th>Type</th>
+                                                <th>Product Owner</th>
+                                                <th>Start Date</th>
+                                                <th>End Date</th>
+                                                <th>Budget</th>
+                                                <th>Actions</th>
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              @for (row of scheduleManagementProductRows; track row.id) {
+                                                <tr class="plan-table-clickable-row" role="button" tabindex="0" [attr.aria-label]="'Open management product details for ' + row.product" (click)="openScheduleManagementProductDrawer(row)" (keydown.enter)="openScheduleManagementProductDrawer(row)" (keydown.space)="$event.preventDefault(); openScheduleManagementProductDrawer(row)">
+                                                  <td class="dependency-register-primary">
+                                                    <strong>{{ row.product }}</strong>
+                                                    <small>{{ row.description || 'Governance product' }}</small>
+                                                  </td>
+                                                  <td>{{ row.category }}</td>
+                                                  <td>{{ row.owner || 'Owner to confirm' }}</td>
+                                                  <td>{{ scheduleScopeDateLabel(row.startDate) }}</td>
+                                                  <td>{{ scheduleScopeDateLabel(row.endDate) }}</td>
+                                                  <td>{{ scheduleScopeProductBudgetTotal(row.capex, row.opex) }}</td>
+                                                  <td class="schedule-table-actions">
+                                                    <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + row.product">
+                                                      <button type="button" role="menuitem" (click)="openScheduleManagementProductDrawer(row)">
+                                                        <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                                        Edit
+                                                      </button>
+                                                      <button class="danger" type="button" role="menuitem" (click)="removeScheduleManagementProduct(row.id)">
+                                                        <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                                        Delete
+                                                      </button>
+                                                    </app-pm-console-row-action-menu>
+                                                  </td>
+                                                </tr>
+                                              }
+                                            </tbody>
+                                          </table>
+                                        </div>
+                                      } @else {
+                                        <app-pm-console-plan-empty-state
+                                          title="Management products"
+                                          description="Add governance artefacts, approval packs, and delivery controls."
+                                          countLabel="0 products"
+                                          actionLabel="Add management product"
+                                          actionAriaLabel="Add management product"
+                                          [iconName]="iconName('fileCheck')"
+                                          [hideHeader]="true"
+                                          emptyTitle="No management products added yet"
+                                          emptyBody="Add the first governance product so the plan has a reviewable control set."
+                                          (action)="openScheduleManagementProductDrawer()"
+                                        ></app-pm-console-plan-empty-state>
+                                      }
+                                    </section>
                                   </div>
-                                </app-pm-console-plan-table>
+                                </details>
                               </section>
                             } @else if (projectPlanActiveSection === 'Benefits') {
                               @let register = activeBenefitPlan;
@@ -9262,6 +9455,16 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   readonly quickLinkPinLimit = QUICK_LINK_PIN_LIMIT;
   readonly primaryProjectPlanSections = ['Overview', 'Schedule & Scope', 'Budget', 'Benefits', 'Risk', 'Resource'];
   readonly additionalProjectPlanSections = ['Issues', 'Change Impact', 'Related Links', 'Dependency', 'Miscellaneous'];
+  readonly projectPlanCoreNavProgress: Record<string, { completed: number; total: number; showCheck?: boolean }> = {
+    Overview: { completed: 1, total: 1, showCheck: true },
+    'Schedule & Scope': { completed: 2, total: 4 },
+    Budget: { completed: 0, total: 4 },
+    Benefits: { completed: 0, total: 4 },
+    Risk: { completed: 0, total: 4 },
+    Resource: { completed: 0, total: 4 },
+  };
+  readonly projectPlanNavCompletedSections = 2;
+  readonly projectPlanNavTotalSections = 8;
   readonly projectReportOverviewCards: PmConsoleOverviewCard[] = [
     {
       id: 'total-reports',
@@ -10262,7 +10465,8 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   projectPlanEntry: ProjectPlanEntry = 'quick';
   projectPlanDetailMode: ProjectPlanDetailMode = 'simple';
   projectPlanActiveSection = 'Overview';
-  projectPlanSectionsExpanded = false;
+  projectPlanSectionsExpanded = true;
+  projectPlanHeaderCondensed = false;
   projectPlanExpandedFieldSections: Record<string, boolean> = {};
   projectPlanExpandedCards: Record<string, boolean> = {};
   activeClosureSection: ClosureSectionId = 'overview';
@@ -10281,6 +10485,8 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   private aiAssistGenerationTimer: number | null = null;
   private aiAssistFilledClearTimer: number | null = null;
   private projectPlanReturnState: ProjectPlanReturnState | null = null;
+  private projectPlanLastContentScrollTop = 0;
+  private projectPlanHeaderScrollIgnoreUntil = 0;
 
   constructor(
     private readonly iconsService: PmConsoleIconService,
@@ -10367,6 +10573,21 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   get visibleProjectPlanSections(): string[] {
     return [...this.primaryProjectPlanSections, ...this.additionalProjectPlanSections];
+  }
+
+  get projectPlanNavProgressPercent(): number {
+    return Math.round((this.projectPlanNavCompletedSections / this.projectPlanNavTotalSections) * 100);
+  }
+
+  projectPlanNavCountLabel(section: string): string {
+    const progress = this.projectPlanCoreNavProgress[section];
+    if (!progress || progress.showCheck) return '';
+    return `(${progress.completed}/${progress.total})`;
+  }
+
+  isProjectPlanNavSectionComplete(section: string): boolean {
+    const progress = this.projectPlanCoreNavProgress[section];
+    return Boolean(progress?.showCheck || (progress && progress.completed >= progress.total));
   }
 
   get activeProjectPlanGroup(): SimplePlanSection {
@@ -11041,7 +11262,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.projectPlanEntry = 'quick';
     this.projectPlanDetailMode = 'simple';
     this.projectPlanActiveSection = 'Overview';
-    this.projectPlanSectionsExpanded = false;
+    this.projectPlanSectionsExpanded = true;
     this.projectPlanExpandedFieldSections = {};
     this.onboardingPlanActionMessage = '';
     this.overviewState = { opportunityStatement: '', driverAnalysis: '', aiComponent: '' };
@@ -11673,7 +11894,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       this.projectPlanEntry = 'quick';
       this.projectPlanDetailMode = 'simple';
       this.projectPlanActiveSection = 'Overview';
-      this.projectPlanSectionsExpanded = false;
+      this.projectPlanSectionsExpanded = true;
       this.projectPlanExpandedFieldSections = {};
       this.onboardingPm101Locked = false;
     } else if (this.guidedTourExitMode === 'pm101-lock') {
@@ -11689,7 +11910,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       this.projectPlanEntry = 'quick';
       this.projectPlanDetailMode = 'simple';
       this.projectPlanActiveSection = 'Overview';
-      this.projectPlanSectionsExpanded = false;
+      this.projectPlanSectionsExpanded = true;
       this.projectPlanExpandedFieldSections = {};
       this.onboardingPm101Locked = true;
     } else if (this.guidedTourExitMode === 'onboarding-assignment-flow') {
@@ -11708,7 +11929,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       this.projectPlanEntry = 'quick';
       this.projectPlanDetailMode = 'simple';
       this.projectPlanActiveSection = 'Overview';
-      this.projectPlanSectionsExpanded = false;
+      this.projectPlanSectionsExpanded = true;
       this.projectPlanExpandedFieldSections = {};
       this.onboardingPm101Locked = true;
     } else if (this.guidedTourExitMode === 'onboarding-project-setup') {
@@ -11744,7 +11965,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.projectPlanEntry = 'quick';
     this.projectPlanDetailMode = 'simple';
     this.projectPlanActiveSection = 'Overview';
-    this.projectPlanSectionsExpanded = false;
+    this.projectPlanSectionsExpanded = true;
     this.projectPlanExpandedFieldSections = {};
     this.emitState();
   }
@@ -11794,7 +12015,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.projectPlanEntry = 'quick';
     this.projectPlanDetailMode = 'simple';
     this.projectPlanActiveSection = 'Overview';
-    this.projectPlanSectionsExpanded = false;
+    this.projectPlanSectionsExpanded = true;
     this.projectPlanExpandedFieldSections = {};
     this.activeReportProject = null;
     this.selectedStageGateKey = null;
@@ -12275,6 +12496,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   setProjectPlanEntry(entry: ProjectPlanEntry): void {
     this.closeProjectPlanDrawers();
     this.closeAiAssist();
+    this.resetProjectPlanHeaderCondensed();
     this.projectPlanEntry = entry;
     this.projectPlanActiveSection = 'Overview';
     this.projectPlanExpandedFieldSections = {};
@@ -12284,6 +12506,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   setProjectPlanDetailMode(mode: ProjectPlanDetailMode): void {
     if (mode !== 'detailed') this.closeProjectPlanDrawers();
+    this.resetProjectPlanHeaderCondensed();
     this.projectPlanDetailMode = mode;
     this.iconsHydrated = false;
   }
@@ -12291,8 +12514,43 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   setProjectPlanSection(section: string): void {
     this.closeProjectPlanDrawers();
     this.closeAiAssist();
+    this.resetProjectPlanHeaderCondensed();
     this.projectPlanActiveSection = section;
     this.iconsHydrated = false;
+  }
+
+  handleProjectPlanContentScroll(event: Event): void {
+    if (this.selectedPage !== 'project-plan' || this.projectPlanEntry !== 'quick') return;
+    const target = event.currentTarget;
+    if (!(target instanceof HTMLElement)) return;
+
+    const nextScrollTop = Math.max(0, target.scrollTop);
+    if (window.performance.now() < this.projectPlanHeaderScrollIgnoreUntil) {
+      this.projectPlanLastContentScrollTop = nextScrollTop;
+      return;
+    }
+
+    const delta = nextScrollTop - this.projectPlanLastContentScrollTop;
+    if (nextScrollTop <= 4) {
+      this.setProjectPlanHeaderCondensed(false);
+    } else if (delta > 5) {
+      this.setProjectPlanHeaderCondensed(true);
+    } else if (delta < -5) {
+      this.setProjectPlanHeaderCondensed(false);
+    }
+    this.projectPlanLastContentScrollTop = nextScrollTop;
+  }
+
+  handleProjectPlanContentWheel(event: WheelEvent): void {
+    if (this.selectedPage !== 'project-plan' || this.projectPlanEntry !== 'quick') return;
+    const target = event.currentTarget;
+    if (!(target instanceof HTMLElement)) return;
+
+    if (event.deltaY > 4 && target.scrollTop > 4) {
+      this.setProjectPlanHeaderCondensed(true);
+    } else if (event.deltaY < -4) {
+      this.setProjectPlanHeaderCondensed(false);
+    }
   }
 
   saveOnboardingDraft(): void {
@@ -12301,8 +12559,25 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   submitOnboardingPlan(): void {
+    this.submitProjectPlan();
+  }
+
+  submitProjectPlan(): void {
     this.onboardingPlanActionMessage = 'Project plan submitted for PMO approval.';
     this.iconsHydrated = false;
+  }
+
+  private resetProjectPlanHeaderCondensed(): void {
+    this.projectPlanLastContentScrollTop = 0;
+    this.projectPlanHeaderScrollIgnoreUntil = 0;
+    this.setProjectPlanHeaderCondensed(false);
+  }
+
+  private setProjectPlanHeaderCondensed(condensed: boolean): void {
+    if (this.projectPlanHeaderCondensed === condensed) return;
+    this.projectPlanHeaderCondensed = condensed;
+    this.projectPlanHeaderScrollIgnoreUntil = window.performance.now() + 340;
+    this.changeDetector.markForCheck();
   }
 
   private startAiAssistTyping(): void {

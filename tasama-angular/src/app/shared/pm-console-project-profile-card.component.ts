@@ -129,11 +129,11 @@ export interface PmConsoleProjectProfileField {
 
       .project-profile-field dd {
         align-items: center;
-        color: #101010;
+        color: #2f2f2f;
         display: flex;
         gap: 8px;
         font-size: 15px;
-        font-weight: 600;
+        font-weight: 500;
         line-height: 24px;
         margin: 0;
         min-width: 0;
