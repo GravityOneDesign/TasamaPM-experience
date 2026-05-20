@@ -2340,7 +2340,6 @@ function AppHeader(selectedProject, notificationOpen = false, selectedPage = "wo
         ${isUnassigned ? NoProjectSelector() : ProjectSelector(headerProject, !isProjectScopedPage)}
       </div>
       <div class="header-actions">
-        <button class="round-button" type="button" aria-label="Theme">${icon("sun")}</button>
         <button class="round-button notification-button ${notificationOpen ? "active" : ""}" type="button" aria-label="Notifications" aria-expanded="${notificationOpen}" data-notification-toggle>
           ${icon("bell")}
           <span class="notification-badge" aria-hidden="true"></span>

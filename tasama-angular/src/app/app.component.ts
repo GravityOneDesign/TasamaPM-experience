@@ -50,11 +50,10 @@ export class AppComponent {
       authenticated: true,
       projectId: 'all',
       selectedPage: 'workspace',
-      selectedView: 'board',
+      selectedView: 'pm101',
       frontDoorMode: 'assigned',
       guidedTourActive: true,
       guidedTourExitMode: 'onboarding-assignment-flow',
-      onboardingAssignmentFlow: true,
     });
   }
 

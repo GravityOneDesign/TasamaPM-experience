@@ -35,10 +35,10 @@ export type PmConsoleFieldType = 'text' | 'number' | 'date' | 'password' | 'sear
         <span class="matrix-select-wrap">
           <select [value]="controlValue" [attr.aria-label]="ariaLabel || label" [disabled]="disabled" (change)="valueChange.emit($any($event.target).value)">
             @if (placeholder) {
-              <option value="" [disabled]="placeholderDisabled">{{ placeholder }}</option>
+              <option value="" [disabled]="placeholderDisabled" [selected]="!controlValue">{{ placeholder }}</option>
             }
             @for (option of options; track option) {
-              <option [value]="option">{{ option }}</option>
+              <option [value]="option" [selected]="option === controlValue">{{ option }}</option>
             }
           </select>
           <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>

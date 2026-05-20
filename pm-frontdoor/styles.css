@@ -16877,3 +16877,50 @@ b {
     right: -16px;
   }
 }
+
+/* Front door pages scroll as a whole instead of clipping to the viewport. */
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .content-grid {
+  align-items: stretch;
+  grid-template-rows: auto;
+  height: auto;
+  min-height: 100%;
+}
+
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .workspace-panel,
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .pm101-operational-workspace {
+  height: auto;
+  max-height: none;
+  min-height: 100%;
+  overflow: visible;
+}
+
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .workspace-body,
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .board-workspace-panel .workspace-body,
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .board-view,
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .calendar-view,
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .pm101-view,
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .pm101-operational-view,
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .stages-view,
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .timeline-view {
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .board-workspace-panel .workspace-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .board-workspace-panel .board-view,
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .board-workspace-panel .kanban-board {
+  flex: 1 1 auto;
+  min-height: 0;
+}

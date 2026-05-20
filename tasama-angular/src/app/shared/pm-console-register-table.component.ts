@@ -13,6 +13,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { PmConsoleIconComponent } from './pm-console-icon.component';
+import { PmConsoleRowActionMenuComponent } from './pm-console-row-action-menu.component';
 import { PmConsoleStatusPillComponent } from './pm-console-status-pill.component';
 import { PmConsoleToolbarComponent } from './pm-console-toolbar.component';
 
@@ -25,8 +26,16 @@ export interface PmConsoleRegisterTableColumn {
   align?: 'left' | 'center' | 'right';
 }
 
+export interface PmConsoleRegisterTableMenuItem {
+  id: string;
+  label: string;
+  icon?: string;
+  tone?: string;
+  ariaLabel?: string;
+}
+
 export interface PmConsoleRegisterTableCell {
-  kind: 'text' | 'primary' | 'status' | 'budget' | 'person' | 'action' | 'checkbox';
+  kind: 'text' | 'primary' | 'status' | 'budget' | 'person' | 'action' | 'iconAction' | 'menu' | 'checkbox' | 'tags';
   text?: string;
   title?: string;
   subtitle?: string;
@@ -35,6 +44,8 @@ export interface PmConsoleRegisterTableCell {
   suffix?: string;
   icon?: string;
   tone?: string;
+  items?: string[];
+  actions?: PmConsoleRegisterTableMenuItem[];
   initials?: string;
   handle?: string;
   avatarUrl?: string;
@@ -56,6 +67,7 @@ export interface PmConsoleRegisterTableActionEvent {
   row: PmConsoleRegisterTableRow;
   column: PmConsoleRegisterTableColumn;
   cell: PmConsoleRegisterTableCell;
+  action?: PmConsoleRegisterTableMenuItem;
 }
 
 type ColumnMotionState = 'visible' | 'entering' | 'exiting';
@@ -66,7 +78,7 @@ let registerTableInstance = 0;
 @Component({
   selector: 'app-pm-console-register-table',
   standalone: true,
-  imports: [CommonModule, PmConsoleIconComponent, PmConsoleStatusPillComponent, PmConsoleToolbarComponent],
+  imports: [CommonModule, PmConsoleIconComponent, PmConsoleRowActionMenuComponent, PmConsoleStatusPillComponent, PmConsoleToolbarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
@@ -87,6 +99,13 @@ let registerTableInstance = 0;
 
       .pm-main-register-table-view.without-toolbar {
         grid-template-rows: minmax(0, 1fr);
+      }
+
+      .pm-register-toolbar-label {
+        align-items: center;
+        display: inline-flex;
+        flex: 0 0 auto;
+        min-width: 0;
       }
 
       .pm-main-register-table {
@@ -113,6 +132,15 @@ let registerTableInstance = 0;
 
       .pm-main-register-table .pm-table-column-cell.align-center .pm-table-column-frame {
         justify-content: center;
+      }
+
+      .pm-main-register-table .pm-table-column-cell.pm-table-actions-cell {
+        overflow: visible;
+      }
+
+      .pm-main-register-table .pm-table-menu-frame {
+        overflow: visible;
+        transform: none;
       }
 
       .pm-register-cell-text {
@@ -266,9 +294,71 @@ let registerTableInstance = 0;
         width: 15px;
       }
 
+      .pm-register-icon-action {
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid #e3e5e9;
+        border-radius: 7px;
+        color: #6f7785;
+        display: inline-flex;
+        height: 30px;
+        justify-content: center;
+        padding: 0;
+        width: 30px;
+      }
+
+      .pm-register-icon-action.danger {
+        color: #c2413d;
+      }
+
+      .pm-register-icon-action .icon {
+        height: 15px;
+        width: 15px;
+      }
+
       .pm-register-checkbox-cell {
         accent-color: var(--brand);
         margin: 0;
+      }
+
+      .pm-register-tag-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        min-width: 0;
+      }
+
+      .pm-register-tag {
+        background: #f4f7fb;
+        border: 1px solid #e3e8f0;
+        border-radius: 999px;
+        color: #4f596a;
+        display: inline-flex;
+        font-size: 10.5px;
+        font-weight: 600;
+        line-height: 1;
+        padding: 6px 9px;
+        white-space: nowrap;
+      }
+
+      .pm-register-empty-state {
+        align-items: center;
+        display: grid;
+        gap: 5px;
+        justify-items: center;
+        min-height: 160px;
+        text-align: center;
+      }
+
+      .pm-register-empty-state strong {
+        color: #202633;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .pm-register-empty-state span {
+        color: #687182;
+        font-size: 12px;
       }
 
       @media (max-width: 860px) {
@@ -281,7 +371,10 @@ let registerTableInstance = 0;
   template: `
     <article class="pm-main-register-table-view" [class.without-toolbar]="!showToolbar">
       @if (showToolbar) {
-        <app-pm-console-toolbar [itemLabel]="computedItemLabel" toolbarClass="pm-main-register-toolbar">
+        <app-pm-console-toolbar [itemLabel]="showItemLabel ? computedItemLabel : ''" [toolbarClass]="toolbarClass">
+          <span toolbarLabel class="pm-register-toolbar-label">
+            <ng-content select="[registerTableToolbarLabel]"></ng-content>
+          </span>
           @if (showSearch) {
             <button class="pm-table-tool square" type="button" [attr.aria-label]="'Search ' + itemName"><span pmConsoleIcon="search" aria-hidden="true"></span></button>
           }
@@ -293,6 +386,12 @@ let registerTableInstance = 0;
           }
           @if (showExport) {
             <button class="pm-table-tool" type="button"><span pmConsoleIcon="download" aria-hidden="true"></span><span>Export</span></button>
+          }
+          @if (addButtonLabel) {
+            <button class="pm-table-add-project" type="button" [attr.aria-label]="addButtonAriaLabel || addButtonLabel" (click)="emitAdd($event)">
+              <span [pmConsoleIcon]="addButtonIcon" aria-hidden="true"></span>
+              <span>{{ addButtonLabel }}</span>
+            </button>
           }
           <div class="pm-table-settings-menu" data-register-columns-menu>
             <button class="pm-table-tool square" type="button" aria-label="Table settings" aria-haspopup="dialog" [attr.aria-expanded]="columnMenuOpen" [attr.aria-controls]="columnPickerId" (click)="toggleColumnMenu()"><span pmConsoleIcon="settings" aria-hidden="true"></span></button>
@@ -344,8 +443,8 @@ let registerTableInstance = 0;
                 }
                 @for (column of renderedColumns; track column.id) {
                   @let cell = cellFor(row, column.id);
-                  <td class="pm-table-column-cell {{ column.align ? 'align-' + column.align : '' }}" [class.pm-table-project-cell]="cell?.kind === 'primary'" [class.pm-table-status-cell]="cell?.kind === 'status'" [class.pm-table-actions-cell]="cell?.kind === 'action'" [class.is-entering]="columnMotionState(column.id) === 'entering'" [class.is-exiting]="columnMotionState(column.id) === 'exiting'" [style.--column-open-width]="columnWidth(column.id)">
-                    <div class="pm-table-column-frame">
+                  <td class="pm-table-column-cell {{ column.align ? 'align-' + column.align : '' }}" [class.pm-table-project-cell]="cell?.kind === 'primary'" [class.pm-table-status-cell]="cell?.kind === 'status'" [class.pm-table-actions-cell]="cell?.kind === 'action' || cell?.kind === 'menu'" [class.is-entering]="columnMotionState(column.id) === 'entering'" [class.is-exiting]="columnMotionState(column.id) === 'exiting'" [style.--column-open-width]="columnWidth(column.id)">
+                    <div class="pm-table-column-frame" [class.pm-table-menu-frame]="cell?.kind === 'menu'">
                       @if (cell) {
                         @switch (cell.kind) {
                           @case ('primary') {
@@ -388,8 +487,30 @@ let registerTableInstance = 0;
                               <span>{{ cell.label }}</span>
                             </button>
                           }
+                          @case ('iconAction') {
+                            <button class="pm-register-icon-action {{ cell.tone || '' }}" type="button" [attr.aria-label]="cell.ariaLabel || cell.label" (click)="emitAction(row, column, cell, $event)">
+                              <span [pmConsoleIcon]="cell.icon || 'more-horizontal'" aria-hidden="true"></span>
+                            </button>
+                          }
+                          @case ('menu') {
+                            <app-pm-console-row-action-menu [ariaLabel]="cell.ariaLabel || 'Actions for row'">
+                              @for (action of cell.actions || []; track action.id) {
+                                <button type="button" role="menuitem" class="{{ action.tone || '' }}" [attr.aria-label]="action.ariaLabel || action.label" (click)="emitMenuAction(row, column, cell, action, $event)">
+                                  <span [pmConsoleIcon]="action.icon || 'circle'" aria-hidden="true"></span>
+                                  <span>{{ action.label }}</span>
+                                </button>
+                              }
+                            </app-pm-console-row-action-menu>
+                          }
                           @case ('checkbox') {
                             <input class="pm-register-checkbox-cell" type="checkbox" [checked]="cell.checked" [attr.aria-label]="cell.ariaLabel || cell.label" (click)="$event.stopPropagation()" />
+                          }
+                          @case ('tags') {
+                            <span class="pm-register-tag-list">
+                              @for (item of cell.items || []; track item) {
+                                <span class="pm-register-tag">{{ item }}</span>
+                              }
+                            </span>
                           }
                           @default {
                             <span class="pm-register-cell-text" [class.strong]="cell.strong" [class.muted]="cell.muted">{{ cell.text || cell.label }}</span>
@@ -399,6 +520,17 @@ let registerTableInstance = 0;
                     </div>
                   </td>
                 }
+              </tr>
+            } @empty {
+              <tr>
+                <td [attr.colspan]="tableColumnSpan()">
+                  <div class="pm-register-empty-state">
+                    <strong>{{ emptyTitle }}</strong>
+                    @if (emptyDescription) {
+                      <span>{{ emptyDescription }}</span>
+                    }
+                  </div>
+                </td>
               </tr>
             }
           </tbody>
@@ -415,15 +547,23 @@ export class PmConsoleRegisterTableComponent implements OnChanges, OnDestroy {
   @Input() itemName = 'items';
   @Input() itemLabel = '';
   @Input() selectAllLabel = 'Select all rows';
+  @Input() toolbarClass: string | string[] | Set<string> | Record<string, unknown> = 'pm-main-register-toolbar';
   @Input() selectable = true;
   @Input() showToolbar = true;
+  @Input() showItemLabel = true;
   @Input() showSearch = true;
   @Input() showFilter = true;
   @Input() showGroupBy = false;
   @Input() showExport = true;
+  @Input() addButtonLabel = '';
+  @Input() addButtonAriaLabel = '';
+  @Input() addButtonIcon = 'plus';
+  @Input() emptyTitle = 'No records in this view';
+  @Input() emptyDescription = '';
 
   @Output() rowOpen = new EventEmitter<PmConsoleRegisterTableRow>();
   @Output() cellAction = new EventEmitter<PmConsoleRegisterTableActionEvent>();
+  @Output() addItem = new EventEmitter<void>();
 
   readonly columnPickerId = `pm-register-table-columns-${++registerTableInstance}`;
   visibleColumnIds: string[] = [];
@@ -517,6 +657,10 @@ export class PmConsoleRegisterTableComponent implements OnChanges, OnDestroy {
     return (this.selectable ? 48 : 0) + columnWidthTotal;
   }
 
+  tableColumnSpan(): number {
+    return this.renderedColumns.length + (this.selectable ? 1 : 0);
+  }
+
   toggleColumn(id: string, event: Event): void {
     const input = event.target as HTMLInputElement | null;
     const shouldShow = Boolean(input?.checked);
@@ -565,6 +709,22 @@ export class PmConsoleRegisterTableComponent implements OnChanges, OnDestroy {
   emitAction(row: PmConsoleRegisterTableRow, column: PmConsoleRegisterTableColumn, cell: PmConsoleRegisterTableCell, event: Event): void {
     event.stopPropagation();
     this.cellAction.emit({ row, column, cell });
+  }
+
+  emitMenuAction(
+    row: PmConsoleRegisterTableRow,
+    column: PmConsoleRegisterTableColumn,
+    cell: PmConsoleRegisterTableCell,
+    action: PmConsoleRegisterTableMenuItem,
+    event: Event,
+  ): void {
+    event.stopPropagation();
+    this.cellAction.emit({ row, column, cell, action });
+  }
+
+  emitAdd(event: Event): void {
+    event.stopPropagation();
+    this.addItem.emit();
   }
 
   private syncColumnsFromInputs(): void {

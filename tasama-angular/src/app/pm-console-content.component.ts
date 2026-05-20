@@ -13,6 +13,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { animate, style, transition, trigger } from '@angular/animations';
 import { PmConsoleIconService } from './pm-console-icon.service';
 import { PmConsolePlanDrawerComponent } from './pm-console-plan-drawer.component';
 import { PmConsolePlanEmptyStateComponent } from './pm-console-plan-empty-state.component';
@@ -20,34 +21,76 @@ import { PmConsolePlanTableComponent } from './pm-console-plan-table.component';
 import { PmConsoleReportDrawerComponent } from './pm-console-report-drawer.component';
 import { PmConsoleMountOptions, ProjectOption } from './pm-console.types';
 import { PmConsoleAiGuideChipComponent, pmConsoleAiGuideFor, type PmConsoleAiGuideCopy } from './shared/pm-console-ai-guide-chip.component';
+import {
+  PmConsoleBenefitProfileComponent,
+  type BenefitProfileFieldChange,
+  type BenefitProfileMeasureRow,
+  type BenefitProfileObjectiveLink,
+  type BenefitProfileRecipientRow,
+  type BenefitProfileRecord,
+} from './shared/pm-console-benefit-profile.component';
 import { PmConsoleFieldComponent, type PmConsoleFieldType } from './shared/pm-console-field.component';
 import { PmConsoleAgentBannerComponent } from './shared/pm-console-agent-banner.component';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 import { PmConsoleOverviewCardsComponent, type PmConsoleOverviewCard } from './shared/pm-console-overview-cards.component';
 import { PmConsoleProjectProfileCardComponent } from './shared/pm-console-project-profile-card.component';
-import { PmConsoleRegisterTableComponent, type PmConsoleRegisterTableColumn, type PmConsoleRegisterTableRow } from './shared/pm-console-register-table.component';
+import { PmConsoleReportingEmptyIllustrationComponent } from './shared/pm-console-reporting-empty-illustration.component';
+import {
+  PmConsoleRegisterTableComponent,
+  type PmConsoleRegisterTableActionEvent,
+  type PmConsoleRegisterTableCell,
+  type PmConsoleRegisterTableColumn,
+  type PmConsoleRegisterTableRow,
+} from './shared/pm-console-register-table.component';
 import { PmConsoleRowActionMenuComponent } from './shared/pm-console-row-action-menu.component';
 import { PmConsoleRiskMatrixComponent, PmConsoleRiskMatrixSelection } from './shared/pm-console-risk-matrix.component';
 import { PmConsoleStatusPillComponent } from './shared/pm-console-status-pill.component';
 import { PmConsoleTableActionComponent } from './shared/pm-console-table-action.component';
 import { PmConsoleToolbarComponent } from './shared/pm-console-toolbar.component';
+import {
+  PmConsoleWorkCalendarComponent,
+  type PmConsoleCalendarCell,
+  type PmConsoleCalendarFilter,
+  type PmConsoleCalendarItem,
+} from './shared/pm-console-work-calendar.component';
 
 type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground';
 type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
 type ActionWorkspaceView = 'board' | 'calendar' | 'stages';
-type WorkspaceDisplay = 'table' | 'cards';
 type WorkspaceRegister = 'projects' | 'benefits' | 'risks';
 type ProjectPlanEntry = 'quick' | 'reports' | 'stages' | 'change-request' | 'closure';
 type ProjectPlanDetailMode = 'simple' | 'detailed';
 type ReportDetailMode = 'simple' | 'detailed';
+type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
 type RiskProfileTab = 'identification' | 'analysis' | 'treatment';
 type WorkspaceTableColumnId = 'project' | 'stage' | 'trend' | 'manager' | 'baselineStart' | 'baselineEnd' | 'budget' | 'status';
 type WorkspaceTableColumnMotionState = 'visible' | 'entering' | 'exiting';
+type WorkspaceProjectFilterField = 'status' | 'stage' | 'manager';
+
+const workspaceRegisterTabOrder: WorkspaceRegister[] = ['projects', 'risks', 'benefits'];
+const workspaceRegisterTabWidths: Record<WorkspaceRegister, number> = {
+  projects: 186,
+  risks: 165,
+  benefits: 194,
+};
+const projectPlanEntryOrder: ProjectPlanEntry[] = ['quick', 'reports', 'stages', 'change-request', 'closure'];
+const projectPlanEntryTabWidths: Record<ProjectPlanEntry, number> = {
+  quick: 156,
+  reports: 122,
+  stages: 122,
+  'change-request': 206,
+  closure: 128,
+};
 
 interface ProjectPlanReturnState {
   selectedProject: string;
   selectedPage: ConsolePage;
   selectedView: WorkspaceView;
+  workspaceRegister?: WorkspaceRegister;
+}
+
+interface RiskProfileReturnState extends ProjectPlanReturnState {
+  workspaceRegister: WorkspaceRegister;
 }
 
 interface QuickAction {
@@ -81,37 +124,6 @@ interface ProjectRow {
   budgetTotal: string;
   priority: string;
 }
-
-interface ProjectCardBase {
-  code: string;
-  title: string;
-  stage: string;
-  nextDue: string;
-  action: string;
-  reportProject?: string;
-}
-
-interface ActiveProjectCard extends ProjectCardBase {
-  draft?: false;
-  status: string;
-  statusTone: string;
-  schedule: number;
-  budgetUsed: string;
-  budgetTotal: string;
-  budget: number;
-}
-
-interface DraftProjectCard extends ProjectCardBase {
-  draft: true;
-  status?: string;
-  statusTone?: string;
-  schedule?: number;
-  budgetUsed?: string;
-  budgetTotal?: string;
-  budget?: number;
-}
-
-type ProjectCard = ActiveProjectCard | DraftProjectCard;
 
 interface WorkspaceRegisterTab {
   id: WorkspaceRegister;
@@ -1012,17 +1024,35 @@ interface ResourcePlanConfig {
   draft: ResourcePlanDraft;
 }
 
-interface BenefitPlanRow {
+interface BenefitPlanRow extends BenefitProfileRecord {
   id: string;
+  project: string;
   benefitType: string;
   category: string;
   benefitName: string;
   description: string;
   owner: string;
   realizationDate: string;
+  state: string;
+  stage: string;
+  product: string;
+  outcomes: string;
+  strategicObjective: string;
+  businessPlanObjectives: BenefitProfileObjectiveLink[];
+  manager: string;
+  recipients: BenefitProfileRecipientRow[];
+  impact: string;
+  impactJustification: string;
+  likelihood: string;
+  likelihoodJustification: string;
+  overallStatus: string;
+  statusComment: string;
+  measures: BenefitProfileMeasureRow[];
+  createdOn: string;
 }
 
 interface BenefitPlanDraft {
+  project: string;
   benefitType: string;
   category: string;
   benefitName: string;
@@ -1041,6 +1071,7 @@ interface BenefitPlanConfig {
   benefitTypePlaceholder: string;
   benefitCategoryPlaceholder: string;
   ownerPlaceholder: string;
+  projectOptions: string[];
   benefitTypeOptions: string[];
   benefitCategoryOptions: string[];
   ownerOptions: string[];
@@ -1338,6 +1369,7 @@ const iconMap: Record<string, string> = {
   moreVertical: 'ellipsis-vertical',
   minusCircle: 'circle-minus',
   outcomes: 'circle-check',
+  planned: 'calendar-clock',
   pauseCircle: 'circle-pause',
   pin: 'pin',
   pinOff: 'pin-off',
@@ -1350,6 +1382,10 @@ const iconMap: Record<string, string> = {
   quickGrid: 'layout-grid',
   registerRisk: 'panels-top-left',
   resources: 'users',
+  riskCritical: 'octagon-alert',
+  riskEscalated: 'siren',
+  riskHigh: 'shield-alert',
+  riskMedium: 'gauge',
   risks: 'triangle-alert',
   rocket: 'rocket',
   route: 'route',
@@ -1548,30 +1584,6 @@ const riskRegisterRows: RiskRegisterRow[] = [
   { id: 'RSK-03', risk: 'Vendor dependency slippage affects delivery dates', project: 'Smart City Alpha', owner: 'Khalid Omar', mitigation: 'Add recovery buffer and enforce a dual-supplier checkpoint.', reviewDate: '05/06/2026', exposure: 'High', exposureTone: 'red', status: 'Active', statusTone: 'amber' },
   { id: 'RSK-04', risk: 'Stage-gate evidence pack may miss the forum cutoff', project: 'Vision 2030', owner: 'PMO Desk', mitigation: 'Prepare the evidence pack early and assign an approval fallback.', reviewDate: '05/11/2026', exposure: 'Medium', exposureTone: 'amber', status: 'Active', statusTone: 'amber' },
   { id: 'RSK-05', risk: 'Benefits owner response is not yet confirmed', project: 'PMO Capability', owner: 'Laila Noor', mitigation: 'Follow up weekly with a named fallback approver in the forum.', reviewDate: '05/09/2026', exposure: 'Low', exposureTone: 'blue', status: 'Watching', statusTone: 'blue' },
-];
-
-const workspaceProjectCards: ProjectCard[] = [
-  { code: 'ATRC-01', title: 'UAE Research Map', stage: 'Initiation stage', status: 'On Track', statusTone: 'green', schedule: 72, budgetUsed: '$125K', budgetTotal: '$320K', budget: 39, nextDue: '01 Jun 2026 · 3 days', action: 'Submit PSR', reportProject: 'UAE Research Map' },
-  { code: 'ATRC-02', title: 'Global Anti-Scam Taskforce', stage: 'Closure stage', status: 'On Track', statusTone: 'green', schedule: 41, budgetUsed: '$125K', budgetTotal: '$320K', budget: 39, nextDue: '01 Jun 2026 · 3 days', action: 'Open Project' },
-  { code: 'ATRC-03', title: 'Counter Terrorism Operations', stage: 'Execution stage', status: 'At Risk', statusTone: 'amber', schedule: 82, budgetUsed: '$125K', budgetTotal: '$320K', budget: 39, nextDue: '01 Jun 2026 · 3 days', action: 'Submit PSR', reportProject: 'Counter Terrorism Operations' },
-  { code: 'ATRC-04', title: 'Counter Terrorism Operations', stage: 'Draft', draft: true, nextDue: 'Plan not yet created', action: 'Create' },
-];
-
-const onboardingWorkspaceProjectCards: ProjectCard[] = [
-  {
-    code: 'ATRC-01',
-    title: firstAssignedProject.name,
-    stage: `${firstAssignedProject.stage} stage`,
-    status: 'Draft',
-    statusTone: 'blue',
-    schedule: 0,
-    budgetUsed: '$0',
-    budgetTotal: '$0',
-    budget: 0,
-    draft: true,
-    nextDue: 'Plan not yet submitted',
-    action: 'Create plan',
-  },
 ];
 
 const actions = [
@@ -2751,11 +2763,13 @@ const benefitPlanConfig: BenefitPlanConfig = {
   benefitTypePlaceholder: 'Select benefit type',
   benefitCategoryPlaceholder: 'Select benefit category',
   ownerPlaceholder: 'Select benefit owner',
+  projectOptions: workspaceTableProjects.map((project) => project.title),
   benefitTypeOptions: ['Strategic benefit', 'Operational benefit', 'Financial benefit', 'Customer benefit', 'Compliance benefit'],
   benefitCategoryOptions: ['Cost Avoidance', 'Efficiency Gain', 'Service Quality', 'Risk Reduction', 'Revenue Protection'],
   ownerOptions: ['Research Leads Forum', 'PMO Desk', 'Fatima Ali', 'Muna Hassan', 'Delivery Office', 'Strategy Office'],
   rows: [],
   draft: {
+    project: '',
     benefitType: '',
     category: 'Cost Avoidance',
     benefitName: '',
@@ -3241,53 +3255,67 @@ const guidedTourSteps: GuidedTourStep[] = [
   {
     target: 'project-switch',
     title: 'Choose your working scope',
-    body: 'Start with all assigned projects for a portfolio scan, then switch into a single project when you need detail.',
-    daily: 'Daily PM move: check what needs attention across every project before going deep.',
-  },
-  {
-    target: 'frontdoor-actions',
-    title: 'Open the right workspace quickly',
-    body: 'Use Workspaces for project rooms and Learning Hub for lifecycle guidance.',
-    daily: 'Use these when you need context before acting on a dependency, risk, or stage gate.',
+    body: 'Start with all projects for a portfolio view, then switch into one project when you need its overview, quick links, reports, or stage detail.',
+    daily: 'Daily PM move: scan the portfolio first, then open the project that needs attention.',
   },
   {
     target: 'workspace-tabs',
-    title: 'Move between work and lifecycle views',
-    body: 'Actions is your day-to-day board. Stages shows where each project sits in its lifecycle and what gate evidence is needed.',
-    daily: 'Start in Actions, then use Stages when a gate submission is due.',
+    title: 'Use the two front-door tabs',
+    body: 'Overview is the starting point for context and project shortcuts. Actions is where board, calendar, and stage work now lives.',
+    daily: 'Read Overview when you need orientation; move to Actions when you are ready to execute.',
+  },
+  {
+    target: 'frontdoor-overview',
+    title: 'Start from the Overview',
+    body: 'The Overview explains what needs to happen in a project journey. When a single project is selected, it becomes the place for quick links into planning, reports, stages, changes, and closure.',
+    daily: 'Use it as the front door before jumping into project-specific work.',
+  },
+  {
+    target: 'frontdoor-actions',
+    title: 'Keep common spaces close',
+    body: 'Workspaces opens project rooms. Learning Hub opens lifecycle guidance and playbooks. These stay available beside the main front-door content.',
+    daily: 'Use these when you need supporting context before acting on a dependency, risk, report, or stage gate.',
+  },
+  {
+    target: 'right-report-widget',
+    title: 'Watch reporting trends',
+    body: 'Reporting trends show the latest PSR signals across projects, including overdue, due, and submitted report states.',
+    daily: 'Use it to spot off-track reports before they become escalations.',
+  },
+  {
+    target: 'actions-subtabs',
+    title: 'Pick an Actions view',
+    body: 'Actions now has three sub-tabs: Calendar for dated work, Board for triage, and Stages for lifecycle gate progress.',
+    daily: 'Start with Calendar for timing, Board for today, and Stages when governance evidence is due.',
   },
   {
     target: 'action-board',
     title: 'Clear the daily action board',
-    body: 'Overdue, this week, and upcoming lanes organize what needs your attention. Filters help isolate reports, risks, benefits, and dependencies.',
+    body: 'The Board organizes overdue, this week, and upcoming work. Filters help isolate reports, risks, benefits, dependencies, and other delivery actions.',
     daily: 'Work left to right: overdue first, this week next, upcoming last.',
   },
   {
     target: 'create-psr',
     title: 'Create or update a PSR',
-    body: 'Report actions open the PSR drawer where you update status, scope, trends, commentary, and reportable evidence.',
+    body: 'Report actions open the PSR drawer so you can update status, trends, commentary, and reportable evidence without leaving the front door.',
     daily: 'When the weekly report is due, open the PSR, review the sections, save the draft, and submit when ready.',
-  },
-  {
-    target: 'right-report-widget',
-    title: 'Watch reporting trends',
-    body: 'The reporting widget shows recent PSR signals and gives you a fast create action for each project.',
-    daily: 'Use it to spot off-track reports before they become escalations.',
   },
   {
     target: 'side-navigation',
     title: 'Navigate the PM console',
-    body: 'The left rail keeps core spaces one click away: home, register, dashboards, help, and settings.',
+    body: 'The left rail keeps the broader console one click away: home, register, dashboards, help, and settings.',
     daily: 'Use it when you need to leave the front door without losing the project context.',
   },
 ];
 
-const timelineItems = [
+const timelineItems: PmConsoleCalendarItem[] = [
   { date: '2026-05-04', label: 'PMO pack', tone: 'green', project: 'PMO Capability', kind: 'management-product' },
   { date: '2026-05-06', label: 'Benefit baseline', tone: 'green', project: 'Vision 2030', kind: 'benefit' },
   { date: '2026-05-09', label: 'Status report', tone: 'red', project: 'Vision 2030', kind: 'report' },
   { date: '2026-05-10', label: 'Budget risk', tone: 'red', project: 'NEOM Integration', kind: 'risk' },
   { date: '2026-05-15', label: 'Forum pack', tone: 'neutral', project: 'PMO Capability', kind: 'management-product' },
+  { date: '2026-05-15', label: 'Risk review', tone: 'red', project: 'UAE Research Map', kind: 'risk' },
+  { date: '2026-05-15', label: 'Owner follow-up', tone: 'blue', project: 'Vision 2030', kind: 'dependency' },
   { date: '2026-05-19', label: 'API dependency', tone: 'red', project: 'Smart City Alpha', kind: 'dependency' },
   { date: '2026-05-22', label: 'Product evidence', tone: 'neutral', project: 'Vision 2030', kind: 'end-product' },
   { date: '2026-05-25', label: 'CSAT target', tone: 'blue', project: 'Smart City Alpha', kind: 'benefit' },
@@ -3488,7 +3516,7 @@ type Pm101StepAction = 'project-plan' | 'project-workspace' | 'reports' | 'learn
 interface Pm101Step {
   title: string;
   body: string;
-  iconAsset: string;
+  icon: string;
   decor: string;
   decorAssets: string[];
   footerLabel?: string;
@@ -3541,7 +3569,6 @@ const projectReportRegisterColumns: PmConsoleRegisterTableColumn[] = [
   { id: 'dueBy', label: 'Due By', minWidth: 120, maxWidth: 170 },
   { id: 'reportingStatus', label: 'Reporting Status', minWidth: 150, maxWidth: 190 },
   { id: 'projectStatus', label: 'Project Status', minWidth: 150, maxWidth: 190 },
-  { id: 'submittedBy', label: 'Submitted by', minWidth: 230, maxWidth: 290 },
   { id: 'actions', label: 'Actions', minWidth: 122, maxWidth: 150, align: 'right' },
 ];
 
@@ -3554,7 +3581,6 @@ const projectReportRegisterRows: PmConsoleRegisterTableRow[] = [
       dueBy: { kind: 'text', text: '09.02.25', muted: true },
       reportingStatus: { kind: 'status', label: 'Draft', tone: 'blue' },
       projectStatus: { kind: 'status', label: 'Alert', tone: 'amber' },
-      submittedBy: { kind: 'person', title: 'Olivia Rhye', handle: '@olivia', initials: 'OR', checked: false },
       actions: { kind: 'action', label: 'Create', icon: 'file-text', ariaLabel: 'Create report for 30 Jan 2025 to 7 Feb 2025' },
     },
   },
@@ -3566,8 +3592,7 @@ const projectReportRegisterRows: PmConsoleRegisterTableRow[] = [
       dueBy: { kind: 'text', text: '16.02.25', muted: true },
       reportingStatus: { kind: 'status', label: 'Submitted', tone: 'green' },
       projectStatus: { kind: 'status', label: 'On-Track', tone: 'green' },
-      submittedBy: { kind: 'person', title: 'Phoenix Baker', handle: '@phoenix', initials: 'PB', checked: false },
-      actions: { kind: 'action', label: 'Create', icon: 'file-text', ariaLabel: 'Create report for 07 Feb 2025 to 14 Feb 2025' },
+      actions: { kind: 'action', label: 'Preview', icon: 'eye', ariaLabel: 'Preview submitted report for 07 Feb 2025 to 14 Feb 2025' },
     },
   },
   {
@@ -3578,7 +3603,6 @@ const projectReportRegisterRows: PmConsoleRegisterTableRow[] = [
       dueBy: { kind: 'text', text: '23.02.25', muted: true },
       reportingStatus: { kind: 'status', label: 'Not Created', tone: 'neutral' },
       projectStatus: { kind: 'status', label: 'Off-Track', tone: 'red' },
-      submittedBy: { kind: 'person', title: 'Lana Steiner', handle: '@lana', initials: 'LS', checked: false },
       actions: { kind: 'action', label: 'Create', icon: 'file-text', ariaLabel: 'Create report for 14 Feb 2025 to 21 Feb 2025' },
     },
   },
@@ -3590,8 +3614,7 @@ const projectReportRegisterRows: PmConsoleRegisterTableRow[] = [
       dueBy: { kind: 'text', text: '02.03.25', muted: true },
       reportingStatus: { kind: 'status', label: 'Submitted', tone: 'green' },
       projectStatus: { kind: 'status', label: 'On-Track', tone: 'green' },
-      submittedBy: { kind: 'person', title: 'Demi Wilkinson', handle: '@demi', initials: 'DW', checked: false },
-      actions: { kind: 'action', label: 'Create', icon: 'file-text', ariaLabel: 'Create report for 21 Feb 2025 to 28 Feb 2025' },
+      actions: { kind: 'action', label: 'Preview', icon: 'eye', ariaLabel: 'Preview submitted report for 21 Feb 2025 to 28 Feb 2025' },
     },
   },
   {
@@ -3602,7 +3625,6 @@ const projectReportRegisterRows: PmConsoleRegisterTableRow[] = [
       dueBy: { kind: 'text', text: '09.03.25', muted: true },
       reportingStatus: { kind: 'status', label: 'Not Created', tone: 'neutral' },
       projectStatus: { kind: 'status', label: 'On-Track', tone: 'green' },
-      submittedBy: { kind: 'person', title: 'Candice Wu', handle: '@candice', initials: 'CW', checked: false },
       actions: { kind: 'action', label: 'Create', icon: 'file-text', ariaLabel: 'Create report for 28 Feb 2025 to 07 Mar 2025' },
     },
   },
@@ -3614,7 +3636,6 @@ const projectReportRegisterRows: PmConsoleRegisterTableRow[] = [
       dueBy: { kind: 'text', text: '16.03.25', muted: true },
       reportingStatus: { kind: 'status', label: 'Not Created', tone: 'neutral' },
       projectStatus: { kind: 'status', label: 'Alert', tone: 'amber' },
-      submittedBy: { kind: 'person', title: 'Natali Craig', handle: '@natali', initials: 'NC', checked: false },
       actions: { kind: 'action', label: 'Create', icon: 'file-text', ariaLabel: 'Create report for 07 Mar 2025 to 14 Mar 2025' },
     },
   },
@@ -3626,8 +3647,7 @@ const projectReportRegisterRows: PmConsoleRegisterTableRow[] = [
       dueBy: { kind: 'text', text: '23.03.25', muted: true },
       reportingStatus: { kind: 'status', label: 'Submitted', tone: 'green' },
       projectStatus: { kind: 'status', label: 'Alert', tone: 'amber' },
-      submittedBy: { kind: 'person', title: 'Drew Cano', handle: '@drew', initials: 'DC', checked: false },
-      actions: { kind: 'action', label: 'Create', icon: 'file-text', ariaLabel: 'Create report for 14 Mar 2025 to 21 Mar 2025' },
+      actions: { kind: 'action', label: 'Preview', icon: 'eye', ariaLabel: 'Preview submitted report for 14 Mar 2025 to 21 Mar 2025' },
     },
   },
   {
@@ -3638,8 +3658,7 @@ const projectReportRegisterRows: PmConsoleRegisterTableRow[] = [
       dueBy: { kind: 'text', text: '30.03.25', muted: true },
       reportingStatus: { kind: 'status', label: 'Submitted', tone: 'green' },
       projectStatus: { kind: 'status', label: 'Delayed', tone: 'amber' },
-      submittedBy: { kind: 'person', title: 'Katherine Moss', handle: '@katherine', initials: 'KM', checked: false },
-      actions: { kind: 'action', label: 'Create', icon: 'file-text', ariaLabel: 'Create report for 21 Mar 2025 to 28 Mar 2025' },
+      actions: { kind: 'action', label: 'Preview', icon: 'eye', ariaLabel: 'Preview submitted report for 21 Mar 2025 to 28 Mar 2025' },
     },
   },
   {
@@ -3650,7 +3669,6 @@ const projectReportRegisterRows: PmConsoleRegisterTableRow[] = [
       dueBy: { kind: 'text', text: '06.04.25', muted: true },
       reportingStatus: { kind: 'status', label: 'Draft', tone: 'blue' },
       projectStatus: { kind: 'status', label: 'Off-Track', tone: 'red' },
-      submittedBy: { kind: 'person', title: 'Orlando Diggs', handle: '@orlando', initials: 'OD', checked: false },
       actions: { kind: 'action', label: 'Create', icon: 'file-text', ariaLabel: 'Create report for 28 Mar 2025 to 04 Apr 2025' },
     },
   },
@@ -3662,8 +3680,7 @@ const projectReportRegisterRows: PmConsoleRegisterTableRow[] = [
       dueBy: { kind: 'text', text: '13.04.25', muted: true },
       reportingStatus: { kind: 'status', label: 'Submitted', tone: 'green' },
       projectStatus: { kind: 'status', label: 'Delayed', tone: 'amber' },
-      submittedBy: { kind: 'person', title: 'Andi Lane', handle: '@andi', initials: 'AL', checked: false },
-      actions: { kind: 'action', label: 'Create', icon: 'file-text', ariaLabel: 'Create report for 04 Apr 2025 to 11 Apr 2025' },
+      actions: { kind: 'action', label: 'Preview', icon: 'eye', ariaLabel: 'Preview submitted report for 04 Apr 2025 to 11 Apr 2025' },
     },
   },
 ];
@@ -3672,7 +3689,7 @@ const pm101Steps: Pm101Step[] = [
   {
     title: 'Project assigned',
     body: 'You’ll receive a PMO assignment notification.',
-    iconAsset: './assets/pm101/figma-step-1.svg',
+    icon: 'rocket',
     decor: 'burst',
     decorAssets: ['./assets/pm101/decor-1.svg'],
     footerLabel: 'Project assigned on',
@@ -3681,7 +3698,7 @@ const pm101Steps: Pm101Step[] = [
   {
     title: 'Build project plan',
     body: 'Set scope, timeline, risks, and dependencies.',
-    iconAsset: './assets/pm101/figma-step-2.svg',
+    icon: 'plan',
     decor: 'rings',
     decorAssets: ['./assets/pm101/decor-2.svg'],
     footerAction: 'Create project plan',
@@ -3692,7 +3709,7 @@ const pm101Steps: Pm101Step[] = [
   {
     title: 'Manage delivery',
     body: 'Track milestones, issues, and dependencies.',
-    iconAsset: './assets/pm101/figma-step-3.svg',
+    icon: 'playground',
     decor: 'loops',
     decorAssets: ['./assets/pm101/decor-4.svg'],
     footerAction: 'Go to workspaces',
@@ -3701,7 +3718,7 @@ const pm101Steps: Pm101Step[] = [
   {
     title: 'Report progress',
     body: 'Submit PSRs and maintain delivery health.',
-    iconAsset: './assets/pm101/figma-step-4.svg',
+    icon: 'chart',
     decor: 'hex',
     decorAssets: ['./assets/pm101/decor-5.svg'],
     footerAction: 'Create Report',
@@ -3710,7 +3727,7 @@ const pm101Steps: Pm101Step[] = [
   {
     title: 'Project Stages',
     body: 'See lifecycle stage, gate evidence, and next steps.',
-    iconAsset: './assets/pm101/figma-step-5.svg',
+    icon: 'stageGate',
     decor: 'plus',
     decorAssets: ['./assets/pm101/decor-3-group-1.svg', './assets/pm101/decor-3-group-2.svg', './assets/pm101/decor-3-group-3.svg', './assets/pm101/decor-3-group-4.svg'],
     footerAction: 'Learn more',
@@ -3759,6 +3776,35 @@ const workspaceTableColumns: WorkspaceTableColumn[] = [
   { id: 'status', label: 'Status' },
 ];
 const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'stage', 'trend', 'manager', 'baselineStart', 'budget'];
+const benefitRegisterTableColumns: PmConsoleRegisterTableColumn[] = [
+  { id: 'id', label: 'Benefit ID', minWidth: 112, maxWidth: 140 },
+  { id: 'benefit', label: 'Benefit', minWidth: 220, maxWidth: 340 },
+  { id: 'project', label: 'Linked Project', minWidth: 160, maxWidth: 230 },
+  { id: 'owner', label: 'Owner', minWidth: 150, maxWidth: 210 },
+  { id: 'targetDate', label: 'Target Date', minWidth: 128, maxWidth: 170 },
+  { id: 'measure', label: 'KPI / Measure', minWidth: 210, maxWidth: 320 },
+  { id: 'realization', label: 'Realization', minWidth: 140, maxWidth: 180 },
+  { id: 'status', label: 'Status', minWidth: 130, maxWidth: 170 },
+];
+const riskRegisterTableColumns: PmConsoleRegisterTableColumn[] = [
+  { id: 'id', label: 'Risk ID', minWidth: 100, maxWidth: 132 },
+  { id: 'risk', label: 'Risk', minWidth: 230, maxWidth: 360 },
+  { id: 'project', label: 'Linked Project', minWidth: 160, maxWidth: 230 },
+  { id: 'owner', label: 'Owner', minWidth: 150, maxWidth: 210 },
+  { id: 'mitigation', label: 'Mitigation', minWidth: 230, maxWidth: 360 },
+  { id: 'reviewDate', label: 'Last Review', minWidth: 128, maxWidth: 170 },
+  { id: 'exposure', label: 'Exposure', minWidth: 130, maxWidth: 170 },
+  { id: 'status', label: 'Status', minWidth: 130, maxWidth: 170 },
+];
+const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
+  { id: 'pcrNumber', label: 'PCR Number', minWidth: 132, maxWidth: 170 },
+  { id: 'types', label: 'Type', minWidth: 180, maxWidth: 250 },
+  { id: 'createdDate', label: 'Created Date', minWidth: 128, maxWidth: 170 },
+  { id: 'dueDate', label: 'Due Date', minWidth: 128, maxWidth: 170 },
+  { id: 'priority', label: 'Priority', minWidth: 116, maxWidth: 150 },
+  { id: 'status', label: 'Status', minWidth: 160, maxWidth: 220 },
+  { id: 'actions', label: 'Actions', minWidth: 76, maxWidth: 96, align: 'right' },
+];
 
 @Component({
   selector: 'app-pm-console-content',
@@ -3767,6 +3813,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
     CommonModule,
     PmConsoleAgentBannerComponent,
     PmConsoleAiGuideChipComponent,
+    PmConsoleBenefitProfileComponent,
     PmConsoleFieldComponent,
     PmConsoleIconComponent,
     PmConsoleOverviewCardsComponent,
@@ -3774,6 +3821,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
     PmConsolePlanEmptyStateComponent,
     PmConsolePlanTableComponent,
     PmConsoleProjectProfileCardComponent,
+    PmConsoleReportingEmptyIllustrationComponent,
     PmConsoleRegisterTableComponent,
     PmConsoleReportDrawerComponent,
     PmConsoleRiskMatrixComponent,
@@ -3781,15 +3829,67 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
     PmConsoleStatusPillComponent,
     PmConsoleTableActionComponent,
     PmConsoleToolbarComponent,
+    PmConsoleWorkCalendarComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  animations: [
+    trigger('pageMotion', [
+      transition('* => *', [
+        style({ opacity: 0, transform: 'translateY(12px) scale(0.992)' }),
+        animate('300ms cubic-bezier(0.2, 0.8, 0.2, 1)', style({ opacity: 1, transform: 'translateY(0) scale(1)' })),
+      ]),
+    ]),
+    trigger('panelMotion', [
+      transition('* => *', [
+        style({ opacity: 0, transform: 'translateY(8px)' }),
+        animate('220ms cubic-bezier(0.2, 0.8, 0.2, 1)', style({ opacity: 1, transform: 'translateY(0)' })),
+      ]),
+    ]),
+    trigger('registerPanelMotion', [
+      transition(':increment', [
+        style({ opacity: 0, transform: 'translateX(18px)' }),
+        animate('240ms cubic-bezier(0.2, 0.8, 0.2, 1)', style({ opacity: 1, transform: 'translateX(0)' })),
+      ]),
+      transition(':decrement', [
+        style({ opacity: 0, transform: 'translateX(-18px)' }),
+        animate('240ms cubic-bezier(0.2, 0.8, 0.2, 1)', style({ opacity: 1, transform: 'translateX(0)' })),
+      ]),
+      transition('* => *', [
+        style({ opacity: 0, transform: 'translateY(6px)' }),
+        animate('200ms cubic-bezier(0.2, 0.8, 0.2, 1)', style({ opacity: 1, transform: 'translateY(0)' })),
+      ]),
+    ]),
+  ],
   template: `
-    <main class="app-canvas" [class.workspaces-canvas]="selectedPage === 'workspaces'" [class.wbs-canvas]="selectedPage === 'wbs'" [class.project-plan-canvas]="selectedPage === 'project-plan'" [class.playground-canvas]="selectedPage === 'playground'" [class.unassigned-canvas]="frontDoorMode === 'unassigned'" [class.pm101-locked-canvas]="usesPm101DesignShell" [class.pm101-operational-canvas]="usesPm101OperationalLayout">
+    <main class="app-canvas" [class.workspaces-canvas]="selectedPage === 'workspaces'" [class.wbs-canvas]="selectedPage === 'wbs'" [class.project-plan-canvas]="selectedPage === 'project-plan'" [class.playground-canvas]="selectedPage === 'playground'" [class.unassigned-canvas]="frontDoorMode === 'unassigned'" [class.pm101-locked-canvas]="usesPm101DesignShell" [class.pm101-operational-canvas]="usesPm101OperationalLayout" [class.risk-profile-focus-canvas]="riskProfileFocusMode" [class.benefit-profile-focus-canvas]="benefitProfileFocusMode">
+      <div class="page-motion-host" [@pageMotion]="pageMotionKey" [@.disabled]="prefersReducedMotion">
       @switch (selectedPage) {
         @case ('workspaces') {
-          <section class="pm-projects-page" [class.table-mode]="!isWorkspaceCardMode" [class.card-mode]="isWorkspaceCardMode" [attr.aria-label]="workspaceRegisterAriaLabel">
-            <div class="pm-projects-shell">
-              <div class="pm-register-tabs" role="tablist" aria-label="Workspace registers">
+          <section class="pm-projects-page table-mode" [attr.aria-label]="workspaceRegisterAriaLabel">
+            <div class="pm-projects-shell" [class.benefit-profile-focus-shell]="benefitProfileFocusMode">
+              @if (activeWorkspaceBenefitProfile; as benefit) {
+                @let register = activeBenefitPlan;
+                <div class="benefit-profile-focus-frame">
+                  <app-pm-console-benefit-profile
+                    [benefit]="benefit"
+                    [projectOptions]="workspaceBenefitProjectOptions"
+                    [categoryOptions]="register.benefitCategoryOptions"
+                    [ownerOptions]="register.ownerOptions"
+                    [productOptions]="benefitProductOptions"
+                    [strategicObjectiveOptions]="benefitStrategicObjectiveOptions"
+                    (closeProfile)="closeBenefitProfile()"
+                    (saveProfile)="saveBenefitProfile()"
+                    (completeProfile)="completeBenefitProfile($event)"
+                    (fieldChange)="updateBenefitProfileField($event)"
+                    (objectiveAdd)="addBenefitProfileObjective($event)"
+                    (recipientAdd)="addBenefitProfileRecipient($event)"
+                    (measureAdd)="addBenefitProfileMeasure($event)"
+                    (removeMeasure)="removeBenefitProfileMeasure($event)"
+                  ></app-pm-console-benefit-profile>
+                </div>
+              } @else {
+              <div class="pm-register-tabs" role="tablist" aria-label="Workspace registers" [style.--register-tab-left]="workspaceRegisterIndicatorLeft" [style.--register-tab-width]="workspaceRegisterIndicatorWidth">
+                <span class="pm-register-tab-indicator" aria-hidden="true"></span>
                 @for (tab of workspaceRegisterTabs; track tab.id) {
                   <button class="pm-register-tab" [class.active]="workspaceRegister === tab.id" type="button" role="tab" [attr.aria-selected]="workspaceRegister === tab.id" [style.width]="workspaceRegisterTabWidth(tab.id)" (click)="setWorkspaceRegister(tab.id)">
                     <span class="pm-register-tab-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(tab.icon)"></i></span></span>
@@ -3799,8 +3899,8 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
               </div>
 
               <div class="pm-projects-board">
-                <div class="pm-projects-board-body">
-                @if (workspaceRegister === 'projects' && workspaceDisplay === 'table') {
+                <div class="pm-projects-board-body" [@registerPanelMotion]="workspaceRegisterIndex">
+                @if (workspaceRegister === 'projects') {
                   <div class="pm-project-table-view">
                     <div class="pm-project-table-stats" aria-label="Project status summary">
                       @for (stat of workspaceStats; track stat.label) {
@@ -3810,18 +3910,61 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                         </article>
                       }
                     </div>
-                    <app-pm-console-toolbar [itemLabel]="'Items: ' + workspaceTableProjects.length">
-                        <button class="pm-table-tool square" type="button" aria-label="Search projects"><span pmConsoleIcon="search" aria-hidden="true"></span></button>
-                        <button class="pm-table-tool" type="button"><span pmConsoleIcon="filter" aria-hidden="true"></span><span>Filter</span></button>
-                        <button class="pm-table-tool" type="button"><span pmConsoleIcon="sliders-horizontal" aria-hidden="true"></span><span>Group by</span></button>
-                        <div class="pm-project-view-toggle" aria-label="Project display">
-                          <button type="button" aria-label="Card view" aria-pressed="false" (click)="setWorkspaceDisplay('cards')"><span pmConsoleIcon="layout-grid" aria-hidden="true"></span></button>
-                          <button class="active" type="button" aria-label="List view" aria-pressed="true" (click)="setWorkspaceDisplay('table')"><span pmConsoleIcon="list" aria-hidden="true"></span></button>
-                        </div>
-                        <button class="pm-table-tool" type="button"><span pmConsoleIcon="download" aria-hidden="true"></span><span>Export</span></button>
-                        @if (!onboardingProjectSetup) {
-                          <button class="pm-table-add-project" type="button"><span pmConsoleIcon="plus" aria-hidden="true"></span><span>Add Project</span></button>
+                    <app-pm-console-toolbar [itemLabel]="workspaceProjectTableItemLabel" toolbarClass="pm-workspace-register-toolbar">
+                        <button class="pm-table-tool square" type="button" aria-label="Search projects" aria-controls="workspace-project-search-table" [attr.aria-expanded]="workspaceProjectSearchOpen" (click)="toggleWorkspaceProjectSearch()"><span pmConsoleIcon="search" aria-hidden="true"></span></button>
+                        @if (workspaceProjectSearchOpen) {
+                          <label class="pm-table-search-field" for="workspace-project-search-table">
+                            <span pmConsoleIcon="search" aria-hidden="true"></span>
+                            <input id="workspace-project-search-table" data-workspace-project-search type="search" [value]="workspaceProjectSearch" [placeholder]="workspaceRegisterSearchPlaceholder" (input)="setWorkspaceProjectSearch($event)" />
+                            @if (workspaceProjectSearch) {
+                              <button class="pm-table-search-clear" type="button" aria-label="Clear project search" (click)="clearWorkspaceProjectSearch()"><span pmConsoleIcon="x" aria-hidden="true"></span></button>
+                            }
+                          </label>
                         }
+                        <div class="pm-table-settings-menu" data-workspace-project-filter-menu>
+                          <button class="pm-table-tool" type="button" aria-haspopup="dialog" aria-controls="workspace-project-filter-picker" [attr.aria-expanded]="workspaceProjectFilterMenuOpen" (click)="toggleWorkspaceProjectFilterMenu()"><span pmConsoleIcon="filter" aria-hidden="true"></span><span>Filter</span>@if (workspaceProjectActiveFilterCount) { <strong class="pm-table-filter-count">{{ workspaceProjectActiveFilterCount }}</strong> }</button>
+                          @if (workspaceProjectFilterMenuOpen) {
+                            <section class="pm-table-column-popover pm-table-filter-popover" id="workspace-project-filter-picker" role="dialog" aria-label="Filter project register">
+                              <div class="pm-table-column-popover-head">
+                                <div>
+                                  <strong>Project filters</strong>
+                                  <small>{{ workspaceProjectFilterSummary }}</small>
+                                </div>
+                                <button class="pm-table-column-reset" type="button" [disabled]="!hasWorkspaceProjectFilters" (click)="resetWorkspaceProjectFilters()">Reset</button>
+                              </div>
+                              <div class="pm-table-filter-grid">
+                                <label class="pm-table-filter-field">
+                                  <span>Status</span>
+                                  <select [value]="workspaceProjectStatusFilter" (change)="setWorkspaceProjectFilter('status', $event)">
+                                    <option value="all">All statuses</option>
+                                    @for (status of workspaceProjectStatusOptions; track status) {
+                                      <option [value]="status">{{ status }}</option>
+                                    }
+                                  </select>
+                                </label>
+                                <label class="pm-table-filter-field">
+                                  <span>Stage</span>
+                                  <select [value]="workspaceProjectStageFilter" (change)="setWorkspaceProjectFilter('stage', $event)">
+                                    <option value="all">All stages</option>
+                                    @for (stage of workspaceProjectStageOptions; track stage) {
+                                      <option [value]="stage">{{ stage }}</option>
+                                    }
+                                  </select>
+                                </label>
+                                <label class="pm-table-filter-field">
+                                  <span>Manager</span>
+                                  <select [value]="workspaceProjectManagerFilter" (change)="setWorkspaceProjectFilter('manager', $event)">
+                                    <option value="all">All managers</option>
+                                    @for (manager of workspaceProjectManagerOptions; track manager) {
+                                      <option [value]="manager">{{ manager }}</option>
+                                    }
+                                  </select>
+                                </label>
+                              </div>
+                            </section>
+                          }
+                        </div>
+                        <button class="pm-table-tool" type="button" aria-label="Export project register to PDF" (click)="exportWorkspaceProjectsToPdf()"><span pmConsoleIcon="download" aria-hidden="true"></span><span>Export PDF</span></button>
                         <div class="pm-table-settings-menu" data-workspace-columns-menu>
                           <button class="pm-table-tool square" type="button" aria-label="Table settings" aria-haspopup="dialog" [attr.aria-expanded]="workspaceColumnMenuOpen" aria-controls="workspace-column-picker" (click)="toggleWorkspaceColumnMenu()"><span pmConsoleIcon="settings" aria-hidden="true"></span></button>
                           @if (workspaceColumnMenuOpen) {
@@ -3898,42 +4041,9 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                       </table>
                     </div>
                   </div>
-                } @else if (workspaceRegister === 'projects') {
-                  <app-pm-console-toolbar [itemLabel]="'Items: ' + workspaceProjectCards.length" toolbarClass="pm-project-card-toolbar">
-                      <button class="pm-table-tool square" type="button" aria-label="Search projects"><span pmConsoleIcon="search" aria-hidden="true"></span></button>
-                      <button class="pm-table-tool" type="button"><span pmConsoleIcon="filter" aria-hidden="true"></span><span>Filter</span></button>
-                      <button class="pm-table-tool" type="button"><span pmConsoleIcon="sliders-horizontal" aria-hidden="true"></span><span>Group by</span></button>
-                      <div class="pm-project-view-toggle" aria-label="Project display">
-                        <button class="active" type="button" aria-label="Card view" aria-pressed="true" (click)="setWorkspaceDisplay('cards')"><span pmConsoleIcon="layout-grid" aria-hidden="true"></span></button>
-                        <button type="button" aria-label="List view" aria-pressed="false" (click)="setWorkspaceDisplay('table')"><span pmConsoleIcon="list" aria-hidden="true"></span></button>
-                      </div>
-                      <button class="pm-table-tool" type="button"><span pmConsoleIcon="download" aria-hidden="true"></span><span>Export</span></button>
-                      @if (!onboardingProjectSetup) {
-                        <button class="pm-table-add-project" type="button"><span pmConsoleIcon="plus" aria-hidden="true"></span><span>Add Project</span></button>
-                      }
-                      <button class="pm-table-tool square" type="button" aria-label="Card view settings"><span pmConsoleIcon="settings" aria-hidden="true"></span></button>
-                  </app-pm-console-toolbar>
-                  <div class="pm-project-card-grid">
-                    @for (project of workspaceProjectCards; track project.title + project.stage) {
-                      <article class="pm-project-card" [class.draft]="project.draft">
-                        <span class="pm-project-status {{ project.statusTone || 'neutral' }}">{{ project.draft ? 'Draft' : project.status }}</span>
-                        <div class="pm-project-card-head"><span class="pm-project-code"><span class="icon" aria-hidden="true"><i data-lucide="folder"></i></span>{{ project.code }}</span><span class="pm-project-stage" [class.muted]="project.draft">{{ project.stage }}</span></div>
-                        <h3>{{ project.title }}</h3>
-                        @if (project.draft) {
-                          <div class="pm-ai-analysis"><span>AI Insight Analysis</span><p>You've been assigned a new project. First step: create your project plan. PMO requires baseline submission within 4 weeks of assignment.</p></div>
-                        } @else {
-                          <div class="pm-project-metrics">
-                            <div class="pm-project-metric"><span>Schedule</span><strong>{{ project.schedule }}% <small>complete</small></strong><div class="pm-project-progress" [style.--progress]="project.schedule + '%'"><i></i></div></div>
-                            <div class="pm-project-metric pm-project-budget"><div class="pm-project-budget-ring" [style.--budget]="project.budget + '%'" aria-hidden="true"><i></i></div><span>Budget used</span><strong>{{ project.budgetUsed }} <small>/ {{ project.budgetTotal }}</small></strong><p>39%, well within threshold</p></div>
-                          </div>
-                        }
-                        <div class="pm-project-footer"><span class="pm-project-due"><span class="icon" aria-hidden="true"><i data-lucide="history"></i></span><small>Next PSR due:</small><strong>{{ project.nextDue }}</strong></span><div class="pm-project-actions"><button class="pm-project-icon-button" type="button" (click)="openProject(project.title)" [attr.aria-label]="'Open ' + project.title + ' project plan'"><span class="icon" aria-hidden="true"><i data-lucide="eye"></i></span></button><button class="pm-project-primary" type="button" (click)="handleProjectCardAction(project)">{{ project.action }}</button></div></div>
-                      </article>
-                    }
-                  </div>
                 } @else if (workspaceRegister === 'benefits') {
                   <div class="pm-project-table-view">
-                    <div class="pm-project-table-stats" aria-label="Benefit register summary">
+                    <div class="pm-project-table-stats pm-register-overview-stats" aria-label="Benefit register summary">
                       @for (stat of benefitRegisterStats; track stat.label) {
                         <article class="pm-project-table-stat {{ stat.tone }}">
                           <span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(stat.icon)"></i></span></span>
@@ -3941,35 +4051,24 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                         </article>
                       }
                     </div>
-                    <app-pm-console-toolbar [itemLabel]="'Items: ' + visibleBenefitRegisterRows.length">
-                        <button class="pm-table-tool square" type="button" aria-label="Search benefits"><span pmConsoleIcon="search" aria-hidden="true"></span></button>
-                        <button class="pm-table-tool" type="button"><span pmConsoleIcon="filter" aria-hidden="true"></span><span>Filter</span></button>
-                        <button class="pm-table-tool" type="button"><span pmConsoleIcon="download" aria-hidden="true"></span><span>Export</span></button>
-                        <button class="pm-table-add-project" type="button"><span pmConsoleIcon="plus" aria-hidden="true"></span><span>Add Benefit</span></button>
-                    </app-pm-console-toolbar>
-                    <div class="pm-project-table-scroll" tabindex="0">
-                      <table class="pm-project-table pm-register-table">
-                        <thead><tr><th>Benefit ID</th><th>Benefit</th><th>Linked Project</th><th>Owner</th><th>Target Date</th><th>KPI / Measure</th><th>Realization</th><th>Status</th></tr></thead>
-                        <tbody>
-                          @for (benefit of visibleBenefitRegisterRows; track benefit.id) {
-                            <tr>
-                              <td><span class="pm-table-code">{{ benefit.id }}</span></td>
-                              <td class="pm-table-detail-cell"><strong>{{ benefit.benefit }}</strong></td>
-                              <td>{{ benefit.project }}</td>
-                              <td>{{ benefit.owner }}</td>
-                              <td>{{ benefit.targetDate }}</td>
-                              <td class="pm-table-detail-cell">{{ benefit.measure }}</td>
-                              <td><span [pmConsoleStatusPill]="benefit.realization" baseClass="pm-table-row-status" [tone]="benefit.realizationTone"></span></td>
-                              <td class="pm-table-status-cell"><span [pmConsoleStatusPill]="benefit.status" baseClass="pm-table-row-status" [tone]="benefit.statusTone"></span></td>
-                            </tr>
-                          }
-                        </tbody>
-                      </table>
-                    </div>
+                    <app-pm-console-register-table
+                      [columns]="benefitRegisterTableColumns"
+                      [rows]="benefitRegisterTableRows"
+                      storageKey="tasama.workspaceBenefits.visibleColumns"
+                      ariaLabel="Benefit register"
+                      itemName="benefits"
+                      [itemLabel]="'Items: ' + visibleBenefitRegisterRows.length"
+                      selectAllLabel="Select all benefits"
+                      toolbarClass="pm-workspace-register-toolbar"
+                      addButtonLabel="Add Benefit"
+                      addButtonAriaLabel="Add benefit"
+                      (addItem)="openBenefitDrawer()"
+                      (rowOpen)="openBenefitRegisterTableRow($event)"
+                    ></app-pm-console-register-table>
                   </div>
                 } @else {
                   <div class="pm-project-table-view">
-                    <div class="pm-project-table-stats" aria-label="Risk register summary">
+                    <div class="pm-project-table-stats pm-register-overview-stats" aria-label="Risk register summary">
                       @for (stat of riskRegisterStats; track stat.label) {
                         <article class="pm-project-table-stat {{ stat.tone }}">
                           <span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(stat.icon)"></i></span></span>
@@ -3977,41 +4076,31 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                         </article>
                       }
                     </div>
-                    <app-pm-console-toolbar [itemLabel]="'Items: ' + visibleRiskRegisterRows.length">
-                        <button class="pm-table-tool square" type="button" aria-label="Search risks"><span pmConsoleIcon="search" aria-hidden="true"></span></button>
-                        <button class="pm-table-tool" type="button"><span pmConsoleIcon="filter" aria-hidden="true"></span><span>Filter</span></button>
-                        <button class="pm-table-tool" type="button"><span pmConsoleIcon="download" aria-hidden="true"></span><span>Export</span></button>
-                        <button class="pm-table-add-project" type="button"><span pmConsoleIcon="plus" aria-hidden="true"></span><span>Add Risk</span></button>
-                    </app-pm-console-toolbar>
-                    <div class="pm-project-table-scroll" tabindex="0">
-                      <table class="pm-project-table pm-register-table">
-                        <thead><tr><th>Risk ID</th><th>Risk</th><th>Linked Project</th><th>Owner</th><th>Mitigation</th><th>Last Review</th><th>Exposure</th><th>Status</th></tr></thead>
-                        <tbody>
-                          @for (risk of visibleRiskRegisterRows; track risk.id) {
-                            <tr>
-                              <td><span class="pm-table-code">{{ risk.id }}</span></td>
-                              <td class="pm-table-detail-cell"><strong>{{ risk.risk }}</strong></td>
-                              <td>{{ risk.project }}</td>
-                              <td>{{ risk.owner }}</td>
-                              <td class="pm-table-detail-cell">{{ risk.mitigation }}</td>
-                              <td>{{ risk.reviewDate }}</td>
-                              <td><span [pmConsoleStatusPill]="risk.exposure" baseClass="pm-table-row-status" [tone]="risk.exposureTone"></span></td>
-                              <td class="pm-table-status-cell"><span [pmConsoleStatusPill]="risk.status" baseClass="pm-table-row-status" [tone]="risk.statusTone"></span></td>
-                            </tr>
-                          }
-                        </tbody>
-                      </table>
-                    </div>
+                    <app-pm-console-register-table
+                      [columns]="riskRegisterTableColumns"
+                      [rows]="riskRegisterTableRows"
+                      storageKey="tasama.workspaceRisks.visibleColumns"
+                      ariaLabel="Risk register"
+                      itemName="risks"
+                      [itemLabel]="'Items: ' + visibleRiskRegisterRows.length"
+                      selectAllLabel="Select all risks"
+                      toolbarClass="pm-workspace-register-toolbar"
+                      addButtonLabel="Add Risk"
+                      addButtonAriaLabel="Add risk"
+                      (addItem)="openRiskDrawer()"
+                      (rowOpen)="openRiskRegisterTableRow($event)"
+                    ></app-pm-console-register-table>
                   </div>
                 }
                 </div>
               </div>
+              }
             </div>
           </section>
         }
         @case ('wbs') {
           <section class="wbs-page" aria-label="WBS Gantt">
-            <div class="wbs-header"><button class="wbs-back" type="button" aria-label="Back to front door" (click)="navigate('workspace')"><span class="icon" aria-hidden="true"><i data-lucide="chevron-left"></i></span></button><div><span>Work breakdown structure</span><h1>{{ scopedProjectName }}</h1><p>Management products, milestones, and stage gates for delivery tracking.</p></div></div>
+            <div class="wbs-header"><button class="wbs-back" type="button" aria-label="Go back" (click)="goBack()"><span class="icon" aria-hidden="true"><i data-lucide="chevron-left"></i></span></button><div><span>Work breakdown structure</span><h1>{{ scopedProjectName }}</h1><p>Management products, milestones, and stage gates for delivery tracking.</p></div></div>
             <div class="wbs-shell">
               <div class="wbs-toolbar"><label><span class="icon" aria-hidden="true"><i data-lucide="search"></i></span><input type="search" placeholder="Search WBS" /></label><button type="button" class="active">Months</button><button type="button">Quarters</button></div>
               <div class="wbs-split">
@@ -4027,6 +4116,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
             [class.simple-plan-mode]="projectPlanEntry === 'quick' && projectPlanDetailMode === 'simple'"
             [class.detailed-plan-mode]="projectPlanEntry === 'quick' && projectPlanDetailMode === 'detailed'"
             [class.report-plan-mode]="projectPlanEntry !== 'quick'"
+            [class.risk-profile-focus-mode]="riskProfileFocusMode"
             [class.change-request-plan-mode]="projectPlanEntry === 'change-request'"
             [class.closure-plan-mode]="projectPlanEntry === 'closure'"
             [class.onboarding-project-plan]="onboardingProjectSetup"
@@ -4039,18 +4129,19 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                 <div class="project-plan-hero-inner">
                   <div class="project-plan-summary">
                     <div class="project-plan-title plan-builder-title">
-                      <button class="project-plan-back" type="button" aria-label="Back to workspace" (click)="navigate('workspace')"><span class="icon" aria-hidden="true"><i data-lucide="arrow-left"></i></span></button>
+                      <button class="project-plan-back" type="button" aria-label="Go back" (click)="goBack()"><span class="icon" aria-hidden="true"><i data-lucide="arrow-left"></i></span></button>
                       <h1>{{ scopedProjectName }}</h1>
                     </div>
                     <div class="project-plan-meta"><span>Stage: <b class="blue">{{ projectPlanStage }}</b></span><span>State: <b class="green">Active</b></span><span>Plan: <b class="draft">Draft</b></span></div>
                   </div>
                   <div class="plan-builder-modebar project-modebar project-modebar-inline" aria-label="Project workspace mode">
-                    <div class="plan-builder-mode-toggle project-mode-toggle">
-                      <button [class.active]="projectPlanEntry === 'quick'" type="button" (click)="setProjectPlanEntry('quick')"><span class="icon" aria-hidden="true"><i data-lucide="folder"></i></span>Project Plan</button>
-                      <button [class.active]="projectPlanEntry === 'reports'" type="button" (click)="setProjectPlanEntry('reports')"><span class="icon" aria-hidden="true"><i data-lucide="panels-top-left"></i></span>Reports</button>
-                      <button [class.active]="projectPlanEntry === 'stages'" type="button" (click)="setProjectPlanEntry('stages')"><span class="icon" aria-hidden="true"><i data-lucide="route"></i></span>Stages</button>
-                      <button [class.active]="projectPlanEntry === 'change-request'" type="button" (click)="setProjectPlanEntry('change-request')"><span class="icon" aria-hidden="true"><i data-lucide="chart-pie"></i></span>Change requests</button>
-                      <button [class.active]="projectPlanEntry === 'closure'" type="button" (click)="setProjectPlanEntry('closure')"><span class="icon" aria-hidden="true"><i data-lucide="chart-pie"></i></span>Closure</button>
+                    <div class="plan-builder-mode-toggle project-mode-toggle" [style.--project-entry-tab-left]="projectPlanEntryIndicatorLeft" [style.--project-entry-tab-width]="projectPlanEntryIndicatorWidth">
+                      <span class="project-mode-tab-indicator" aria-hidden="true"></span>
+                      <button [class.active]="projectPlanEntry === 'quick'" [style.width]="projectPlanEntryTabWidth('quick')" type="button" (click)="setProjectPlanEntry('quick')"><span class="icon" aria-hidden="true"><i data-lucide="folder"></i></span>Project Plan</button>
+                      <button [class.active]="projectPlanEntry === 'reports'" [style.width]="projectPlanEntryTabWidth('reports')" type="button" (click)="setProjectPlanEntry('reports')"><span class="icon" aria-hidden="true"><i data-lucide="panels-top-left"></i></span>Reports</button>
+                      <button [class.active]="projectPlanEntry === 'stages'" [style.width]="projectPlanEntryTabWidth('stages')" type="button" (click)="setProjectPlanEntry('stages')"><span class="icon" aria-hidden="true"><i data-lucide="route"></i></span>Stages</button>
+                      <button [class.active]="projectPlanEntry === 'change-request'" [style.width]="projectPlanEntryTabWidth('change-request')" type="button" (click)="setProjectPlanEntry('change-request')"><span class="icon" aria-hidden="true"><i data-lucide="chart-pie"></i></span>Change requests</button>
+                      <button [class.active]="projectPlanEntry === 'closure'" [style.width]="projectPlanEntryTabWidth('closure')" type="button" (click)="setProjectPlanEntry('closure')"><span class="icon" aria-hidden="true"><i data-lucide="chart-pie"></i></span>Closure</button>
                     </div>
                   </div>
                 </div>
@@ -4224,7 +4315,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                       </div>
                     </aside>
                   }
-                  <main class="project-plan-content plan-builder-workspace quick-plan-workspace" [class.simple-plan-workspace]="projectPlanDetailMode === 'simple'" [class.detailed-plan-workspace]="projectPlanDetailMode === 'detailed'">
+                  <main class="project-plan-content plan-builder-workspace quick-plan-workspace" [class.simple-plan-workspace]="projectPlanDetailMode === 'simple'" [class.detailed-plan-workspace]="projectPlanDetailMode === 'detailed'" [@panelMotion]="projectPlanContentMotionKey">
                     <div class="plan-builder-main quick-plan-main project-plan-matrix-main" (scroll)="handleProjectPlanContentScroll($event)" (wheel)="handleProjectPlanContentWheel($event)">
                       @if (projectPlanDetailMode === 'simple') {
                         <section class="project-plan-form-card plan-builder-card project-plan-matrix-card simple-plan-card" (scroll)="handleProjectPlanContentScroll($event)" (wheel)="handleProjectPlanContentWheel($event)">
@@ -4336,7 +4427,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                                 </thead>
                                                 <tbody>
                                                   @for (row of benefitPlanRows; track row.id) {
-                                                    <tr>
+                                                    <tr class="plan-table-clickable-row" role="button" tabindex="0" [attr.aria-label]="'Open complete benefit profile for ' + row.benefitName" (click)="openBenefitProfile(row)" (keydown.enter)="openBenefitProfile(row)" (keydown.space)="$event.preventDefault(); openBenefitProfile(row)">
                                                       <td class="dependency-register-primary">
                                                         <strong>{{ row.benefitName }}</strong>
                                                         <small>{{ row.description || 'No description added' }}</small>
@@ -4373,7 +4464,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                                 </thead>
                                                 <tbody>
                                                   @for (row of riskPlanRows; track row.id) {
-                                                    <tr class="plan-table-clickable-row" role="button" tabindex="0" [attr.aria-label]="'Edit quick risk for ' + row.id" (click)="openRiskDrawer(row)" (keydown.enter)="openRiskDrawer(row)" (keydown.space)="$event.preventDefault(); openRiskDrawer(row)">
+                                                    <tr class="plan-table-clickable-row" role="button" tabindex="0" [attr.aria-label]="'Open full profile for ' + row.id" (click)="openRiskRegisterProfile(row)" (keydown.enter)="openRiskRegisterProfile(row)" (keydown.space)="$event.preventDefault(); openRiskRegisterProfile(row)">
                                                       <td><span class="pm-table-code">{{ row.id }}</span></td>
                                                       <td>{{ row.riskCategory }}</td>
                                                       <td class="dependency-register-primary">
@@ -5869,15 +5960,34 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                             } @else if (projectPlanActiveSection === 'Benefits') {
                               @let register = activeBenefitPlan;
                               <section class="dependency-register-stack benefit-register-stack" aria-label="Benefits register">
-                                <app-pm-console-agent-banner
-                                  title="Benefit Agent"
-                                  [description]="'Turn the case for change for ' + scopedProjectName + ' into first-pass benefit statements, owners, and realization timing before you refine the register manually.'"
-                                  actionLabel="Generate Benefits"
-                                  ariaLabel="Benefit agent"
-                                  (action)="openBenefitDrawer()"
-                                ></app-pm-console-agent-banner>
+                                @if (!activeBenefitProfile) {
+                                  <app-pm-console-agent-banner
+                                    title="Benefit Agent"
+                                    [description]="'Turn the case for change for ' + scopedProjectName + ' into first-pass benefit statements, owners, and realization timing before you refine the register manually.'"
+                                    actionLabel="Generate Benefits"
+                                    ariaLabel="Benefit agent"
+                                    (action)="openBenefitDrawer()"
+                                  ></app-pm-console-agent-banner>
+                                }
 
-                                @if (register.rows.length) {
+                                @if (activeBenefitProfile; as benefit) {
+                                  <app-pm-console-benefit-profile
+                                    [benefit]="benefit"
+                                    [projectOptions]="workspaceBenefitProjectOptions"
+                                    [categoryOptions]="register.benefitCategoryOptions"
+                                    [ownerOptions]="register.ownerOptions"
+                                    [productOptions]="benefitProductOptions"
+                                    [strategicObjectiveOptions]="benefitStrategicObjectiveOptions"
+                                    (closeProfile)="closeBenefitProfile()"
+                                    (saveProfile)="saveBenefitProfile()"
+                                    (completeProfile)="completeBenefitProfile($event)"
+                                    (fieldChange)="updateBenefitProfileField($event)"
+                                    (objectiveAdd)="addBenefitProfileObjective($event)"
+                                    (recipientAdd)="addBenefitProfileRecipient($event)"
+                                    (measureAdd)="addBenefitProfileMeasure($event)"
+                                    (removeMeasure)="removeBenefitProfileMeasure($event)"
+                                  ></app-pm-console-benefit-profile>
+                                } @else if (register.rows.length) {
                                 <app-pm-console-plan-table
                                   [title]="register.title"
                                   [eyebrow]="register.fieldName + ' · Benefit tracking'"
@@ -5903,7 +6013,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                         </thead>
                                         <tbody>
                                           @for (row of register.rows; track row.id) {
-                                            <tr>
+                                            <tr class="plan-table-clickable-row" role="button" tabindex="0" [attr.aria-label]="'Open complete benefit profile for ' + row.benefitName" (click)="openBenefitProfile(row)" (keydown.enter)="openBenefitProfile(row)" (keydown.space)="$event.preventDefault(); openBenefitProfile(row)">
                                               <td class="dependency-register-primary">
                                                 <strong>{{ row.benefitName }}</strong>
                                                 <small>{{ row.description || 'No description added' }}</small>
@@ -7007,12 +7117,12 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                 }
                 @if (activeBenefitDrawer; as register) {
                   <app-pm-console-plan-drawer
-                    [title]="register.title"
+                    [title]="benefitDrawerTitle"
                     [eyebrow]="register.fieldName + ' · AI ready'"
                     [description]="register.description"
                     [summaryLabel]="benefitCountLabel(register)"
                     summary="Capture the benefit statement first, then layer more evidence and realization commentary later through reporting."
-                    [submitLabel]="register.actionLabel"
+                    [submitLabel]="benefitDrawerSubmitLabel"
                     [submitDisabled]="!canSaveBenefitDraft(register)"
                     closeAriaLabel="Close benefit drawer"
                     panelClass="benefit-drawer"
@@ -7657,7 +7767,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                 }
               } @else if (projectPlanEntry === 'reports') {
                 <div class="project-plan-shell plan-builder-shell quick-plan-shell project-report-shell project-reports-shell">
-                  <main class="project-plan-content plan-builder-workspace quick-plan-workspace project-report-workspace" (scroll)="handleProjectPlanContentScroll($event)" (wheel)="handleProjectPlanContentWheel($event)">
+                  <main class="project-plan-content plan-builder-workspace quick-plan-workspace project-report-workspace" [@panelMotion]="projectPlanContentMotionKey" (scroll)="handleProjectPlanContentScroll($event)" (wheel)="handleProjectPlanContentWheel($event)">
                     <section class="project-report-surface project-reports-dashboard" [attr.aria-label]="scopedProjectName + ' reports dashboard'">
                       <app-pm-console-overview-cards [cards]="projectReportOverviewCards" [ariaLabel]="scopedProjectName + ' report overview'"></app-pm-console-overview-cards>
                       <app-pm-console-register-table
@@ -7670,8 +7780,8 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                         [itemLabel]="'Items: ' + projectReportRegisterRows.length"
                         [selectable]="false"
                         [showGroupBy]="true"
-                        (rowOpen)="openProjectReportRow(scopedProjectName)"
-                        (cellAction)="openReport(scopedProjectName)"
+                        (rowOpen)="openProjectReportRow($event, scopedProjectName)"
+                        (cellAction)="handleProjectReportAction($event, scopedProjectName)"
                       ></app-pm-console-register-table>
                     </section>
                   </main>
@@ -7680,7 +7790,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                 @let activeStage = projectPlanActiveStageRow;
                 @let activeGate = projectPlanActiveStageGateContext;
                 <div class="project-plan-shell plan-builder-shell quick-plan-shell project-report-shell project-reports-shell project-stages-shell">
-                  <main class="project-plan-content plan-builder-workspace quick-plan-workspace project-report-workspace project-stages-workspace">
+                  <main class="project-plan-content plan-builder-workspace quick-plan-workspace project-report-workspace project-stages-workspace" [@panelMotion]="projectPlanContentMotionKey">
                     <section class="project-stages-surface" [attr.aria-label]="scopedProjectName + ' stage roadmap'" (scroll)="handleProjectPlanContentScroll($event)" (wheel)="handleProjectPlanContentWheel($event)">
                       <div class="project-stages-roadmap-band">
                         <div class="project-stages-head">
@@ -7737,7 +7847,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                 </div>
               } @else if (projectPlanEntry === 'change-request') {
                 <div class="project-plan-shell plan-builder-shell quick-plan-shell project-secondary-shell change-request-shell">
-                  <main class="project-plan-content plan-builder-workspace quick-plan-workspace project-report-workspace project-secondary-workspace change-request-workspace">
+                  <main class="project-plan-content plan-builder-workspace quick-plan-workspace project-report-workspace project-secondary-workspace change-request-workspace" [@panelMotion]="projectPlanContentMotionKey">
                     <section class="change-request-surface" [attr.aria-label]="scopedProjectName + ' change requests'" (scroll)="handleProjectPlanContentScroll($event)" (wheel)="handleProjectPlanContentWheel($event)">
                       <div class="change-request-board">
                         <div class="pm-project-table-stats change-request-stats" aria-label="Change request summary">
@@ -7749,8 +7859,25 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                           }
                         </div>
 
-                        <app-pm-console-toolbar toolbarClass="change-request-table-toolbar">
-                          <nav toolbarLabel class="change-request-tabs change-request-toolbar-tabs" role="tablist" aria-label="Change request status">
+                        <app-pm-console-register-table
+                          class="change-request-register-table"
+                          [columns]="changeRequestTableColumns"
+                          [rows]="changeRequestTableRows"
+                          storageKey="tasama.changeRequests.visibleColumns"
+                          ariaLabel="Project change requests"
+                          itemName="change requests"
+                          [selectable]="false"
+                          [showItemLabel]="false"
+                          toolbarClass="pm-workspace-register-toolbar change-request-table-toolbar"
+                          addButtonLabel="Add new"
+                          addButtonAriaLabel="Add new change request"
+                          emptyTitle="No change requests in this view"
+                          emptyDescription="Create a change request or switch status tabs to review older PCRs."
+                          (addItem)="openChangeRequestDrawer()"
+                          (rowOpen)="openChangeRequestTableRow($event)"
+                          (cellAction)="handleChangeRequestTableAction($event)"
+                        >
+                          <nav registerTableToolbarLabel toolbarLabel class="change-request-tabs change-request-toolbar-tabs" role="tablist" aria-label="Change request status">
                             @for (tab of changeRequestTabs; track tab.id) {
                               <button
                                 type="button"
@@ -7764,65 +7891,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                               </button>
                             }
                           </nav>
-                          <button class="pm-table-tool square" type="button" aria-label="Search change requests"><span pmConsoleIcon="search" aria-hidden="true"></span></button>
-                          <button class="pm-table-tool" type="button"><span pmConsoleIcon="filter" aria-hidden="true"></span><span>Filter</span></button>
-                          <button class="pm-table-tool" type="button"><span pmConsoleIcon="download" aria-hidden="true"></span><span>Export</span></button>
-                          <button class="pm-table-add-project" type="button" (click)="openChangeRequestDrawer()"><span pmConsoleIcon="plus" aria-hidden="true"></span><span>Add new</span></button>
-                        </app-pm-console-toolbar>
-
-                        <div class="pm-project-table-scroll change-request-table-scroll" tabindex="0">
-                          <table class="pm-project-table change-request-table" aria-label="Project change requests">
-                            <thead>
-                              <tr>
-                                <th>PCR Number</th>
-                                <th>Type</th>
-                                <th>Created Date</th>
-                                <th>Due Date</th>
-                                <th>Priority</th>
-                                <th>Status</th>
-                                <th aria-label="View"></th>
-                                <th aria-label="Edit"></th>
-                                <th aria-label="Delete"></th>
-                                <th aria-label="Print"></th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              @for (row of visibleChangeRequestRows; track row.id) {
-                                <tr>
-                                  <td><button class="change-request-code" type="button" (click)="openChangeRequestDrawer(row)">{{ row.pcrNumber }}</button></td>
-                                  <td>
-                                    <span class="change-request-type-list">
-                                      @for (type of row.types; track type) {
-                                        <span>{{ type }}</span>
-                                      }
-                                    </span>
-                                  </td>
-                                  <td>{{ changeRequestDateLabel(row.createdDate) }}</td>
-                                  <td>
-                                    <span class="change-request-due" [class.is-overdue]="isOverdueChangeRequest(row)">
-                                      {{ changeRequestDateLabel(row.dueDate) }}
-                                    </span>
-                                  </td>
-                                  <td><span class="change-request-priority {{ changeRequestPriorityTone(row.priority) }}">{{ row.priority }}</span></td>
-                                  <td><span [pmConsoleStatusPill]="row.status" baseClass="pm-table-row-status" [tone]="changeRequestStatusTone(row.status)"></span></td>
-                                  <td class="change-request-action-cell"><button pmConsoleTableAction iconName="eye" type="button" (click)="openChangeRequestDrawer(row)" [attr.aria-label]="'View ' + row.pcrNumber"></button></td>
-                                  <td class="change-request-action-cell"><button pmConsoleTableAction iconName="pencil" type="button" (click)="openChangeRequestDrawer(row)" [attr.aria-label]="'Edit ' + row.pcrNumber"></button></td>
-                                  <td class="change-request-action-cell"><button pmConsoleTableAction iconName="trash-2" actionClass="schedule-table-action danger" type="button" (click)="removeChangeRequest(row.id)" [attr.aria-label]="'Delete ' + row.pcrNumber"></button></td>
-                                  <td class="change-request-action-cell"><button pmConsoleTableAction iconName="printer" type="button" [attr.aria-label]="'Print ' + row.pcrNumber"></button></td>
-                                </tr>
-                              } @empty {
-                                <tr>
-                                  <td colspan="10">
-                                    <div class="change-request-empty">
-                                      <strong>No change requests in this view</strong>
-                                      <span>Create a change request or switch status tabs to review older PCRs.</span>
-                                    </div>
-                                  </td>
-                                </tr>
-                              }
-                            </tbody>
-                          </table>
-                        </div>
+                        </app-pm-console-register-table>
                       </div>
                     </section>
 
@@ -8004,18 +8073,22 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                   </main>
                 </div>
               } @else if (projectPlanEntry === 'closure') {
-                <div class="project-plan-shell plan-builder-shell quick-plan-shell project-secondary-shell project-closure-shell">
-                  <main class="project-plan-content plan-builder-workspace quick-plan-workspace project-report-workspace project-secondary-workspace project-closure-workspace">
-                    <section class="project-closure-surface" [attr.aria-label]="scopedProjectName + ' closure workspace'">
-                      <aside class="project-closure-nav" aria-label="Closure sections">
-                        <div class="project-closure-nav-head">
-                          <span class="icon" aria-hidden="true"><i data-lucide="file-check-2"></i></span>
-                          <div>
-                            <strong>Closure report</strong>
-                            <small>Draft evidence pack</small>
-                          </div>
-                        </div>
-                        <div class="project-closure-nav-list" role="tablist" aria-label="Closure report sections">
+                <div class="project-plan-shell plan-builder-shell quick-plan-shell detailed-plan-shell project-closure-shell">
+                  <div class="project-plan-content-modebar closure-content-modebar has-section-title">
+                    <div class="project-plan-content-heading">
+                      <h2>Project Closure</h2>
+                      <span class="closure-content-modebar-note">Draft evidence pack</span>
+                    </div>
+                    <div class="project-plan-topbar-actions project-closure-actions" aria-label="Closure actions">
+                      <button class="project-closure-secondary" type="button"><span pmConsoleIcon="save" aria-hidden="true"></span><span>Save draft</span></button>
+                      <button class="change-request-primary" type="button"><span pmConsoleIcon="send" aria-hidden="true"></span><span>Submit closure</span></button>
+                    </div>
+                  </div>
+                  <aside class="project-plan-sections plan-builder-nav quick-plan-nav matrix-plan-nav project-closure-nav" aria-label="Closure sections">
+                    <div class="matrix-nav-scroll">
+                      <div class="matrix-nav-group">
+                        <span class="matrix-nav-label">Closure Report</span>
+                        <div class="matrix-nav-list project-closure-nav-list" role="tablist" aria-label="Closure report sections">
                           @for (item of closureNavigationItems; track item.id) {
                             <button
                               type="button"
@@ -8024,24 +8097,22 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                               [attr.aria-selected]="activeClosureSection === item.id"
                               (click)="setClosureSection(item.id)"
                             >
-                              <span class="project-closure-nav-icon" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="iconName(item.icon)"></i></span></span>
-                              <span>{{ item.label }}</span>
-                              @if (item.count !== undefined) { <strong>{{ item.count }}</strong> }
+                              <span class="matrix-nav-item-label">{{ item.label }}</span>
+                              @if (item.count !== undefined) { <span class="matrix-nav-count">{{ item.count }}</span> }
                             </button>
                           }
                         </div>
-                      </aside>
-
-                      <div class="project-closure-board" (scroll)="handleProjectPlanContentScroll($event)" (wheel)="handleProjectPlanContentWheel($event)">
+                      </div>
+                    </div>
+                  </aside>
+                  <main class="project-plan-content plan-builder-workspace quick-plan-workspace detailed-plan-workspace project-closure-workspace" [@panelMotion]="projectPlanContentMotionKey">
+                    <div class="plan-builder-main quick-plan-main project-plan-matrix-main project-closure-main">
+                      <section class="project-plan-form-card plan-builder-card project-plan-matrix-card detailed-plan-card project-closure-board" [attr.aria-label]="scopedProjectName + ' closure workspace'" (scroll)="handleProjectPlanContentScroll($event)" (wheel)="handleProjectPlanContentWheel($event)">
                         <header class="project-closure-head">
                           <div>
                             <span class="change-request-kicker">Project closure</span>
                             <h2>{{ activeClosureNavItem.label }}</h2>
                             <p>Record final evidence, open actions, and handover notes for PMO review.</p>
-                          </div>
-                          <div class="project-closure-actions" aria-label="Closure actions">
-                            <button class="project-closure-secondary" type="button"><span pmConsoleIcon="save" aria-hidden="true"></span><span>Save draft</span></button>
-                            <button class="change-request-primary" type="button"><span pmConsoleIcon="send" aria-hidden="true"></span><span>Submit closure</span></button>
                           </div>
                         </header>
 
@@ -8311,13 +8382,13 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                             </section>
                           }
                         }
-                      </div>
-                    </section>
+                      </section>
+                    </div>
                   </main>
                 </div>
               } @else {
                 <div class="project-plan-shell plan-builder-shell quick-plan-shell project-secondary-shell">
-                  <main class="project-plan-content plan-builder-workspace quick-plan-workspace project-report-workspace project-secondary-workspace" (scroll)="handleProjectPlanContentScroll($event)" (wheel)="handleProjectPlanContentWheel($event)">
+                  <main class="project-plan-content plan-builder-workspace quick-plan-workspace project-report-workspace project-secondary-workspace" [@panelMotion]="projectPlanContentMotionKey" (scroll)="handleProjectPlanContentScroll($event)" (wheel)="handleProjectPlanContentWheel($event)">
                     <section class="project-report-surface" [attr.aria-label]="projectPlanEntryLabel + ' workspace'">
                       <article class="project-report-placeholder-card" [attr.aria-label]="projectPlanEntryLabel + ' content'"></article>
                     </section>
@@ -8329,7 +8400,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
         }
         @case ('playground') {
           <section class="playground-page" aria-label="Project playground">
-            <div class="playground-topbar"><button class="playground-back" type="button" (click)="navigate('workspace')"><span class="icon" aria-hidden="true"><i data-lucide="chevron-left"></i></span></button><div><span>Project Playground</span><h1>{{ scopedProjectName }}</h1></div></div>
+            <div class="playground-topbar"><button class="playground-back" type="button" aria-label="Go back" (click)="goBack()"><span class="icon" aria-hidden="true"><i data-lucide="chevron-left"></i></span></button><div><span>Project Playground</span><h1>{{ scopedProjectName }}</h1></div></div>
             <div class="playground-shell"><aside class="playground-palette"><h2>Relationships</h2>@for (action of projectQuickActions.slice(4, 13); track action.id) { <button class="playground-palette-item" type="button"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(action.icon)"></i></span><strong>{{ action.title }}</strong></button> }</aside><div class="playground-surface"><article class="playground-node playground-project-node"><div class="playground-project-copy"><span>Project</span><h2>{{ scopedProjectName }}</h2></div></article></div></div>
           </section>
         }
@@ -8397,7 +8468,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
           } @else {
             <div class="content-grid" [class.pm101-locked-grid]="usesPm101DesignShell" [class.pm101-operational-grid]="usesPm101OperationalLayout">
               <div class="left-column">
-                <section class="workspace-panel" [class.project-workspace-panel]="!isAllProjects && !usesPm101DesignShell" [class.board-workspace-panel]="selectedView === 'board'" [class.pm101-locked-workspace]="usesPm101DesignShell" [class.pm101-operational-workspace]="usesPm101OperationalLayout">
+                <section class="workspace-panel" [class.project-workspace-panel]="!isAllProjects && !usesPm101DesignShell" [class.board-workspace-panel]="selectedView === 'board'" [class.calendar-workspace-panel]="selectedView === 'calendar'" [class.pm101-locked-workspace]="usesPm101DesignShell" [class.pm101-operational-workspace]="usesPm101OperationalLayout">
                   <div class="workspace-shell-head" [class.pm101-locked-shell-head]="usesPm101DesignShell" [class.pm101-operational-shell-head]="usesPm101OperationalLayout">
                     @if (usesPm101DesignShell) {
                       <img class="workspace-line-art" src="./assets/workspace-line-art.svg" alt="" aria-hidden="true" />
@@ -8408,7 +8479,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                             <span class="workspace-project-select-wrap">
                               <select [value]="workspaceHeaderProject" aria-label="Select project" (change)="selectWorkspaceProject($event)">
                                 @for (project of workspaceHeaderProjectOptions; track project.id) {
-                                  <option [value]="project.id">{{ project.name }}</option>
+                                  <option [value]="project.id" [selected]="project.id === workspaceHeaderProject">{{ project.name }}</option>
                                 }
                               </select>
                               <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
@@ -8453,16 +8524,18 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                       </aside>
                     }
                     <div class="workspace-tabs" role="tablist" aria-label="Workspace view" data-tour-target="workspace-tabs">
-                      <button
-                        [class.active]="selectedView === 'pm101'"
-                        type="button"
-                        data-view-target="pm101"
-                        [attr.aria-selected]="selectedView === 'pm101'"
-                        (click)="setView('pm101')"
-                      >
-                        <span class="icon" aria-hidden="true"><i data-lucide="book-open"></i></span>
-                        <span>Overview</span>
-                      </button>
+                      @if (showWorkspaceOverviewTab) {
+                        <button
+                          [class.active]="selectedView === 'pm101'"
+                          type="button"
+                          data-view-target="pm101"
+                          [attr.aria-selected]="selectedView === 'pm101'"
+                          (click)="setView('pm101')"
+                        >
+                          <span class="icon" aria-hidden="true"><i data-lucide="book-open"></i></span>
+                          <span>Overview</span>
+                        </button>
+                      }
                       <button
                         [class.active]="isActionWorkspaceActive"
                         type="button"
@@ -8483,24 +8556,17 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                           <input type="search" [attr.aria-label]="workspaceSearchPlaceholder" [placeholder]="workspaceSearchPlaceholder" />
                         </label>
                       }
+                      @if (selectedView === 'board') {
+                        <div class="board-filter action-board-filter" aria-label="Action board filters"><span>Show</span><details class="work-filter-dropdown"><summary [attr.aria-label]="'Filter actions by ' + selectedBoardFilterOption.label"><span class="work-filter-selected-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(selectedBoardFilterOption.icon)"></i></span></span><span>{{ selectedBoardFilterOption.label }}</span><strong>{{ countForFilter(selectedBoardFilterOption) }}</strong><span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span></summary><div class="work-filter-menu" role="menu">@for (filter of boardFilters; track filter.id) { <button [class.active]="selectedBoardFilter === filter.id" type="button" role="menuitemradio" [attr.aria-checked]="selectedBoardFilter === filter.id" (click)="setBoardFilter(filter.id, $event)"><span class="work-filter-option-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(filter.icon)"></i></span></span><span>{{ filter.label }}</span><strong>{{ countForFilter(filter) }}</strong></button> }</div></details></div>
+                      }
                       <div
                         class="action-view-switch"
                         [class.pm101-locked-action-view-switch]="onboardingPm101Locked"
                         [class.pm101-ready-action-view-switch]="usesPm101OperationalLayout && !onboardingPm101Locked"
                         role="tablist"
                         aria-label="Actions view options"
+                        data-tour-target="actions-subtabs"
                       >
-                        <button
-                          [class.active]="selectedView === 'board'"
-                          type="button"
-                          role="tab"
-                          data-action-view="board"
-                          [attr.aria-selected]="selectedView === 'board'"
-                          (click)="setView('board')"
-                        >
-                          <span class="icon" aria-hidden="true"><i data-lucide="columns-3"></i></span>
-                          <span>Board</span>
-                        </button>
                         <button
                           [class.active]="selectedView === 'calendar'"
                           type="button"
@@ -8511,6 +8577,17 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                         >
                           <span class="icon" aria-hidden="true"><i data-lucide="calendar-days"></i></span>
                           <span>Calendar</span>
+                        </button>
+                        <button
+                          [class.active]="selectedView === 'board'"
+                          type="button"
+                          role="tab"
+                          data-action-view="board"
+                          [attr.aria-selected]="selectedView === 'board'"
+                          (click)="setView('board')"
+                        >
+                          <span class="icon" aria-hidden="true"><i data-lucide="columns-3"></i></span>
+                          <span>Board</span>
                         </button>
                         <button
                           [class.active]="selectedView === 'stages'"
@@ -8526,16 +8603,24 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                       </div>
                     </div>
                   }
-                  <div class="workspace-body">
+                  <div class="workspace-body" [@panelMotion]="workspaceMotionKey">
                     <div class="board-view" [class.is-hidden]="selectedView !== 'board'" data-work-view="board" data-tour-target="action-board">
-                      <div class="board-filter" aria-label="Action board filters"><span>Show</span><details class="work-filter-dropdown"><summary [attr.aria-label]="'Filter actions by ' + selectedBoardFilterOption.label"><span class="work-filter-selected-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(selectedBoardFilterOption.icon)"></i></span></span><span>{{ selectedBoardFilterOption.label }}</span><strong>{{ countForFilter(selectedBoardFilterOption) }}</strong><span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span></summary><div class="work-filter-menu" role="menu">@for (filter of boardFilters; track filter.id) { <button [class.active]="selectedBoardFilter === filter.id" type="button" role="menuitemradio" [attr.aria-checked]="selectedBoardFilter === filter.id" (click)="setBoardFilter(filter.id, $event)"><span class="work-filter-option-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(filter.icon)"></i></span></span><span>{{ filter.label }}</span><strong>{{ countForFilter(filter) }}</strong></button> }</div></details></div>
-                      <div class="kanban-board">@for (column of visibleBoardColumns; track column.column) { <section class="kanban-column {{ column.tone }}"><header><div><span class="board-column-icon {{ column.tone }}"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="boardColumnIcon(column.column)"></i></span></span><h3>{{ column.column }}</h3></div><strong>{{ column.items.length }}</strong></header><div class="task-stack">@for (item of column.items; track item.title) { <article class="task-card {{ taskCardClass(item.type) }}" [attr.data-card-kind]="filterKind(item.type)"><div class="task-top"><span>{{ item.type }}</span></div><h3>{{ item.title }}</h3><p>{{ item.project }}</p><div class="task-bottom"><span class="avatar-sm">{{ item.owner }}</span><small>{{ item.meta }}</small><button class="task-action" type="button" [attr.data-tour-target]="filterKind(item.type) === 'report' ? 'create-psr' : null" (click)="handleTaskAction(item)"><span>{{ item.cta }}</span><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></button></div></article> } @empty { <div class="empty-column">No {{ selectedBoardFilterOption.label.toLowerCase() }} in this lane.</div> }</div></section> }</div>
+                      <div class="kanban-board">@for (column of visibleBoardColumns; track column.column) { <section class="kanban-column {{ column.tone }}"><header><div><span class="board-column-icon {{ column.tone }}"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="boardColumnIcon(column.column)"></i></span></span><h3>{{ column.column }}</h3></div><strong>{{ column.items.length }}</strong></header><div class="task-stack">@for (item of column.items; track item.title) { <article class="task-card {{ taskCardClass(item.type) }}" [attr.data-card-kind]="filterKind(item.type)"><div class="task-top"><span>{{ item.type }}</span></div><h3>{{ item.title }}</h3><p>{{ item.project }}</p><div class="task-bottom"><span class="avatar-sm">{{ item.owner }}</span><small>{{ item.meta }}</small><button class="task-action" type="button" [attr.data-tour-target]="filterKind(item.type) === 'report' ? 'create-psr' : null" (click)="handleTaskAction(item)"><span>{{ item.cta }}</span><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></button></div></article> } @empty { <div class="empty-column">No {{ boardEmptyStateLabel }} in this lane.</div> }</div></section> }</div>
                     </div>
                     <div class="calendar-view" [class.is-hidden]="selectedView !== 'calendar'" data-work-view="calendar">
-                      <div class="calendar-command-row"><div class="calendar-month-picker" aria-label="Calendar month navigation"><button class="calendar-nav-button" type="button" (click)="shiftMonth(-1)" aria-label="Previous month"><span class="icon" aria-hidden="true"><i data-lucide="chevron-left"></i></span></button><div class="calendar-month-copy"><strong>{{ calendarMonthLabel }}</strong><span>{{ visibleMonthItems.length }} item{{ visibleMonthItems.length === 1 ? '' : 's' }} this month</span></div><button class="calendar-nav-button" type="button" (click)="shiftMonth(1)" aria-label="Next month"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></button></div><div class="board-filter calendar-filter-bar" aria-label="Quick work filter"><span>Show</span><details class="work-filter-dropdown"><summary [attr.aria-label]="'Filter work by ' + selectedBoardFilterOption.label"><span class="work-filter-selected-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(selectedBoardFilterOption.icon)"></i></span></span><span>{{ selectedBoardFilterOption.label }}</span><strong>{{ countCalendarFilter(selectedBoardFilterOption) }}</strong><span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span></summary><div class="work-filter-menu" role="menu">@for (filter of boardFilters; track filter.id) { <button [class.active]="selectedBoardFilter === filter.id" type="button" role="menuitemradio" [attr.aria-checked]="selectedBoardFilter === filter.id" (click)="setBoardFilter(filter.id, $event)"><span class="work-filter-option-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(filter.icon)"></i></span></span><span>{{ filter.label }}</span><strong>{{ countCalendarFilter(filter) }}</strong></button> }</div></details></div></div>
-                      <div class="timeline-calendar"><div class="weekdays"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div><div class="calendar-grid">@for (cell of calendarCells; track cell.key) { <div class="calendar-cell" [class.muted]="!cell.current" [class.today]="cell.today"><span>{{ cell.day }}</span>@for (item of cell.items; track item.label + item.project) { <button class="calendar-event {{ item.tone }}" type="button"><span class="calendar-event-dot"></span><span class="calendar-event-title">{{ item.label }}</span></button> }</div> }</div></div>
+                      <app-pm-console-work-calendar
+                        [monthLabel]="calendarMonthLabel"
+                        [monthItemCount]="visibleMonthItems.length"
+                        [cells]="calendarCells"
+                        [filters]="calendarFilterOptions"
+                        [selectedFilterId]="selectedBoardFilter"
+                        (monthShift)="shiftMonth($event)"
+                        (filterChange)="setBoardFilter($event)"
+                        (itemOpen)="handleCalendarItemOpen($event)"
+                      ></app-pm-console-work-calendar>
                     </div>
-                    <div class="pm101-view" [class.pm101-operational-view]="usesPm101OperationalLayout" [class.selected-project-operational-view]="showSelectedProjectOverviewQuickLinks" [class.is-hidden]="selectedView !== 'pm101'" data-work-view="pm101">
+                    @if (showWorkspaceOverviewTab) {
+                    <div class="pm101-view" [class.pm101-operational-view]="usesPm101OperationalLayout" [class.selected-project-operational-view]="showSelectedProjectOverviewQuickLinks" [class.is-hidden]="selectedView !== 'pm101'" data-work-view="pm101" data-tour-target="frontdoor-overview">
                       @if (onboardingPm101Locked) {
                         <article class="pm101-assignment-banner" aria-label="PM 101 assignment status">
                           <img class="pm101-assignment-banner-art" src="./assets/pm101-assignment-banner.png" alt="" aria-hidden="true" />
@@ -8562,14 +8647,14 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                             <img class="pm101-ready-banner-art" src="./assets/pm101-first-project-banner-bg.png" alt="" aria-hidden="true" />
                             <div class="pm101-ready-banner-copy">
                               <strong>Your first project is ready to plan!</strong>
-                              <p>PMO assigned UAE Research Map to your workspace. Start with building the baseline project plan, then get it endorsed and start tracking progress!</p>
+                              <p>PMO assigned {{ firstAssignedProject.name }} to your workspace. Start with building the baseline project plan, then get it endorsed and start tracking progress!</p>
                             </div>
                           </article>
                           <article class="pm101-ready-project-card">
                             <img class="pm101-ready-project-card-art" src="./assets/pm101-first-project-card-bg.png" alt="" aria-hidden="true" />
                             <span class="pm101-ready-project-chip">New project assigned by PMO</span>
-                            <strong class="pm101-ready-project-title">UAE Research Map</strong>
-                            <button class="pm101-ready-project-cta" type="button" (click)="openAssignedProjectPlan()" aria-label="Create project plan for UAE Research Map">
+                            <strong class="pm101-ready-project-title">{{ firstAssignedProject.name }}</strong>
+                            <button class="pm101-ready-project-cta" type="button" (click)="openAssignedProjectPlan()" [attr.aria-label]="'Create project plan for ' + firstAssignedProject.name">
                               <span>Create project plan</span>
                               <span class="pm101-ready-project-cta-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
                             </button>
@@ -8591,14 +8676,14 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                               <img class="pm101-ready-banner-art" src="./assets/pm101-first-project-banner-bg.png" alt="" aria-hidden="true" />
                               <div class="pm101-ready-banner-copy">
                                 <strong>Your first project is ready to plan!</strong>
-                                <p>PMO assigned UAE Research Map to your workspace. Start with building the baseline project plan, then get it endorsed and start tracking progress!</p>
+                                <p>PMO assigned {{ firstAssignedProject.name }} to your workspace. Start with building the baseline project plan, then get it endorsed and start tracking progress!</p>
                               </div>
                             </article>
                             <article class="pm101-ready-project-card">
                               <img class="pm101-ready-project-card-art" src="./assets/pm101-first-project-card-bg.png" alt="" aria-hidden="true" />
                               <span class="pm101-ready-project-chip">New project assigned by PMO</span>
-                              <strong class="pm101-ready-project-title">UAE Research Map</strong>
-                              <button class="pm101-ready-project-cta" type="button" (click)="openAssignedProjectPlan()" aria-label="Create project plan for UAE Research Map">
+                              <strong class="pm101-ready-project-title">{{ firstAssignedProject.name }}</strong>
+                              <button class="pm101-ready-project-cta" type="button" (click)="openAssignedProjectPlan()" [attr.aria-label]="'Create project plan for ' + firstAssignedProject.name">
                                 <span>Create project plan</span>
                                 <span class="pm101-ready-project-cta-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
                               </button>
@@ -8667,10 +8752,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                         >
                           <div class="pm101-project-strip" aria-label="PM101 project overview">
                             @for (project of pm101ProjectPreviews; track project.id) {
-                              <div
-                                class="pm101-project-card-slot"
-                                [class.is-selected]="project.id === activePm101ProjectId"
-                              >
+                              <div class="pm101-project-card-slot" [class.is-selected]="project.id === activePm101ProjectId">
                                 <button
                                   class="pm101-project-card"
                                   [class.pm101-project-card-assigned]="project.tone === 'assigned'"
@@ -8712,7 +8794,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                             <li class="pm101-step">
                               <article class="pm101-card">
                                 <span class="pm101-card-icon">
-                                  <img class="pm101-card-icon-asset" [src]="step.iconAsset" alt="" />
+                                  <span [pmConsoleIcon]="iconName(step.icon)" aria-hidden="true"></span>
                                 </span>
                                 <strong>{{ step.title }}</strong>
                                 <p>{{ step.body }}</p>
@@ -8754,6 +8836,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                       </div>
                       }
                     </div>
+                    }
                     <div class="stages-view" [class.is-hidden]="selectedView !== 'stages'" data-work-view="stages">
                       @if (!isAllProjects) {
                         <section class="workspace-stage-roadmap-band" [attr.aria-label]="scopedProjectName + ' lifecycle stage cards'">
@@ -8800,7 +8883,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                       <span class="action-copy"><strong>Workspaces</strong><small>Open project rooms</small></span>
                       <span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span>
                     </button>
-                    <button class="action-card learning-command" type="button" (click)="openProjectStages()">
+                    <button class="action-card learning-command is-unavailable" type="button" disabled aria-disabled="true" title="Learning Hub coming soon">
                       <span class="action-icon"><img src="./assets/workspace-card-notebook.svg" alt="" aria-hidden="true" /></span>
                       <span class="action-copy"><strong>Learning Hub</strong><small>Guides and playbooks</small></span>
                       <span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span>
@@ -8813,46 +8896,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                         <small>View latest status reports here</small>
                       </div>
                     </div>
-                    <div class="locked-report-illustration" aria-hidden="true">
-                      <article class="locked-report-card locked-report-card-vision">
-                        <div class="locked-report-card-head">
-                          <strong>{{ firstAssignedProject.name }}</strong>
-                          <span class="locked-report-chip on-track">On track</span>
-                        </div>
-                        <div class="locked-report-status-bar">
-                          <span><span class="icon"><i data-lucide="circle-check"></i></span><small>Mar</small></span>
-                          <span><span class="icon"><i data-lucide="circle-check"></i></span><small>Apr</small></span>
-                          <span><span class="icon"><i data-lucide="circle-check"></i></span><small>May</small></span>
-                        </div>
-                        <div class="locked-report-card-foot">
-                          <span class="locked-report-foot-copy"><span class="icon"><i data-lucide="history"></i></span><small>On track</small></span>
-                          <span class="locked-report-create"><span class="icon"><i data-lucide="file-text"></i></span><small>Create</small></span>
-                        </div>
-                      </article>
-                      <article class="locked-report-card locked-report-card-neom">
-                        <div class="locked-report-card-head">
-                          <strong>NEOM Integration</strong>
-                          <span class="locked-report-chip on-track">On track</span>
-                        </div>
-                        <div class="locked-report-status-bar compact">
-                          <span><span class="icon"><i data-lucide="circle-check"></i></span><small>Mar</small></span>
-                          <span><span class="icon"><i data-lucide="triangle-alert"></i></span><small>Apr</small></span>
-                          <span><span class="icon"><i data-lucide="circle-x"></i></span><small>May</small></span>
-                        </div>
-                        <div class="locked-report-card-foot">
-                          <span class="locked-report-foot-copy"><span class="icon"><i data-lucide="history"></i></span><small>Overdue by 5 days</small></span>
-                          <span class="locked-report-create"><span class="icon"><i data-lucide="file-text"></i></span><small>Create</small></span>
-                        </div>
-                      </article>
-                      <div class="locked-report-magnifier">
-                        <span class="locked-report-chip on-track">On track</span>
-                      </div>
-                      <div class="locked-report-timeline">
-                        <span><span class="icon"><i data-lucide="circle-check"></i></span><small>Mar</small></span>
-                        <span><span class="icon"><i data-lucide="triangle-alert"></i></span><small>Apr</small></span>
-                        <span><span class="icon"><i data-lucide="circle-x"></i></span><small>May</small></span>
-                      </div>
-                    </div>
+                    <app-pm-console-reporting-empty-illustration></app-pm-console-reporting-empty-illustration>
                     <div class="locked-report-copy">
                       <strong>You haven't reach reporting yet</strong>
                       <p>Once you have active projects and start reporting progress - your reporting trends &amp; upcoming reports will appear in this section</p>
@@ -8865,7 +8909,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                       <span class="action-copy"><strong>Workspaces</strong><small>Open project rooms</small></span>
                       <span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span>
                     </button>
-                    <button class="action-card learning-command" type="button" (click)="openProjectStages()">
+                    <button class="action-card learning-command is-unavailable" type="button" disabled aria-disabled="true" title="Learning Hub coming soon">
                       <span class="action-icon"><img src="./assets/workspace-card-notebook.svg" alt="" aria-hidden="true" /></span>
                       <span class="action-copy"><strong>Learning Hub</strong><small>Guides and playbooks</small></span>
                       <span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span>
@@ -8878,53 +8922,14 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                         <small>View latest status reports here</small>
                       </div>
                     </div>
-                    <div class="locked-report-illustration" aria-hidden="true">
-                      <article class="locked-report-card locked-report-card-vision">
-                        <div class="locked-report-card-head">
-                          <strong>{{ firstAssignedProject.name }}</strong>
-                          <span class="locked-report-chip on-track">On track</span>
-                        </div>
-                        <div class="locked-report-status-bar">
-                          <span><span class="icon"><i data-lucide="circle-check"></i></span><small>Mar</small></span>
-                          <span><span class="icon"><i data-lucide="circle-check"></i></span><small>Apr</small></span>
-                          <span><span class="icon"><i data-lucide="circle-check"></i></span><small>May</small></span>
-                        </div>
-                        <div class="locked-report-card-foot">
-                          <span class="locked-report-foot-copy"><span class="icon"><i data-lucide="history"></i></span><small>On track</small></span>
-                          <span class="locked-report-create"><span class="icon"><i data-lucide="file-text"></i></span><small>Create</small></span>
-                        </div>
-                      </article>
-                      <article class="locked-report-card locked-report-card-neom">
-                        <div class="locked-report-card-head">
-                          <strong>NEOM Integration</strong>
-                          <span class="locked-report-chip on-track">On track</span>
-                        </div>
-                        <div class="locked-report-status-bar compact">
-                          <span><span class="icon"><i data-lucide="circle-check"></i></span><small>Mar</small></span>
-                          <span><span class="icon"><i data-lucide="triangle-alert"></i></span><small>Apr</small></span>
-                          <span><span class="icon"><i data-lucide="circle-x"></i></span><small>May</small></span>
-                        </div>
-                        <div class="locked-report-card-foot">
-                          <span class="locked-report-foot-copy"><span class="icon"><i data-lucide="history"></i></span><small>Overdue by 5 days</small></span>
-                          <span class="locked-report-create"><span class="icon"><i data-lucide="file-text"></i></span><small>Create</small></span>
-                        </div>
-                      </article>
-                      <div class="locked-report-magnifier">
-                        <span class="locked-report-chip on-track">On track</span>
-                      </div>
-                      <div class="locked-report-timeline">
-                        <span><span class="icon"><i data-lucide="circle-check"></i></span><small>Mar</small></span>
-                        <span><span class="icon"><i data-lucide="triangle-alert"></i></span><small>Apr</small></span>
-                        <span><span class="icon"><i data-lucide="circle-x"></i></span><small>May</small></span>
-                      </div>
-                    </div>
+                    <app-pm-console-reporting-empty-illustration></app-pm-console-reporting-empty-illustration>
                     <div class="locked-report-copy">
                       <strong>You haven't reach reporting yet</strong>
                       <p>Once you have active projects and start reporting progress - your reporting trends &amp; upcoming reports will appear in this section</p>
                     </div>
                   </section>
                 } @else {
-                  @if (showPortfolioReportTrends) { <section class="top-deck" aria-label="PM front door actions" data-tour-target="frontdoor-actions"><button class="action-card workspace-command" type="button" (click)="navigate('workspaces')" [disabled]="onboardingPm101Locked" [attr.aria-disabled]="onboardingPm101Locked ? 'true' : null" [attr.title]="onboardingPm101Locked ? 'Available after PM 101 onboarding' : null"><span class="action-icon"><img src="./assets/workspace-card-box.svg" alt="" aria-hidden="true" /></span><span class="action-copy"><strong>Workspaces</strong><small>Open project rooms</small></span><span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span></button><button class="action-card learning-command" type="button" (click)="openProjectStages()"><span class="action-icon"><img src="./assets/workspace-card-notebook.svg" alt="" aria-hidden="true" /></span><span class="action-copy"><strong>Learning Hub</strong><small>Guides and playbooks</small></span><span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span></button></section> }
+                  @if (showPortfolioReportTrends) { <section class="top-deck" aria-label="PM front door actions" data-tour-target="frontdoor-actions"><button class="action-card workspace-command" type="button" (click)="navigate('workspaces')" [disabled]="onboardingPm101Locked" [attr.aria-disabled]="onboardingPm101Locked ? 'true' : null" [attr.title]="onboardingPm101Locked ? 'Available after PM 101 onboarding' : null"><span class="action-icon"><img src="./assets/workspace-card-box.svg" alt="" aria-hidden="true" /></span><span class="action-copy"><strong>Workspaces</strong><small>Open project rooms</small></span><span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span></button><button class="action-card learning-command is-unavailable" type="button" disabled aria-disabled="true" title="Learning Hub coming soon"><span class="action-icon"><img src="./assets/workspace-card-notebook.svg" alt="" aria-hidden="true" /></span><span class="action-copy"><strong>Learning Hub</strong><small>Guides and playbooks</small></span><span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span></button></section> }
                   <section class="side-card report-widget" [class.portfolio-report-widget]="showPortfolioReportTrends" data-tour-target="right-report-widget"><div class="report-widget-head"><div><h2>{{ showPortfolioReportTrends ? 'Reporting trends' : 'Project report trend' }}</h2><small>Last 3 PSR statuses</small></div></div><div class="report-trend-list">@for (report of visibleReportRows; track report.project) { <article class="report-trend-row {{ reportFrontdoorTone(report) }}"><div class="report-trend-row-head"><strong>{{ report.project }}</strong><span class="report-health-chip {{ reportFrontdoorTone(report) }}">{{ reportDueToneLabel(reportFrontdoorTone(report)) }}</span></div><div class="report-trend" style="--report-trend-count:3" aria-label="Status report trend">@for (point of report.trend; track point.label) { <span class="report-trend-point {{ reportStatusTone(point.status) }}"><span class="report-status-icon {{ reportStatusTone(point.status) }}" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="reportStatusIcon(point.status)"></i></span></span><small>{{ point.label }}</small></span> }</div><div class="report-trend-row-foot"><span class="report-row-due"><span class="icon" aria-hidden="true"><i data-lucide="history"></i></span><span>{{ reportDueText(report) }}</span></span><button class="report-row-create" type="button" (click)="openReport(report.project)"><span class="icon" aria-hidden="true"><i data-lucide="file-text"></i></span><span>Create</span></button></div></article> }</div></section>
                   @if (!showPortfolioReportTrends) { <ng-container [ngTemplateOutlet]="quickLinksPanel"></ng-container> }
                 }
@@ -8933,12 +8938,15 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
           }
         }
       }
+      </div>
     </main>
 
     @if (activeReportProject) {
       <app-pm-console-report-drawer
         [projectName]="activeReport.project"
         [details]="activeReportDetails"
+        [submitted]="activeReportSubmitted"
+        [presentationMode]="activeReportDrawerMode"
         [activeMode]="activeReportMode"
         [activeSection]="activeReportSection"
         [reportSections]="reportSections"
@@ -8953,11 +8961,137 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
         [detailItemMap]="detailedReportItemMap"
         (close)="closeReport()"
         (save)="saveReport($event)"
+        (preview)="previewActiveReport()"
+        (previewBack)="backToReportCreation()"
         (modeChange)="setReportMode($event)"
         (sectionChange)="setReportSection($event)"
         (scopeProductDateChange)="updateReportScopeProductDate($event)"
         (tableDateChange)="updateReportTableDate($event)"
       ></app-pm-console-report-drawer>
+    }
+
+    @if (selectedPage !== 'project-plan') {
+      @if (activeBenefitDrawer; as register) {
+        <app-pm-console-plan-drawer
+          [title]="benefitDrawerTitle"
+          [eyebrow]="register.fieldName + ' · AI ready'"
+          [description]="register.description"
+          [summaryLabel]="benefitCountLabel(register)"
+          summary="Capture the benefit statement first, then layer more evidence and realization commentary later through reporting."
+          [submitLabel]="benefitDrawerSubmitLabel"
+          [submitDisabled]="!canSaveBenefitDraft(register)"
+          closeAriaLabel="Close benefit drawer"
+          panelClass="benefit-drawer"
+          (close)="closeBenefitDrawer()"
+          (submitForm)="saveBenefitDrawer($event)"
+        >
+          <div planDrawerBody class="dependency-drawer-grid benefit-drawer-grid">
+            <app-pm-console-field label="Linked Project" type="select" [value]="register.draft.project" [options]="register.projectOptions" placeholder="Select linked project" ariaLabel="Linked Project" fieldClass="dependency-drawer-field" [mandatory]="true" [wide]="true" (valueChange)="updateBenefitDraft('project', $event)" />
+            <app-pm-console-field label="Benefit Type" type="select" [value]="register.draft.benefitType" [options]="register.benefitTypeOptions" [placeholder]="register.benefitTypePlaceholder" ariaLabel="Benefit Type" fieldClass="dependency-drawer-field" (valueChange)="updateBenefitDraft('benefitType', $event)" />
+            <app-pm-console-field label="Benefit Category" type="select" [value]="register.draft.category" [options]="register.benefitCategoryOptions" [placeholder]="register.benefitCategoryPlaceholder" ariaLabel="Benefit Category" fieldClass="dependency-drawer-field" (valueChange)="updateBenefitDraft('category', $event)" />
+            <app-pm-console-field label="Benefit Name" [value]="register.draft.benefitName" placeholder="Enter benefit name" ariaLabel="Benefit Name" fieldClass="dependency-drawer-field" [mandatory]="true" [wide]="true" (valueChange)="updateBenefitDraft('benefitName', $event)" />
+            <app-pm-console-field label="Description" type="textarea" [value]="register.draft.description" placeholder="Enter description" ariaLabel="Description" fieldClass="dependency-drawer-field" [wide]="true" (valueChange)="updateBenefitDraft('description', $event)" />
+            <app-pm-console-field label="Benefit Owner" type="select" [value]="register.draft.owner" [options]="register.ownerOptions" [placeholder]="register.ownerPlaceholder" ariaLabel="Benefit Owner" fieldClass="dependency-drawer-field" (valueChange)="updateBenefitDraft('owner', $event)" />
+            <app-pm-console-field label="Realisation Date" type="date" [value]="register.draft.realizationDate" ariaLabel="Realisation Date" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateBenefitDraft('realizationDate', $event)" />
+          </div>
+        </app-pm-console-plan-drawer>
+      }
+      @if (activeRiskDrawer; as register) {
+        <app-pm-console-plan-drawer
+          [title]="riskDrawerTitle"
+          [eyebrow]="register.fieldName"
+          [description]="register.description"
+          [summaryLabel]="riskCountLabel(register)"
+          summary="Capture the quick risk record here. Use the full profile option when source, consequence, controls, and treatment detail need a richer assessment."
+          [submitLabel]="riskDrawerOpenProfileAfterSave ? 'Save risk and open profile' : editingRiskPlanId ? 'Save changes' : register.actionLabel"
+          [submitDisabled]="!canSaveRiskDraft(register)"
+          closeAriaLabel="Close risk drawer"
+          panelClass="risk-drawer"
+          (close)="closeRiskDrawer()"
+          (submitForm)="saveRiskDrawer($event)"
+        >
+          <div planDrawerBody class="risk-drawer-profile-cta" [class.is-selected]="riskDrawerOpenProfileAfterSave">
+            <div>
+              <strong>Complete risk profile</strong>
+              <small>Open Identification, Analysis, and Treatment after saving this quick risk.</small>
+            </div>
+            <button type="button" (click)="markRiskDrawerForFullProfile()">
+              <span pmConsoleIcon="chevron-right" aria-hidden="true"></span>
+              Create full profile
+            </button>
+          </div>
+
+          <div planDrawerBody class="risk-drawer-layout">
+            <div class="dependency-drawer-grid risk-drawer-grid">
+              <app-pm-console-field label="Risk Category" type="select" [value]="register.draft.riskCategory" [options]="register.categoryOptions" [placeholder]="register.categoryPlaceholder" ariaLabel="Risk Category" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateRiskDraft('riskCategory', $event)" />
+              <app-pm-console-field label="Risk Status" type="select" [value]="register.draft.status" [options]="register.statusOptions" [placeholder]="register.statusPlaceholder" ariaLabel="Risk Status" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateRiskDraft('status', $event)" />
+              <app-pm-console-field label="Risk Name" type="textarea" [value]="register.draft.riskName" placeholder="Type risk name here" ariaLabel="Risk Name" fieldClass="dependency-drawer-field" [mandatory]="true" [wide]="true" [maxLength]="500" [afterText]="riskDrawerCharacterCount + ' characters remaining'" (valueChange)="updateRiskDraft('riskName', $event)" />
+              <app-pm-console-field label="Description" type="textarea" [value]="register.draft.description" placeholder="Type risk description here" ariaLabel="Description" fieldClass="dependency-drawer-field" [wide]="true" (valueChange)="updateRiskDraft('description', $event)" />
+              <app-pm-console-field label="Risk Owner" type="select" [value]="register.draft.owner" [options]="register.ownerOptions" [placeholder]="register.ownerPlaceholder" ariaLabel="Risk Owner" fieldClass="dependency-drawer-field" (valueChange)="updateRiskDraft('owner', $event)" />
+              <app-pm-console-field label="Risk Manager" type="select" [value]="register.draft.manager" [options]="register.ownerOptions" ariaLabel="Risk Manager" fieldClass="dependency-drawer-field" (valueChange)="updateRiskDraft('manager', $event)" />
+              <app-pm-console-field label="Start Date" type="date" [value]="register.draft.startDate" ariaLabel="Start Date" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateRiskDraft('startDate', $event)" />
+              <app-pm-console-field label="End Date" type="date" [value]="register.draft.endDate" ariaLabel="End Date" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateRiskDraft('endDate', $event)" />
+              <app-pm-console-field label="Actual Risk Likelihood" type="select" [value]="register.draft.actualLikelihood" [options]="register.likelihoodOptions" placeholder="Select likelihood" ariaLabel="Actual Risk Likelihood" fieldClass="dependency-drawer-field" (valueChange)="updateRiskDraft('actualLikelihood', $event)" />
+              <app-pm-console-field label="Actual Risk Consequence" type="select" [value]="register.draft.actualConsequence" [options]="register.consequenceOptions" placeholder="Select consequence" ariaLabel="Actual Risk Consequence" fieldClass="dependency-drawer-field" (valueChange)="updateRiskDraft('actualConsequence', $event)" />
+              <app-pm-console-field label="Actual Risk Rating" [value]="register.draft.actualRating || '-'" ariaLabel="Actual Risk Rating" fieldClass="dependency-drawer-field" [disabled]="true" />
+              <app-pm-console-field label="Residual Risk Likelihood" type="select" [value]="register.draft.residualLikelihood" [options]="register.likelihoodOptions" placeholder="Select likelihood" ariaLabel="Residual Risk Likelihood" fieldClass="dependency-drawer-field" (valueChange)="updateRiskDraft('residualLikelihood', $event)" />
+              <app-pm-console-field label="Residual Risk Consequence" type="select" [value]="register.draft.residualConsequence" [options]="register.consequenceOptions" placeholder="Select consequence" ariaLabel="Residual Risk Consequence" fieldClass="dependency-drawer-field" (valueChange)="updateRiskDraft('residualConsequence', $event)" />
+              <app-pm-console-field label="Residual Risk Rating" [value]="register.draft.residualRating || '-'" ariaLabel="Residual Risk Rating" fieldClass="dependency-drawer-field" [disabled]="true" />
+              <section class="risk-radio-field wide" aria-label="Enterprise wide impact">
+                <span class="matrix-field-label">Does this risk have an enterprise wide impact?</span>
+                <label><input type="radio" name="risk-enterprise-workspace-drawer" [checked]="register.draft.enterpriseImpact" (change)="updateRiskDraftEnterpriseImpact(true)" /> Yes</label>
+                <label><input type="radio" name="risk-enterprise-workspace-drawer" [checked]="!register.draft.enterpriseImpact" (change)="updateRiskDraftEnterpriseImpact(false)" /> No</label>
+              </section>
+            </div>
+
+            <aside class="risk-drawer-matrix-stack">
+              <app-pm-console-risk-matrix
+                title="Actual risk rating"
+                description="Click the consequence and likelihood cell."
+                [likelihood]="register.draft.actualLikelihood"
+                [consequence]="register.draft.actualConsequence"
+                [compact]="true"
+                (selectionChange)="updateRiskDraftMatrix('actual', $event)"
+              ></app-pm-console-risk-matrix>
+              <app-pm-console-risk-matrix
+                title="Residual risk rating"
+                description="Expected level after treatment."
+                [likelihood]="register.draft.residualLikelihood"
+                [consequence]="register.draft.residualConsequence"
+                [compact]="true"
+                (selectionChange)="updateRiskDraftMatrix('residual', $event)"
+              ></app-pm-console-risk-matrix>
+            </aside>
+          </div>
+
+          <section planDrawerBody class="risk-treatment-card risk-drawer-treatment-card">
+            <header>
+              <div>
+                <span class="risk-profile-section-eyebrow">Treatment</span>
+                <strong>{{ riskTreatmentCountLabel(register.draft.treatments) }}</strong>
+              </div>
+            </header>
+            <div class="risk-treatment-compose">
+              <app-pm-console-field label="Proposed Treatment" type="textarea" [value]="riskTreatmentDraft.treatment" placeholder="Describe the treatment action" ariaLabel="Proposed Treatment" fieldClass="risk-profile-field" [wide]="true" (valueChange)="updateRiskTreatmentDraft('treatment', $event)" />
+              <app-pm-console-field label="Type" type="select" [value]="riskTreatmentDraft.type" [options]="register.treatmentTypeOptions" ariaLabel="Treatment Type" fieldClass="risk-profile-field" (valueChange)="updateRiskTreatmentDraft('type', $event)" />
+              <app-pm-console-field label="Category" type="select" [value]="riskTreatmentDraft.category" [options]="register.treatmentCategoryOptions" ariaLabel="Treatment Category" fieldClass="risk-profile-field" (valueChange)="updateRiskTreatmentDraft('category', $event)" />
+              <app-pm-console-field label="Owner" type="select" [value]="riskTreatmentDraft.owner" [options]="register.ownerOptions" [placeholder]="register.ownerPlaceholder" ariaLabel="Treatment Owner" fieldClass="risk-profile-field" (valueChange)="updateRiskTreatmentDraft('owner', $event)" />
+              <app-pm-console-field label="End Date" type="date" [value]="riskTreatmentDraft.endDate" ariaLabel="Treatment End Date" fieldClass="risk-profile-field" (valueChange)="updateRiskTreatmentDraft('endDate', $event)" />
+              <button class="risk-profile-add-treatment" type="button" [disabled]="!canAddRiskTreatmentDraft()" (click)="addRiskTreatmentToDraft()"><span pmConsoleIcon="plus" aria-hidden="true"></span>Add risk treatment</button>
+            </div>
+            @if (register.draft.treatments.length) {
+              <div class="risk-treatment-pill-list">
+                @for (treatment of register.draft.treatments; track treatment.id) {
+                  <span>
+                    {{ treatment.treatment }}
+                    <button type="button" (click)="removeRiskTreatmentFromDraft(treatment.id)" [attr.aria-label]="'Remove treatment'"><span pmConsoleIcon="x" aria-hidden="true"></span></button>
+                  </span>
+                }
+              </div>
+            }
+          </section>
+        </app-pm-console-plan-drawer>
+      }
     }
 
     @if (false && activeReportProject) {
@@ -9304,6 +9438,25 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
           </div>
           <form class="stage-gate-form" (submit)="submitStageGate($event, gate)">
             <div class="stage-gate-drawer-body">
+              <div class="drawer-section stage-checklist-section">
+                <div class="drawer-section-headline">
+                  <span class="drawer-section-title">Checklist</span>
+                  <small>{{ gate.checkedCount }}/{{ gate.profile.gateTotal }} complete</small>
+                </div>
+                <div class="project-stages-panel-progress" aria-hidden="true">
+                  <span [style.width]="stageGateChecklistProgressWidth(gate)"></span>
+                </div>
+                <div class="project-stages-checklist">
+                  @for (item of gate.profile.checklist; track item; let index = $index) {
+                    <label class="stage-checklist-item" [class.checked]="isStageGateChecklistChecked(gate, index)" [class.is-disabled]="!canEditStageGateChecklist(gate.status)">
+                      <input type="checkbox" [checked]="isStageGateChecklistChecked(gate, index)" [disabled]="!canEditStageGateChecklist(gate.status)" (change)="toggleStageGateChecklistItem(gate, index, $any($event.target).checked)" />
+                      <i aria-hidden="true"><span class="icon"><i data-lucide="check"></i></span></i>
+                      <span>{{ item }}</span>
+                    </label>
+                  }
+                </div>
+              </div>
+
               <div class="drawer-section stage-comment-section">
                 <div class="drawer-section-headline">
                   <span class="drawer-section-title">Comments</span>
@@ -9549,6 +9702,9 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   ];
   readonly projectReportRegisterColumns = projectReportRegisterColumns;
   readonly projectReportRegisterRows = projectReportRegisterRows;
+  readonly benefitRegisterTableColumns = benefitRegisterTableColumns;
+  readonly riskRegisterTableColumns = riskRegisterTableColumns;
+  readonly changeRequestTableColumns = changeRequestTableColumns;
   readonly reportSections = ['Overview', 'Scope', 'Schedule', 'Budget', 'Benefits', 'Risks', 'Issues', 'Resource', 'Dependencies'];
   readonly reportStatusOptions = [
     { label: 'On track', simpleLabel: 'On track', value: 'On track', tone: 'green', icon: 'checkMark' },
@@ -10356,7 +10512,6 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     { id: 'projects', label: 'Impacted Projects / Products' },
   ];
 
-  workspaceDisplay: WorkspaceDisplay = 'table';
   workspaceRegister: WorkspaceRegister = 'projects';
   onboardingPlanActionMessage = '';
   activeAiAssistSection: string | null = null;
@@ -10386,12 +10541,20 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   renderedWorkspaceTableColumnIds = [...this.visibleWorkspaceTableColumnIds];
   workspaceTableColumnMotionStates = this.createWorkspaceTableColumnMotionStates(this.renderedWorkspaceTableColumnIds);
   workspaceColumnMenuOpen = false;
+  workspaceProjectSearchOpen = false;
+  workspaceProjectFilterMenuOpen = false;
+  workspaceProjectSearch = '';
+  workspaceProjectStatusFilter = 'all';
+  workspaceProjectStageFilter = 'all';
+  workspaceProjectManagerFilter = 'all';
   quickLinksPage = 0;
   quickLinksPageSize = QUICK_LINK_PAGE_SIZE;
   quickLinksToast: string | null = null;
   selectedBoardFilter = 'all';
   activePm101ProjectId = pm101ProjectPreviews[0].id;
   activeReportProject: string | null = null;
+  activeReportRow: PmConsoleRegisterTableRow | null = null;
+  activeReportDrawerMode: ReportDrawerPresentationMode = 'compose';
   activeReportMode: ReportDetailMode = 'detailed';
   selectedStageGateKey: string | null = null;
   selectedStageRevokeKey: string | null = null;
@@ -10447,6 +10610,9 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   isBudgetMonthlyDrawerOpen = false;
   isBudgetRulesOpen = false;
   isBenefitDrawerOpen = false;
+  editingBenefitPlanId: string | null = null;
+  activeBenefitProfileId: string | null = null;
+  benefitProfileFocusMode = false;
   isRiskDrawerOpen = false;
   isIssueDrawerOpen = false;
   isRelatedLinksDrawerOpen = false;
@@ -10462,6 +10628,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   editingRiskPlanId: string | null = null;
   activeRiskProfileId: string | null = null;
   activeRiskProfileTab: RiskProfileTab = 'identification';
+  riskProfileFocusMode = false;
   riskDrawerOpenProfileAfterSave = false;
   activeDependencyRegisterKey: DependencyRegisterKey | null = null;
   budgetPlanStates: Record<string, BudgetPlanState> = this.cloneBudgetPlanStateMap(budgetPlanSeeds);
@@ -10528,7 +10695,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   guidedTourStep = 0;
 
   private iconsHydrated = false;
-  private lastActionWorkspaceView: ActionWorkspaceView = 'board';
+  private lastActionWorkspaceView: ActionWorkspaceView = 'calendar';
   private quickLinksLayoutFrame: number | null = null;
   private quickLinksPagerBlockHeight = 0;
   private quickLinksToastTimer: number | null = null;
@@ -10540,6 +10707,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   private aiAssistGenerationTimer: number | null = null;
   private aiAssistFilledClearTimer: number | null = null;
   private projectPlanReturnState: ProjectPlanReturnState | null = null;
+  private riskProfileReturnState: RiskProfileReturnState | null = null;
   private projectPlanLastContentScrollTop = 0;
   private projectPlanHeaderScrollIgnoreUntil = 0;
 
@@ -10549,16 +10717,73 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     private readonly elementRef: ElementRef<HTMLElement>,
   ) {}
 
-  get workspaceTableProjects(): ProjectRow[] {
-    const rows = this.onboardingProjectSetup ? onboardingWorkspaceTableProjects : workspaceTableProjects;
-    return this.isAllProjects ? rows : rows.filter((project) => this.matchesSelectedProject(project.id || project.title));
+  get pageMotionKey(): string {
+    return [
+      this.frontDoorMode,
+      this.selectedPage,
+      this.selectedProject,
+      this.onboardingPm101Locked ? 'pm101-locked' : 'pm101-open',
+      this.onboardingProjectSetup ? 'setup' : 'standard',
+    ].join('|');
   }
 
-  get workspaceProjectCards(): ProjectCard[] {
-    const cards = this.onboardingProjectSetup ? onboardingWorkspaceProjectCards : workspaceProjectCards;
-    return this.isAllProjects
-      ? cards
-      : cards.filter((project) => this.matchesSelectedProject(project.title));
+  get workspaceRegisterIndex(): number {
+    return Math.max(0, workspaceRegisterTabOrder.indexOf(this.workspaceRegister));
+  }
+
+  get workspaceRegisterIndicatorLeft(): string {
+    const left = workspaceRegisterTabOrder.slice(0, this.workspaceRegisterIndex).reduce((total, tab) => total + workspaceRegisterTabWidths[tab], 0);
+    return `${left}px`;
+  }
+
+  get workspaceRegisterIndicatorWidth(): string {
+    return `${workspaceRegisterTabWidths[this.workspaceRegister]}px`;
+  }
+
+  get workspaceMotionKey(): string {
+    return [this.selectedView, this.selectedProject, this.lastActionWorkspaceView].join('|');
+  }
+
+  get projectPlanContentMotionKey(): string {
+    return [
+      this.projectPlanEntry,
+      this.projectPlanDetailMode,
+      this.projectPlanActiveSection,
+      this.activeReportMode,
+      this.activeReportSection,
+      this.activeClosureSection,
+      this.activeBudgetSubtab,
+    ].join('|');
+  }
+
+  get prefersReducedMotion(): boolean {
+    return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  get projectPlanEntryIndex(): number {
+    return Math.max(0, projectPlanEntryOrder.indexOf(this.projectPlanEntry));
+  }
+
+  get projectPlanEntryIndicatorLeft(): string {
+    const left = projectPlanEntryOrder.slice(0, this.projectPlanEntryIndex).reduce((total, entry) => total + projectPlanEntryTabWidths[entry], 0);
+    return `${left}px`;
+  }
+
+  get projectPlanEntryIndicatorWidth(): string {
+    return `${projectPlanEntryTabWidths[this.projectPlanEntry]}px`;
+  }
+
+  projectPlanEntryTabWidth(entry: ProjectPlanEntry): string {
+    return `${projectPlanEntryTabWidths[entry]}px`;
+  }
+
+  get workspaceTableProjects(): ProjectRow[] {
+    return this.filterWorkspaceProjectRows(this.workspaceProjectSourceRows);
+  }
+
+  private get workspaceProjectSourceRows(): ProjectRow[] {
+    const rows = this.onboardingProjectSetup ? onboardingWorkspaceTableProjects : workspaceTableProjects;
+    return this.isAllProjects ? rows : rows.filter((project) => this.matchesSelectedProject(project.id || project.title));
   }
 
   get isAllProjects(): boolean {
@@ -10887,13 +11112,50 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   get activeBenefitPlan(): BenefitPlanConfig {
     return {
       ...benefitPlanConfig,
-      rows: this.benefitPlanRows,
+      projectOptions: this.workspaceBenefitProjectOptions,
+      rows: this.activeBenefitPlanRows,
       draft: this.benefitPlanDraft,
     };
   }
 
   get activeBenefitDrawer(): BenefitPlanConfig | null {
     return this.isBenefitDrawerOpen ? this.activeBenefitPlan : null;
+  }
+
+  get activeBenefitProfile(): BenefitPlanRow | null {
+    if (!this.activeBenefitProfileId) return null;
+    return this.benefitPlanRows.find((row) => row.id === this.activeBenefitProfileId) || null;
+  }
+
+  get activeWorkspaceBenefitProfile(): BenefitPlanRow | null {
+    if (!this.benefitProfileFocusMode || this.selectedPage !== 'workspaces' || this.workspaceRegister !== 'benefits') return null;
+    return this.activeBenefitProfile;
+  }
+
+  get workspaceBenefitProjectOptions(): string[] {
+    return [...new Set(workspaceTableProjects.map((project) => project.title))];
+  }
+
+  get benefitProductOptions(): string[] {
+    return ['Research map platform', 'PMO workflow', 'Sponsor approval service', 'Operations response model', 'Knowledge hub'];
+  }
+
+  get benefitStrategicObjectiveOptions(): string[] {
+    return [
+      'Improve national research capability discovery',
+      'Boost regional sustainability and growth through partnerships and investment',
+      'Increase sponsor decision speed and transparency',
+      'Improve PMO adoption maturity',
+      'Protect credibility of strategic portfolio data',
+    ];
+  }
+
+  get benefitDrawerTitle(): string {
+    return this.editingBenefitPlanId ? 'Edit benefit' : this.activeBenefitPlan.title;
+  }
+
+  get benefitDrawerSubmitLabel(): string {
+    return this.editingBenefitPlanId ? 'Save changes' : this.activeBenefitPlan.actionLabel;
   }
 
   get activeRiskPlan(): RiskPlanConfig {
@@ -10981,6 +11243,34 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       return this.activeChangeRequestRows.filter((row) => this.isOverdueChangeRequest(row));
     }
     return this.activeChangeRequestRows;
+  }
+
+  get changeRequestTableRows(): PmConsoleRegisterTableRow[] {
+    return this.visibleChangeRequestRows.map((row) => {
+      const cells: Record<string, PmConsoleRegisterTableCell> = {
+        pcrNumber: { kind: 'primary', title: row.pcrNumber, ariaLabel: `Open ${row.pcrNumber}` },
+        types: { kind: 'tags', items: row.types },
+        createdDate: { kind: 'text', text: this.changeRequestDateLabel(row.createdDate), muted: true },
+        dueDate: { kind: 'text', text: this.changeRequestDateLabel(row.dueDate), muted: !this.isOverdueChangeRequest(row), strong: this.isOverdueChangeRequest(row) },
+        priority: { kind: 'status', label: row.priority, tone: this.changeRequestPriorityTone(row.priority) },
+        status: { kind: 'status', label: row.status, tone: this.changeRequestStatusTone(row.status) },
+        actions: {
+          kind: 'menu',
+          ariaLabel: `Actions for ${row.pcrNumber}`,
+          actions: [
+            { id: 'view', label: 'View', icon: 'eye', ariaLabel: `View ${row.pcrNumber}` },
+            { id: 'edit', label: 'Edit', icon: 'pencil', ariaLabel: `Edit ${row.pcrNumber}` },
+            { id: 'print', label: 'Print', icon: 'printer', ariaLabel: `Print ${row.pcrNumber}` },
+            { id: 'delete', label: 'Delete', icon: 'trash-2', tone: 'danger', ariaLabel: `Delete ${row.pcrNumber}` },
+          ],
+        },
+      };
+      return {
+        id: row.id,
+        ariaLabel: `Open ${row.pcrNumber}`,
+        cells,
+      };
+    });
   }
 
   get changeRequestTabs(): ChangeRequestTab[] {
@@ -11113,7 +11403,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get workspaceTitle(): string {
-    if (this.usesPm101DesignShell) return 'Welcome!';
+    if (this.onboardingPm101Locked || this.isPm101WelcomeWorkspace) return 'Welcome!';
     return this.isAllProjects ? 'Operational Workspace' : `${this.scopedProjectName} | Operational Workspace`;
   }
 
@@ -11145,7 +11435,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get isNormalPm101Workspace(): boolean {
-    return this.frontDoorMode === 'assigned' && !this.pmoAssignmentReady && !this.onboardingPm101Locked && this.selectedPage === 'workspace' && this.selectedProject === 'all';
+    return this.frontDoorMode === 'assigned' && !this.onboardingPm101Locked && !this.onboardingAssignmentFlow && !this.onboardingProjectSetup && this.selectedPage === 'workspace' && this.isAllProjects;
   }
 
   get isSelectedProjectPm101Workspace(): boolean {
@@ -11196,6 +11486,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return this.onboardingPm101Locked || this.isPm101WelcomeWorkspace || this.isSelectedProjectWorkspaceShell;
   }
 
+  get showWorkspaceOverviewTab(): boolean {
+    return true;
+  }
+
   get showWorkspaceProjectSwitch(): boolean {
     return this.frontDoorMode !== 'unassigned' && this.usesPm101OperationalLayout && this.workspaceHeaderProjectOptions.length > 0;
   }
@@ -11236,10 +11530,6 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return this.actionsFromIds(selectedProjectOperationalQuickLinkIds);
   }
 
-  get isWorkspaceCardMode(): boolean {
-    return this.workspaceRegister === 'projects' && this.workspaceDisplay === 'cards';
-  }
-
   get workspaceRegisterTabs(): WorkspaceRegisterTab[] {
     return [
       { id: 'projects', label: 'Project Register', icon: 'calendarMinimal', count: this.workspaceTableProjects.length },
@@ -11249,12 +11539,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   workspaceRegisterTabWidth(id: WorkspaceRegister): string {
-    const widths: Record<WorkspaceRegister, string> = {
-      projects: '186px',
-      risks: '165px',
-      benefits: '194px',
-    };
-    return widths[id];
+    return `${workspaceRegisterTabWidths[id]}px`;
   }
 
   get workspaceRegisterAriaLabel(): string {
@@ -11293,6 +11578,35 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return this.isAllProjects ? 'All projects' : this.scopedProjectName;
   }
 
+  get workspaceProjectTableItemLabel(): string {
+    return this.workspaceProjectItemLabel(this.workspaceTableProjects.length, this.workspaceProjectSourceRows.length);
+  }
+
+  get workspaceProjectStatusOptions(): string[] {
+    return this.uniqueWorkspaceProjectOptions(this.workspaceProjectSourceRows.map((project) => project.status));
+  }
+
+  get workspaceProjectStageOptions(): string[] {
+    return this.uniqueWorkspaceProjectOptions(this.workspaceProjectSourceRows.map((project) => this.normalizeWorkspaceProjectStage(project.stage)));
+  }
+
+  get workspaceProjectManagerOptions(): string[] {
+    return this.uniqueWorkspaceProjectOptions(this.workspaceProjectSourceRows.map((project) => project.manager));
+  }
+
+  get hasWorkspaceProjectFilters(): boolean {
+    return this.workspaceProjectStatusFilter !== 'all' || this.workspaceProjectStageFilter !== 'all' || this.workspaceProjectManagerFilter !== 'all';
+  }
+
+  get workspaceProjectActiveFilterCount(): number {
+    return [this.workspaceProjectStatusFilter, this.workspaceProjectStageFilter, this.workspaceProjectManagerFilter].filter((value) => value !== 'all').length;
+  }
+
+  get workspaceProjectFilterSummary(): string {
+    if (!this.hasWorkspaceProjectFilters) return 'All project records';
+    return this.workspaceProjectActiveFilterCount === 1 ? '1 active filter' : `${this.workspaceProjectActiveFilterCount} active filters`;
+  }
+
   get noAssignmentMessage(): string {
     return 'No projects have been assigned to you yet. We’ll notify you when PMO assigns one. Meanwhile, here is what this workspace will help you do once your project is ready.';
   }
@@ -11318,7 +11632,6 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.selectedPage = this.selectedPage === 'project-plan' ? 'project-plan' : 'workspaces';
     this.selectedView = 'pm101';
     this.workspaceRegister = 'projects';
-    this.workspaceDisplay = 'table';
     this.projectPlanEntry = 'quick';
     this.projectPlanDetailMode = 'simple';
     this.projectPlanActiveSection = 'Overview';
@@ -11384,10 +11697,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     const countRealization = (realization: string) => rows.filter((row) => row.realization === realization).length;
     const countStatus = (status: string) => rows.filter((row) => row.status === status).length;
     return [
-      { label: 'All Benefits', value: rows.length, icon: 'benefit', tone: 'brand' },
+      { label: 'All Benefits', value: rows.length, icon: 'benefitGraph', tone: 'brand' },
       { label: 'Realized', value: countRealization('Realized'), icon: 'check', tone: 'green' },
-      { label: 'In Realization', value: countRealization('In realization'), icon: 'timeline', tone: 'blue' },
-      { label: 'Planned', value: countRealization('Planned'), icon: 'pauseCircle', tone: 'neutral' },
+      { label: 'In Realization', value: countRealization('In realization'), icon: 'trendUp', tone: 'blue' },
+      { label: 'Planned', value: countRealization('Planned'), icon: 'planned', tone: 'neutral' },
       { label: 'Attention', value: countStatus('Attention'), icon: 'alert', tone: 'amber' },
     ];
   }
@@ -11398,21 +11711,75 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     const countStatus = (status: string) => rows.filter((row) => row.status === status).length;
     return [
       { label: 'All Risks', value: rows.length, icon: 'risks', tone: 'brand' },
-      { label: 'Critical', value: countExposure('Critical'), icon: 'alert', tone: 'red' },
-      { label: 'High', value: countExposure('High'), icon: 'trendUp', tone: 'amber' },
-      { label: 'Medium', value: countExposure('Medium'), icon: 'eyeOff', tone: 'neutral' },
-      { label: 'Escalated', value: countStatus('Escalated'), icon: 'bell', tone: 'red' },
+      { label: 'Critical', value: countExposure('Critical'), icon: 'riskCritical', tone: 'red' },
+      { label: 'High', value: countExposure('High'), icon: 'riskHigh', tone: 'amber' },
+      { label: 'Medium', value: countExposure('Medium'), icon: 'riskMedium', tone: 'neutral' },
+      { label: 'Escalated', value: countStatus('Escalated'), icon: 'riskEscalated', tone: 'red' },
     ];
   }
 
   get visibleBenefitRegisterRows(): BenefitRegisterRow[] {
     if (this.onboardingProjectSetup) return [];
-    return this.isAllProjects ? benefitRegisterRows : benefitRegisterRows.filter((row) => row.project === this.selectedProject);
+    const rows = this.workspaceBenefitRegisterRows;
+    return this.isAllProjects ? rows : rows.filter((row) => row.project === this.selectedProject);
   }
 
   get visibleRiskRegisterRows(): RiskRegisterRow[] {
     if (this.onboardingProjectSetup) return [];
     return this.isAllProjects ? riskRegisterRows : riskRegisterRows.filter((row) => row.project === this.selectedProject);
+  }
+
+  get benefitRegisterTableRows(): PmConsoleRegisterTableRow[] {
+    return this.visibleBenefitRegisterRows.map((row) => {
+      const cells: Record<string, PmConsoleRegisterTableCell> = {
+        id: { kind: 'text', text: row.id, strong: true },
+        benefit: { kind: 'primary', title: row.benefit, ariaLabel: `Open complete benefit profile for ${row.id}` },
+        project: { kind: 'text', text: row.project },
+        owner: { kind: 'text', text: row.owner },
+        targetDate: { kind: 'text', text: row.targetDate, muted: true },
+        measure: { kind: 'text', text: row.measure },
+        realization: { kind: 'status', label: row.realization, tone: row.realizationTone },
+        status: { kind: 'status', label: row.status, tone: row.statusTone },
+      };
+      return {
+        id: row.id,
+        ariaLabel: `Open complete benefit profile for ${row.id}`,
+        cells,
+      };
+    });
+  }
+
+  get riskRegisterTableRows(): PmConsoleRegisterTableRow[] {
+    return this.visibleRiskRegisterRows.map((row) => {
+      const cells: Record<string, PmConsoleRegisterTableCell> = {
+        id: { kind: 'text', text: row.id, strong: true },
+        risk: { kind: 'primary', title: row.risk, ariaLabel: `Open full risk profile for ${row.id}` },
+        project: { kind: 'text', text: row.project },
+        owner: { kind: 'text', text: row.owner },
+        mitigation: { kind: 'text', text: row.mitigation },
+        reviewDate: { kind: 'text', text: row.reviewDate, muted: true },
+        exposure: { kind: 'status', label: row.exposure, tone: row.exposureTone },
+        status: { kind: 'status', label: row.status, tone: row.statusTone },
+      };
+      return {
+        id: row.id,
+        ariaLabel: `Open full risk profile for ${row.id}`,
+        cells,
+      };
+    });
+  }
+
+  private get activeBenefitPlanRows(): BenefitPlanRow[] {
+    if (this.selectedProject === 'all') return this.benefitPlanRows;
+    return this.benefitPlanRows.filter((row) => row.project === this.selectedProject || !row.project);
+  }
+
+  private get workspaceBenefitRegisterRows(): BenefitRegisterRow[] {
+    const merged = new Map<string, BenefitRegisterRow>(benefitRegisterRows.map((row) => [row.id, row]));
+    this.benefitPlanRows.forEach((row) => {
+      merged.set(row.id, this.benefitRegisterRowFromPlanRow(row));
+    });
+    return Array.from(merged.values());
   }
 
   get renderedWorkspaceTableColumns(): WorkspaceTableColumn[] {
@@ -11445,11 +11812,24 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return boardFilters.find((filter) => filter.id === this.selectedBoardFilter) || boardFilters[0];
   }
 
-  get monthItems(): typeof timelineItems {
+  get calendarFilterOptions(): PmConsoleCalendarFilter[] {
+    return boardFilters.map((filter) => ({
+      id: filter.id,
+      label: filter.label,
+      icon: this.iconName(filter.icon),
+      count: this.countCalendarFilter(filter),
+    }));
+  }
+
+  get boardEmptyStateLabel(): string {
+    return this.selectedBoardFilter === 'all' ? 'actions' : this.selectedBoardFilterOption.label.toLowerCase();
+  }
+
+  get monthItems(): PmConsoleCalendarItem[] {
     return timelineItems.filter((item) => this.sameMonth(this.parseDate(item.date), this.calendarMonth));
   }
 
-  get visibleMonthItems(): typeof timelineItems {
+  get visibleMonthItems(): PmConsoleCalendarItem[] {
     return this.monthItems.filter((item) => this.selectedBoardFilter === 'all' || this.timelineItemKind(item) === this.selectedBoardFilter);
   }
 
@@ -11457,7 +11837,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return this.calendarMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   }
 
-  get calendarCells(): Array<{ key: string; day: number; current: boolean; today: boolean; items: typeof timelineItems }> {
+  get calendarCells(): PmConsoleCalendarCell[] {
     const month = new Date(this.calendarMonth.getFullYear(), this.calendarMonth.getMonth(), 1);
     const firstDayOffset = (month.getDay() + 6) % 7;
     const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
@@ -11490,15 +11870,31 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get activeReportDetails(): ReportCreationDetail {
-    return reportCreationDetails[this.activeReport.project] || reportCreationDetails[firstAssignedProject.id];
+    const details = reportCreationDetails[this.activeReport.project] || reportCreationDetails[firstAssignedProject.id];
+    if (!this.activeReportRow) return details;
+
+    const interval = this.projectReportIntervalParts(this.activeReportRow);
+    return {
+      ...details,
+      intervalStart: interval?.start || details.intervalStart,
+      intervalEnd: interval?.end || details.intervalEnd,
+      intervalStatus: this.projectReportCellLabel(this.activeReportRow, 'reportingStatus') || details.intervalStatus,
+    };
   }
 
   get activeReportStatus(): string {
+    const projectStatus = this.projectReportCellLabel(this.activeReportRow, 'projectStatus');
+    if (projectStatus) return this.normalizedProjectReportStatus(projectStatus);
+
     const latest = this.activeReport.trend.at(-1);
     const tone = this.reportStatusTone(latest?.status || 'due');
     if (tone === 'off-track') return 'Off track';
     if (tone === 'alert') return 'Alert';
     return 'On track';
+  }
+
+  get activeReportSubmitted(): boolean {
+    return this.isSubmittedProjectReportStatus(this.activeReportDetails.intervalStatus);
   }
 
   get simpleReportIntervalLabel(): string {
@@ -11694,6 +12090,19 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     if ('selectedView' in changes) {
       this.syncLastActionWorkspaceView(this.selectedView);
     }
+    if (
+      'selectedProject' in changes ||
+      'selectedPage' in changes ||
+      'selectedView' in changes ||
+      'frontDoorMode' in changes ||
+      'guidedTourActive' in changes ||
+      'onboardingAssignmentFlow' in changes ||
+      'onboardingPm101Locked' in changes ||
+      'onboardingProjectSetup' in changes ||
+      'pmoAssignmentReady' in changes
+    ) {
+      this.normalizeWorkspaceViewForCurrentScope(true);
+    }
     if ('guidedTourActive' in changes) {
       if (this.guidedTourActive) {
         this.guidedTourStep = 0;
@@ -11764,6 +12173,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       const menu = this.elementRef.nativeElement.querySelector<HTMLElement>('[data-workspace-columns-menu]');
       if (!menu?.contains(target)) this.closeWorkspaceColumnMenu();
     }
+    if (this.workspaceProjectFilterMenuOpen) {
+      const menu = this.elementRef.nativeElement.querySelector<HTMLElement>('[data-workspace-project-filter-menu]');
+      if (!menu?.contains(target)) this.closeWorkspaceProjectFilterMenu();
+    }
     if (this.isBudgetRulesOpen) {
       const popover = this.elementRef.nativeElement.querySelector<HTMLElement>('[data-budget-rules-popover]');
       const trigger = this.elementRef.nativeElement.querySelector<HTMLElement>('[data-budget-rules-trigger]');
@@ -11798,6 +12211,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     }
     if (this.workspaceColumnMenuOpen) {
       this.closeWorkspaceColumnMenu();
+      return;
+    }
+    if (this.workspaceProjectFilterMenuOpen) {
+      this.closeWorkspaceProjectFilterMenu();
       return;
     }
     if (this.isBudgetRulesOpen) {
@@ -12059,14 +12476,16 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     }
 
     if (project.routeProjectId) {
-      this.openProject(project.routeProjectId, this.currentProjectPlanReturnState());
+      this.openProject(project.routeProjectId, this.projectWorkspaceReturnState(project.routeProjectId));
     }
   }
 
   openAssignedProjectPlan(entry: ProjectPlanEntry = 'quick'): void {
+    const returnState = this.selectedPage !== 'project-plan' ? this.currentProjectPlanReturnState() : null;
     if (this.onboardingAssignmentFlow && !this.onboardingProjectSetup) {
       this.ensureAssignedProjectSetupState();
     }
+    if (returnState) this.projectPlanReturnState = returnState;
     this.frontDoorMode = 'assigned';
     this.pmoAssignmentReady = true;
     this.selectedProject = firstAssignedProject.id;
@@ -12084,26 +12503,44 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   openProjectStages(): void {
-    this.navigate('project-plan', 'stages');
+    const projectId = this.selectedProject === 'all' ? firstAssignedProject.id : this.selectedProject;
+    this.openProject(projectId, this.currentProjectPlanReturnState(), 'stages');
   }
 
   handlePm101StepAction(step: Pm101Step): void {
     switch (step.footerActionId) {
       case 'project-plan':
+        if (this.isNormalPm101Workspace) {
+          this.openActivePm101Project('quick');
+          return;
+        }
         this.openAssignedProjectPlan();
         return;
       case 'project-workspace':
         this.openAssignedProjectWorkspace();
         return;
       case 'reports':
+        if (this.isNormalPm101Workspace) {
+          this.openActivePm101Project('reports');
+          return;
+        }
         this.openAssignedProjectReports();
         return;
       case 'learning-hub':
+        if (this.isNormalPm101Workspace) {
+          this.openActivePm101Project('stages');
+          return;
+        }
         this.openAssignedProjectPlan('stages');
         return;
       default:
         return;
     }
+  }
+
+  private openActivePm101Project(entry: ProjectPlanEntry): void {
+    const projectId = this.activePm101Project.routeProjectId || this.activePm101Project.title;
+    this.openProject(projectId, this.currentProjectPlanReturnState(), entry);
   }
 
   pm101StepActionLabel(step: Pm101Step): string {
@@ -12131,7 +12568,6 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.selectedPage = 'workspaces';
     this.selectedView = 'pm101';
     this.workspaceRegister = 'projects';
-    this.workspaceDisplay = 'table';
     this.selectedBoardFilter = 'all';
     this.projectPlanReturnState = null;
     this.activeReportProject = null;
@@ -12141,7 +12577,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   openAssignedProjectReports(): void {
-    this.openReport(firstAssignedProject.id);
+    this.openAssignedProjectPlan('reports');
   }
 
   private ensureAssignedProjectSetupState(): void {
@@ -12547,14 +12983,99 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   setWorkspaceRegister(register: WorkspaceRegister): void {
     if (this.workspaceRegister === register) return;
     this.workspaceRegister = register;
+    this.closeWorkspaceProjectFilterMenu();
+    this.closeWorkspaceColumnMenu();
     this.iconsHydrated = false;
   }
 
-  setWorkspaceDisplay(display: WorkspaceDisplay): void {
-    if (this.workspaceDisplay === display) return;
-    this.workspaceDisplay = display;
-    this.closeWorkspaceColumnMenu();
-    this.iconsHydrated = false;
+  toggleWorkspaceProjectSearch(): void {
+    if (this.workspaceProjectSearchOpen) {
+      this.workspaceProjectSearchOpen = false;
+      this.workspaceProjectSearch = '';
+      return;
+    }
+
+    this.workspaceProjectSearchOpen = true;
+    window.setTimeout(() => {
+      this.elementRef.nativeElement.querySelector<HTMLInputElement>('[data-workspace-project-search]')?.focus();
+    });
+  }
+
+  setWorkspaceProjectSearch(event: Event): void {
+    this.workspaceProjectSearch = (event.target as HTMLInputElement | null)?.value || '';
+  }
+
+  clearWorkspaceProjectSearch(): void {
+    this.workspaceProjectSearch = '';
+    window.setTimeout(() => {
+      this.elementRef.nativeElement.querySelector<HTMLInputElement>('[data-workspace-project-search]')?.focus();
+    });
+  }
+
+  toggleWorkspaceProjectFilterMenu(): void {
+    this.workspaceProjectFilterMenuOpen = !this.workspaceProjectFilterMenuOpen;
+    if (this.workspaceProjectFilterMenuOpen) this.closeWorkspaceColumnMenu();
+  }
+
+  closeWorkspaceProjectFilterMenu(): void {
+    if (!this.workspaceProjectFilterMenuOpen) return;
+    this.workspaceProjectFilterMenuOpen = false;
+    this.changeDetector.markForCheck();
+  }
+
+  setWorkspaceProjectFilter(field: WorkspaceProjectFilterField, event: Event): void {
+    const value = (event.target as HTMLSelectElement | null)?.value || 'all';
+    if (field === 'status') this.workspaceProjectStatusFilter = value;
+    if (field === 'stage') this.workspaceProjectStageFilter = value;
+    if (field === 'manager') this.workspaceProjectManagerFilter = value;
+  }
+
+  resetWorkspaceProjectFilters(): void {
+    this.workspaceProjectStatusFilter = 'all';
+    this.workspaceProjectStageFilter = 'all';
+    this.workspaceProjectManagerFilter = 'all';
+  }
+
+  exportWorkspaceProjectsToPdf(): void {
+    const rows = this.workspaceTableProjects;
+    if (!rows.length) {
+      this.showQuickLinksToast('No project records match the current filters.');
+      return;
+    }
+
+    const printFrame = document.createElement('iframe');
+    printFrame.setAttribute('title', 'Project register PDF export');
+    printFrame.style.position = 'fixed';
+    printFrame.style.right = '0';
+    printFrame.style.bottom = '0';
+    printFrame.style.width = '0';
+    printFrame.style.height = '0';
+    printFrame.style.border = '0';
+    document.body.appendChild(printFrame);
+
+    const printDocument = printFrame.contentDocument;
+    const printWindow = printFrame.contentWindow;
+    if (!printDocument || !printWindow) {
+      printFrame.remove();
+      this.showQuickLinksToast('PDF export is not available in this browser.');
+      return;
+    }
+
+    printDocument.open();
+    printDocument.write(this.workspaceProjectPdfHtml(rows));
+    printDocument.close();
+
+    const cleanup = (): void => {
+      window.setTimeout(() => printFrame.remove(), 1000);
+    };
+    printWindow.addEventListener('afterprint', cleanup, { once: true });
+    window.setTimeout(() => {
+      printWindow.focus();
+      printWindow.print();
+      window.setTimeout(() => {
+        if (document.body.contains(printFrame)) printFrame.remove();
+      }, 60000);
+    }, 150);
   }
 
   selectWorkspaceProject(event: Event): void {
@@ -12562,6 +13083,11 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     const nextProject = this.onboardingPm101Locked ? 'all' : this.isOnboardingAssignedWorkspace || this.onboardingProjectSetup ? firstAssignedProject.id : value;
     if (this.selectedProject === nextProject) return;
     this.selectedProject = nextProject;
+    this.selectedView = this.workspaceViewForProjectScope(this.selectedView, nextProject);
+    this.projectPlanReturnState = null;
+    this.activeReportProject = null;
+    this.selectedStageGateKey = null;
+    this.selectedStageRevokeKey = null;
     this.emitState();
   }
 
@@ -12593,6 +13119,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   handleProjectPlanContentScroll(event: Event): void {
     if (this.selectedPage !== 'project-plan') return;
+    if (this.riskProfileFocusMode) {
+      this.resetProjectPlanHeaderCondensed();
+      return;
+    }
     const target = event.currentTarget;
     if (!(target instanceof HTMLElement)) return;
 
@@ -12615,6 +13145,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   handleProjectPlanContentWheel(event: WheelEvent): void {
     if (this.selectedPage !== 'project-plan') return;
+    if (this.riskProfileFocusMode) {
+      this.resetProjectPlanHeaderCondensed();
+      return;
+    }
     const target = event.currentTarget;
     if (!(target instanceof HTMLElement)) return;
 
@@ -12889,12 +13423,29 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.benefitPlanRows = [
       {
         id: 'ai-benefit-discovery',
+        project: firstAssignedProject.id,
         benefitType: 'Strategic benefit',
         category: 'Service Quality',
         benefitName,
         description: 'Users can find relevant institutions, expertise, and delivery opportunities without manually chasing disconnected sources.',
         owner: 'Research Leads Forum',
         realizationDate: '2027-03-31',
+        state: 'Active',
+        stage: 'Planned',
+        product: 'Research map platform',
+        outcomes: 'Researchers can find relevant institutions, expertise, and delivery opportunities faster.',
+        strategicObjective: 'Improve national research capability discovery',
+        businessPlanObjectives: [],
+        manager: 'Research Leads Forum',
+        recipients: [],
+        impact: 'High',
+        impactJustification: 'Discovery time and manual coordination effort should reduce once the platform is adopted.',
+        likelihood: 'Medium',
+        likelihoodJustification: 'Realization depends on stakeholder onboarding and data quality controls.',
+        overallStatus: 'To Commence',
+        statusComment: '',
+        measures: [],
+        createdOn: this.todayIsoDate(),
       },
     ];
     this.syncOnboardingPlanFieldValues({ 'Benefits Register': benefitName });
@@ -13151,7 +13702,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.closeReport();
     this.closeStageGate();
     this.closeStageRevoke();
-    this.selectedView = view;
+    this.selectedView = this.workspaceViewForProjectScope(view);
     this.selectedPage = 'workspace';
     this.emitState();
   }
@@ -13162,24 +13713,18 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       this.openOnboardingProjectSetupWorkspace();
       return;
     }
-    if (page === 'workspace' && this.selectedPage === 'project-plan' && this.projectPlanReturnState) {
-      const returnState = this.projectPlanReturnState;
-      this.projectPlanReturnState = null;
-      this.closeProjectPlanDrawers();
-      this.closeReport();
-      this.closeStageGate();
-      this.closeStageRevoke();
-      this.selectedProject = returnState.selectedProject;
-      this.selectedPage = returnState.selectedPage;
-      this.selectedView = returnState.selectedView;
-      this.emitState();
+    if (page === 'workspace' && this.isProjectScopedSelectedPage() && this.restoreProjectPlanReturnState()) {
       return;
     }
     this.closeProjectPlanDrawers();
     this.closeReport();
     this.closeStageGate();
     this.closeStageRevoke();
-    if (page !== 'project-plan') {
+    const isProjectScopedPage = page === 'project-plan' || page === 'wbs' || page === 'playground';
+    if (isProjectScopedPage && this.selectedPage !== page) {
+      this.projectPlanReturnState = this.currentProjectPlanReturnState();
+    }
+    if (!isProjectScopedPage) {
       this.projectPlanReturnState = null;
     }
     this.selectedPage = page;
@@ -13189,20 +13734,20 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       this.projectPlanExpandedFieldSections = {};
     }
     if ((page === 'project-plan' || page === 'wbs' || page === 'playground') && this.isAllProjects) {
-      this.selectedProject = this.onboardingProjectSetup ? firstAssignedProject.id : 'Vision 2030';
+      this.selectedProject = firstAssignedProject.id;
     }
     this.emitState();
   }
 
-  openProject(projectId: string, returnState: ProjectPlanReturnState | null = null): void {
+  openProject(projectId: string, returnState: ProjectPlanReturnState | null = null, entry: ProjectPlanEntry = 'quick'): void {
     this.closeProjectPlanDrawers();
     this.closeReport();
     this.closeStageGate();
     this.closeStageRevoke();
-    this.projectPlanReturnState = returnState;
+    this.projectPlanReturnState = returnState ?? (this.selectedPage === 'project-plan' ? null : this.currentProjectPlanReturnState());
     this.selectedProject = projectId;
     this.selectedPage = 'project-plan';
-    this.projectPlanEntry = 'quick';
+    this.projectPlanEntry = entry;
     this.projectPlanDetailMode = this.onboardingProjectSetup ? 'simple' : this.projectPlanDetailMode;
     this.projectPlanActiveSection = 'Overview';
     this.projectPlanExpandedFieldSections = {};
@@ -13213,8 +13758,75 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return {
       selectedProject: this.selectedProject,
       selectedPage: this.selectedPage,
-      selectedView: this.selectedView,
+      selectedView: this.workspaceViewForProjectScope(this.selectedView),
+      workspaceRegister: this.workspaceRegister,
     };
+  }
+
+  private projectWorkspaceReturnState(projectId: string): ProjectPlanReturnState {
+    return {
+      ...this.currentProjectPlanReturnState(),
+      selectedProject: projectId,
+      selectedPage: 'workspace',
+      selectedView: 'pm101',
+    };
+  }
+
+  goBack(): void {
+    if (this.isProjectScopedSelectedPage() && this.restoreProjectPlanReturnState()) {
+      return;
+    }
+    if (this.selectedPage === 'project-plan' || this.selectedPage === 'wbs' || this.selectedPage === 'playground') {
+      this.navigate('workspaces');
+      return;
+    }
+    this.navigate('workspace');
+  }
+
+  private currentRiskProfileReturnState(): RiskProfileReturnState {
+    return {
+      ...this.currentProjectPlanReturnState(),
+      workspaceRegister: 'risks',
+    };
+  }
+
+  private normalizeWorkspaceViewForCurrentScope(emit = false): void {
+    const nextView = this.workspaceViewForProjectScope(this.selectedView);
+    if (nextView === this.selectedView) return;
+    this.selectedView = nextView;
+    this.syncLastActionWorkspaceView(nextView);
+    if (emit) {
+      this.emitState();
+      return;
+    }
+    this.iconsHydrated = false;
+  }
+
+  private isProjectScopedSelectedPage(): boolean {
+    return this.selectedPage === 'project-plan' || this.selectedPage === 'wbs' || this.selectedPage === 'playground';
+  }
+
+  private restoreProjectPlanReturnState(): boolean {
+    const returnState = this.projectPlanReturnState;
+    if (!returnState) return false;
+
+    this.projectPlanReturnState = null;
+    this.closeProjectPlanDrawers();
+    this.closeReport();
+    this.closeStageGate();
+    this.closeStageRevoke();
+    this.selectedProject = returnState.selectedProject;
+    this.selectedPage = returnState.selectedPage;
+    this.selectedView = this.workspaceViewForProjectScope(returnState.selectedView, returnState.selectedProject, returnState.selectedPage);
+    if (returnState.workspaceRegister) {
+      this.workspaceRegister = returnState.workspaceRegister;
+    }
+    this.emitState();
+    return true;
+  }
+
+  private workspaceViewForProjectScope(view: WorkspaceView, projectId = this.selectedProject, page = this.selectedPage): WorkspaceView {
+    return view;
   }
 
   openQuickAction(action: QuickAction): void {
@@ -13228,18 +13840,24 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.emitState();
   }
 
-  openReport(project: string): void {
+  openReport(project: string, reportRow: PmConsoleRegisterTableRow | null = null, drawerMode: ReportDrawerPresentationMode = 'compose'): void {
     this.closeProjectPlanDrawers();
     this.closeStageGate();
     this.closeStageRevoke();
     this.activeReportProject = project;
+    this.activeReportRow = reportRow;
+    this.activeReportDrawerMode = drawerMode;
     this.activeReportMode = 'detailed';
-    this.activeReportSection = 'Scope';
+    this.activeReportSection = this.isSubmittedProjectReportRow(reportRow) ? 'Overview' : 'Scope';
     this.iconsHydrated = false;
   }
 
-  openProjectReportRow(project: string): void {
-    this.openReport(project);
+  openProjectReportRow(row: PmConsoleRegisterTableRow, project: string): void {
+    this.openReport(project, row);
+  }
+
+  handleProjectReportAction(event: PmConsoleRegisterTableActionEvent, project: string): void {
+    this.openReport(project, event.row, this.isSubmittedProjectReportRow(event.row) ? 'pdf-preview' : 'compose');
   }
 
   openProjectReportRowKey(event: Event, project: string): void {
@@ -13247,9 +13865,21 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.openReport(project);
   }
 
+  previewActiveReport(): void {
+    this.activeReportDrawerMode = 'pdf-preview';
+    this.iconsHydrated = false;
+  }
+
+  backToReportCreation(): void {
+    this.activeReportDrawerMode = 'compose';
+    this.iconsHydrated = false;
+  }
+
   closeReport(): void {
     if (!this.activeReportProject) return;
     this.activeReportProject = null;
+    this.activeReportRow = null;
+    this.activeReportDrawerMode = 'compose';
     this.activeReportMode = 'detailed';
     this.activeReportSection = 'Scope';
     this.iconsHydrated = false;
@@ -14443,9 +15073,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.iconsHydrated = false;
   }
 
-  openBenefitDrawer(): void {
+  openBenefitDrawer(row?: BenefitPlanRow): void {
     this.closeProjectPlanDrawers();
-    this.resetBenefitDraft();
+    this.editingBenefitPlanId = row?.id || null;
+    this.benefitPlanDraft = row ? this.benefitDraftFromRow(row) : { ...benefitPlanConfig.draft, project: this.defaultBenefitProject() };
     this.isBenefitDrawerOpen = true;
     this.iconsHydrated = false;
   }
@@ -14453,6 +15084,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   closeBenefitDrawer(): void {
     if (!this.isBenefitDrawerOpen) return;
     this.isBenefitDrawerOpen = false;
+    this.editingBenefitPlanId = null;
     this.iconsHydrated = false;
   }
 
@@ -14462,17 +15094,28 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     if (!register || !this.canSaveBenefitDraft(register)) return;
 
     const draft = this.benefitPlanDraft;
+    const rowId = this.editingBenefitPlanId || `benefit-plan-${Date.now()}`;
+    const existing = this.benefitPlanRows.find((row) => row.id === rowId) || null;
+    const project = draft.project.trim() || this.defaultBenefitProject();
+    const realizationDate = this.formatProjectPlanDate(draft.realizationDate);
     const nextRow: BenefitPlanRow = {
-      id: `benefit-plan-${Date.now()}`,
+      ...(existing || this.benefitPlanRowFromDraft(draft, rowId)),
+      id: rowId,
+      project,
       benefitType: draft.benefitType.trim() || 'Strategic benefit',
       category: draft.category.trim() || 'Cost Avoidance',
       benefitName: draft.benefitName.trim(),
       description: draft.description.trim(),
       owner: draft.owner.trim() || 'Owner to confirm',
-      realizationDate: this.formatProjectPlanDate(draft.realizationDate),
+      realizationDate,
+      manager: existing?.manager || draft.owner.trim() || 'Owner to confirm',
+      stage: existing?.stage || 'Planned',
+      overallStatus: existing?.overallStatus || 'To Commence',
     };
 
-    this.benefitPlanRows = [...this.benefitPlanRows, nextRow];
+    this.benefitPlanRows = existing
+      ? this.benefitPlanRows.map((row) => (row.id === rowId ? nextRow : row))
+      : [...this.benefitPlanRows, nextRow];
     this.resetBenefitDraft();
     this.closeBenefitDrawer();
   }
@@ -14487,7 +15130,114 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   canSaveBenefitDraft(register: BenefitPlanConfig | null): boolean {
     if (!register) return false;
     const draft = this.benefitPlanDraft;
-    return Boolean(draft.benefitName.trim() && draft.realizationDate.trim());
+    return Boolean(draft.project.trim() && draft.benefitName.trim() && draft.realizationDate.trim());
+  }
+
+  openWorkspaceBenefitProfile(row: BenefitRegisterRow): void {
+    const benefit = this.ensureBenefitPlanRowFromRegisterRow(row);
+    this.openBenefitRegisterProfile(benefit);
+  }
+
+  openBenefitRegisterTableRow(row: PmConsoleRegisterTableRow): void {
+    const benefit = this.visibleBenefitRegisterRows.find((item) => item.id === row.id);
+    if (benefit) this.openWorkspaceBenefitProfile(benefit);
+  }
+
+  openBenefitRegisterProfile(row: BenefitPlanRow): void {
+    this.closeProjectPlanDrawers();
+    this.closeReport();
+    this.closeStageGate();
+    this.closeStageRevoke();
+    this.selectedPage = 'workspaces';
+    this.workspaceRegister = 'benefits';
+    this.activeBenefitProfileId = row.id;
+    this.benefitProfileFocusMode = true;
+    this.iconsHydrated = false;
+    this.emitState();
+  }
+
+  openBenefitProfile(row: BenefitPlanRow): void {
+    this.closeProjectPlanDrawers();
+    this.benefitProfileFocusMode = false;
+    this.projectPlanDetailMode = 'detailed';
+    this.projectPlanActiveSection = 'Benefits';
+    this.activeBenefitProfileId = row.id;
+    this.iconsHydrated = false;
+  }
+
+  closeBenefitProfile(): void {
+    if (!this.activeBenefitProfileId && !this.benefitProfileFocusMode) return;
+    this.activeBenefitProfileId = null;
+    this.benefitProfileFocusMode = false;
+    this.iconsHydrated = false;
+  }
+
+  saveBenefitProfile(): void {
+    this.iconsHydrated = false;
+  }
+
+  completeBenefitProfile(benefitId: string): void {
+    this.benefitPlanRows = this.benefitPlanRows.map((row) =>
+      row.id === benefitId
+        ? {
+            ...row,
+            state: 'Closed',
+            stage: 'Realized',
+            overallStatus: 'Harvested',
+          }
+        : row,
+    );
+    this.iconsHydrated = false;
+  }
+
+  updateBenefitProfileField(change: BenefitProfileFieldChange): void {
+    const benefitId = this.activeBenefitProfileId;
+    if (!benefitId) return;
+    this.benefitPlanRows = this.benefitPlanRows.map((row) =>
+      row.id === benefitId
+        ? {
+            ...row,
+            [change.field]: change.field === 'realizationDate' ? this.formatProjectPlanDate(change.value) : change.value,
+          }
+        : row,
+    );
+    this.iconsHydrated = false;
+  }
+
+  addBenefitProfileObjective(objective: BenefitProfileObjectiveLink): void {
+    this.updateBenefitProfileCollection('businessPlanObjectives', objective);
+  }
+
+  addBenefitProfileRecipient(recipient: BenefitProfileRecipientRow): void {
+    this.updateBenefitProfileCollection('recipients', recipient);
+  }
+
+  addBenefitProfileMeasure(measure: BenefitProfileMeasureRow): void {
+    this.updateBenefitProfileCollection('measures', measure);
+  }
+
+  removeBenefitProfileMeasure(measureId: string): void {
+    const benefitId = this.activeBenefitProfileId;
+    if (!benefitId) return;
+    this.benefitPlanRows = this.benefitPlanRows.map((row) =>
+      row.id === benefitId
+        ? {
+            ...row,
+            measures: row.measures.filter((measure) => measure.id !== measureId),
+          }
+        : row,
+    );
+    this.iconsHydrated = false;
+  }
+
+  openWorkspaceRiskProfile(row: RiskRegisterRow): void {
+    const risk = this.ensureRiskPlanRowFromRegisterRow(row);
+    this.openRiskRegisterProfile(risk, row.project, this.currentRiskProfileReturnState());
+  }
+
+  openRiskRegisterTableRow(row: PmConsoleRegisterTableRow): void {
+    const risk = this.visibleRiskRegisterRows.find((item) => item.id === row.id);
+    if (risk) this.openWorkspaceRiskProfile(risk);
   }
 
   openRiskDrawer(row?: RiskPlanRow): void {
@@ -14625,6 +15375,24 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.riskDrawerOpenProfileAfterSave = true;
   }
 
+  openRiskRegisterProfile(row: RiskPlanRow, projectId = this.selectedProject, returnState: RiskProfileReturnState | null = null): void {
+    this.closeProjectPlanDrawers();
+    this.closeReport();
+    this.closeStageGate();
+    this.closeStageRevoke();
+    this.selectedProject = projectId;
+    this.selectedPage = 'project-plan';
+    this.projectPlanEntry = 'quick';
+    this.projectPlanDetailMode = 'detailed';
+    this.projectPlanActiveSection = 'Risk';
+    this.projectPlanExpandedFieldSections = {};
+    this.resetProjectPlanHeaderCondensed();
+    this.openRiskProfile(row);
+    this.riskProfileFocusMode = Boolean(returnState);
+    this.riskProfileReturnState = returnState;
+    this.emitState();
+  }
+
   openRiskProfile(row: RiskPlanRow): void {
     this.closeProjectPlanDrawers();
     this.activeRiskProfileId = row.id;
@@ -14634,10 +15402,21 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   closeRiskProfile(): void {
-    if (!this.activeRiskProfileId) return;
+    if (!this.activeRiskProfileId && !this.riskProfileFocusMode) return;
+    const returnState = this.riskProfileReturnState;
     this.activeRiskProfileId = null;
     this.activeRiskProfileTab = 'identification';
+    this.riskProfileFocusMode = false;
+    this.riskProfileReturnState = null;
+    this.resetProjectPlanHeaderCondensed();
     this.iconsHydrated = false;
+    if (returnState) {
+      this.selectedProject = returnState.selectedProject;
+      this.selectedPage = returnState.selectedPage;
+      this.selectedView = returnState.selectedView;
+      this.workspaceRegister = returnState.workspaceRegister;
+      this.emitState();
+    }
   }
 
   setRiskProfileTab(tab: RiskProfileTab): void {
@@ -14814,6 +15593,294 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       ['Low', 'Low', 'Low', 'Medium', 'Medium'],
     ];
     return matrix[row]?.[column] || '';
+  }
+
+  private benefitDraftFromRow(row: BenefitPlanRow): BenefitPlanDraft {
+    return {
+      project: row.project,
+      benefitType: row.benefitType,
+      category: row.category,
+      benefitName: row.benefitName,
+      description: row.description,
+      owner: row.owner,
+      realizationDate: this.dateInputValue(row.realizationDate),
+    };
+  }
+
+  private benefitPlanRowFromRegisterRow(row: BenefitRegisterRow): BenefitPlanRow {
+    const normalized = `${row.benefit} ${row.measure}`.toLowerCase();
+    const isOperational = normalized.includes('cycle') || normalized.includes('duplicate') || normalized.includes('coordination') || normalized.includes('response');
+    const isFinancial = normalized.includes('funding') || normalized.includes('cost') || normalized.includes('reduction');
+    const metric = this.metricForBenefitMeasure(row.measure);
+    const targetValue = this.targetValueForBenefitMeasure(row.measure);
+    return {
+      id: row.id,
+      project: row.project,
+      benefitType: isFinancial ? 'Financial benefit' : isOperational ? 'Operational benefit' : 'Strategic benefit',
+      category: isFinancial ? 'Cost Avoidance' : isOperational ? 'Efficiency Gain' : 'Service Quality',
+      benefitName: row.benefit,
+      description: row.measure,
+      owner: row.owner,
+      realizationDate: this.dateInputValue(row.targetDate),
+      state: 'Active',
+      stage: row.realization,
+      product: this.productForBenefitRegisterRow(row),
+      outcomes: row.measure,
+      strategicObjective: this.strategicObjectiveForBenefitRegisterRow(row),
+      businessPlanObjectives: [],
+      manager: row.owner,
+      recipients: [],
+      impact: row.status === 'Attention' ? 'High' : 'Medium',
+      impactJustification: row.measure,
+      likelihood: row.status === 'On Track' || row.status === 'Realized' ? 'High' : 'Medium',
+      likelihoodJustification: row.status === 'Attention' ? 'Needs owner follow-up before realization.' : 'Current delivery signal supports the target.',
+      overallStatus: this.benefitOverallStatusFromRegisterStatus(row.status),
+      statusComment: '',
+      measures: [
+        {
+          id: `${row.id.toLowerCase()}-measure-1`,
+          measure: row.measure,
+          owner: row.owner,
+          description: row.measure,
+          metric,
+          polarity: metric === 'Days' ? 'Decrease' : 'Increase',
+          baselineValue: '0',
+          targetValue,
+          frequency: 'Monthly',
+          startDate: this.todayIsoDate(),
+          endDate: this.dateInputValue(row.targetDate),
+          status: this.benefitOverallStatusFromRegisterStatus(row.status),
+          dependencies: '',
+          informationSource: `${row.project} reporting pack`,
+        },
+      ],
+      createdOn: this.todayIsoDate(),
+    };
+  }
+
+  private benefitPlanRowFromDraft(draft: BenefitPlanDraft, rowId: string): BenefitPlanRow {
+    const realizationDate = this.formatProjectPlanDate(draft.realizationDate);
+    const owner = draft.owner.trim() || 'Owner to confirm';
+    return {
+      id: rowId,
+      project: draft.project.trim() || this.defaultBenefitProject(),
+      benefitType: draft.benefitType.trim() || 'Strategic benefit',
+      category: draft.category.trim() || 'Cost Avoidance',
+      benefitName: draft.benefitName.trim(),
+      description: draft.description.trim(),
+      owner,
+      realizationDate,
+      state: 'Active',
+      stage: 'Planned',
+      product: '',
+      outcomes: draft.description.trim(),
+      strategicObjective: '',
+      businessPlanObjectives: [],
+      manager: owner,
+      recipients: [],
+      impact: 'Medium',
+      impactJustification: draft.description.trim(),
+      likelihood: 'Medium',
+      likelihoodJustification: '',
+      overallStatus: 'To Commence',
+      statusComment: '',
+      measures: [],
+      createdOn: this.todayIsoDate(),
+    };
+  }
+
+  private ensureBenefitPlanRowFromRegisterRow(row: BenefitRegisterRow): BenefitPlanRow {
+    const existing = this.benefitPlanRows.find((benefit) => benefit.id === row.id) || null;
+    if (existing) return existing;
+
+    const nextRow = this.benefitPlanRowFromRegisterRow(row);
+    this.benefitPlanRows = [...this.benefitPlanRows, nextRow];
+    return nextRow;
+  }
+
+  private updateBenefitProfileCollection<K extends 'businessPlanObjectives' | 'recipients' | 'measures'>(field: K, item: BenefitPlanRow[K][number]): void {
+    const benefitId = this.activeBenefitProfileId;
+    if (!benefitId) return;
+    this.benefitPlanRows = this.benefitPlanRows.map((row) =>
+      row.id === benefitId
+        ? {
+            ...row,
+            [field]: [...row[field], item],
+          }
+        : row,
+    );
+    this.iconsHydrated = false;
+  }
+
+  private benefitRegisterRowFromPlanRow(row: BenefitPlanRow): BenefitRegisterRow {
+    return {
+      id: row.id,
+      benefit: row.benefitName,
+      project: row.project || this.defaultBenefitProject(),
+      owner: row.owner,
+      targetDate: this.formatProjectPlanDate(row.realizationDate),
+      measure: row.measures[0]?.measure || row.outcomes || row.description || 'Measure to confirm',
+      realization: row.stage || 'Planned',
+      realizationTone: this.benefitStageTone(row.stage),
+      status: row.overallStatus || 'To Commence',
+      statusTone: this.benefitStatusTone(row.overallStatus),
+    };
+  }
+
+  private defaultBenefitProject(): string {
+    if (this.selectedProject && this.selectedProject !== 'all') return this.selectedProject;
+    return '';
+  }
+
+  private benefitStageTone(stage: string): string {
+    const normalized = stage.toLowerCase();
+    if (normalized.includes('realized') || normalized.includes('realised')) return 'green';
+    if (normalized.includes('valid') || normalized.includes('realization') || normalized.includes('realisation')) return 'amber';
+    if (normalized.includes('planned')) return 'blue';
+    return 'neutral';
+  }
+
+  private benefitStatusTone(status: string): string {
+    const normalized = status.toLowerCase();
+    if (normalized.includes('off')) return 'red';
+    if (normalized.includes('delay') || normalized.includes('attention')) return 'amber';
+    if (normalized.includes('track') || normalized.includes('harvest') || normalized.includes('realized') || normalized.includes('realised')) return 'green';
+    if (normalized.includes('commence') || normalized.includes('start')) return 'blue';
+    return 'neutral';
+  }
+
+  private benefitOverallStatusFromRegisterStatus(status: string): string {
+    const normalized = status.toLowerCase();
+    if (normalized.includes('realized') || normalized.includes('realised')) return 'Harvested';
+    if (normalized.includes('not')) return 'To Commence';
+    if (normalized.includes('attention')) return 'Delayed';
+    if (normalized.includes('off')) return 'Off Track';
+    return 'On Track';
+  }
+
+  private productForBenefitRegisterRow(row: BenefitRegisterRow): string {
+    const normalized = `${row.project} ${row.benefit}`.toLowerCase();
+    if (normalized.includes('research')) return 'Research map platform';
+    if (normalized.includes('pmo')) return 'PMO workflow';
+    if (normalized.includes('sponsor')) return 'Sponsor approval service';
+    if (normalized.includes('operations') || normalized.includes('response')) return 'Operations response model';
+    return 'Knowledge hub';
+  }
+
+  private strategicObjectiveForBenefitRegisterRow(row: BenefitRegisterRow): string {
+    const normalized = `${row.project} ${row.benefit}`.toLowerCase();
+    if (normalized.includes('research')) return 'Improve national research capability discovery';
+    if (normalized.includes('sponsor')) return 'Increase sponsor decision speed and transparency';
+    if (normalized.includes('pmo')) return 'Improve PMO adoption maturity';
+    if (normalized.includes('data') || normalized.includes('credibility')) return 'Protect credibility of strategic portfolio data';
+    return 'Boost regional sustainability and growth through partnerships and investment';
+  }
+
+  private metricForBenefitMeasure(measure: string): string {
+    if (measure.includes('%')) return '%';
+    if (measure.toLowerCase().includes('minute') || measure.toLowerCase().includes('day')) return 'Days';
+    return '#';
+  }
+
+  private targetValueForBenefitMeasure(measure: string): string {
+    const match = measure.match(/[\d.]+/);
+    return match?.[0] || '1';
+  }
+
+  private riskPlanRowFromRegisterRow(row: RiskRegisterRow): RiskPlanRow {
+    const ratingProfile = this.riskRatingProfileFromExposure(row.exposure);
+    return {
+      id: row.id,
+      riskCategory: this.riskCategoryFromRegisterRow(row),
+      riskName: row.risk,
+      description: row.risk,
+      owner: row.owner,
+      manager: 'James T Kirk',
+      lead: row.owner,
+      startDate: riskPlanConfig.draft.startDate,
+      endDate: riskPlanConfig.draft.endDate,
+      reviewDueDate: this.dateInputValue(row.reviewDate),
+      status: this.riskPlanStatusFromRegisterStatus(row.status),
+      strategicRisk: 'No',
+      enterpriseImpact: row.exposure === 'Critical',
+      actualLikelihood: ratingProfile.likelihood,
+      actualConsequence: ratingProfile.consequence,
+      actualRating: ratingProfile.rating,
+      residualLikelihood: ratingProfile.residualLikelihood,
+      residualConsequence: ratingProfile.residualConsequence,
+      residualRating: this.riskRatingFor(ratingProfile.residualLikelihood, ratingProfile.residualConsequence),
+      impactedObjective: riskPlanConfig.impactedObjectiveOptions[0],
+      sharedRisk: false,
+      source: row.project,
+      consequence: row.risk,
+      controlSummary: row.mitigation,
+      overallControlEffectiveness: 'Partially Effective',
+      analysisComment: '',
+      treatmentApproach: 'Mitigate the threat',
+      treatmentType: 'Mitigate',
+      treatmentComment: row.mitigation,
+      treatments: row.mitigation
+        ? [
+            {
+              id: `${row.id.toLowerCase()}-treatment-1`,
+              treatment: row.mitigation,
+              type: 'Mitigate',
+              category: 'Preventive',
+              owner: row.owner,
+              manager: 'James T Kirk',
+              startDate: this.todayIsoDate(),
+              endDate: this.dateInputValue(row.reviewDate),
+              status: 'Planned',
+            },
+          ]
+        : [],
+      createdOn: this.todayIsoDate(),
+    };
+  }
+
+  private ensureRiskPlanRowFromRegisterRow(row: RiskRegisterRow): RiskPlanRow {
+    const existing = this.riskPlanRows.find((risk) => risk.id === row.id) || null;
+    if (existing) return existing;
+
+    const nextRow = this.riskPlanRowFromRegisterRow(row);
+    this.riskPlanRows = [...this.riskPlanRows, nextRow];
+    return nextRow;
+  }
+
+  private riskCategoryFromRegisterRow(row: RiskRegisterRow): string {
+    const normalized = `${row.risk} ${row.mitigation}`.toLowerCase();
+    if (normalized.includes('commercial') || normalized.includes('budget') || normalized.includes('finance') || normalized.includes('overrun')) return 'Financial Risk';
+    if (normalized.includes('vendor') || normalized.includes('slippage') || normalized.includes('stage-gate') || normalized.includes('schedule')) return 'Schedule Risk';
+    if (normalized.includes('data') || normalized.includes('quality') || normalized.includes('source')) return 'Technology Risk';
+    if (normalized.includes('stakeholder') || normalized.includes('owner') || normalized.includes('approver')) return 'Stakeholder Risk';
+    return 'Operational Risk';
+  }
+
+  private riskPlanStatusFromRegisterStatus(status: string): string {
+    const normalized = status.toLowerCase();
+    if (normalized.includes('escalated')) return 'Escalated';
+    if (normalized.includes('monitor') || normalized.includes('watch')) return 'Monitoring';
+    if (normalized.includes('closed')) return 'Closed';
+    return 'Open';
+  }
+
+  private riskRatingProfileFromExposure(exposure: string): {
+    likelihood: string;
+    consequence: string;
+    rating: string;
+    residualLikelihood: string;
+    residualConsequence: string;
+  } {
+    if (exposure === 'Critical') {
+      return { likelihood: 'Likely', consequence: 'Severe', rating: 'Extreme', residualLikelihood: 'Possible', residualConsequence: 'Major' };
+    }
+    if (exposure === 'High') {
+      return { likelihood: 'Likely', consequence: 'Major', rating: 'High', residualLikelihood: 'Possible', residualConsequence: 'Moderate' };
+    }
+    if (exposure === 'Medium') {
+      return { likelihood: 'Possible', consequence: 'Moderate', rating: 'Medium', residualLikelihood: 'Unlikely', residualConsequence: 'Moderate' };
+    }
+    return { likelihood: 'Unlikely', consequence: 'Minor', rating: 'Low', residualLikelihood: 'Rare', residualConsequence: 'Minor' };
   }
 
   private updateRiskProfileBoolean(field: 'enterpriseImpact' | 'sharedRisk', value: boolean): void {
@@ -15003,6 +16070,23 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return `https://${trimmed}`;
   }
 
+  openChangeRequestTableRow(row: PmConsoleRegisterTableRow): void {
+    const changeRequest = this.visibleChangeRequestRows.find((item) => item.id === row.id);
+    if (changeRequest) this.openChangeRequestDrawer(changeRequest);
+  }
+
+  handleChangeRequestTableAction(event: PmConsoleRegisterTableActionEvent): void {
+    const changeRequest = this.visibleChangeRequestRows.find((item) => item.id === event.row.id);
+    if (!changeRequest) return;
+    const actionId = event.action?.id || event.column.id;
+    if (actionId === 'delete') {
+      this.removeChangeRequest(changeRequest.id);
+      return;
+    }
+    if (actionId === 'print') return;
+    this.openChangeRequestDrawer(changeRequest);
+  }
+
   openChangeRequestDrawer(row?: ChangeRequestRow): void {
     this.closeProjectPlanDrawers();
     this.editingChangeRequestId = row?.id || null;
@@ -15161,9 +16245,9 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   changeRequestPriorityTone(priority: string): string {
     const normalized = priority.toLowerCase();
-    if (normalized.includes('high')) return 'high';
-    if (normalized.includes('medium')) return 'medium';
-    if (normalized.includes('low')) return 'low';
+    if (normalized.includes('high')) return 'red';
+    if (normalized.includes('medium')) return 'amber';
+    if (normalized.includes('low')) return 'blue';
     return 'neutral';
   }
 
@@ -15684,13 +16768,41 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return fallback;
   }
 
-  handleProjectCardAction(project: ProjectCard): void {
-    const reportProject = 'reportProject' in project ? project.reportProject : undefined;
-    if (reportProject || project.action === 'Submit PSR') {
-      this.openReport(reportProject || project.title);
-      return;
-    }
-    this.openProject(project.title);
+  private isSubmittedProjectReportRow(row: PmConsoleRegisterTableRow | null): boolean {
+    return this.isSubmittedProjectReportStatus(this.projectReportCellLabel(row, 'reportingStatus'));
+  }
+
+  private isSubmittedProjectReportStatus(status: string): boolean {
+    return status.toLowerCase().includes('submitted');
+  }
+
+  private projectReportCellLabel(row: PmConsoleRegisterTableRow | null, columnId: string): string {
+    if (!row) return '';
+    const cell = row.cells[columnId];
+    return cell?.label || cell?.text || cell?.title || cell?.value || '';
+  }
+
+  private projectReportIntervalParts(row: PmConsoleRegisterTableRow): { start: string; end: string } | null {
+    const interval = this.projectReportCellLabel(row, 'interval');
+    const [start, end] = interval.split(/\s+-\s+/);
+    if (!start || !end) return null;
+    return {
+      start: this.normalizeProjectReportRegisterDate(start),
+      end: this.normalizeProjectReportRegisterDate(end),
+    };
+  }
+
+  private normalizeProjectReportRegisterDate(value: string): string {
+    const match = value.trim().match(/^(\d{2})\.(\d{2})\.(\d{2})$/);
+    if (!match) return value;
+    return `${match[1]}/${match[2]}/20${match[3]}`;
+  }
+
+  private normalizedProjectReportStatus(status: string): string {
+    const normalized = status.toLowerCase();
+    if (normalized.includes('off')) return 'Off track';
+    if (normalized.includes('alert') || normalized.includes('delayed')) return 'Alert';
+    return 'On track';
   }
 
   handleTaskAction(item: (typeof actions)[number]['items'][number]): void {
@@ -15699,6 +16811,26 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       return;
     }
     this.iconsHydrated = false;
+  }
+
+  handleCalendarItemOpen(item: PmConsoleCalendarItem): void {
+    const kind = this.timelineItemKind(item);
+    if (kind === 'report') {
+      this.openReport(item.project);
+      return;
+    }
+
+    this.openProject(item.project, this.currentProjectPlanReturnState());
+    this.projectPlanActiveSection = this.projectPlanSectionForCalendarItem(kind);
+    this.iconsHydrated = false;
+  }
+
+  private projectPlanSectionForCalendarItem(kind: string): string {
+    if (kind === 'risk') return 'Risk';
+    if (kind === 'benefit') return 'Benefits';
+    if (kind === 'dependency') return 'Dependency';
+    if (kind === 'milestone') return 'Schedule & Scope';
+    return 'Overview';
   }
 
   assignFirstProject(): void {
@@ -15868,7 +17000,8 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return 'task';
   }
 
-  timelineItemKind(item: (typeof timelineItems)[number]): string {
+  timelineItemKind(item: PmConsoleCalendarItem): string {
+    if (item.kind === 'end-product' || item.kind === 'management-product') return 'milestone';
     return item.kind || this.filterKind(item.label);
   }
 
@@ -16162,13 +17295,24 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   private prepareGuidedTourTarget(): void {
     const target = this.activeGuidedTourStep.target;
+    if (target === 'project-switch' || target === 'workspace-tabs' || target === 'frontdoor-overview') {
+      this.selectedPage = 'workspace';
+      this.selectedView = this.workspaceViewForProjectScope('pm101');
+    }
+    if (target === 'actions-subtabs') {
+      this.selectedPage = 'workspace';
+      this.selectedView = 'calendar';
+      this.selectedBoardFilter = 'all';
+    }
     if (target === 'action-board' || target === 'create-psr') {
       this.selectedPage = 'workspace';
       this.selectedView = 'board';
+      this.selectedBoardFilter = 'all';
     }
     if (target === 'frontdoor-actions' || target === 'workspace-tabs' || target === 'right-report-widget') {
       this.selectedPage = 'workspace';
     }
+    this.syncLastActionWorkspaceView(this.selectedView);
   }
 
   private scheduleGuidedTourPosition(): void {
@@ -16661,6 +17805,29 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     }).format(parsed);
   }
 
+  private dateInputValue(value: string): string {
+    if (!value) return '';
+    const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (isoMatch) return value;
+
+    const slashMatch = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (slashMatch) {
+      const month = slashMatch[1].padStart(2, '0');
+      const day = slashMatch[2].padStart(2, '0');
+      return `${slashMatch[3]}-${month}-${day}`;
+    }
+
+    const textMatch = value.match(/^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})$/);
+    const monthIndex = textMatch ? ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'].indexOf(textMatch[2].toLowerCase()) : -1;
+    if (textMatch && monthIndex >= 0) {
+      return `${textMatch[3]}-${String(monthIndex + 1).padStart(2, '0')}-${textMatch[1].padStart(2, '0')}`;
+    }
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return '';
+    return parsed.toISOString().slice(0, 10);
+  }
+
   private formatDependencyDate(value: string): string {
     return this.formatProjectPlanDate(value);
   }
@@ -16792,6 +17959,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.closeBudgetFundingDrawer();
     this.closeBudgetMonthlyDrawer();
     this.closeBenefitDrawer();
+    this.closeBenefitProfile();
     this.closeRiskDrawer();
     this.closeRiskProfile();
     this.closeIssueDrawer();
@@ -16991,6 +18159,128 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     } catch {
       // Ignore locked-down storage; in-memory preferences still work for this session.
     }
+  }
+
+  private workspaceProjectItemLabel(visibleCount: number, totalCount: number): string {
+    return visibleCount === totalCount ? `Items: ${visibleCount}` : `Items: ${visibleCount} of ${totalCount}`;
+  }
+
+  private filterWorkspaceProjectRows(rows: ProjectRow[]): ProjectRow[] {
+    const query = this.normalizedWorkspaceProjectSearch();
+    return rows
+      .filter((project) => this.matchesWorkspaceProjectFilters(project))
+      .filter((project) => {
+        if (!query) return true;
+        return [
+          project.code,
+          project.title,
+          project.stage,
+          project.status,
+          project.manager,
+          project.baselineStart,
+          project.baselineEnd,
+          project.budgetUsed,
+          project.budgetTotal,
+        ].some((value) => this.searchableWorkspaceProjectValue(value).includes(query));
+      });
+  }
+
+  private matchesWorkspaceProjectFilters(project: ProjectRow): boolean {
+    if (this.workspaceProjectStatusFilter !== 'all' && this.projectFilterKey(project.status) !== this.projectFilterKey(this.workspaceProjectStatusFilter)) return false;
+    if (this.workspaceProjectStageFilter !== 'all' && this.projectFilterKey(this.normalizeWorkspaceProjectStage(project.stage)) !== this.projectFilterKey(this.workspaceProjectStageFilter)) return false;
+    if (this.workspaceProjectManagerFilter !== 'all' && project.manager !== this.workspaceProjectManagerFilter) return false;
+    return true;
+  }
+
+  private normalizedWorkspaceProjectSearch(): string {
+    return this.searchableWorkspaceProjectValue(this.workspaceProjectSearch.trim());
+  }
+
+  private searchableWorkspaceProjectValue(value: string): string {
+    return value.toLowerCase();
+  }
+
+  private projectFilterKey(value: string): string {
+    return value.toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
+
+  private normalizeWorkspaceProjectStage(stage: string): string {
+    return stage.replace(/\s+stage$/i, '').trim();
+  }
+
+  private uniqueWorkspaceProjectOptions(values: string[]): string[] {
+    return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
+  }
+
+  private workspaceProjectPdfHtml(rows: ProjectRow[]): string {
+    const columns = this.visibleWorkspaceTableColumns.length ? this.visibleWorkspaceTableColumns : workspaceTableColumns;
+    const filterParts = [
+      this.workspaceProjectSearch.trim() ? `Search: ${this.workspaceProjectSearch.trim()}` : '',
+      this.workspaceProjectStatusFilter !== 'all' ? `Status: ${this.workspaceProjectStatusFilter}` : '',
+      this.workspaceProjectStageFilter !== 'all' ? `Stage: ${this.workspaceProjectStageFilter}` : '',
+      this.workspaceProjectManagerFilter !== 'all' ? `Manager: ${this.workspaceProjectManagerFilter}` : '',
+    ].filter(Boolean);
+    const filters = filterParts.length ? filterParts.join(' | ') : 'No filters applied';
+    const generatedAt = new Date().toLocaleString();
+    const headerCells = columns.map((column) => `<th>${this.escapeHtml(column.label)}</th>`).join('');
+    const bodyRows = rows
+      .map((row) => `<tr>${columns.map((column) => `<td>${this.escapeHtml(this.workspaceProjectPdfCell(row, column.id))}</td>`).join('')}</tr>`)
+      .join('');
+
+    return `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Project Register</title>
+    <style>
+      @page { margin: 18mm; }
+      * { box-sizing: border-box; }
+      body { color: #252a34; font-family: Inter, Arial, sans-serif; margin: 0; }
+      header { border-bottom: 2px solid #10069f; margin-bottom: 18px; padding-bottom: 12px; }
+      h1 { font-size: 24px; line-height: 1.2; margin: 0 0 8px; }
+      p { color: #555555; font-size: 11px; line-height: 1.5; margin: 0; }
+      table { border-collapse: collapse; font-size: 10px; width: 100%; }
+      th { background: #f5f7fb; color: #252a34; font-weight: 700; text-align: left; }
+      th, td { border: 1px solid #dfe4ee; padding: 7px 8px; vertical-align: top; }
+      tr:nth-child(even) td { background: #fbfcff; }
+      footer { color: #687182; font-size: 10px; margin-top: 14px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Project Register</h1>
+      <p>${this.escapeHtml(rows.length === 1 ? '1 project record' : `${rows.length} project records`)} | ${this.escapeHtml(filters)} | Generated ${this.escapeHtml(generatedAt)}</p>
+    </header>
+    <table aria-label="Project register export">
+      <thead><tr>${headerCells}</tr></thead>
+      <tbody>${bodyRows}</tbody>
+    </table>
+    <footer>Tasama PM Console</footer>
+  </body>
+</html>`;
+  }
+
+  private workspaceProjectPdfCell(project: ProjectRow, columnId: WorkspaceTableColumnId): string {
+    const values: Record<WorkspaceTableColumnId, string> = {
+      project: `${project.code} - ${project.title}`,
+      stage: project.stage,
+      trend: project.trend.map((tone) => this.trendLabel(tone)).join(', '),
+      manager: project.manager,
+      baselineStart: project.baselineStart,
+      baselineEnd: project.baselineEnd,
+      budget: `${project.budgetUsed} / ${project.budgetTotal}`,
+      status: project.status,
+    };
+    return values[columnId];
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   private showQuickLinksToast(message: string): void {

@@ -9,6 +9,10 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Output } from '@angul
       <img class="onboarding-line-art" src="./assets/onboarding-figma-line-art.svg" alt="" aria-hidden="true" />
       <div class="onboarding-brand" aria-label="Tasama">
         <img src="./assets/tasama-onboarding-logo.svg" alt="Tasama" />
+        <div class="onboarding-powered">
+          <span>Powered by</span>
+          <img src="./assets/strategy-zero-logo.png" alt="Strategy Zero" />
+        </div>
       </div>
       <div class="onboarding-intro">
         <h1><span>Welcome,</span><em>Ahmed Khalid</em></h1>
@@ -68,10 +72,6 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Output } from '@angul
           </article>
         </div>
       </aside>
-      <div class="onboarding-powered">
-        <span>Powered by</span>
-        <img src="./assets/strategy-zero-logo.png" alt="Strategy Zero" />
-      </div>
     </section>
   `,
 })

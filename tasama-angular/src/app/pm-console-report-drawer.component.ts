@@ -1,9 +1,10 @@
-import { AfterViewChecked, ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { AfterViewChecked, ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PmConsoleIconService } from './pm-console-icon.service';
 import { PmConsoleDateFieldComponent } from './shared/pm-console-date-field.component';
 
 type ReportDetailMode = 'simple' | 'detailed';
+type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
 
 interface ReportCreationDetailInput {
   intervalStart: string;
@@ -12,6 +13,12 @@ interface ReportCreationDetailInput {
   stage: string;
   state: string;
   overallTrend: string;
+  progress?: number;
+  baselineEnd?: string;
+  forecastEnd?: string;
+  comments?: string;
+  achievements?: string;
+  planned?: string;
 }
 
 interface ReportStatusOption {
@@ -261,7 +268,95 @@ const reportIconMap: Record<string, string> = {
     @if (details; as reportDetails) {
       <div class="report-drawer-shell" aria-live="polite">
         <button class="report-drawer-backdrop" type="button" (click)="close.emit()" aria-label="Close report drawer"></button>
-        <aside class="report-drawer report-drawer-create" [attr.aria-label]="projectName + ' report draft'">
+        <aside
+          class="report-drawer report-drawer-create"
+          [class.report-drawer-expanded]="isExpanded"
+          [class.report-drawer-submitted]="submitted"
+          [class.report-drawer-pdf]="presentationMode === 'pdf-preview'"
+          [attr.aria-label]="presentationMode === 'pdf-preview' ? projectName + ' PDF report preview' : projectName + (submitted ? ' submitted report' : ' report draft')"
+        >
+          @if (presentationMode === 'pdf-preview') {
+            <section class="report-pdf-preview" [attr.aria-label]="projectName + ' PDF report preview'">
+              <header class="report-pdf-toolbar">
+                <button class="report-preview-back-button" type="button" (click)="previewBack.emit()" aria-label="Back to report creation UI">
+                  <span class="icon" aria-hidden="true"><i data-lucide="chevron-left"></i></span>
+                  <span>Back</span>
+                </button>
+                <div class="report-pdf-toolbar-title">
+                  <span>PDF preview</span>
+                  <h2>Project Status Report</h2>
+                  <p>{{ projectName }}</p>
+                </div>
+                <button class="report-top-icon-button" type="button" (click)="close.emit()" aria-label="Close drawer">
+                  <span class="icon" aria-hidden="true"><i data-lucide="x"></i></span>
+                </button>
+              </header>
+
+              <div class="report-pdf-scroll">
+                <article class="report-pdf-page">
+                  <div class="report-pdf-page-head">
+                    <div>
+                      <span>Project Status Report</span>
+                      <h3>{{ projectName }}</h3>
+                    </div>
+                    <strong>{{ planLabel(reportDetails) }}</strong>
+                  </div>
+
+                  <div class="report-pdf-meta-grid">
+                    <span><small>Reporting interval</small><strong>{{ intervalLabel(reportDetails) }}</strong></span>
+                    <span><small>Stage</small><strong>{{ reportDetails.stage }}</strong></span>
+                    <span><small>State</small><strong>{{ reportDetails.state }}</strong></span>
+                    <span><small>Overall trend</small><strong>{{ reportDetails.overallTrend }}</strong></span>
+                    <span><small>Progress</small><strong>{{ reportDetails.progress || 0 }}%</strong></span>
+                    <span><small>Forecast end</small><strong>{{ reportDetails.forecastEnd || '-' }}</strong></span>
+                  </div>
+
+                  @if (overviewCard; as summaryCard) {
+                    <section class="report-pdf-section">
+                      <div class="report-pdf-section-title">
+                        <span class="report-table-chip {{ summaryCard.tone }}">{{ summaryCard.status }}</span>
+                        <h4>Executive summary</h4>
+                      </div>
+                      <p>{{ summaryCard.comments || reportDetails.comments || 'Submitted report content is ready for PMO review.' }}</p>
+                    </section>
+                  }
+
+                  <section class="report-pdf-section report-pdf-two-column">
+                    <div>
+                      <h4>Key achievements</h4>
+                      <p>{{ reportDetails.achievements || 'Project updates have been captured for this reporting period.' }}</p>
+                    </div>
+                    <div>
+                      <h4>Planned activities</h4>
+                      <p>{{ reportDetails.planned || 'Next-period activities are captured in the submitted report.' }}</p>
+                    </div>
+                  </section>
+
+                  <section class="report-pdf-section">
+                    <h4>Report sections</h4>
+                    <div class="report-pdf-section-list">
+                      @for (card of detailedCards; track card.id) {
+                        <article>
+                          <span class="report-table-chip {{ card.tone }}">{{ card.status }}</span>
+                          <strong>{{ card.title }}</strong>
+                          <p>{{ card.comments || card.body }}</p>
+                        </article>
+                      }
+                    </div>
+                  </section>
+
+                  <section class="report-pdf-section">
+                    <h4>Scope snapshot</h4>
+                    <div class="report-pdf-scope-list">
+                      @for (product of scopeProducts; track product.title) {
+                        <span><strong>{{ product.title }}</strong><small>{{ product.status }} · {{ product.completed }}% complete</small></span>
+                      }
+                    </div>
+                  </section>
+                </article>
+              </div>
+            </section>
+          } @else {
           <form class="report-compose-form" (submit)="save.emit($event)">
             <header class="report-drawer-top report-drawer-top-simple">
               <div class="report-simple-header">
@@ -279,8 +374,19 @@ const reportIconMap: Record<string, string> = {
                       <span>Plan: <strong class="report-simple-chip {{ planChipTone(reportDetails) }}">{{ planLabel(reportDetails) }}</strong></span>
                     </div>
                     <div class="report-top-actions">
-                      <button class="report-top-icon-button" type="button" aria-label="Expand report drawer">
-                        <span class="icon" aria-hidden="true"><i data-lucide="maximize-2"></i></span>
+                      <button
+                        class="report-top-icon-button"
+                        type="button"
+                        [attr.aria-label]="isExpanded ? 'Restore report drawer' : 'Expand report drawer'"
+                        [attr.aria-pressed]="isExpanded"
+                        [attr.title]="isExpanded ? 'Restore drawer' : 'Expand drawer'"
+                        (click)="toggleExpanded()"
+                      >
+                        @if (isExpanded) {
+                          <span class="icon" aria-hidden="true"><i data-lucide="minimize-2"></i></span>
+                        } @else {
+                          <span class="icon" aria-hidden="true"><i data-lucide="maximize-2"></i></span>
+                        }
                       </button>
                       <button class="report-top-icon-button" type="button" (click)="close.emit()" aria-label="Close drawer">
                         <span class="icon" aria-hidden="true"><i data-lucide="x"></i></span>
@@ -635,8 +741,8 @@ const reportIconMap: Record<string, string> = {
                                       </div>
                                     }
 
-                                    <div class="report-detail-table-scroll">
-                                      <table class="report-detail-table" [style.min-width.px]="block.minWidth">
+                                    <div class="dependency-register-table-shell report-detail-table-scroll">
+                                      <table class="dependency-register-table report-detail-table" [style.min-width.px]="reportTableMinWidth(block)">
                                         <colgroup>
                                           @for (column of block.columns; track column.key) {
                                             <col [style.width.px]="column.width" />
@@ -672,7 +778,7 @@ const reportIconMap: Record<string, string> = {
                                                       </span>
                                                     }
                                                     @case ('chip') {
-                                                      <span class="report-table-chip {{ cell.tone || 'neutral' }}">{{ cell.value }}</span>
+                                                      <span class="dependency-register-pill report-table-pill {{ cell.tone || 'neutral' }}">{{ cell.value }}</span>
                                                     }
                                                     @case ('dateInput') {
                                                       <app-pm-console-date-field
@@ -787,11 +893,19 @@ const reportIconMap: Record<string, string> = {
             </div>
 
             <footer class="report-drawer-footer">
-              <button class="report-secondary-button" type="button" (click)="close.emit()">Cancel</button>
-              <button class="report-more-button" type="button">More actions <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span></button>
-              <button class="report-submit-button" type="submit">Save</button>
+              @if (submitted) {
+                <button class="report-submit-button report-preview-button" type="button" (click)="preview.emit()">
+                  <span class="icon" aria-hidden="true"><i data-lucide="file-search"></i></span>
+                  <span>Preview</span>
+                </button>
+              } @else {
+                <button class="report-secondary-button" type="button" (click)="close.emit()">Cancel</button>
+                <button class="report-more-button" type="button">More actions <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span></button>
+                <button class="report-submit-button" type="submit">Save</button>
+              }
             </footer>
           </form>
+          }
         </aside>
       </div>
 
@@ -844,9 +958,11 @@ const reportIconMap: Record<string, string> = {
     }
   `,
 })
-export class PmConsoleReportDrawerComponent implements AfterViewChecked {
+export class PmConsoleReportDrawerComponent implements AfterViewChecked, OnChanges {
   @Input() projectName = 'Project';
   @Input() details: ReportCreationDetailInput | null = null;
+  @Input() submitted = false;
+  @Input() presentationMode: ReportDrawerPresentationMode = 'compose';
   @Input() activeMode: ReportDetailMode = 'detailed';
   @Input() activeSection = 'Scope';
   @Input() reportSections: string[] = [];
@@ -862,14 +978,21 @@ export class PmConsoleReportDrawerComponent implements AfterViewChecked {
 
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<Event>();
+  @Output() preview = new EventEmitter<void>();
+  @Output() previewBack = new EventEmitter<void>();
   @Output() modeChange = new EventEmitter<ReportDetailMode>();
   @Output() sectionChange = new EventEmitter<string>();
   @Output() scopeProductDateChange = new EventEmitter<ScopeProductDateChange>();
   @Output() tableDateChange = new EventEmitter<ReportTableDateChange>();
 
   private iconsHydrated = false;
+  isExpanded = false;
 
   constructor(private readonly iconsService: PmConsoleIconService) {}
+
+  ngOnChanges(): void {
+    this.iconsHydrated = false;
+  }
 
   ngAfterViewChecked(): void {
     if (this.iconsHydrated) return;
@@ -879,6 +1002,11 @@ export class PmConsoleReportDrawerComponent implements AfterViewChecked {
 
   iconName(name: string): string {
     return reportIconMap[name] || name || 'layout-grid';
+  }
+
+  toggleExpanded(): void {
+    this.isExpanded = !this.isExpanded;
+    this.iconsHydrated = false;
   }
 
   reportSectionIcon(section: string): string {
@@ -922,6 +1050,10 @@ export class PmConsoleReportDrawerComponent implements AfterViewChecked {
 
   tableCell(row: ReportTableRow, key: string): ReportTableCell {
     return row.cells[key] || { type: 'text', value: '-' };
+  }
+
+  reportTableMinWidth(block: ReportTableBlock): number {
+    return Math.max(block.minWidth, 720);
   }
 
   ownerInitials(product: ScopeProduct): string {

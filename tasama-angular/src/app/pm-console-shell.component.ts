@@ -15,6 +15,7 @@ interface RailItem extends PmConsoleSideNavItem {
 type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground';
 type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
 const ONBOARDING_PM101_PROJECT_ID = 'all';
+const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
 
 @Component({
   selector: 'app-pm-console-shell',
@@ -22,7 +23,7 @@ const ONBOARDING_PM101_PROJECT_ID = 'all';
   imports: [PmConsoleContentComponent, PmConsoleIconComponent, PmConsoleNotificationsComponent, PmConsoleSideNavComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="modern-shell" [class.playground-mode]="selectedPage === 'playground'" [class.wbs-mode]="selectedPage === 'wbs'" [class.project-plan-mode]="selectedPage === 'project-plan'" [class.unassigned-mode]="frontDoorMode === 'unassigned'">
+    <div class="modern-shell" [class.side-nav-expanded]="sideNavExpanded" [class.playground-mode]="selectedPage === 'playground'" [class.wbs-mode]="selectedPage === 'wbs'" [class.project-plan-mode]="selectedPage === 'project-plan'" [class.unassigned-mode]="frontDoorMode === 'unassigned'">
       <header class="app-header" [class.unassigned-header]="frontDoorMode === 'unassigned'" [class.workspaces-header]="usesConsoleHeader">
         <div class="brand-block">
           <button
@@ -57,9 +58,6 @@ const ONBOARDING_PM101_PROJECT_ID = 'all';
               <input type="search" aria-label="Search documents, people, or departments" placeholder="Search documents, people, or departments..." />
             </label>
           }
-          <button class="round-button" type="button" aria-label="Theme">
-            <span pmConsoleIcon="sun" aria-hidden="true"></span>
-          </button>
           <button class="round-button notification-button" [class.active]="notificationPanelOpen" type="button" aria-label="Notifications" [attr.aria-expanded]="notificationPanelOpen" (click)="toggleNotifications()">
             <span pmConsoleIcon="bell" aria-hidden="true"></span>
             <span class="notification-badge" aria-hidden="true"></span>
@@ -75,6 +73,8 @@ const ONBOARDING_PM101_PROJECT_ID = 'all';
         [primaryItems]="primaryRailItems"
         [utilityItems]="utilityRailItems"
         [activeItemId]="activeRailItemId"
+        [expanded]="sideNavExpanded"
+        (expandedChange)="setSideNavExpanded($event)"
         (itemSelected)="onRailItemClick($event)"
       />
 
@@ -113,7 +113,15 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   readonly topRailItems: RailItem[] = [
     { id: 'home', icon: 'house', label: 'Home', page: 'workspace', home: true },
     { id: 'register', icon: 'layout-grid', label: 'Register', page: 'workspaces' },
-    { id: 'dashboards', icon: 'chart-column', label: 'Dashboards', page: 'workspace', view: 'board' },
+    {
+      id: 'dashboards',
+      icon: 'chart-column',
+      label: 'Dashboards',
+      page: 'workspace',
+      view: 'board',
+      disabled: true,
+      disabledTitle: 'Dashboards are not available yet',
+    },
   ];
 
   readonly bottomRailItems: RailItem[] = [
@@ -132,6 +140,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   onboardingAssignmentFlow = false;
   onboardingPm101Locked = false;
   onboardingProjectSetup = false;
+  sideNavExpanded = true;
   private iconsHydrated = false;
 
   constructor(
@@ -160,13 +169,12 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   }
 
   get activeRailItemId(): string {
-    if (this.selectedPage === 'workspaces' || ['wbs', 'project-plan', 'playground'].includes(this.selectedPage)) return 'register';
-    if (this.selectedPage === 'workspace' && this.selectedView === 'board') return 'dashboards';
-    if (this.selectedPage === 'workspace') return 'home';
-    return '';
+    const activeItemId = this.currentRailItemId;
+    return this.isRailItemUnavailable(activeItemId) ? '' : activeItemId;
   }
 
   ngOnInit(): void {
+    this.sideNavExpanded = this.readSideNavExpandedPreference();
     this.selectedProject = this.initialState.projectId || 'all';
     this.selectedPage = (this.initialState.selectedPage as ConsolePage) || 'workspace';
     this.selectedView = (this.initialState.selectedView as WorkspaceView) || 'board';
@@ -194,12 +202,12 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     if (this.onboardingAssignmentFlow && this.pmoAssignmentReady && !this.onboardingProjectSetup && page === 'workspaces') {
       this.onboardingProjectSetup = true;
       this.onboardingPm101Locked = false;
-      this.selectedProject = 'UAE Research Map';
+      this.selectedProject = ONBOARDING_ASSIGNED_PROJECT_ID;
       this.selectedView = 'pm101';
     }
     this.selectedPage = page;
     if (this.isProjectScopedPage && this.selectedProject === 'all') {
-      this.selectedProject = this.onboardingProjectSetup ? 'UAE Research Map' : 'Vision 2030';
+      this.selectedProject = ONBOARDING_ASSIGNED_PROJECT_ID;
     }
     this.markShellChanged();
   }
@@ -215,9 +223,9 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
       this.markShellChanged();
       return;
     }
-    this.selectedProject = this.onboardingProjectSetup ? 'UAE Research Map' : this.onboardingPm101Locked ? ONBOARDING_PM101_PROJECT_ID : 'all';
-    this.selectedPage = this.onboardingProjectSetup ? 'workspaces' : 'workspace';
-    this.selectedView = this.onboardingProjectSetup || this.onboardingPm101Locked ? 'pm101' : 'board';
+    this.selectedProject = this.onboardingProjectSetup ? ONBOARDING_ASSIGNED_PROJECT_ID : this.onboardingPm101Locked ? ONBOARDING_PM101_PROJECT_ID : 'all';
+    this.selectedPage = 'workspace';
+    this.selectedView = 'pm101';
     this.notificationPanelOpen = false;
     this.markShellChanged();
   }
@@ -237,6 +245,13 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     if (railItem.page) {
       this.setPage(railItem.page);
     }
+  }
+
+  setSideNavExpanded(expanded: boolean): void {
+    if (this.sideNavExpanded === expanded) return;
+    this.sideNavExpanded = expanded;
+    this.saveSideNavExpandedPreference(expanded);
+    this.markShellChanged();
   }
 
   toggleNotifications(): void {
@@ -289,14 +304,44 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     this.changeDetector.markForCheck();
   }
 
+  private readSideNavExpandedPreference(): boolean {
+    try {
+      return window.localStorage.getItem('tasama.sideNavExpanded') !== 'false';
+    } catch {
+      return true;
+    }
+  }
+
+  private saveSideNavExpandedPreference(expanded: boolean): void {
+    try {
+      window.localStorage.setItem('tasama.sideNavExpanded', String(expanded));
+    } catch {
+      return;
+    }
+  }
+
   private isRailItemDisabled(item: RailItem): boolean {
+    if (item.disabled) return true;
     if (!item.page && !item.view) return false;
     if (item.home) return false;
     return this.frontDoorMode === 'unassigned' || this.onboardingPm101Locked;
   }
 
   private railItemDisabledTitle(item: RailItem): string | null {
+    if (item.disabled) return item.disabledTitle ?? null;
     if (!this.isRailItemDisabled(item)) return null;
     return this.onboardingPm101Locked ? 'Available after PM 101 onboarding' : 'Available after PMO assigns a project';
+  }
+
+  private get currentRailItemId(): string {
+    if (this.selectedPage === 'workspaces' || ['wbs', 'project-plan', 'playground'].includes(this.selectedPage)) return 'register';
+    if (this.selectedPage === 'workspace' && this.selectedView === 'board') return 'dashboards';
+    if (this.selectedPage === 'workspace') return 'home';
+    return '';
+  }
+
+  private isRailItemUnavailable(itemId: string): boolean {
+    const railItem = [...this.topRailItems, ...this.bottomRailItems].find((candidate) => candidate.id === itemId);
+    return railItem ? this.isRailItemDisabled(railItem) : false;
   }
 }
