@@ -18,7 +18,7 @@ import { PmConsolePlanDrawerComponent } from './pm-console-plan-drawer.component
 import { PmConsolePlanEmptyStateComponent } from './pm-console-plan-empty-state.component';
 import { PmConsolePlanTableComponent } from './pm-console-plan-table.component';
 import { PmConsoleReportDrawerComponent } from './pm-console-report-drawer.component';
-import { PmConsoleMountOptions } from './pm-console.types';
+import { PmConsoleMountOptions, ProjectOption } from './pm-console.types';
 import { PmConsoleAiGuideChipComponent, pmConsoleAiGuideFor, type PmConsoleAiGuideCopy } from './shared/pm-console-ai-guide-chip.component';
 import { PmConsoleFieldComponent, type PmConsoleFieldType } from './shared/pm-console-field.component';
 import { PmConsoleAgentBannerComponent } from './shared/pm-console-agent-banner.component';
@@ -34,7 +34,7 @@ import { PmConsoleToolbarComponent } from './shared/pm-console-toolbar.component
 
 type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground';
 type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
-type ActionWorkspaceView = 'board' | 'calendar';
+type ActionWorkspaceView = 'board' | 'calendar' | 'stages';
 type WorkspaceDisplay = 'table' | 'cards';
 type WorkspaceRegister = 'projects' | 'benefits' | 'risks';
 type ProjectPlanEntry = 'quick' | 'reports' | 'stages' | 'change-request' | 'closure';
@@ -1374,7 +1374,7 @@ const iconMap: Record<string, string> = {
 
 const projectQuickActions: QuickAction[] = [
   { id: 'project-plan', title: 'Project plan', icon: 'plan', page: 'project-plan', entry: 'quick' },
-  { id: 'wbs', title: 'WBS', icon: 'wbs' },
+  { id: 'wbs', title: 'WBS', icon: 'wbs', page: 'wbs' },
   { id: 'stage-gate', title: 'Stage gate', icon: 'stageGate', view: 'stages' },
   { id: 'change-request', title: 'Change request', icon: 'changeRequest', page: 'project-plan', entry: 'change-request' },
   { id: 'dependencies', title: 'Dependencies', icon: 'dependencies' },
@@ -3724,6 +3724,18 @@ const QUICK_LINK_STORAGE_KEY = 'tasama.quickLinks.pinned';
 const WORKSPACE_TABLE_COLUMN_STORAGE_KEY = 'tasama.workspaceTable.visibleColumns';
 const WORKSPACE_TABLE_COLUMN_MOTION_MS = 280;
 const defaultPinnedQuickLinkIds = ['project-plan', 'wbs'];
+const selectedProjectOperationalQuickLinkIds = [
+  'project-plan',
+  'stage-gate',
+  'dependencies',
+  'resources',
+  'issues',
+  'wbs',
+  'change-request',
+  'end-products',
+  'risks',
+  'project-closure',
+];
 const workspaceTableColumns: WorkspaceTableColumn[] = [
   { id: 'project', label: 'Project Name' },
   { id: 'stage', label: 'Stage' },
@@ -4118,13 +4130,20 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                     </div>
                     <div class="project-plan-topbar-actions">
                       @if (onboardingProjectSetup) {
-                        <div class="onboarding-plan-progress" role="progressbar" [attr.aria-valuenow]="onboardingPlanCompletionPercent" aria-valuemin="0" aria-valuemax="100" aria-label="Project plan completion">
-                          <div class="onboarding-plan-progress-copy">
-                            <span>{{ onboardingPlanCompletionPercent }}% complete</span>
-                            <small>{{ onboardingPlanProgressLabel }}</small>
+                        <div
+                          class="project-plan-header-progress"
+                          role="progressbar"
+                          [attr.aria-valuenow]="projectPlanNavProgressPercent"
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                          aria-label="Project plan section completion"
+                        >
+                          <div class="project-plan-header-progress-track" aria-hidden="true">
+                            <span [style.width.%]="projectPlanNavProgressPercent"></span>
                           </div>
-                          <div class="onboarding-plan-progress-track" aria-hidden="true">
-                            <span [style.width.%]="onboardingPlanCompletionPercent"></span>
+                          <div class="project-plan-header-progress-copy">
+                            <strong>{{ projectPlanNavProgressPercent }}%</strong>
+                            <span>Sections done {{ projectPlanNavCompletedSections }}/{{ projectPlanNavTotalSections }}</span>
                           </div>
                         </div>
                       }
@@ -4135,10 +4154,12 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                           <span pmConsoleIcon="eye" aria-hidden="true"></span>
                         </button>
                       </div>
-                      <button class="project-plan-topbar-submit" type="button" (click)="submitProjectPlan()">
-                        <span pmConsoleIcon="send" aria-hidden="true"></span>
-                        <span>Submit</span>
-                      </button>
+                      @if (onboardingProjectSetup) {
+                        <button class="project-plan-topbar-submit" type="button" aria-label="Submit onboarding project plan to PMO" (click)="submitOnboardingPlan()">
+                          <span pmConsoleIcon="send" aria-hidden="true"></span>
+                          <span>Submit</span>
+                        </button>
+                      }
                     </div>
                   </div>
                   @if (projectPlanDetailMode === 'detailed') {
@@ -4155,10 +4176,12 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                             @for (section of primaryProjectPlanSections; track section) {
                               <button [class.active]="projectPlanActiveSection === section" type="button" (click)="setProjectPlanSection(section)">
                                 <span class="matrix-nav-item-label">{{ projectPlanNavLabel(section) }}</span>
-                                @if (isProjectPlanNavSectionComplete(section)) {
-                                  <span class="matrix-nav-status is-complete" pmConsoleIcon="circle-check" aria-hidden="true"></span>
-                                } @else if (projectPlanNavCountLabel(section)) {
-                                  <span class="matrix-nav-count">{{ projectPlanNavCountLabel(section) }}</span>
+                                @if (onboardingProjectSetup) {
+                                  @if (isProjectPlanNavSectionComplete(section)) {
+                                    <span class="matrix-nav-status is-complete" pmConsoleIcon="circle-check" aria-hidden="true"></span>
+                                  } @else if (projectPlanNavCountLabel(section)) {
+                                    <span class="matrix-nav-count">{{ projectPlanNavCountLabel(section) }}</span>
+                                  }
                                 }
                               </button>
                             }
@@ -4185,22 +4208,6 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                               }
                             </div>
                           }
-                        </div>
-                      </div>
-                      <div
-                        class="matrix-nav-progress"
-                        role="progressbar"
-                        [attr.aria-valuenow]="projectPlanNavProgressPercent"
-                        aria-valuemin="0"
-                        aria-valuemax="100"
-                        aria-label="Project plan section completion"
-                      >
-                        <div class="matrix-nav-progress-track" aria-hidden="true">
-                          <span [style.width.%]="projectPlanNavProgressPercent"></span>
-                        </div>
-                        <div class="matrix-nav-progress-copy">
-                          <strong>{{ projectPlanNavProgressPercent }}%</strong>
-                          <span>Sections done {{ projectPlanNavCompletedSections }}/{{ projectPlanNavTotalSections }}</span>
                         </div>
                       </div>
                     </aside>
@@ -4404,14 +4411,16 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                                         <td>{{ row.owner }}</td>
                                                         <td><span [pmConsoleStatusPill]="row.status" baseClass="overview-status-pill" [tone]="overviewStatusTone(row.status)"></span></td>
                                                         <td class="schedule-table-actions">
-                                                          <div class="overview-row-actions" aria-label="Outcome actions">
-                                                            <button class="overview-row-action-button" type="button" [attr.aria-label]="'Edit ' + row.outcome" (click)="$event.stopPropagation(); openOverviewOutcomeDrawer(row)">
+                                                          <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + row.outcome">
+                                                            <button type="button" role="menuitem" (click)="openOverviewOutcomeDrawer(row)">
                                                               <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                                              Edit
                                                             </button>
-                                                            <button class="overview-row-action-button danger" type="button" [attr.aria-label]="'Delete ' + row.outcome" (click)="$event.stopPropagation(); removeOverviewOutcome(row.id)">
+                                                            <button class="danger" type="button" role="menuitem" (click)="removeOverviewOutcome(row.id)">
                                                               <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                                              Delete
                                                             </button>
-                                                          </div>
+                                                          </app-pm-console-row-action-menu>
                                                         </td>
                                                       </tr>
                                                     }
@@ -4724,14 +4733,16 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                               <td><span [pmConsoleStatusPill]="row.priority" baseClass="schedule-priority-pill" [tone]="scheduleMilestonePriorityTone(row.priority)"></span></td>
                                               <td>{{ row.note || 'No additional note captured' }}</td>
                                               <td class="schedule-table-actions">
-                                                <div class="overview-row-actions" aria-label="Business driver actions">
-                                                  <button class="overview-row-action-button" type="button" [attr.aria-label]="'Edit ' + row.driver" (click)="$event.stopPropagation(); openOverviewBusinessDriverDrawer(row)">
+                                                <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + row.driver">
+                                                  <button type="button" role="menuitem" (click)="openOverviewBusinessDriverDrawer(row)">
                                                     <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                                    Edit
                                                   </button>
-                                                  <button class="overview-row-action-button danger" type="button" [attr.aria-label]="'Delete ' + row.driver" (click)="$event.stopPropagation(); removeOverviewBusinessDriver(row.id)">
+                                                  <button class="danger" type="button" role="menuitem" (click)="removeOverviewBusinessDriver(row.id)">
                                                     <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                                    Delete
                                                   </button>
-                                                </div>
+                                                </app-pm-console-row-action-menu>
                                               </td>
                                             </tr>
                                           }
@@ -4794,14 +4805,16 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                               <td>{{ row.owner }}</td>
                                               <td><span [pmConsoleStatusPill]="row.status" baseClass="overview-status-pill" [tone]="overviewStatusTone(row.status)"></span></td>
                                               <td class="schedule-table-actions">
-                                                <div class="overview-row-actions" aria-label="Outcome actions">
-                                                  <button class="overview-row-action-button" type="button" [attr.aria-label]="'Edit ' + row.outcome" (click)="$event.stopPropagation(); openOverviewOutcomeDrawer(row)">
+                                                <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + row.outcome">
+                                                  <button type="button" role="menuitem" (click)="openOverviewOutcomeDrawer(row)">
                                                     <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                                    Edit
                                                   </button>
-                                                  <button class="overview-row-action-button danger" type="button" [attr.aria-label]="'Delete ' + row.outcome" (click)="$event.stopPropagation(); removeOverviewOutcome(row.id)">
+                                                  <button class="danger" type="button" role="menuitem" (click)="removeOverviewOutcome(row.id)">
                                                     <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                                    Delete
                                                   </button>
-                                                </div>
+                                                </app-pm-console-row-action-menu>
                                               </td>
                                             </tr>
                                           }
@@ -4878,14 +4891,16 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                               <td>{{ row.linkedObjective }}</td>
                                               <td><span [pmConsoleStatusPill]="row.status" baseClass="overview-status-pill" [tone]="overviewStatusTone(row.status)"></span></td>
                                               <td class="schedule-table-actions">
-                                                <div class="overview-row-actions" aria-label="Project objective actions">
-                                                  <button class="overview-row-action-button" type="button" [attr.aria-label]="'Edit ' + row.objective" (click)="$event.stopPropagation(); openOverviewObjectiveDrawer(row)">
+                                                <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + row.objective">
+                                                  <button type="button" role="menuitem" (click)="openOverviewObjectiveDrawer(row)">
                                                     <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                                    Edit
                                                   </button>
-                                                  <button class="overview-row-action-button danger" type="button" [attr.aria-label]="'Delete ' + row.objective" (click)="$event.stopPropagation(); removeOverviewObjective(row.id)">
+                                                  <button class="danger" type="button" role="menuitem" (click)="removeOverviewObjective(row.id)">
                                                     <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                                    Delete
                                                   </button>
-                                                </div>
+                                                </app-pm-console-row-action-menu>
                                               </td>
                                             </tr>
                                           }
@@ -4954,14 +4969,16 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                                       <td>{{ row.domain }}</td>
                                                       <td>{{ row.owner }}</td>
                                                       <td class="schedule-table-actions">
-                                                        <div class="overview-row-actions" aria-label="Capability actions">
-                                                          <button class="overview-row-action-button" type="button" [attr.aria-label]="'Edit ' + row.capability" (click)="$event.stopPropagation(); openOverviewCapabilityDrawer(row)">
+                                                        <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + row.capability">
+                                                          <button type="button" role="menuitem" (click)="openOverviewCapabilityDrawer(row)">
                                                             <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                                            Edit
                                                           </button>
-                                                          <button class="overview-row-action-button danger" type="button" [attr.aria-label]="'Delete ' + row.capability" (click)="$event.stopPropagation(); removeOverviewCapability(row.id)">
+                                                          <button class="danger" type="button" role="menuitem" (click)="removeOverviewCapability(row.id)">
                                                             <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                                            Delete
                                                           </button>
-                                                        </div>
+                                                        </app-pm-console-row-action-menu>
                                                       </td>
                                                     </tr>
                                                   }
@@ -5017,14 +5034,16 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                                                       <td>{{ row.phase }}</td>
                                                       <td>{{ row.service }}</td>
                                                       <td class="schedule-table-actions">
-                                                        <div class="overview-row-actions" aria-label="Service actions">
-                                                          <button class="overview-row-action-button" type="button" [attr.aria-label]="'Edit ' + row.service" (click)="$event.stopPropagation(); openOverviewServiceDrawer(row)">
+                                                        <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + row.service">
+                                                          <button type="button" role="menuitem" (click)="openOverviewServiceDrawer(row)">
                                                             <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                                            Edit
                                                           </button>
-                                                          <button class="overview-row-action-button danger" type="button" [attr.aria-label]="'Delete ' + row.service" (click)="$event.stopPropagation(); removeOverviewService(row.id)">
+                                                          <button class="danger" type="button" role="menuitem" (click)="removeOverviewService(row.id)">
                                                             <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                                            Delete
                                                           </button>
-                                                        </div>
+                                                        </app-pm-console-row-action-menu>
                                                       </td>
                                                     </tr>
                                                   }
@@ -6762,21 +6781,6 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                       }
                     </div>
                   </main>
-                  @if (onboardingProjectSetup) {
-                    <footer class="project-plan-bottom-actions onboarding-plan-actions" aria-label="Project plan actions">
-                      @if (onboardingPlanActionMessage) {
-                        <span class="onboarding-plan-action-feedback">{{ onboardingPlanActionMessage }}</span>
-                      }
-                      <button class="project-plan-save-draft" type="button" (click)="saveOnboardingDraft()">
-                        <span pmConsoleIcon="save" aria-hidden="true"></span>
-                        <span>Save as draft</span>
-                      </button>
-                      <button class="project-plan-submit" type="button" (click)="submitOnboardingPlan()">
-                        <span pmConsoleIcon="send" aria-hidden="true"></span>
-                        <span>Submit for approval</span>
-                      </button>
-                    </footer>
-                  }
                   @if (aiInlineRewrite.visible) {
                     <form
                       class="ai-inline-rewrite"
@@ -7641,7 +7645,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                 }
               } @else if (projectPlanEntry === 'reports') {
                 <div class="project-plan-shell plan-builder-shell quick-plan-shell project-report-shell project-reports-shell">
-                  <main class="project-plan-content plan-builder-workspace quick-plan-workspace project-report-workspace">
+                  <main class="project-plan-content plan-builder-workspace quick-plan-workspace project-report-workspace" (scroll)="handleProjectPlanContentScroll($event)" (wheel)="handleProjectPlanContentWheel($event)">
                     <section class="project-report-surface project-reports-dashboard" [attr.aria-label]="scopedProjectName + ' reports dashboard'">
                       <app-pm-console-overview-cards [cards]="projectReportOverviewCards" [ariaLabel]="scopedProjectName + ' report overview'"></app-pm-console-overview-cards>
                       <app-pm-console-register-table
@@ -7665,7 +7669,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                 @let activeGate = projectPlanActiveStageGateContext;
                 <div class="project-plan-shell plan-builder-shell quick-plan-shell project-report-shell project-reports-shell project-stages-shell">
                   <main class="project-plan-content plan-builder-workspace quick-plan-workspace project-report-workspace project-stages-workspace">
-                    <section class="project-stages-surface" [attr.aria-label]="scopedProjectName + ' stage roadmap'">
+                    <section class="project-stages-surface" [attr.aria-label]="scopedProjectName + ' stage roadmap'" (scroll)="handleProjectPlanContentScroll($event)" (wheel)="handleProjectPlanContentWheel($event)">
                       <div class="project-stages-roadmap-band">
                         <div class="project-stages-head">
                           <div>
@@ -7754,7 +7758,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
               } @else if (projectPlanEntry === 'change-request') {
                 <div class="project-plan-shell plan-builder-shell quick-plan-shell project-secondary-shell change-request-shell">
                   <main class="project-plan-content plan-builder-workspace quick-plan-workspace project-report-workspace project-secondary-workspace change-request-workspace">
-                    <section class="change-request-surface" [attr.aria-label]="scopedProjectName + ' change requests'">
+                    <section class="change-request-surface" [attr.aria-label]="scopedProjectName + ' change requests'" (scroll)="handleProjectPlanContentScroll($event)" (wheel)="handleProjectPlanContentWheel($event)">
                       <div class="change-request-board">
                         <div class="pm-project-table-stats change-request-stats" aria-label="Change request summary">
                           @for (metric of changeRequestMetrics; track metric.label) {
@@ -8048,7 +8052,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                         </div>
                       </aside>
 
-                      <div class="project-closure-board">
+                      <div class="project-closure-board" (scroll)="handleProjectPlanContentScroll($event)" (wheel)="handleProjectPlanContentWheel($event)">
                         <header class="project-closure-head">
                           <div>
                             <span class="change-request-kicker">Project closure</span>
@@ -8333,7 +8337,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                 </div>
               } @else {
                 <div class="project-plan-shell plan-builder-shell quick-plan-shell project-secondary-shell">
-                  <main class="project-plan-content plan-builder-workspace quick-plan-workspace project-report-workspace project-secondary-workspace">
+                  <main class="project-plan-content plan-builder-workspace quick-plan-workspace project-report-workspace project-secondary-workspace" (scroll)="handleProjectPlanContentScroll($event)" (wheel)="handleProjectPlanContentWheel($event)">
                     <section class="project-report-surface" [attr.aria-label]="projectPlanEntryLabel + ' workspace'">
                       <article class="project-report-placeholder-card" [attr.aria-label]="projectPlanEntryLabel + ' content'"></article>
                     </section>
@@ -8418,12 +8422,26 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                     @if (usesPm101DesignShell) {
                       <img class="workspace-line-art" src="./assets/workspace-line-art.svg" alt="" aria-hidden="true" />
                       <div class="workspace-shell-actions" aria-label="Workspace utilities">
-                        <button class="workspace-filter-button" type="button" aria-label="Refresh workspace">
-                          <span class="icon" aria-hidden="true"><i data-lucide="refresh-cw"></i></span>
-                        </button>
-                        <button class="workspace-filter-button" type="button" aria-label="Expand workspace">
-                          <span class="icon" aria-hidden="true"><i data-lucide="expand"></i></span>
-                        </button>
+                        @if (showWorkspaceProjectSwitch) {
+                          <label class="workspace-project-switch" data-tour-target="project-switch">
+                            <span class="workspace-project-switch-label">Viewing</span>
+                            <span class="workspace-project-select-wrap">
+                              <select [value]="workspaceHeaderProject" aria-label="Select project" (change)="selectWorkspaceProject($event)">
+                                @for (project of workspaceHeaderProjectOptions; track project.id) {
+                                  <option [value]="project.id">{{ project.name }}</option>
+                                }
+                              </select>
+                              <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
+                            </span>
+                          </label>
+                        } @else {
+                          <button class="workspace-filter-button" type="button" aria-label="Refresh workspace">
+                            <span class="icon" aria-hidden="true"><i data-lucide="refresh-cw"></i></span>
+                          </button>
+                          <button class="workspace-filter-button" type="button" aria-label="Expand workspace">
+                            <span class="icon" aria-hidden="true"><i data-lucide="expand"></i></span>
+                          </button>
+                        }
                       </div>
                       <div class="workspace-locked-title-row">
                         <span class="workspace-pane-icon" aria-hidden="true">
@@ -8455,109 +8473,77 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                       </aside>
                     }
                     <div class="workspace-tabs" role="tablist" aria-label="Workspace view" data-tour-target="workspace-tabs">
-                      @if (onboardingPm101Locked) {
-                        <button
-                          [class.active]="selectedView === 'pm101'"
-                          type="button"
-                          data-view-target="pm101"
-                          [attr.aria-selected]="selectedView === 'pm101'"
-                          (click)="setView('pm101')"
-                        >
-                          <span class="icon" aria-hidden="true"><i data-lucide="book-open"></i></span>
-                          <span>PM101</span>
-                        </button>
-                        <button
-                          [class.active]="selectedView === 'calendar'"
-                          class="is-locked"
-                          type="button"
-                          data-view-target="calendar"
-                          [attr.aria-selected]="selectedView === 'calendar'"
-                          (click)="setView('calendar')"
-                          disabled
-                          aria-disabled="true"
-                          title="Available after PMO assignment"
-                        >
-                          <span class="icon" aria-hidden="true"><i data-lucide="panels-top-left"></i></span>
-                          <span>Calendar</span>
-                        </button>
-                        <button
-                          [class.active]="selectedView === 'board'"
-                          class="is-locked"
-                          type="button"
-                          data-view-target="board"
-                          [attr.aria-selected]="selectedView === 'board'"
-                          (click)="setView('board')"
-                          disabled
-                          aria-disabled="true"
-                          title="Available after PMO assignment"
-                        >
-                          <span class="icon" aria-hidden="true"><i data-lucide="panels-top-left"></i></span>
-                          <span>Board</span>
-                        </button>
-                        <button
-                          [class.active]="selectedView === 'stages'"
-                          class="is-locked"
-                          type="button"
-                          data-view-target="stages"
-                          [attr.aria-selected]="selectedView === 'stages'"
-                          (click)="setView('stages')"
-                          disabled
-                          aria-disabled="true"
-                          title="Available after PMO assignment"
-                        >
-                          <span class="icon" aria-hidden="true"><i data-lucide="radar"></i></span>
-                          <span>Stages</span>
-                        </button>
-                      } @else {
-                        <button
-                          [class.active]="selectedView === 'pm101'"
-                          type="button"
-                          data-view-target="pm101"
-                          [attr.aria-selected]="selectedView === 'pm101'"
-                          (click)="setView('pm101')"
-                        >
-                          <span class="icon" aria-hidden="true"><i data-lucide="calendar"></i></span>
-                          <span>PM101</span>
-                        </button>
-                        <button
-                          [class.active]="selectedView === 'calendar'"
-                          type="button"
-                          data-view-target="calendar"
-                          [attr.aria-selected]="selectedView === 'calendar'"
-                          (click)="setView('calendar')"
-                        >
-                          <span class="icon" aria-hidden="true"><i data-lucide="panels-top-left"></i></span>
-                          <span>Calendar</span>
-                        </button>
-                        <button
-                          [class.active]="selectedView === 'board'"
-                          type="button"
-                          data-view-target="board"
-                          [attr.aria-selected]="selectedView === 'board'"
-                          (click)="setView('board')"
-                        >
-                          <span class="icon" aria-hidden="true"><i data-lucide="panels-top-left"></i></span>
-                          <span>Board</span>
-                        </button>
-                        <button
-                          [class.active]="selectedView === 'stages'"
-                          type="button"
-                          data-view-target="stages"
-                          [attr.aria-selected]="selectedView === 'stages'"
-                          (click)="setView('stages')"
-                        >
-                          <span class="icon" aria-hidden="true"><i data-lucide="radar"></i></span>
-                          <span>Stages</span>
-                        </button>
-                      }
+                      <button
+                        [class.active]="selectedView === 'pm101'"
+                        type="button"
+                        data-view-target="pm101"
+                        [attr.aria-selected]="selectedView === 'pm101'"
+                        (click)="setView('pm101')"
+                      >
+                        <span class="icon" aria-hidden="true"><i data-lucide="book-open"></i></span>
+                        <span>Overview</span>
+                      </button>
+                      <button
+                        [class.active]="isActionWorkspaceActive"
+                        type="button"
+                        data-view-target="actions"
+                        [attr.aria-selected]="isActionWorkspaceActive"
+                        (click)="setView(topActionWorkspaceView)"
+                      >
+                        <span class="icon" aria-hidden="true"><i data-lucide="list-checks"></i></span>
+                        <span>Actions</span>
+                      </button>
                     </div>
                   </div>
-                  @if (selectedView !== 'stages' && selectedView !== 'pm101') {
-                    <div class="workspace-control-row">
-                      <label class="workspace-search">
-                        <span class="icon" aria-hidden="true"><i data-lucide="search"></i></span>
-                        <input type="search" [attr.aria-label]="workspaceSearchPlaceholder" [placeholder]="workspaceSearchPlaceholder" />
-                      </label>
+                  @if (isActionWorkspaceActive) {
+                    <div class="workspace-control-row actions-control-row">
+                      @if (selectedView !== 'stages') {
+                        <label class="workspace-search">
+                          <span class="icon" aria-hidden="true"><i data-lucide="search"></i></span>
+                          <input type="search" [attr.aria-label]="workspaceSearchPlaceholder" [placeholder]="workspaceSearchPlaceholder" />
+                        </label>
+                      }
+                      <div
+                        class="action-view-switch"
+                        [class.pm101-locked-action-view-switch]="onboardingPm101Locked"
+                        [class.pm101-ready-action-view-switch]="usesPm101OperationalLayout && !onboardingPm101Locked"
+                        role="tablist"
+                        aria-label="Actions view options"
+                      >
+                        <button
+                          [class.active]="selectedView === 'board'"
+                          type="button"
+                          role="tab"
+                          data-action-view="board"
+                          [attr.aria-selected]="selectedView === 'board'"
+                          (click)="setView('board')"
+                        >
+                          <span class="icon" aria-hidden="true"><i data-lucide="columns-3"></i></span>
+                          <span>Board</span>
+                        </button>
+                        <button
+                          [class.active]="selectedView === 'calendar'"
+                          type="button"
+                          role="tab"
+                          data-action-view="calendar"
+                          [attr.aria-selected]="selectedView === 'calendar'"
+                          (click)="setView('calendar')"
+                        >
+                          <span class="icon" aria-hidden="true"><i data-lucide="calendar-days"></i></span>
+                          <span>Calendar</span>
+                        </button>
+                        <button
+                          [class.active]="selectedView === 'stages'"
+                          type="button"
+                          role="tab"
+                          data-action-view="stages"
+                          [attr.aria-selected]="selectedView === 'stages'"
+                          (click)="setView('stages')"
+                        >
+                          <span class="icon" aria-hidden="true"><i data-lucide="target"></i></span>
+                          <span>Stages</span>
+                        </button>
+                      </div>
                     </div>
                   }
                   <div class="workspace-body">
@@ -8569,7 +8555,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                       <div class="calendar-command-row"><div class="calendar-month-picker" aria-label="Calendar month navigation"><button class="calendar-nav-button" type="button" (click)="shiftMonth(-1)" aria-label="Previous month"><span class="icon" aria-hidden="true"><i data-lucide="chevron-left"></i></span></button><div class="calendar-month-copy"><strong>{{ calendarMonthLabel }}</strong><span>{{ visibleMonthItems.length }} item{{ visibleMonthItems.length === 1 ? '' : 's' }} this month</span></div><button class="calendar-nav-button" type="button" (click)="shiftMonth(1)" aria-label="Next month"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></button></div><div class="board-filter calendar-filter-bar" aria-label="Quick work filter"><span>Show</span><details class="work-filter-dropdown"><summary [attr.aria-label]="'Filter work by ' + selectedBoardFilterOption.label"><span class="work-filter-selected-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(selectedBoardFilterOption.icon)"></i></span></span><span>{{ selectedBoardFilterOption.label }}</span><strong>{{ countCalendarFilter(selectedBoardFilterOption) }}</strong><span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span></summary><div class="work-filter-menu" role="menu">@for (filter of boardFilters; track filter.id) { <button [class.active]="selectedBoardFilter === filter.id" type="button" role="menuitemradio" [attr.aria-checked]="selectedBoardFilter === filter.id" (click)="setBoardFilter(filter.id, $event)"><span class="work-filter-option-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(filter.icon)"></i></span></span><span>{{ filter.label }}</span><strong>{{ countCalendarFilter(filter) }}</strong></button> }</div></details></div></div>
                       <div class="timeline-calendar"><div class="weekdays"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div><div class="calendar-grid">@for (cell of calendarCells; track cell.key) { <div class="calendar-cell" [class.muted]="!cell.current" [class.today]="cell.today"><span>{{ cell.day }}</span>@for (item of cell.items; track item.label + item.project) { <button class="calendar-event {{ item.tone }}" type="button"><span class="calendar-event-dot"></span><span class="calendar-event-title">{{ item.label }}</span></button> }</div> }</div></div>
                     </div>
-                    <div class="pm101-view" [class.pm101-operational-view]="usesPm101OperationalLayout" [class.is-hidden]="selectedView !== 'pm101'" data-work-view="pm101">
+                    <div class="pm101-view" [class.pm101-operational-view]="usesPm101OperationalLayout" [class.selected-project-operational-view]="showSelectedProjectOverviewQuickLinks" [class.is-hidden]="selectedView !== 'pm101'" data-work-view="pm101">
                       @if (onboardingPm101Locked) {
                         <article class="pm101-assignment-banner" aria-label="PM 101 assignment status">
                           <img class="pm101-assignment-banner-art" src="./assets/pm101-assignment-banner.png" alt="" aria-hidden="true" />
@@ -8617,6 +8603,65 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                           <h3>Your project management journey</h3>
                           <p>From assignment to regular reporting, these are the steps you will work through in TASAMA.</p>
                         </div>
+                      } @else if (showSelectedProjectOverviewQuickLinks) {
+                        <section class="selected-project-operational-workspace" [attr.aria-label]="scopedProjectName + ' operational workspace'">
+                        @if (isOnboardingAssignedProjectWorkspace) {
+                          <div class="pm101-ready-hero-grid" aria-label="First assigned project overview">
+                            <article class="pm101-ready-banner">
+                              <img class="pm101-ready-banner-art" src="./assets/pm101-first-project-banner-bg.png" alt="" aria-hidden="true" />
+                              <div class="pm101-ready-banner-copy">
+                                <strong>Your first project is ready to plan!</strong>
+                                <p>PMO assigned UAE Research Map to your workspace. Start with building the baseline project plan, then get it endorsed and start tracking progress!</p>
+                              </div>
+                            </article>
+                            <article class="pm101-ready-project-card">
+                              <img class="pm101-ready-project-card-art" src="./assets/pm101-first-project-card-bg.png" alt="" aria-hidden="true" />
+                              <span class="pm101-ready-project-chip">New project assigned by PMO</span>
+                              <strong class="pm101-ready-project-title">UAE Research Map</strong>
+                              <button class="pm101-ready-project-cta" type="button" (click)="openAssignedProjectPlan()" aria-label="Create project plan for UAE Research Map">
+                                <span>Create project plan</span>
+                                <span class="pm101-ready-project-cta-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
+                              </button>
+                              <span class="pm101-ready-project-icon" aria-hidden="true">
+                                <img src="./assets/workspace-card-box-dark.svg" alt="" />
+                              </span>
+                            </article>
+                          </div>
+                        } @else {
+                          <article class="pm101-selected-project-hero selected-project-operational-hero" aria-label="Selected project overview">
+                            <img class="pm101-selected-project-art" [src]="selectedPm101ProjectArt" alt="" aria-hidden="true" />
+                            <span class="pm101-selected-project-chip">{{ selectedPm101ProjectChip }}</span>
+                            <strong class="pm101-selected-project-title">{{ selectedPm101ProjectTitle }}</strong>
+                            <button class="pm101-selected-project-cta" type="button" (click)="openProject(selectedProject)" [attr.aria-label]="'Go to ' + selectedPm101ProjectTitle + ' project'">
+                              <span>Go to Project</span>
+                              <span class="pm101-selected-project-cta-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
+                            </button>
+                          </article>
+                        }
+                        <section class="selected-project-quick-links" aria-label="Project Quick links">
+                          <div class="selected-project-quick-links-head">
+                            <h3>Project Quick links</h3>
+                            <p>Access important areas for managing project seamlessly</p>
+                          </div>
+                          <div class="selected-project-quick-link-grid">
+                            @for (action of selectedProjectOperationalQuickLinks; track action.id) {
+                              <article class="selected-project-quick-link-card" [class.is-pinned]="pinnedIds.includes(action.id)" [attr.data-quick-link-id]="action.id">
+                                <button class="selected-project-quick-link-main" type="button" [attr.aria-label]="operationalQuickLinkTitle(action) + ' for ' + scopedProjectName" (click)="openQuickAction(action)">
+                                  <span class="selected-project-quick-link-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(action.icon)"></i></span></span>
+                                  <span class="selected-project-quick-link-copy">
+                                    <strong>{{ operationalQuickLinkTitle(action) }}</strong>
+                                    <small>{{ operationalQuickLinkDescription(action) }}</small>
+                                  </span>
+                                </button>
+                                <button class="selected-project-quick-link-pin" type="button" (click)="togglePinned(action.id)" [attr.aria-label]="(pinnedIds.includes(action.id) ? 'Unpin ' : 'Pin ') + action.title" [title]="pinnedIds.includes(action.id) ? 'Unpin' : 'Pin'">
+                                  <span class="icon selected-project-pin-default" aria-hidden="true"><i data-lucide="pin"></i></span>
+                                  <span class="icon selected-project-pin-unpin" aria-hidden="true"><i data-lucide="pin-off"></i></span>
+                                </button>
+                              </article>
+                            }
+                          </div>
+                        </section>
+                        </section>
                       } @else if (isSelectedProjectPm101Workspace) {
                         <article class="pm101-selected-project-hero" aria-label="Selected project PM101 overview">
                           <img class="pm101-selected-project-art" [src]="selectedPm101ProjectArt" alt="" aria-hidden="true" />
@@ -8680,6 +8725,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                           <p>From assignment to regular reporting, these are the steps you will work through in TASAMA.</p>
                         </div>
                       }
+                      @if (!showSelectedProjectOverviewQuickLinks) {
                       <div class="pm101-flow" aria-label="PM 101 project delivery flow">
                         <ol class="pm101-step-list">
                           @for (step of pm101Steps; track step.title; let index = $index) {
@@ -8726,14 +8772,9 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                           }
                         </ol>
                       </div>
+                      }
                     </div>
                     <div class="stages-view" [class.is-hidden]="selectedView !== 'stages'" data-work-view="stages">
-                      <div class="view-toolbar">
-                        <div>
-                          <strong>{{ isAllProjects ? 'All assigned project stages' : scopedProjectName + ' stages' }}</strong>
-                          <span>{{ stageProfilesForSelection.length }} project{{ stageProfilesForSelection.length === 1 ? '' : 's' }} shown. Open a stage gate to review readiness.</span>
-                        </div>
-                      </div>
                       <div class="portfolio-stage-overview">
                         @for (profile of stageProfilesForSelection; track profile.project) {
                           <article class="portfolio-stage-row {{ profile.tone }}">
@@ -8765,8 +8806,8 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                   </div>
                 </section>
               </div>
-              <div class="right-column" [class.portfolio-frontdoor]="isAllProjects || onboardingPm101Locked" [class.project-frontdoor]="!isAllProjects && !onboardingPm101Locked" [class.pm101-locked-right]="onboardingPm101Locked || isPm101OnboardingWorkspaceFlow || isSelectedProjectWorkspaceShell">
-                @if (isPm101OnboardingWorkspaceFlow) {
+              <div class="right-column" [class.portfolio-frontdoor]="showPortfolioReportTrends || showOnboardingAssignedRightRail || onboardingPm101Locked" [class.project-frontdoor]="!isAllProjects && !onboardingPm101Locked" [class.pm101-locked-right]="onboardingPm101Locked || showOnboardingAssignedRightRail || isSelectedProjectWorkspaceShell">
+                @if (showOnboardingAssignedRightRail) {
                   <section class="top-deck" aria-label="PM front door actions" data-tour-target="frontdoor-actions">
                     <button class="action-card workspace-command" type="button" (click)="navigate('workspaces')">
                       <span class="action-icon"><img src="./assets/workspace-card-box.svg" alt="" aria-hidden="true" /></span>
@@ -8897,9 +8938,9 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
                     </div>
                   </section>
                 } @else {
-                  @if (isAllProjects) { <section class="top-deck" aria-label="PM front door actions" data-tour-target="frontdoor-actions"><button class="action-card workspace-command" type="button" (click)="navigate('workspaces')" [disabled]="onboardingPm101Locked" [attr.aria-disabled]="onboardingPm101Locked ? 'true' : null" [attr.title]="onboardingPm101Locked ? 'Available after PM 101 onboarding' : null"><span class="action-icon"><img src="./assets/workspace-card-box.svg" alt="" aria-hidden="true" /></span><span class="action-copy"><strong>Workspaces</strong><small>Open project rooms</small></span><span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span></button><button class="action-card learning-command" type="button" (click)="setView('pm101')"><span class="action-icon"><img src="./assets/workspace-card-notebook.svg" alt="" aria-hidden="true" /></span><span class="action-copy"><strong>Learning Hub</strong><small>Guides and playbooks</small></span><span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span></button></section> }
-                  <section class="side-card report-widget" [class.portfolio-report-widget]="isAllProjects" data-tour-target="right-report-widget"><div class="report-widget-head"><div><h2>{{ isAllProjects ? 'Reporting trends' : 'Project report trend' }}</h2><small>Last 3 PSR statuses</small></div></div><div class="report-trend-list">@for (report of visibleReportRows; track report.project) { <article class="report-trend-row {{ reportFrontdoorTone(report) }}"><div class="report-trend-row-head"><strong>{{ report.project }}</strong><span class="report-health-chip {{ reportFrontdoorTone(report) }}">{{ reportDueToneLabel(reportFrontdoorTone(report)) }}</span></div><div class="report-trend" style="--report-trend-count:3" aria-label="Status report trend">@for (point of report.trend; track point.label) { <span class="report-trend-point {{ reportStatusTone(point.status) }}"><span class="report-status-icon {{ reportStatusTone(point.status) }}" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="reportStatusIcon(point.status)"></i></span></span><small>{{ point.label }}</small></span> }</div><div class="report-trend-row-foot"><span class="report-row-due"><span class="icon" aria-hidden="true"><i data-lucide="history"></i></span><span>{{ reportDueText(report) }}</span></span><button class="report-row-create" type="button" (click)="openReport(report.project)"><span class="icon" aria-hidden="true"><i data-lucide="file-text"></i></span><span>Create</span></button></div></article> }</div></section>
-                  @if (!isAllProjects) { <ng-container [ngTemplateOutlet]="quickLinksPanel"></ng-container> }
+                  @if (isAllProjects || isSelectedProjectOperationalWorkspace) { <section class="top-deck" aria-label="PM front door actions" data-tour-target="frontdoor-actions"><button class="action-card workspace-command" type="button" (click)="navigate('workspaces')" [disabled]="onboardingPm101Locked" [attr.aria-disabled]="onboardingPm101Locked ? 'true' : null" [attr.title]="onboardingPm101Locked ? 'Available after PM 101 onboarding' : null"><span class="action-icon"><img src="./assets/workspace-card-box.svg" alt="" aria-hidden="true" /></span><span class="action-copy"><strong>Workspaces</strong><small>Open project rooms</small></span><span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span></button><button class="action-card learning-command" type="button" (click)="setView('pm101')"><span class="action-icon"><img src="./assets/workspace-card-notebook.svg" alt="" aria-hidden="true" /></span><span class="action-copy"><strong>Learning Hub</strong><small>Guides and playbooks</small></span><span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span></button></section> }
+                  <section class="side-card report-widget" [class.portfolio-report-widget]="showPortfolioReportTrends" data-tour-target="right-report-widget"><div class="report-widget-head"><div><h2>{{ showPortfolioReportTrends ? 'Reporting trends' : 'Project report trend' }}</h2><small>Last 3 PSR statuses</small></div></div><div class="report-trend-list">@for (report of visibleReportRows; track report.project) { <article class="report-trend-row {{ reportFrontdoorTone(report) }}"><div class="report-trend-row-head"><strong>{{ report.project }}</strong><span class="report-health-chip {{ reportFrontdoorTone(report) }}">{{ reportDueToneLabel(reportFrontdoorTone(report)) }}</span></div><div class="report-trend" style="--report-trend-count:3" aria-label="Status report trend">@for (point of report.trend; track point.label) { <span class="report-trend-point {{ reportStatusTone(point.status) }}"><span class="report-status-icon {{ reportStatusTone(point.status) }}" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="reportStatusIcon(point.status)"></i></span></span><small>{{ point.label }}</small></span> }</div><div class="report-trend-row-foot"><span class="report-row-due"><span class="icon" aria-hidden="true"><i data-lucide="history"></i></span><span>{{ reportDueText(report) }}</span></span><button class="report-row-create" type="button" (click)="openReport(report.project)"><span class="icon" aria-hidden="true"><i data-lucide="file-text"></i></span><span>Create</span></button></div></article> }</div></section>
+                  @if (!isAllProjects && !isSelectedProjectOperationalWorkspace) { <ng-container [ngTemplateOutlet]="quickLinksPanel"></ng-container> }
                 }
               </div>
             </div>
@@ -9429,6 +9470,7 @@ const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'st
   `,
 })
 export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, OnDestroy {
+  @Input() projectOptions: readonly ProjectOption[] = [];
   @Input() selectedProject = 'all';
   @Input() selectedPage: ConsolePage = 'workspace';
   @Input() selectedView: WorkspaceView = 'calendar';
@@ -10506,57 +10548,6 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       : cards.filter((project) => this.matchesSelectedProject(project.title));
   }
 
-  get onboardingPlanCompletionPercent(): number {
-    if (!this.onboardingProjectSetup) return 100;
-    return Math.min(100, Math.round((this.onboardingPlanCompletedItems / this.onboardingPlanTotalItems) * 100));
-  }
-
-  get onboardingPlanProgressLabel(): string {
-    return `${this.onboardingPlanCompletedItems} of ${this.onboardingPlanTotalItems} plan items filled`;
-  }
-
-  private get onboardingPlanTotalItems(): number {
-    return 31;
-  }
-
-  private get onboardingPlanCompletedItems(): number {
-    const identityCount = this.projectPlanIdentityCard.fields.filter((field) => field.value.trim()).length;
-    const scalarValues = [
-      this.overviewState.opportunityStatement,
-      this.overviewState.driverAnalysis,
-      this.overviewState.aiComponent,
-      this.scheduleScopeState.baselineStart,
-      this.scheduleScopeState.baselineEnd,
-      this.scheduleScopeState.forecastStart,
-      this.scheduleScopeState.forecastEnd,
-      this.scheduleScopeState.inScope,
-      this.scheduleScopeState.outOfScope,
-    ];
-    const scalarCount = scalarValues.filter((value) => value.trim()).length;
-    const rowCount = [
-      this.overviewBusinessDriverRows.length,
-      this.overviewOutcomeRows.length,
-      this.overviewObjectiveRows.length,
-      this.overviewCapabilityRows.length,
-      this.overviewServiceRows.length,
-      this.scheduleMilestoneRows.length,
-      this.scheduleEndProductRows.length,
-      this.scheduleManagementProductRows.length,
-      this.activeBudgetPlan.years.length,
-      this.benefitPlanRows.length,
-      this.riskPlanRows.length,
-      this.resourcePlanRows.length,
-      this.issuePlanRows.length,
-      this.changeImpactRows.length,
-      this.relatedLinkRows.length,
-      this.dependencyRegisterRows.predecessor.length,
-      this.dependencyRegisterRows.successor.length,
-    ].filter((count) => count > 0).length;
-    const matrixCount = this.onboardingProjectPlanFields.filter((field) => field.section !== 'Project Setup' && field.value.trim()).length;
-
-    return Math.min(this.onboardingPlanTotalItems, identityCount + scalarCount + rowCount + matrixCount);
-  }
-
   get isAllProjects(): boolean {
     return this.selectedProject === 'all';
   }
@@ -10580,12 +10571,14 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   projectPlanNavCountLabel(section: string): string {
+    if (!this.onboardingProjectSetup) return '';
     const progress = this.projectPlanCoreNavProgress[section];
     if (!progress || progress.showCheck) return '';
     return `(${progress.completed}/${progress.total})`;
   }
 
   isProjectPlanNavSectionComplete(section: string): boolean {
+    if (!this.onboardingProjectSetup) return false;
     const progress = this.projectPlanCoreNavProgress[section];
     return Boolean(progress?.showCheck || (progress && progress.completed >= progress.total));
   }
@@ -11116,7 +11109,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get workspaceSearchPlaceholder(): string {
-    if (this.selectedView === 'pm101') return 'Search PM 101';
+    if (this.selectedView === 'pm101') return 'Search overview';
     if (this.selectedView === 'board') return 'Search actions';
     if (this.selectedView === 'stages') return 'Search stages';
     return 'Search calendar';
@@ -11130,8 +11123,12 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return this.isActionWorkspaceView(this.selectedView) ? this.selectedView : this.lastActionWorkspaceView;
   }
 
+  get isOnboardingAssignedWorkspace(): boolean {
+    return this.frontDoorMode === 'assigned' && this.onboardingAssignmentFlow && this.pmoAssignmentReady && !this.onboardingPm101Locked && !this.onboardingProjectSetup && this.selectedPage === 'workspace';
+  }
+
   get isPm101OnboardingWorkspaceFlow(): boolean {
-    return this.frontDoorMode === 'assigned' && this.pmoAssignmentReady && !this.onboardingPm101Locked && this.selectedPage === 'workspace' && this.selectedProject === 'all';
+    return this.isOnboardingAssignedWorkspace && this.selectedProject === 'all';
   }
 
   get isNormalPm101Workspace(): boolean {
@@ -11140,6 +11137,26 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   get isSelectedProjectPm101Workspace(): boolean {
     return this.frontDoorMode === 'assigned' && !this.onboardingPm101Locked && this.selectedPage === 'workspace' && this.selectedView === 'pm101' && !this.isAllProjects;
+  }
+
+  get isSelectedProjectOperationalWorkspace(): boolean {
+    return this.isSelectedProjectPm101Workspace && !this.onboardingAssignmentFlow && !this.onboardingProjectSetup;
+  }
+
+  get isOnboardingAssignedProjectWorkspace(): boolean {
+    return this.isOnboardingAssignedWorkspace && this.selectedView === 'pm101' && !this.isAllProjects;
+  }
+
+  get showSelectedProjectOverviewQuickLinks(): boolean {
+    return this.isSelectedProjectOperationalWorkspace || this.isOnboardingAssignedProjectWorkspace;
+  }
+
+  get showOnboardingAssignedRightRail(): boolean {
+    return this.isPm101OnboardingWorkspaceFlow || this.isOnboardingAssignedProjectWorkspace;
+  }
+
+  get showPortfolioReportTrends(): boolean {
+    return this.isAllProjects || this.isSelectedProjectOperationalWorkspace;
   }
 
   get isSelectedProjectWorkspaceShell(): boolean {
@@ -11158,6 +11175,24 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return this.onboardingPm101Locked || this.isPm101WelcomeWorkspace || this.isSelectedProjectWorkspaceShell;
   }
 
+  get showWorkspaceProjectSwitch(): boolean {
+    return this.frontDoorMode !== 'unassigned' && this.usesPm101OperationalLayout && this.workspaceHeaderProjectOptions.length > 0;
+  }
+
+  get workspaceHeaderProject(): string {
+    if (this.onboardingPm101Locked) return 'all';
+    if (this.isOnboardingAssignedWorkspace) return firstAssignedProject.id;
+    if (this.onboardingProjectSetup) return firstAssignedProject.id;
+    return this.selectedProject;
+  }
+
+  get workspaceHeaderProjectOptions(): readonly ProjectOption[] {
+    if (this.onboardingPm101Locked) return this.projectOptions.filter((project) => project.id === 'all');
+    if (this.isOnboardingAssignedWorkspace) return this.projectOptions.filter((project) => project.id === firstAssignedProject.id);
+    if (this.onboardingProjectSetup) return this.projectOptions.filter((project) => project.id === firstAssignedProject.id);
+    return this.projectOptions;
+  }
+
   get selectedPm101ProjectPreview(): Pm101ProjectPreview | null {
     return pm101ProjectPreviews.find((project) => project.id === this.selectedProject || project.routeProjectId === this.selectedProject) || null;
   }
@@ -11174,6 +11209,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   get selectedPm101ProjectTitle(): string {
     return this.scopedProjectName;
+  }
+
+  get selectedProjectOperationalQuickLinks(): QuickAction[] {
+    return this.actionsFromIds(selectedProjectOperationalQuickLinkIds);
   }
 
   get isWorkspaceCardMode(): boolean {
@@ -11418,8 +11457,8 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get visibleReportRows(): typeof reportStatusHistory {
-    const rows = reportStatusHistory.filter((report) => this.isAllProjects || report.project === this.selectedProject);
-    if (!this.isAllProjects) return rows;
+    const rows = this.showPortfolioReportTrends ? reportStatusHistory : reportStatusHistory.filter((report) => report.project === this.selectedProject);
+    if (!this.showPortfolioReportTrends) return rows;
     const order = [firstAssignedProject.id, 'Vision 2030', 'NEOM Integration'];
     return order.map((project) => rows.find((row) => row.project === project)).filter((row): row is (typeof reportStatusHistory)[number] => Boolean(row));
   }
@@ -11955,7 +11994,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.frontDoorMode = 'assigned';
     this.pmoAssignmentReady = true;
     this.onboardingPm101Locked = false;
-    this.selectedProject = 'all';
+    this.selectedProject = firstAssignedProject.id;
     this.selectedPage = 'workspace';
     this.selectedView = 'pm101';
     this.selectedBoardFilter = 'all';
@@ -12493,6 +12532,14 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.iconsHydrated = false;
   }
 
+  selectWorkspaceProject(event: Event): void {
+    const value = (event.target as HTMLSelectElement | null)?.value || this.workspaceHeaderProject;
+    const nextProject = this.onboardingPm101Locked ? 'all' : this.isOnboardingAssignedWorkspace || this.onboardingProjectSetup ? firstAssignedProject.id : value;
+    if (this.selectedProject === nextProject) return;
+    this.selectedProject = nextProject;
+    this.emitState();
+  }
+
   setProjectPlanEntry(entry: ProjectPlanEntry): void {
     this.closeProjectPlanDrawers();
     this.closeAiAssist();
@@ -12520,7 +12567,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   handleProjectPlanContentScroll(event: Event): void {
-    if (this.selectedPage !== 'project-plan' || this.projectPlanEntry !== 'quick') return;
+    if (this.selectedPage !== 'project-plan') return;
     const target = event.currentTarget;
     if (!(target instanceof HTMLElement)) return;
 
@@ -12542,11 +12589,12 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   handleProjectPlanContentWheel(event: WheelEvent): void {
-    if (this.selectedPage !== 'project-plan' || this.projectPlanEntry !== 'quick') return;
+    if (this.selectedPage !== 'project-plan') return;
     const target = event.currentTarget;
     if (!(target instanceof HTMLElement)) return;
 
-    if (event.deltaY > 4 && target.scrollTop > 4) {
+    const shouldCondense = this.projectPlanEntry === 'quick' ? target.scrollTop > 4 : true;
+    if (event.deltaY > 4 && shouldCondense) {
       this.setProjectPlanHeaderCondensed(true);
     } else if (event.deltaY < -4) {
       this.setProjectPlanHeaderCondensed(false);
@@ -15654,6 +15702,27 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return this.monthItems.filter((item) => this.timelineItemKind(item) === filter.id).length;
   }
 
+  operationalQuickLinkTitle(action: QuickAction): string {
+    if (action.id === 'change-request' || action.id === 'project-closure') return 'Project plan';
+    return action.title;
+  }
+
+  operationalQuickLinkDescription(action: QuickAction): string {
+    const descriptions: Record<string, string> = {
+      'project-plan': 'You’ll receive a PMO assignment notification.',
+      'stage-gate': 'You’ll receive a PMO assignment notification.',
+      dependencies: 'You’ll receive a PMO assignment notification.',
+      resources: 'You’ll receive a PMO assignment notification.',
+      issues: 'You’ll receive a PMO assignment notification.',
+      wbs: 'You’ll receive a PMO assignment notification.',
+      'change-request': 'Change request',
+      'end-products': 'You’ll receive a PMO assignment notification.',
+      risks: 'You’ll receive a PMO assignment notification.',
+      'project-closure': 'Project closure',
+    };
+    return descriptions[action.id] || 'You’ll receive a PMO assignment notification.';
+  }
+
   shiftQuickLinksPage(delta: number): void {
     this.quickLinksPage = Math.min(Math.max(this.quickLinksPageIndex + delta, 0), this.quickLinksTotalPages - 1);
     this.iconsHydrated = false;
@@ -16856,12 +16925,12 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     });
   }
 
-  private isOnboardingPm101BlockedView(view: WorkspaceView | undefined): boolean {
-    return Boolean(this.onboardingPm101Locked && (view === 'board' || view === 'calendar' || view === 'stages'));
+  private isOnboardingPm101BlockedView(_view: WorkspaceView | undefined): boolean {
+    return false;
   }
 
   private isActionWorkspaceView(view: WorkspaceView): view is ActionWorkspaceView {
-    return view === 'board' || view === 'calendar';
+    return view === 'board' || view === 'calendar' || view === 'stages';
   }
 
   private matchesSelectedProject(projectId: string | undefined): boolean {

@@ -12,3 +12,8 @@ export interface PmConsoleMountOptions {
   notificationPanelOpen?: boolean;
   pmoAssignmentReady?: boolean;
 }
+
+export interface ProjectOption {
+  id: string;
+  name: string;
+}

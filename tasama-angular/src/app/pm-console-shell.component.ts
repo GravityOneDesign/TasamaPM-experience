@@ -1,15 +1,9 @@
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { PmConsoleContentComponent } from './pm-console-content.component';
 import { PmConsoleIconService } from './pm-console-icon.service';
-import { PmConsoleMountOptions } from './pm-console.types';
+import { PmConsoleMountOptions, ProjectOption } from './pm-console.types';
 import { PmConsoleNotificationsComponent } from './pm-console-notifications.component';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
-
-interface ProjectOption {
-  id: string;
-  name: string;
-}
 
 interface RailItem {
   icon: string;
@@ -25,7 +19,7 @@ const ONBOARDING_PM101_PROJECT_ID = 'all';
 @Component({
   selector: 'app-pm-console-shell',
   standalone: true,
-  imports: [FormsModule, PmConsoleContentComponent, PmConsoleIconComponent, PmConsoleNotificationsComponent],
+  imports: [PmConsoleContentComponent, PmConsoleIconComponent, PmConsoleNotificationsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="modern-shell" [class.playground-mode]="selectedPage === 'playground'" [class.wbs-mode]="selectedPage === 'wbs'" [class.project-plan-mode]="selectedPage === 'project-plan'" [class.unassigned-mode]="frontDoorMode === 'unassigned'">
@@ -53,18 +47,6 @@ const ONBOARDING_PM101_PROJECT_ID = 'all';
                 {{ pmoAssignmentReady ? 'Project assigned' : 'No assigned projects' }}
               </span>
             </div>
-          } @else {
-            <label class="project-switch" data-tour-target="project-switch">
-              <span class="project-switch-label">Viewing</span>
-              <span class="project-select-wrap">
-                <select [ngModel]="headerProject" aria-label="Select project" (ngModelChange)="selectProject($event)">
-                  @for (project of visibleProjects; track project.id) {
-                    <option [value]="project.id">{{ project.name }}</option>
-                  }
-                </select>
-                <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
-              </span>
-            </label>
           }
         </div>
 
@@ -113,6 +95,7 @@ const ONBOARDING_PM101_PROJECT_ID = 'all';
       </aside>
 
       <app-pm-console-content
+        [projectOptions]="projects"
         [selectedProject]="selectedProject"
         [selectedPage]="selectedPage"
         [selectedView]="selectedView"
@@ -179,19 +162,6 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     return this.frontDoorMode !== 'unassigned' && (this.selectedPage === 'workspace' || this.selectedPage === 'workspaces');
   }
 
-  get headerProject(): string {
-    if (this.onboardingPm101Locked) return 'all';
-    return this.selectedPage === 'playground' && this.selectedProject === 'all' ? 'Vision 2030' : this.selectedProject;
-  }
-
-  get visibleProjects(): ProjectOption[] {
-    if (this.onboardingPm101Locked) return this.projects.filter((project) => project.id === 'all');
-    if (this.onboardingProjectSetup) {
-      return this.projects.filter((project) => project.id === 'UAE Research Map');
-    }
-    return this.isProjectScopedPage ? this.projects.filter((project) => project.id !== 'all') : this.projects;
-  }
-
   ngOnInit(): void {
     this.selectedProject = this.initialState.projectId || 'all';
     this.selectedPage = (this.initialState.selectedPage as ConsolePage) || 'workspace';
@@ -213,15 +183,6 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     if (this.iconsHydrated) return;
     this.iconsService.refresh();
     this.iconsHydrated = true;
-  }
-
-  selectProject(value: string): void {
-    if (this.onboardingProjectSetup) {
-      this.selectedProject = 'UAE Research Map';
-    } else {
-      this.selectedProject = this.onboardingPm101Locked ? ONBOARDING_PM101_PROJECT_ID : value;
-    }
-    this.markShellChanged();
   }
 
   setPage(page: ConsolePage): void {

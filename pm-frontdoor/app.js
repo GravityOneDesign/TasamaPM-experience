@@ -3508,22 +3508,8 @@ function PortfolioStagesOverview(profiles) {
 function StagesView(selectedProject, selectedView) {
   const profiles = stageProfilesForSelection(selectedProject);
   const isPortfolio = isAllProjects(selectedProject);
-  const currentSummary = isPortfolio
-    ? `${profiles.length} assigned projects shown`
-    : `${projectName(selectedProject)} stage breakdown`;
   return `
     <div class="stages-view ${selectedView === "stages" ? "" : "is-hidden"}" data-work-view="stages">
-      <div class="view-toolbar">
-        <div>
-          <strong>${isPortfolio ? "All assigned project stages" : `${projectName(selectedProject)} stages`}</strong>
-          <span>${currentSummary}. ${isPortfolio ? "Review current stage readiness without the full gate matrix." : "Open a stage gate to review the checklist and submit readiness."}</span>
-        </div>
-        <div class="stage-legend ${isPortfolio ? "is-hidden" : ""}" aria-label="Stage legend">
-          <span><i class="complete"></i> Complete</span>
-          <span><i class="current"></i> Current</span>
-          <span><i class="upcoming"></i> Upcoming</span>
-        </div>
-      </div>
       ${isPortfolio ? PortfolioStagesOverview(profiles) : `<div class="stage-work" style="--stage-count:${stageDefinitions.length}">
         <div class="stage-header">
           <span>${isPortfolio ? "Project" : "Project"}</span>
@@ -5663,8 +5649,7 @@ function ProjectPlanPage(selectedProject, entryPoint = "quick") {
                           <div class="overview-table-row" role="row">
                             <span>${escapeHtml(outcome)}</span>
                             <span class="overview-row-actions">
-                              <button type="button" aria-label="Edit outcome">${icon("edit")}</button>
-                              <button type="button" aria-label="Delete outcome">${icon("trash")}</button>
+                              <button class="overview-row-action-trigger" type="button" aria-label="Actions for outcome">${icon("moreVertical")}</button>
                             </span>
                           </div>
                         `
@@ -5691,7 +5676,7 @@ function ProjectPlanPage(selectedProject, entryPoint = "quick") {
                           <div class="overview-table-row ${objective.warning ? "warning" : ""}" role="row">
                             <span>${objective.warning ? icon("alert") : ""}${escapeHtml(objective.text)}</span>
                             <span class="overview-row-actions">
-                              <button type="button" aria-label="Delete strategic objective">${icon("trash")}</button>
+                              <button class="overview-row-action-trigger" type="button" aria-label="Actions for strategic objective">${icon("moreVertical")}</button>
                             </span>
                           </div>
                         `
@@ -5711,8 +5696,7 @@ function ProjectPlanPage(selectedProject, entryPoint = "quick") {
                           <div class="overview-table-row" role="row">
                             <span>${escapeHtml(objective)}</span>
                             <span class="overview-row-actions">
-                              <button type="button" aria-label="Edit project objective">${icon("edit")}</button>
-                              <button type="button" aria-label="Delete project objective">${icon("trash")}</button>
+                              <button class="overview-row-action-trigger" type="button" aria-label="Actions for project objective">${icon("moreVertical")}</button>
                             </span>
                           </div>
                         `
@@ -5745,7 +5729,7 @@ function ProjectPlanPage(selectedProject, entryPoint = "quick") {
                           <div class="overview-table-row" role="row">
                             <span>${escapeHtml(capability)}</span>
                             <span class="overview-row-actions">
-                              <button type="button" aria-label="Delete capability">${icon("trash")}</button>
+                              <button class="overview-row-action-trigger" type="button" aria-label="Actions for capability">${icon("moreVertical")}</button>
                             </span>
                           </div>
                         `
@@ -5779,8 +5763,7 @@ function ProjectPlanPage(selectedProject, entryPoint = "quick") {
                             <span>${escapeHtml(service.phase)}</span>
                             <span>${escapeHtml(service.service)}</span>
                             <span class="overview-row-actions">
-                              <button type="button" aria-label="Edit service">${icon("edit")}</button>
-                              <button type="button" aria-label="Delete service">${icon("trash")}</button>
+                              <button class="overview-row-action-trigger" type="button" aria-label="Actions for service">${icon("moreVertical")}</button>
                             </span>
                           </div>
                         `

@@ -13271,23 +13271,27 @@ b {
 
 .overview-row-actions button {
   align-items: center;
-  border-radius: 6px;
+  background: #ffffff;
+  border: 1px solid #dfe7f2;
+  border-radius: 999px;
   color: #4056c8;
   display: inline-flex;
-  height: 26px;
+  height: 32px;
   justify-content: center;
-  width: 26px;
+  width: 32px;
 }
 
 .overview-row-actions button:hover,
 .overview-row-actions button:focus-visible {
-  background: var(--brand-soft);
+  background: #f7f7ff;
+  border-color: rgba(16, 6, 159, 0.28);
+  color: #10069f;
   outline: 0;
 }
 
 .overview-row-actions .icon {
-  height: 15px;
-  width: 15px;
+  height: 16px;
+  width: 16px;
 }
 
 .overview-table-caption {
