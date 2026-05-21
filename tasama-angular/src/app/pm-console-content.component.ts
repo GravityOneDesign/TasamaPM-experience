@@ -8071,6 +8071,27 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                     </div>
                                   </article>
 
+                                  <aside class="closure-readiness-panel" aria-label="Closure readiness checklist">
+                                    <div class="closure-readiness-summary">
+                                      <div class="closure-readiness-head">
+                                        <span>{{ closureReadinessPercent }}%</span>
+                                        <div>
+                                          <strong>Readiness</strong>
+                                          <small>{{ closureReadyItemCount }} of {{ closureChecklistList.length }} checks ready</small>
+                                        </div>
+                                      </div>
+                                      <div class="closure-readiness-track" aria-hidden="true"><span [style.width.%]="closureReadinessPercent"></span></div>
+                                    </div>
+                                    <div class="closure-checklist">
+                                      @for (item of closureChecklistList; track item.label) {
+                                        <article class="{{ item.tone }}">
+                                          <span class="icon" aria-hidden="true"><i [attr.data-lucide]="item.tone === 'green' ? 'check' : item.tone === 'amber' ? 'clock-3' : 'circle-dot'"></i></span>
+                                          <div><strong>{{ item.label }}</strong><small>{{ item.state }}</small></div>
+                                        </article>
+                                      }
+                                    </div>
+                                  </aside>
+
                                   <div class="closure-editor-grid">
                                     @for (block of closureOverviewBlockList; track block.id) {
                                       <article class="closure-editor-card">
@@ -8084,25 +8105,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                     }
                                   </div>
                                 </div>
-
-                                <aside class="closure-readiness-panel" aria-label="Closure readiness checklist">
-                                  <div class="closure-readiness-head">
-                                    <span>{{ closureReadinessPercent }}%</span>
-                                    <div>
-                                      <strong>Readiness</strong>
-                                      <small>{{ closureReadyItemCount }} of {{ closureChecklistList.length }} checks ready</small>
-                                    </div>
-                                  </div>
-                                  <div class="closure-readiness-track" aria-hidden="true"><span [style.width.%]="closureReadinessPercent"></span></div>
-                                  <div class="closure-checklist">
-                                    @for (item of closureChecklistList; track item.label) {
-                                      <article class="{{ item.tone }}">
-                                        <span class="icon" aria-hidden="true"><i [attr.data-lucide]="item.tone === 'green' ? 'check' : item.tone === 'amber' ? 'clock-3' : 'circle-dot'"></i></span>
-                                        <div><strong>{{ item.label }}</strong><small>{{ item.state }}</small></div>
-                                      </article>
-                                    }
-                                  </div>
-                                </aside>
                               </div>
 
                               <div class="closure-two-column">

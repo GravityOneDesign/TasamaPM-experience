@@ -20404,6 +20404,16 @@ b {
   line-height: 16px;
 }
 
+.project-closure-ai-fill {
+  min-height: 32px;
+  padding: 0 12px;
+}
+
+.project-closure-ai-fill .icon {
+  height: 14px;
+  width: 14px;
+}
+
 .project-closure-workspace {
   background: #f7f7fc;
   min-height: 0;
@@ -20453,28 +20463,22 @@ b {
   border-radius: 0;
   box-shadow: none;
   display: grid;
-  gap: 14px;
-  justify-self: stretch;
-  max-width: none;
+  gap: 16px;
+  justify-self: center;
+  max-width: 1000px;
   min-height: 0;
   overflow: auto;
-  padding: 16px;
-  width: 100%;
+  padding: 20px 0 32px;
+  width: min(1000px, calc(100% - 72px));
 }
 
 .project-closure-head {
-  align-items: flex-start;
-  display: flex;
-  gap: 18px;
-  justify-content: space-between;
+  align-items: center;
+  background: transparent;
 }
 
-.project-closure-head h2 {
-  color: #1d252d;
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 26px;
-  margin-top: 6px;
+.project-closure-head .overview-form-title {
+  align-items: center;
 }
 
 .project-closure-head p {
@@ -20518,7 +20522,7 @@ b {
 .project-closure-metric-grid {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .project-closure-metric {
@@ -20599,13 +20603,13 @@ b {
 
 .closure-overview-layout {
   display: grid;
-  gap: 14px;
-  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .closure-overview-main {
   display: grid;
-  gap: 14px;
+  gap: 16px;
   min-width: 0;
 }
 
@@ -20689,7 +20693,7 @@ b {
 
 .closure-editor-grid {
   display: grid;
-  gap: 14px;
+  gap: 12px;
   grid-template-columns: minmax(0, 1fr);
 }
 
@@ -20698,7 +20702,7 @@ b {
   border: 1px solid #e3e5e9;
   border-radius: 8px;
   display: grid;
-  min-height: 230px;
+  min-height: 196px;
   overflow: hidden;
 }
 
@@ -20772,8 +20776,16 @@ b {
 .closure-readiness-panel {
   align-content: start;
   display: grid;
-  gap: 14px;
+  gap: 16px;
+  grid-template-columns: minmax(220px, 0.55fr) minmax(0, 1.45fr);
   padding: 16px;
+}
+
+.closure-readiness-summary {
+  align-content: center;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
 }
 
 .closure-readiness-head {
@@ -20829,6 +20841,7 @@ b {
 .closure-checklist {
   display: grid;
   gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .closure-checklist article {
@@ -28005,6 +28018,11 @@ b {
   .change-impact-register-card,
   .change-impact-entry-card,
   .budget-detail-card,
+  .closure-form-card,
+  .closure-readiness-panel,
+  .closure-editor-card,
+  .closure-comment-card,
+  .closure-section-intro,
   .matrix-field-group,
   .matrix-hidden-field-cluster,
   .matrix-show-fields,
@@ -28024,6 +28042,11 @@ b {
   .change-impact-register-card,
   .change-impact-entry-card,
   .budget-detail-card,
+  .closure-form-card,
+  .closure-readiness-panel,
+  .closure-editor-card,
+  .closure-comment-card,
+  .closure-section-intro,
   .matrix-field-group,
   .matrix-hidden-field-cluster,
   .matrix-show-fields,
@@ -28050,7 +28073,7 @@ b {
   z-index: 8;
 }
 
-.project-plan-matrix-card.ai-section-generating :is(input, textarea, select, .matrix-boolean label, .dependency-register-table tbody tr, .matrix-register-row:not(.head), .change-impact-strategy-pill, .budget-tab-panel) {
+.project-plan-matrix-card.ai-section-generating :is(input, textarea, select, .matrix-boolean label, .dependency-register-table tbody tr, .matrix-register-row:not(.head), .change-impact-strategy-pill, .budget-tab-panel, .closure-checklist article) {
   animation: aiSectionControlPulse 1.25s ease-in-out infinite alternate;
 }
 
@@ -28061,6 +28084,11 @@ b {
   .change-impact-register-card,
   .change-impact-entry-card,
   .budget-detail-card,
+  .closure-form-card,
+  .closure-readiness-panel,
+  .closure-editor-card,
+  .closure-comment-card,
+  .closure-section-intro,
   .matrix-field-group,
   app-pm-console-plan-table,
   app-pm-console-plan-empty-state,
@@ -28097,7 +28125,19 @@ b {
   animation-delay: 310ms;
 }
 
-.project-plan-matrix-card.ai-section-writing :is(input, textarea, select, .dependency-register-table tbody tr, .matrix-register-row:not(.head), .change-impact-entry-card, .change-impact-entry-comment, .budget-table tbody tr, .matrix-field) {
+.project-plan-matrix-card.ai-section-writing .closure-editor-grid > *:nth-child(2) {
+  animation-delay: 70ms;
+}
+
+.project-plan-matrix-card.ai-section-writing .closure-editor-grid > *:nth-child(3) {
+  animation-delay: 150ms;
+}
+
+.project-plan-matrix-card.ai-section-writing .closure-editor-grid > *:nth-child(4) {
+  animation-delay: 230ms;
+}
+
+.project-plan-matrix-card.ai-section-writing :is(input, textarea, select, .dependency-register-table tbody tr, .matrix-register-row:not(.head), .change-impact-entry-card, .change-impact-entry-comment, .budget-table tbody tr, .matrix-field, .closure-checklist article) {
   animation: aiSectionTextWrite 980ms steps(22, end) both;
 }
 
@@ -29332,11 +29372,13 @@ b {
 
   .project-closure-metric-grid,
   .closure-overview-layout,
+  .closure-readiness-panel,
   .closure-two-column {
     grid-template-columns: minmax(0, 1fr);
   }
 
   .closure-overview-fields,
+  .closure-checklist,
   .closure-budget-summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -30919,6 +30961,8 @@ b {
 
   .project-closure-nav-list,
   .project-closure-metric-grid,
+  .closure-readiness-panel,
+  .closure-checklist,
   .closure-overview-fields,
   .closure-editor-grid,
   .closure-budget-summary-grid {
