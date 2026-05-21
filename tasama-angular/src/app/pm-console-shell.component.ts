@@ -1,5 +1,6 @@
-import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, Input, OnInit } from '@angular/core';
 import { PmConsoleContentComponent } from './pm-console-content.component';
+import { PortfolioManagerLandingComponent } from './portfolio-manager-landing.component';
 import { PmConsoleIconService } from './pm-console-icon.service';
 import { PmConsoleMountOptions, ProjectOption } from './pm-console.types';
 import { PmConsoleNotificationsComponent } from './pm-console-notifications.component';
@@ -21,7 +22,7 @@ const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
 @Component({
   selector: 'app-pm-console-shell',
   standalone: true,
-  imports: [PmConsoleAgentDockComponent, PmConsoleContentComponent, PmConsoleIconComponent, PmConsoleNotificationsComponent, PmConsoleSideNavComponent],
+  imports: [PmConsoleAgentDockComponent, PmConsoleContentComponent, PortfolioManagerLandingComponent, PmConsoleIconComponent, PmConsoleNotificationsComponent, PmConsoleSideNavComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="modern-shell" [class.side-nav-expanded]="sideNavExpanded" [class.playground-mode]="selectedPage === 'playground'" [class.wbs-mode]="selectedPage === 'wbs'" [class.project-plan-mode]="selectedPage === 'project-plan'" [class.unassigned-mode]="frontDoorMode === 'unassigned'">
@@ -38,7 +39,7 @@ const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
 
           @if (usesConsoleHeader) {
             <span class="brand-divider" aria-hidden="true"></span>
-            <span class="brand-title">PM Console</span>
+            <span class="brand-title">{{ currentUser === 'fatima' ? 'Portfolio Manager Console' : 'PM Console' }}</span>
           }
 
           @if (frontDoorMode === 'unassigned') {
@@ -63,10 +64,31 @@ const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
             <span pmConsoleIcon="bell" aria-hidden="true"></span>
             <span class="notification-badge" aria-hidden="true"></span>
           </button>
-          <button class="profile-chip" type="button">
-            <span class="avatar-xl">MH<i></i></span>
-            <span><strong>Muna Hassan</strong><small>Senior Analyst</small></span>
-          </button>
+          
+          <div class="profile-chip-container" style="position: relative; display: inline-block;">
+            <button class="profile-chip" type="button" (click)="toggleProfileMenu()">
+              @if (currentUser === 'muna') {
+                <span class="avatar-xl">MH<i></i></span>
+                <span><strong>Muna Hassan</strong><small>Senior Analyst</small></span>
+              } @else {
+                <span class="avatar-xl" style="background: #e0f2fe; color: #0369a1;">FQ<i></i></span>
+                <span><strong>Fatima Qahtani</strong><small>Portfolio Manager</small></span>
+              }
+            </button>
+            
+            @if (isProfileMenuOpen) {
+              <div class="profile-dropdown-menu" style="position: absolute; right: 0; top: 100%; margin-top: 8px; background: white; border: 1px solid #edf0f6; border-radius: 10px; box-shadow: 0 10px 25px rgba(25, 33, 61, 0.12); width: 240px; z-index: 100; padding: 6px; display: flex; flex-direction: column; gap: 4px;">
+                <button type="button" class="profile-menu-item" (click)="switchUser('muna')" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; background: transparent; border: 0; text-align: left; width: 100%; cursor: pointer;" [style.background]="currentUser === 'muna' ? '#f0f4ff' : 'transparent'">
+                  <span class="avatar-xl" style="width: 32px; height: 32px; font-size: 11px; flex-shrink: 0;">MH</span>
+                  <span style="display: flex; flex-direction: column;"><strong style="font-size: 12px; color: #202633; font-weight: 600; line-height: 1.2;">Muna Hassan</strong><small style="font-size: 10px; color: #7a8394;">Senior Analyst</small></span>
+                </button>
+                <button type="button" class="profile-menu-item" (click)="switchUser('fatima')" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; background: transparent; border: 0; text-align: left; width: 100%; cursor: pointer;" [style.background]="currentUser === 'fatima' ? '#f0f4ff' : 'transparent'">
+                  <span class="avatar-xl" style="width: 32px; height: 32px; font-size: 11px; flex-shrink: 0; background: #e0f2fe; color: #0369a1;">FQ</span>
+                  <span style="display: flex; flex-direction: column;"><strong style="font-size: 12px; color: #202633; font-weight: 600; line-height: 1.2;">Fatima Qahtani</strong><small style="font-size: 10px; color: #7a8394;">Portfolio Manager</small></span>
+                </button>
+              </div>
+            }
+          </div>
         </div>
       </header>
 
@@ -79,20 +101,37 @@ const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
         (itemSelected)="onRailItemClick($event)"
       />
 
-      <app-pm-console-content
-        [projectOptions]="projects"
-        [selectedProject]="selectedProject"
-        [selectedPage]="selectedPage"
-        [selectedView]="selectedView"
-        [frontDoorMode]="frontDoorMode"
-        [pmoAssignmentReady]="pmoAssignmentReady"
-        [guidedTourActive]="guidedTourActive"
-        [guidedTourExitMode]="guidedTourExitMode"
-        [onboardingAssignmentFlow]="onboardingAssignmentFlow"
-        [onboardingPm101Locked]="onboardingPm101Locked"
-        [onboardingProjectSetup]="onboardingProjectSetup"
-        (consoleStateChange)="applyContentState($event)"
-      />
+      @if (currentUser === 'muna') {
+        <app-pm-console-content
+          [projectOptions]="projects"
+          [selectedProject]="selectedProject"
+          [selectedPage]="selectedPage"
+          [selectedView]="selectedView"
+          [frontDoorMode]="frontDoorMode"
+          [pmoAssignmentReady]="pmoAssignmentReady"
+          [guidedTourActive]="guidedTourActive"
+          [guidedTourExitMode]="guidedTourExitMode"
+          [onboardingAssignmentFlow]="onboardingAssignmentFlow"
+          [onboardingPm101Locked]="onboardingPm101Locked"
+          [onboardingProjectSetup]="onboardingProjectSetup"
+          (consoleStateChange)="applyContentState($event)"
+        />
+      } @else {
+        <app-portfolio-manager-landing
+          [projectOptions]="projects"
+          [selectedProject]="selectedProject"
+          [selectedPage]="selectedPage"
+          [selectedView]="selectedView"
+          [frontDoorMode]="frontDoorMode"
+          [pmoAssignmentReady]="pmoAssignmentReady"
+          [guidedTourActive]="guidedTourActive"
+          [guidedTourExitMode]="guidedTourExitMode"
+          [onboardingAssignmentFlow]="onboardingAssignmentFlow"
+          [onboardingPm101Locked]="onboardingPm101Locked"
+          [onboardingProjectSetup]="onboardingProjectSetup"
+          (consoleStateChange)="applyContentState($event)"
+        />
+      }
       <app-pm-console-notifications [open]="notificationPanelOpen" (closePanel)="closeNotifications()" />
       <app-pm-console-agent-dock />
     </div>
@@ -143,12 +182,36 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   onboardingPm101Locked = false;
   onboardingProjectSetup = false;
   sideNavExpanded = false;
+  currentUser: 'muna' | 'fatima' = 'muna';
+  isProfileMenuOpen = false;
   private iconsHydrated = false;
 
   constructor(
     private readonly changeDetector: ChangeDetectorRef,
     private readonly iconsService: PmConsoleIconService,
   ) {}
+
+  toggleProfileMenu(): void {
+    this.isProfileMenuOpen = !this.isProfileMenuOpen;
+    this.markShellChanged();
+  }
+
+  switchUser(user: 'muna' | 'fatima'): void {
+    this.currentUser = user;
+    this.isProfileMenuOpen = false;
+    this.markShellChanged();
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (this.isProfileMenuOpen) {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.profile-chip-container')) {
+        this.isProfileMenuOpen = false;
+        this.markShellChanged();
+      }
+    }
+  }
 
   get isProjectScopedPage(): boolean {
     return this.selectedPage === 'playground' || this.selectedPage === 'wbs' || this.selectedPage === 'project-plan';
@@ -161,6 +224,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   get primaryRailItems(): readonly RailItem[] {
     return this.topRailItems.map((item) => ({
       ...item,
+      label: item.id === 'register' && this.currentUser === 'fatima' ? 'Portfolio Workspace' : item.label,
       disabled: this.isRailItemDisabled(item),
       disabledTitle: this.railItemDisabledTitle(item),
     }));
