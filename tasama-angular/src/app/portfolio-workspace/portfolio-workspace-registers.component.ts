@@ -22,7 +22,7 @@ type SubTab = 'projects' | 'risks' | 'benefits';
     <div class="workspace-registers-tab">
       
       <!-- Sub-tab bar -->
-      <div class="sub-tabs pm-register-tabs">
+      <div class="sub-tabs">
         <button
           class="pm-register-tab"
           [class.is-active]="activeSubTab === 'projects'"
@@ -102,17 +102,30 @@ type SubTab = 'projects' | 'risks' | 'benefits';
             <div class="register-toolbar">
               <div class="toolbar-left">
                 <span class="items-count">{{ totalRowsCount }} items found</span>
-                <label class="search-box">
-                  <span pmConsoleIcon="search" aria-hidden="true"></span>
-                  <input type="search" placeholder="Search Programs..." [(ngModel)]="searchQuery" (input)="onSearch()" />
-                </label>
               </div>
               <div class="toolbar-right">
+                <!-- Toggleable Search -->
+                <div class="search-toggle-container" [class.is-expanded]="showSearch">
+                  <button class="tb-btn search-toggle-btn" type="button" (click)="showSearch = !showSearch" aria-label="Toggle search">
+                    <span [pmConsoleIcon]="'search'"></span>
+                  </button>
+                  @if (showSearch) {
+                    <input
+                      type="search"
+                      class="toolbar-search-input"
+                      placeholder="Search Programs..."
+                      [(ngModel)]="searchQuery"
+                      (input)="onSearch()"
+                      autofocus
+                    />
+                  }
+                </div>
+
                 <button class="tb-btn" type="button" aria-label="Filter options">
                   <span [pmConsoleIcon]="'filter'"></span>
                   <span>Filter</span>
                 </button>
-                <button class="tb-btn primary-tb" type="button" aria-label="Export PDF">
+                <button class="tb-btn" type="button" aria-label="Export PDF">
                   <span [pmConsoleIcon]="'download-cloud'"></span>
                   <span>Export PDF</span>
                 </button>
@@ -124,7 +137,6 @@ type SubTab = 'projects' | 'risks' | 'benefits';
               <table class="pm-project-table">
                 <thead>
                   <tr>
-                    <th style="width: 40px"><input type="checkbox" aria-label="Select all rows" /></th>
                     <th style="width: 38%">Program / Project Name</th>
                     <th style="width: 12%">Stage</th>
                     <th style="width: 15%">Status Trend</th>
@@ -137,7 +149,6 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                   @for (prog of filteredPrograms; track prog.id) {
                     <!-- Program Row -->
                     <tr class="program-row" [class.is-expanded]="isExpanded(prog.id)">
-                      <td><input type="checkbox" aria-label="Select program" /></td>
                       <td class="primary-col">
                         <div class="name-cell-wrapper">
                           <button
@@ -148,17 +159,29 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                           >
                             <span [pmConsoleIcon]="isExpanded(prog.id) ? 'chevron-down' : 'chevron-right'" class="chevron-icon"></span>
                           </button>
-                          <div class="title-meta">
-                            <strong>{{ prog.name }}</strong>
-                            <span class="badge-tag program-tag">Program</span>
+                          <div class="program-title-column">
+                            <span class="program-display-id">{{ getProgramDisplayId(prog.id) }}</span>
+                            <div class="title-meta">
+                              <strong class="program-name-blue">{{ prog.name }}</strong>
+                              <span class="badge-tag program-tag">Program</span>
+                            </div>
                           </div>
                         </div>
                       </td>
                       <td><span class="stage-span">{{ prog.stage }}</span></td>
                       <td>
-                        <div class="trend-wrapper">
-                          <span [pmConsoleIcon]="trendIcon(prog.trend)" class="trend-icon" [class]="prog.trend"></span>
-                          <span [pmConsoleStatusPill]="prog.status" baseClass="dependency-register-pill" [tone]="statusTone(prog.status)"></span>
+                        <div class="trend-circle-wrapper">
+                          @for (trendItem of getThreePeriodTrend(prog.id); track $index) {
+                            <div class="trend-circle" [class]="trendItem">
+                              @if (trendItem === 'check') {
+                                <span [pmConsoleIcon]="'check'"></span>
+                              } @else if (trendItem === 'bell') {
+                                <span [pmConsoleIcon]="'bell'"></span>
+                              } @else {
+                                <span [pmConsoleIcon]="'x'"></span>
+                              }
+                            </div>
+                          }
                         </div>
                       </td>
                       <td>
@@ -175,21 +198,32 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                     @if (isExpanded(prog.id) && prog.projects) {
                       @for (proj of prog.projects; track proj.id) {
                         <tr class="project-child-row animation-slide">
-                          <td></td>
                           <td class="primary-col indented-col">
                             <div class="name-cell-wrapper">
                               <span [pmConsoleIcon]="'corner-down-right'" class="corner-arrow"></span>
-                              <div class="title-meta">
-                                <span class="project-name-span">{{ proj.name }}</span>
-                                <span class="badge-tag project-tag">Project</span>
+                              <div class="program-title-column">
+                                <span class="program-display-id">{{ getProgramDisplayId(proj.id) }}</span>
+                                <div class="title-meta">
+                                  <strong class="program-name-blue">{{ proj.name }}</strong>
+                                  <span class="badge-tag project-tag">Project</span>
+                                </div>
                               </div>
                             </div>
                           </td>
                           <td><span class="stage-span">{{ proj.stage }}</span></td>
                           <td>
-                            <div class="trend-wrapper">
-                              <span [pmConsoleIcon]="trendIcon(proj.trend)" class="trend-icon" [class]="proj.trend"></span>
-                              <span [pmConsoleStatusPill]="proj.status" baseClass="dependency-register-pill" [tone]="statusTone(proj.status)"></span>
+                            <div class="trend-circle-wrapper">
+                              @for (trendItem of getThreePeriodTrend(proj.id); track $index) {
+                                <div class="trend-circle" [class]="trendItem">
+                                  @if (trendItem === 'check') {
+                                    <span [pmConsoleIcon]="'check'"></span>
+                                  } @else if (trendItem === 'bell') {
+                                    <span [pmConsoleIcon]="'bell'"></span>
+                                  } @else {
+                                    <span [pmConsoleIcon]="'x'"></span>
+                                  }
+                                </div>
+                              }
                             </div>
                           </td>
                           <td>
@@ -208,20 +242,31 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                   <!-- Standalone Projects -->
                   @for (sa of standaloneList; track sa.id) {
                     <tr class="program-row standalone-row">
-                      <td><input type="checkbox" aria-label="Select standalone project" /></td>
                       <td class="primary-col">
                         <div class="name-cell-wrapper no-chevron">
-                          <div class="title-meta">
-                            <strong>{{ sa.name }}</strong>
-                            <span class="badge-tag standalone-tag">Standalone</span>
+                          <div class="program-title-column">
+                            <span class="program-display-id">{{ getProgramDisplayId(sa.id) }}</span>
+                            <div class="title-meta">
+                              <strong class="program-name-blue">{{ sa.name }}</strong>
+                              <span class="badge-tag standalone-tag">Standalone</span>
+                            </div>
                           </div>
                         </div>
                       </td>
                       <td><span class="stage-span">{{ sa.stage }}</span></td>
                       <td>
-                        <div class="trend-wrapper">
-                          <span [pmConsoleIcon]="trendIcon(sa.trend)" class="trend-icon" [class]="sa.trend"></span>
-                          <span [pmConsoleStatusPill]="sa.status" baseClass="dependency-register-pill" [tone]="statusTone(sa.status)"></span>
+                        <div class="trend-circle-wrapper">
+                          @for (trendItem of getThreePeriodTrend(sa.id); track $index) {
+                            <div class="trend-circle" [class]="trendItem">
+                              @if (trendItem === 'check') {
+                                <span [pmConsoleIcon]="'check'"></span>
+                              } @else if (trendItem === 'bell') {
+                                <span [pmConsoleIcon]="'bell'"></span>
+                              } @else {
+                                <span [pmConsoleIcon]="'x'"></span>
+                              }
+                            </div>
+                          }
                         </div>
                       </td>
                       <td>
@@ -349,13 +394,16 @@ type SubTab = 'projects' | 'risks' | 'benefits';
     }
 
     /* Sub-tabs styling */
-    .sub-tabs.pm-register-tabs {
+    .sub-tabs {
+      position: sticky;
+      top: -10px;
+      z-index: 12;
+      background: #ffffff;
       border-bottom: 1px solid #edf0f6;
-      padding-bottom: 0px;
-      margin-bottom: 4px;
+      padding-bottom: 4px;
+      margin-bottom: 18px;
       display: flex;
       gap: 24px;
-      background: transparent;
     }
 
     .sub-tabs .pm-register-tab {
@@ -398,10 +446,15 @@ type SubTab = 'projects' | 'risks' | 'benefits';
 
     /* Stats row */
     .pm-project-table-stats {
+      position: sticky;
+      top: 38px;
+      z-index: 11;
+      background: #ffffff;
+      padding: 8px 0;
+      margin: 0;
       display: grid;
       grid-template-columns: repeat(5, 1fr);
       gap: 12px;
-      margin: 4px 0;
     }
 
     .cursor-pointer {
@@ -441,13 +494,17 @@ type SubTab = 'projects' | 'risks' | 'benefits';
 
     /* Toolbar */
     .register-toolbar {
+      position: sticky;
+      top: 126px;
+      z-index: 11;
+      background: #ffffff;
+      padding: 12px 20px;
+      margin-bottom: 4px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: #ffffff;
       border: 1px solid #e3e5e9;
       border-radius: 12px;
-      padding: 12px 20px;
       box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
     }
 
@@ -463,36 +520,29 @@ type SubTab = 'projects' | 'risks' | 'benefits';
       color: #707788;
     }
 
-    .search-box {
+    /* Toggleable search */
+    .search-toggle-container {
       display: flex;
       align-items: center;
       gap: 8px;
+    }
+
+    .toolbar-search-input {
       background: #f4f5f7;
       border: 1px solid #e3e5e9;
       border-radius: 8px;
       padding: 6px 12px;
-      width: 260px;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      font-size: 13px;
+      color: #252a34;
+      outline: none;
+      width: 180px;
+      transition: border-color 0.2s ease, width 0.2s ease;
     }
 
-    .search-box:focus-within {
+    .toolbar-search-input:focus {
       border-color: var(--brand, #007aff);
       background: #ffffff;
       box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
-    }
-
-    .search-box span {
-      color: #707788;
-      font-size: 14px;
-    }
-
-    .search-box input {
-      background: transparent;
-      border: none;
-      outline: none;
-      color: #252a34;
-      font-size: 13px;
-      width: 100%;
     }
 
     .toolbar-right {
@@ -574,6 +624,37 @@ type SubTab = 'projects' | 'risks' | 'benefits';
       font-size: 14px;
     }
 
+    /* Program ID & Name */
+    .program-title-column {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    .program-display-id {
+      font-size: 10.5px;
+      font-weight: 500;
+      color: #8a94a6;
+      letter-spacing: 0.02em;
+      line-height: 1.1;
+      text-transform: uppercase;
+    }
+
+    .program-name-blue {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--brand, #007aff);
+      cursor: pointer;
+      transition: color 0.15s ease;
+    }
+
+    .program-name-blue:hover {
+      color: #0056cc;
+      text-decoration: underline;
+    }
+
     .title-meta {
       display: flex;
       align-items: center;
@@ -621,6 +702,49 @@ type SubTab = 'projects' | 'risks' | 'benefits';
       display: flex;
       align-items: center;
       gap: 10px;
+    }
+
+    /* 3-period Trend Circles */
+    .trend-circle-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .trend-circle {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .trend-circle.check {
+      background: #16a15f;
+    }
+
+    .trend-circle.bell {
+      background: #d97706;
+    }
+
+    .trend-circle.cross {
+      background: #de350b;
+    }
+
+    .trend-circle span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .trend-circle ::ng-deep .icon {
+      width: 11px !important;
+      height: 11px !important;
+      stroke-width: 3px !important;
+      color: #ffffff !important;
     }
 
     .trend-icon {
@@ -698,6 +822,12 @@ type SubTab = 'projects' | 'risks' | 'benefits';
       background: #ffffff;
     }
 
+    /* Table extension to edge */
+    .pm-project-table {
+      width: 100% !important;
+      min-width: 100% !important;
+    }
+
     /* Risk / Benefit styling modifications */
     .description-text {
       color: #555555;
@@ -747,9 +877,10 @@ type SubTab = 'projects' | 'risks' | 'benefits';
 })
 export class PortfolioWorkspaceRegistersComponent {
   activeSubTab: SubTab = 'projects';
-  expandedProgramIds = new Set<string>(['prog-1']); // default open first program
+  expandedProgramIds = new Set<string>(); // default closed by default
   searchQuery = '';
   statusFilter: string | null = null;
+  showSearch = false; // toggleable search bar
 
   programs = portfolioProgramRows;
   standaloneList = standaloneProjects;
@@ -778,6 +909,50 @@ export class PortfolioWorkspaceRegistersComponent {
 
   onSearch(): void {
     // Component search query handled reactively in getter below
+  }
+
+  getProgramDisplayId(id: string): string {
+    if (id.startsWith('prog-')) {
+      const num = id.split('-')[1];
+      return `ATRC-0${num}`;
+    }
+    if (id.startsWith('sa-proj-')) {
+      const num = id.split('-')[2];
+      return `ATRC-SA-0${num}`;
+    }
+    if (id.startsWith('proj-')) {
+      // e.g. proj-1-1 -> ATRC-01-01
+      const parts = id.split('-');
+      return `ATRC-0${parts[1]}-0${parts[2]}`;
+    }
+    return id.toUpperCase();
+  }
+
+  getThreePeriodTrend(id: string): ('check' | 'bell' | 'cross')[] {
+    const trendMap: Record<string, ('check' | 'bell' | 'cross')[]> = {
+      'prog-1': ['check', 'bell', 'bell'],
+      'proj-1-1': ['check', 'check', 'bell'],
+      'proj-1-2': ['check', 'check', 'check'],
+      
+      'prog-2': ['bell', 'cross', 'bell'],
+      'proj-2-1': ['bell', 'cross', 'cross'],
+      'proj-2-2': ['bell', 'bell', 'check'],
+      
+      'prog-3': ['check', 'check', 'check'],
+      'proj-3-1': ['check', 'check', 'check'],
+      'proj-3-2': ['check', 'check', 'bell'],
+      
+      'prog-4': ['bell', 'cross', 'check'],
+      'proj-4-1': ['cross', 'cross', 'bell'],
+      'proj-4-2': ['bell', 'cross', 'check'],
+      
+      'prog-5': ['bell', 'cross', 'check'],
+      'proj-5-1': ['bell', 'cross', 'check'],
+      
+      'sa-proj-1': ['check', 'check', 'check'],
+      'sa-proj-2': ['bell', 'bell', 'check']
+    };
+    return trendMap[id] || ['check', 'check', 'check'];
   }
 
   get filteredPrograms(): ProgramRow[] {

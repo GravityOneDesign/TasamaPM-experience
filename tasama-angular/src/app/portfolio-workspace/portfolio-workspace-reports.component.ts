@@ -16,7 +16,7 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
       
       <!-- Sub-tabs header -->
       <div class="reports-header-row">
-        <div class="pm-register-tabs sub-tabs">
+        <div class="sub-tabs">
           <button
             class="pm-register-tab"
             [class.is-active]="activeTab === 'awaiting'"
@@ -324,7 +324,7 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
     }
 
     /* Sub-tabs styling */
-    .sub-tabs.pm-register-tabs {
+    .sub-tabs {
       border-bottom: none;
       padding-bottom: 0px;
       display: flex;
