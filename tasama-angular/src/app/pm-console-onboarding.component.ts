@@ -11,7 +11,7 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Output } from '@angul
         <img src="./assets/tasama-onboarding-logo.svg" alt="Tasama" />
         <div class="onboarding-powered">
           <span>Powered by</span>
-          <img src="./assets/strategy-zero-logo.png" alt="Strategy Zero" />
+          <img src="./assets/sdz-logo-main-white.png" alt="Strategy Zero" />
         </div>
       </div>
       <div class="onboarding-intro">

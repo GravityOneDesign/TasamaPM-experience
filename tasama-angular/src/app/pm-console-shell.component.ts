@@ -3,6 +3,7 @@ import { PmConsoleContentComponent } from './pm-console-content.component';
 import { PmConsoleIconService } from './pm-console-icon.service';
 import { PmConsoleMountOptions, ProjectOption } from './pm-console.types';
 import { PmConsoleNotificationsComponent } from './pm-console-notifications.component';
+import { PmConsoleAgentDockComponent } from './shared/pm-console-agent-dock.component';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 import { PmConsoleSideNavComponent, type PmConsoleSideNavItem } from './shared/pm-console-side-nav.component';
 
@@ -20,7 +21,7 @@ const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
 @Component({
   selector: 'app-pm-console-shell',
   standalone: true,
-  imports: [PmConsoleContentComponent, PmConsoleIconComponent, PmConsoleNotificationsComponent, PmConsoleSideNavComponent],
+  imports: [PmConsoleAgentDockComponent, PmConsoleContentComponent, PmConsoleIconComponent, PmConsoleNotificationsComponent, PmConsoleSideNavComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="modern-shell" [class.side-nav-expanded]="sideNavExpanded" [class.playground-mode]="selectedPage === 'playground'" [class.wbs-mode]="selectedPage === 'wbs'" [class.project-plan-mode]="selectedPage === 'project-plan'" [class.unassigned-mode]="frontDoorMode === 'unassigned'">
@@ -93,6 +94,7 @@ const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
         (consoleStateChange)="applyContentState($event)"
       />
       <app-pm-console-notifications [open]="notificationPanelOpen" (closePanel)="closeNotifications()" />
+      <app-pm-console-agent-dock />
     </div>
   `,
 })
@@ -140,7 +142,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   onboardingAssignmentFlow = false;
   onboardingPm101Locked = false;
   onboardingProjectSetup = false;
-  sideNavExpanded = true;
+  sideNavExpanded = false;
   private iconsHydrated = false;
 
   constructor(
@@ -174,7 +176,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   }
 
   ngOnInit(): void {
-    this.sideNavExpanded = this.readSideNavExpandedPreference();
+    this.forgetSideNavExpandedPreference();
     this.selectedProject = this.initialState.projectId || 'all';
     this.selectedPage = (this.initialState.selectedPage as ConsolePage) || 'workspace';
     this.selectedView = (this.initialState.selectedView as WorkspaceView) || 'board';
@@ -213,9 +215,9 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   }
 
   goHome(): void {
-    if (this.onboardingAssignmentFlow && !this.onboardingProjectSetup) {
+    if (this.onboardingAssignmentFlow) {
       this.frontDoorMode = 'assigned';
-      this.selectedProject = 'all';
+      this.selectedProject = this.pmoAssignmentReady ? ONBOARDING_ASSIGNED_PROJECT_ID : ONBOARDING_PM101_PROJECT_ID;
       this.selectedPage = 'workspace';
       this.selectedView = 'pm101';
       this.onboardingPm101Locked = !this.pmoAssignmentReady;
@@ -250,7 +252,6 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   setSideNavExpanded(expanded: boolean): void {
     if (this.sideNavExpanded === expanded) return;
     this.sideNavExpanded = expanded;
-    this.saveSideNavExpandedPreference(expanded);
     this.markShellChanged();
   }
 
@@ -304,17 +305,9 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     this.changeDetector.markForCheck();
   }
 
-  private readSideNavExpandedPreference(): boolean {
+  private forgetSideNavExpandedPreference(): void {
     try {
-      return window.localStorage.getItem('tasama.sideNavExpanded') !== 'false';
-    } catch {
-      return true;
-    }
-  }
-
-  private saveSideNavExpandedPreference(expanded: boolean): void {
-    try {
-      window.localStorage.setItem('tasama.sideNavExpanded', String(expanded));
+      window.localStorage.removeItem('tasama.sideNavExpanded');
     } catch {
       return;
     }
@@ -335,8 +328,8 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
 
   private get currentRailItemId(): string {
     if (this.selectedPage === 'workspaces' || ['wbs', 'project-plan', 'playground'].includes(this.selectedPage)) return 'register';
-    if (this.selectedPage === 'workspace' && this.selectedView === 'board') return 'dashboards';
-    if (this.selectedPage === 'workspace') return 'home';
+    if (this.selectedPage === 'workspace' && this.selectedView === 'pm101') return 'home';
+    if (this.selectedPage === 'workspace') return 'dashboards';
     return '';
   }
 

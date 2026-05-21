@@ -157,6 +157,8 @@ export function pmConsoleAiGuideFor(title: string): PmConsoleAiGuideCopy | null 
   return pmConsoleAiGuideCopy[trimmedTitle] || pmConsoleAiGuideCopy[trimmedTitle.toLowerCase()] || null;
 }
 
+let nextAiGuideIconGradientId = 0;
+
 @Component({
   selector: 'app-pm-console-ai-guide-chip',
   standalone: true,
@@ -181,7 +183,21 @@ export function pmConsoleAiGuideFor(title: string): PmConsoleAiGuideCopy | null 
           (click)="toggleGuide($event)"
         >
           <span class="ai-guide-loader" aria-hidden="true"></span>
-          <span class="ai-guide-icon" aria-hidden="true"></span>
+          <svg class="ai-guide-icon" aria-hidden="true" focusable="false" viewBox="0 0 20 20">
+            <g transform="translate(1.667 0.833)">
+              <path
+                d="M15 9.16667C15 8.91556 14.9864 8.66833 14.9592 8.425C14.9471 8.31622 14.9566 8.20614 14.9871 8.10103C15.0176 7.99593 15.0686 7.89786 15.137 7.81243C15.2751 7.6399 15.4761 7.52931 15.6958 7.505C15.9155 7.48069 16.1359 7.54464 16.3084 7.68279C16.3938 7.7512 16.465 7.83576 16.5177 7.93166C16.5704 8.02755 16.6038 8.13289 16.6158 8.24167C16.6497 8.54556 16.6667 8.85389 16.6667 9.16667C16.6667 13.7692 12.9358 17.5 8.33333 17.5H1.66667C1.22464 17.5 0.800716 17.3244 0.488155 17.0118C0.175595 16.6993 0 16.2754 0 15.8333V9.16667C0 4.56417 3.73083 0.833334 8.33333 0.833334C8.64611 0.833334 8.95444 0.85 9.25833 0.883334C9.47813 0.907645 9.67927 1.01828 9.8175 1.19089C9.95573 1.3635 10.0197 1.58395 9.99542 1.80375C9.97111 2.02355 9.86047 2.22469 9.68786 2.36292C9.51525 2.50115 9.2948 2.56514 9.075 2.54083C8.14272 2.43647 7.19891 2.53004 6.30527 2.81542C5.41162 3.1008 4.58827 3.57157 3.88903 4.19695C3.18979 4.82233 2.63041 5.58825 2.24745 6.44463C1.8645 7.301 1.66659 8.22856 1.66667 9.16667V15.8333H8.33333C10.1014 15.8333 11.7971 15.131 13.0474 13.8807C14.2976 12.6305 15 10.9348 15 9.16667ZM8.33333 10.8333C8.55435 10.8333 8.76631 10.9211 8.92259 11.0774C9.07887 11.2337 9.16667 11.4457 9.16667 11.6667C9.16667 11.8877 9.07887 12.0996 8.92259 12.2559C8.76631 12.4122 8.55435 12.5 8.33333 12.5H5.83333C5.61232 12.5 5.40036 12.4122 5.24408 12.2559C5.0878 12.0996 5 11.8877 5 11.6667C5 11.4457 5.0878 11.2337 5.24408 11.0774C5.40036 10.9211 5.61232 10.8333 5.83333 10.8333H8.33333ZM10.8333 7.5C11.0543 7.5 11.2663 7.5878 11.4226 7.74408C11.5789 7.90036 11.6667 8.11232 11.6667 8.33333C11.6667 8.55435 11.5789 8.76631 11.4226 8.92259C11.2663 9.07887 11.0543 9.16667 10.8333 9.16667H5.83333C5.61232 9.16667 5.40036 9.07887 5.24408 8.92259C5.0878 8.76631 5 8.55435 5 8.33333C5 8.11232 5.0878 7.90036 5.24408 7.74408C5.40036 7.5878 5.61232 7.5 5.83333 7.5H10.8333ZM14.1667 2.67865e-07C14.3405 6.96239e-05 14.51 0.0544954 14.6513 0.155658C14.7927 0.256821 14.8989 0.399656 14.955 0.564167L15.0633 0.879167C15.3133 1.61167 15.8883 2.1875 16.6217 2.4375L16.9358 2.545C17.1002 2.60131 17.2428 2.70757 17.3438 2.84891C17.4447 2.99026 17.499 3.15962 17.499 3.33333C17.499 3.50704 17.4447 3.67641 17.3438 3.81776C17.2428 3.9591 17.1002 4.06536 16.9358 4.12167L16.6208 4.23C15.8883 4.48 15.3125 5.055 15.0625 5.78833L14.955 6.1025C14.8987 6.26683 14.7924 6.40945 14.6511 6.51043C14.5097 6.61141 14.3404 6.66569 14.1667 6.66569C13.993 6.66569 13.8236 6.61141 13.6822 6.51043C13.5409 6.40945 13.4346 6.26683 13.3783 6.1025L13.27 5.7875C13.1466 5.42595 12.9419 5.09749 12.6718 4.82736C12.4017 4.55722 12.0732 4.35258 11.7117 4.22917L11.3975 4.12167C11.2332 4.06536 11.0905 3.9591 10.9896 3.81776C10.8886 3.67641 10.8343 3.50704 10.8343 3.33333C10.8343 3.15962 10.8886 2.99026 10.9896 2.84891C11.0905 2.70757 11.2332 2.60131 11.3975 2.545L11.7125 2.43667C12.445 2.18667 13.0208 1.61167 13.2708 0.878334L13.3783 0.564167L13.43 0.4425C13.501 0.30878 13.6071 0.196932 13.7369 0.11897C13.8667 0.0410081 14.0153 -0.000121108 14.1667 2.67865e-07ZM14.1667 2.66333C13.9695 2.91142 13.7447 3.1362 13.4967 3.33333C13.7461 3.53056 13.9694 3.75361 14.1667 4.0025C14.3644 3.75417 14.5875 3.53111 14.8358 3.33333C14.588 3.13615 14.3635 2.91137 14.1667 2.66333Z"
+                [attr.fill]="iconGradientFill"
+              />
+            </g>
+            <defs>
+              <linearGradient [attr.id]="iconGradientId" x1="1.667" y1="9.583" x2="19.166" y2="9.583" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#10069F" />
+                <stop offset="0.5" stop-color="#9747FF" />
+                <stop offset="1" stop-color="#C87D7F" />
+              </linearGradient>
+            </defs>
+          </svg>
         </button>
         @if (open) {
           <aside class="ai-guide-popover" role="tooltip" (click)="$event.stopPropagation()">
@@ -224,10 +240,7 @@ export function pmConsoleAiGuideFor(title: string): PmConsoleAiGuideCopy | null 
 
       .ai-guide-chip-trigger {
         align-items: center;
-        background:
-          transparent
-          url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABcAAAAVCAYAAACt4nWrAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAAArdJREFUeAG1lEtIVFEYx/9Ojo45YyY1oykqEipKqYRGUdQuKqhFtAlaaUSmIb2QooWLwI0VpLTQRRA90EUbw8iwCI1KzddMJT4qckwmx5m5zZQz93E6j0mkyeYm+ocD9+Oe8/u+8/++e2MIFVZJhqVeVN8dQafDhRWHu6R5TMz48WTwG1YUHggquNMzBVUmGHP6Mf41gOUq5rfnrNrrTycxNh3A9x8ytBCghjSexGqJx74SKyr2Z+N8kx3vJiRoCpAYb0BuugVVx3KQbk2IgMcuDqzmOEwbg/DJIQ5lAJUuW1Ic0lJMfI9XCmFq5icU/p5gxCGhp9+N9ls7kWSO/Xvli9X0+CPaXjiRYDSgtbYMloRY9I960dU/i4fPnJB8Ck+uyhq/oaJouHIqH+VHs5eunMk/r+DI9jQ86PqCXVutHHyyYRC9Dg80BgyKilUK5DF91mTA/kH6ExXZ0G6HG6nrTSjKWofdBSl4PjRLwXMCRNehPam4WlnAgaJ60GQaiEr+7TnT20kJtuR4NJ4u4vG5Rrvwnh7elpeM4wcysWmjCaWFyejpneNglkjTEB3OdrV0fEZxtheEHujqc3H43pINuHmhaGHb/YYytD6aQk3dsLBG1QFnG/vee/B62AMlxBompqbzpQuHq1+hvqYQ6TYTKmoH0P1mVkwVXdB02AIC4SObBFoNoUuRxdXtoz60dTiRn2Omlrg5lLDmquBNjgpPNK7hPrL5JiHRRBI+zEAtrZ8WmiumBjy2mI0R8IhpObgjjdvAD6phAL+6Ruc5fCMOprEKMes0rizPiQ7PyzTj2pktyMswh/0OL1kkZFaxj4YVAAotzE3CveZSZGWsjYDH6Pmf37g9jobm8XCVwNkTm3GxMhdRRXSqpm6I2IrbyaV6u94jRDecqerywP9sJ7psWa4MWEX9ArD1VCpF1XsqAAAAAElFTkSuQmCC")
-          center / 23px 21px no-repeat;
+        background: transparent;
         border: 0;
         border-radius: 0;
         box-shadow: none;
@@ -258,7 +271,13 @@ export function pmConsoleAiGuideFor(title: string): PmConsoleAiGuideCopy | null 
       }
 
       .ai-guide-icon {
-        display: none;
+        display: block;
+        flex: 0 0 auto;
+        height: 20px;
+        transition:
+          opacity 130ms ease,
+          transform 130ms ease;
+        width: 20px;
       }
 
       .ai-guide-loader {
@@ -474,6 +493,8 @@ export class PmConsoleAiGuideChipComponent implements OnDestroy {
   @Input() example = '';
   @Input() align: 'left' | 'right' = 'left';
 
+  readonly iconGradientId = `ai-guide-chat-gradient-${nextAiGuideIconGradientId++}`;
+
   open = false;
   typedCharacterCount = 0;
   private typingTimer: number | null = null;
@@ -489,6 +510,10 @@ export class PmConsoleAiGuideChipComponent implements OnDestroy {
 
   get ariaLabel(): string {
     return `Show AI guide for ${this.title}`;
+  }
+
+  get iconGradientFill(): string {
+    return `url(#${this.iconGradientId})`;
   }
 
   get totalTypingLength(): number {

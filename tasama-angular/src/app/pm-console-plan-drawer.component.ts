@@ -69,7 +69,7 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
       }
 
       .plan-entry-drawer {
-        animation: motion-drawer-in var(--motion-medium) var(--motion-ease) both;
+        animation: motion-drawer-in var(--motion-medium) var(--motion-ease) backwards;
         background: #ffffff;
         bottom: 0;
         box-shadow: -22px 0 50px rgba(25, 33, 61, 0.2);
@@ -82,7 +82,7 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
         right: 0;
         top: 0;
         width: min(640px, calc(100vw - 72px));
-        will-change: transform, opacity;
+        will-change: opacity;
       }
 
       .plan-entry-drawer-form {

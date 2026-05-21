@@ -434,8 +434,6 @@ interface MeasureDraft {
           title="Add Measure"
           eyebrow="Benefit measure"
           description="Define the metric, target, owner, and evidence source used to track this benefit."
-          [summaryLabel]="measureCountLabel(record.measures)"
-          summary="Measures should have a clear owner, baseline, target, and reporting cadence."
           submitLabel="Save Measure"
           [submitDisabled]="!canSaveMeasureDraft()"
           closeAriaLabel="Close measure drawer"

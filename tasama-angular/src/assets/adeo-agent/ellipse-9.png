@@ -1,0 +1,18 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 73.7944 38.4083" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Ellipse 9" filter="url(#filter0_df_0_1282)" style="mix-blend-mode:saturation">
+<ellipse cx="36.8972" cy="19.2042" rx="32.4897" ry="14.7967" fill="var(--fill-0, #1C1C1C)" fill-opacity="0.99" shape-rendering="crispEdges"/>
+</g>
+<defs>
+<filter id="filter0_df_0_1282" x="0" y="0" width="73.7944" height="38.4083" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="0.503715"/>
+<feGaussianBlur stdDeviation="0.251858"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_1282"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_1282" result="shape"/>
+<feGaussianBlur stdDeviation="2.20375" result="effect2_foregroundBlur_0_1282"/>
+</filter>
+</defs>
+</svg>

@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { PmConsoleAiGuideChipComponent, type PmConsoleAiGuideCopy } from './pm-console-ai-guide-chip.component';
 import { PmConsoleIconComponent } from './pm-console-icon.component';
 
 export interface PmConsoleProjectProfileField {
@@ -12,7 +13,7 @@ export interface PmConsoleProjectProfileField {
 @Component({
   selector: 'app-pm-console-project-profile-card',
   standalone: true,
-  imports: [CommonModule, PmConsoleIconComponent],
+  imports: [CommonModule, PmConsoleAiGuideChipComponent, PmConsoleIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
@@ -81,13 +82,22 @@ export interface PmConsoleProjectProfileField {
         min-width: 0;
       }
 
+      .project-profile-title-line {
+        align-items: center;
+        display: flex;
+        gap: 8px;
+        min-width: 0;
+      }
+
       .project-profile-copy h3 {
         color: #111111;
         font-size: 18px;
+        flex: 0 1 auto;
         font-weight: 600;
         letter-spacing: 0;
         line-height: 24px;
         margin: 0;
+        min-width: 0;
       }
 
       .project-profile-copy p {
@@ -240,7 +250,17 @@ export interface PmConsoleProjectProfileField {
           <span [pmConsoleIcon]="iconName"></span>
         </span>
         <div class="project-profile-copy">
-          <h3>{{ title }}</h3>
+          <div class="project-profile-title-line">
+            <h3>{{ title }}</h3>
+            @if (aiGuide; as guide) {
+              <app-pm-console-ai-guide-chip
+                [title]="guide.title || title"
+                [what]="guide.what"
+                [how]="guide.how"
+                [example]="guide.example"
+              ></app-pm-console-ai-guide-chip>
+            }
+          </div>
           <p>{{ description }}</p>
         </div>
       </section>
@@ -275,6 +295,7 @@ export class PmConsoleProjectProfileCardComponent implements OnChanges {
   @Input() description = 'Browse your project setup';
   @Input() iconName = 'rocket';
   @Input() fields: PmConsoleProjectProfileField[] = [];
+  @Input() aiGuide: PmConsoleAiGuideCopy | null = null;
   @Input() collapsible = false;
   @Input() expanded = true;
 

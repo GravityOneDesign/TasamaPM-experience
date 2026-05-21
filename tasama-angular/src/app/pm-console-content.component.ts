@@ -21,6 +21,7 @@ import { PmConsolePlanTableComponent } from './pm-console-plan-table.component';
 import { PmConsoleReportDrawerComponent } from './pm-console-report-drawer.component';
 import { PmConsoleMountOptions, ProjectOption } from './pm-console.types';
 import { PmConsoleAiGuideChipComponent, pmConsoleAiGuideFor, type PmConsoleAiGuideCopy } from './shared/pm-console-ai-guide-chip.component';
+import { PmConsoleAgentBannerComponent } from './shared/pm-console-agent-banner.component';
 import {
   PmConsoleBenefitProfileComponent,
   type BenefitProfileFieldChange,
@@ -30,9 +31,9 @@ import {
   type BenefitProfileRecord,
 } from './shared/pm-console-benefit-profile.component';
 import { PmConsoleFieldComponent, type PmConsoleFieldType } from './shared/pm-console-field.component';
-import { PmConsoleAgentBannerComponent } from './shared/pm-console-agent-banner.component';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 import { PmConsoleOverviewCardsComponent, type PmConsoleOverviewCard } from './shared/pm-console-overview-cards.component';
+import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-dropdown.component';
 import { PmConsoleProjectProfileCardComponent } from './shared/pm-console-project-profile-card.component';
 import { PmConsoleReportingEmptyIllustrationComponent } from './shared/pm-console-reporting-empty-illustration.component';
 import {
@@ -88,6 +89,11 @@ interface ProjectPlanReturnState {
   selectedPage: ConsolePage;
   selectedView: WorkspaceView;
   workspaceRegister?: WorkspaceRegister;
+  frontDoorMode: string;
+  pmoAssignmentReady: boolean;
+  onboardingAssignmentFlow: boolean;
+  onboardingPm101Locked: boolean;
+  onboardingProjectSetup: boolean;
 }
 
 interface RiskProfileReturnState extends ProjectPlanReturnState {
@@ -429,16 +435,10 @@ interface ProjectPlanFieldGroupConfig {
   fields: string[];
 }
 
-type AiSectionAssistStatus = 'idle' | 'typing' | 'ready' | 'filling' | 'drafted' | 'refining';
+type AiSectionAssistStatus = 'idle' | 'filling' | 'drafted';
 type AiInlineRewriteStatus = 'idle' | 'rewriting';
 type AiInlineRewriteMode = 'prompt' | 'review';
 type AiEditableTextElement = HTMLInputElement | HTMLTextAreaElement;
-
-interface AiSectionAssistGuide {
-  title: string;
-  guide: string;
-  example: string;
-}
 
 interface AiInlineRewriteState {
   visible: boolean;
@@ -1260,6 +1260,10 @@ interface BudgetYearDraft {
   baselineOpex: string;
   forecastCapex: string;
   forecastOpex: string;
+  committedCapex: string;
+  committedOpex: string;
+  actualCapex: string;
+  actualOpex: string;
 }
 
 interface BudgetPlanState {
@@ -1283,7 +1287,8 @@ interface BudgetBreakdownRow {
   committed: number;
 }
 
-type BudgetBreakdownEditableField = 'baseline' | 'forecast' | 'committed' | 'actual';
+type BudgetBreakdownEditableField = 'baseline' | 'forecast' | 'actual' | 'committed';
+
 type BudgetSubtab = 'project' | 'funding' | 'monthly';
 
 interface BudgetPlanConfig {
@@ -1464,81 +1469,6 @@ const firstAssignedProject = {
   stage: 'Initiation',
   owner: 'Muna Hassan',
   planDue: 'Jun 12',
-};
-
-const defaultAiSectionAssistGuide: AiSectionAssistGuide = {
-  title: 'AI section guide',
-  guide: 'Use this section to capture the information PMO reviewers need before they can validate the project plan. Keep entries specific, evidence-led, and easy to scan.',
-  example: 'Example: define the owner, timing, impact, current status, and the next action needed for PMO review.',
-};
-
-const aiSectionAssistGuides: Record<string, AiSectionAssistGuide> = {
-  Overview: {
-    title: 'Shape the case for change',
-    guide:
-      'Use Overview to explain why the project exists, which business drivers it supports, what outcome it should create, and whether AI is part of delivery or governance.',
-    example: 'Example: a short problem statement, two business drivers, one measurable outcome, and the AI component flag.',
-  },
-  'Schedule & Scope': {
-    title: 'Frame delivery boundaries',
-    guide:
-      'Use Schedule & Scope to set baseline dates, forecast dates, milestones, in-scope work, exclusions, and the products that must be delivered for the plan to be credible.',
-    example: 'Example: baseline window, three milestones, in-scope audiences, out-of-scope exclusions, and two delivery products.',
-  },
-  Budget: {
-    title: 'Create the funding baseline',
-    guide:
-      'Use Budget to add the financial year baseline, current forecast, funding sources, and budget rules so finance can trace how the project will be funded and controlled.',
-    example: 'Example: FY 2026-2027 CAPEX/OPEX split, confirmed funding source, and monthly phasing generated from the forecast.',
-  },
-  Benefits: {
-    title: 'Define the value case',
-    guide:
-      'Use Benefits to record the value the project should unlock, the category of benefit, the accountable owner, and when realization should become visible.',
-    example: 'Example: one strategic benefit tied to research discovery, owned by Research Leads Forum, with a target realization date.',
-  },
-  Risk: {
-    title: 'Identify delivery threats',
-    guide:
-      'Use Risk to capture threats before they become delivery issues. Include the source, consequence, exposure, owner, controls, and first treatment action.',
-    example: 'Example: data quality risk, high actual rating, medium residual rating, owner, control summary, and mitigation treatment.',
-  },
-  Issues: {
-    title: 'Log current blockers',
-    guide:
-      'Use Issues for problems or decisions that already exist. Capture type, criticality, owner, due date, resolution path, and current status.',
-    example: 'Example: dependency issue requiring data owner nomination before baseline submission.',
-  },
-  'Change Impact': {
-    title: 'Map adoption impact',
-    guide:
-      'Use Change Impact to describe which audience or operating model will be affected, how strong the impact is, and the actions needed to prepare people for the change.',
-    example: 'Example: process change for research administrators, high impact, with champion briefings and readiness checks.',
-  },
-  'Related Links': {
-    title: 'Attach plan evidence',
-    guide:
-      'Use Related Links to collect source packs, approvals, discovery notes, dashboards, or reference files so reviewers can validate the plan without searching elsewhere.',
-    example: 'Example: discovery source pack with a short description and a placeholder document link.',
-  },
-  Resource: {
-    title: 'Plan the delivery team',
-    guide:
-      'Use Resource to identify the roles, sourcing model, FTE estimate, business unit, date window, and comments needed for staffing conversations.',
-    example: 'Example: PM, analyst, and data steward roles with criticality, assigned owner, and baseline dates.',
-  },
-  Dependency: {
-    title: 'Surface handoff risk',
-    guide:
-      'Use Dependency to capture upstream projects that must finish first and downstream projects waiting for this plan, including owner, timing, product, and impact.',
-    example: 'Example: data source onboarding as a predecessor and research portal rollout as a successor.',
-  },
-  Miscellaneous: {
-    title: 'Complete extended checks',
-    guide:
-      'Use Miscellaneous for legacy, assurance, ADEO, grants, and admin-only context that is not part of the core plan but may affect governance.',
-    example: 'Example: ICT component flag, assurance recommendation counts, and PMO admin commentary.',
-  },
 };
 
 const onboardingWorkspaceTableProjects: ProjectRow[] = [
@@ -2976,11 +2906,11 @@ const budgetPlanConfig: BudgetPlanConfig = {
   fieldName: 'Budget',
   title: 'Budget',
   description: 'Review the approved project budget, then manage the selected financial year below.',
-  actionLabel: 'Edit FY budget',
+  actionLabel: 'Save budget values',
   emptyTitle: 'Budget will appear once the PM assignment is ready',
   emptyBody: 'Budget overview is populated from the approved project allocation. Project budget details are managed by financial year.',
   drawerTitle: 'FY budget',
-  drawerBody: 'Adjust the selected financial year baseline and forecast split.',
+  drawerBody: 'Adjust the selected financial year baseline, forecast, committed, and actual values by stream.',
   fundingTitle: 'Funding sources',
   fundingBody: 'Track where this year’s money is coming from, how much is allocated, and whether each source is already confirmed.',
   fundingEmptyTitle: 'No funding sources added yet',
@@ -3022,6 +2952,10 @@ const budgetPlanConfig: BudgetPlanConfig = {
     baselineOpex: '',
     forecastCapex: '',
     forecastOpex: '',
+    committedCapex: '0',
+    committedOpex: '0',
+    actualCapex: '0',
+    actualOpex: '0',
   },
   fundingDraft: {
     source: '',
@@ -3726,8 +3660,8 @@ const pm101Steps: Pm101Step[] = [
     footerActionId: 'reports',
   },
   {
-    title: 'Project Stages',
-    body: 'See lifecycle stage, gate evidence, and next steps.',
+    title: 'Progress through stages',
+    body: 'Progress through project lifecycles with a quick & easy checklist!',
     icon: 'stageGate',
     decor: 'plus',
     decorAssets: ['./assets/pm101/decor-3-group-1.svg', './assets/pm101/decor-3-group-2.svg', './assets/pm101/decor-3-group-3.svg', './assets/pm101/decor-3-group-4.svg'],
@@ -3812,8 +3746,8 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
   standalone: true,
   imports: [
     CommonModule,
-    PmConsoleAgentBannerComponent,
     PmConsoleAiGuideChipComponent,
+    PmConsoleAgentBannerComponent,
     PmConsoleBenefitProfileComponent,
     PmConsoleFieldComponent,
     PmConsoleIconComponent,
@@ -3821,6 +3755,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
     PmConsolePlanDrawerComponent,
     PmConsolePlanEmptyStateComponent,
     PmConsolePlanTableComponent,
+    PmConsoleProjectDropdownComponent,
     PmConsoleProjectProfileCardComponent,
     PmConsoleReportingEmptyIllustrationComponent,
     PmConsoleRegisterTableComponent,
@@ -4156,84 +4091,23 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                   <div class="project-plan-content-modebar" [class.has-section-title]="true">
                     <div class="project-plan-content-heading">
                       <h2>Project Plan</h2>
-                      @if (onboardingProjectSetup && projectPlanEntry === 'quick') {
-                        <div class="section-ai-assist" [class.is-open]="isAiAssistOpen(projectPlanActiveSection)" [class.is-drafted]="aiAssistStatus === 'drafted' || aiAssistStatus === 'refining'" data-ai-section-assist>
-                          <button
-                            class="section-ai-trigger"
-                            [class.is-loading]="aiAssistStatus === 'typing'"
-                            type="button"
-                            [attr.aria-label]="'Open AI guide for ' + projectPlanActiveSection"
-                            [attr.aria-busy]="aiAssistStatus === 'typing'"
-                            [attr.aria-expanded]="isAiAssistOpen(projectPlanActiveSection)"
-                            (mouseenter)="openAiAssist(projectPlanActiveSection)"
-                            (focus)="openAiAssist(projectPlanActiveSection)"
-                            (click)="toggleAiAssist(projectPlanActiveSection, $event)"
-                          >
-                            <span class="section-ai-loading-ring" aria-hidden="true"></span>
-                            <svg class="section-ai-trigger-glyph" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
-                              <path d="M10 3.1v13.8M10 3.1 6.8 6.3M10 3.1l3.2 3.2M10 16.9l-3.2-3.2M10 16.9l3.2-3.2" />
-                              <path d="M3.2 10h4.3M12.5 10h4.3" />
-                              <path d="M5.2 4.9v3M3.7 6.4h3M14.8 11.9v3M13.3 13.4h3" />
-                            </svg>
-                          </button>
-                          @if (isAiAssistOpen(projectPlanActiveSection)) {
-                            <aside class="section-ai-popover" role="dialog" [attr.aria-label]="'AI guide for ' + projectPlanActiveSection">
-                              <div class="section-ai-popover-head">
-                                <span class="section-ai-popover-icon" aria-hidden="true">
-                                  <svg viewBox="0 0 20 20" focusable="false">
-                                    <path d="M10 3.1v13.8M10 3.1 6.8 6.3M10 3.1l3.2 3.2M10 16.9l-3.2-3.2M10 16.9l3.2-3.2" />
-                                    <path d="M3.2 10h4.3M12.5 10h4.3" />
-                                    <path d="M5.2 4.9v3M3.7 6.4h3M14.8 11.9v3M13.3 13.4h3" />
-                                  </svg>
-                                </span>
-                                <div>
-                                  <small>AI section assist</small>
-                                  <strong>{{ activeAiAssistGuide.title }}</strong>
-                                </div>
-                              </div>
-                              <p class="section-ai-typing" [class.is-typing]="aiAssistStatus === 'typing'">{{ aiAssistTypedGuide }}</p>
-                              @if (aiAssistStatus !== 'typing') {
-                                <div class="section-ai-example">
-                                  <span>Good draft includes</span>
-                                  <p>{{ activeAiAssistGuide.example }}</p>
-                                </div>
-                              }
-                              <div class="section-ai-actions">
-                                <button class="section-ai-fill" type="button" [disabled]="aiAssistStatus === 'filling' || aiAssistStatus === 'refining'" (click)="fillAiSectionDraft()">
-                                  <span pmConsoleIcon="wand" aria-hidden="true"></span>
-                                  <span>{{ aiAssistStatus === 'filling' ? 'Generating draft...' : 'Fill using AI' }}</span>
-                                </button>
-                              </div>
-                              @if (aiAssistStatus === 'filling') {
-                                <div class="section-ai-generating" aria-live="polite">
-                                  <span></span>
-                                  <small>{{ activeAiGenerationStep }}</small>
-                                </div>
-                              }
-                              @if (aiAssistStatus === 'drafted' || aiAssistStatus === 'refining') {
-                                <div class="section-ai-refine">
-                                  <div class="section-ai-refine-copy">
-                                    <strong>Draft added</strong>
-                                    <small>Describe changes only if you want a different angle.</small>
-                                  </div>
-                                  <div class="section-ai-refine-box">
-                                    <input
-                                      type="text"
-                                      placeholder="Describe changes"
-                                      [value]="aiAssistUserPrompt"
-                                      [disabled]="aiAssistStatus === 'refining'"
-                                      (input)="updateAiAssistPrompt($any($event.target).value)"
-                                      (keydown.enter)="refineAiSectionDraft()"
-                                    />
-                                    <button type="button" [disabled]="aiAssistStatus === 'refining' || !aiAssistUserPrompt.trim()" aria-label="Apply AI changes" (click)="refineAiSectionDraft()">
-                                      <span pmConsoleIcon="arrowUp" aria-hidden="true"></span>
-                                    </button>
-                                  </div>
-                                </div>
-                              }
-                            </aside>
-                          }
-                        </div>
+                      @if (projectPlanDetailMode === 'simple' && showProjectPlanAiAutofill(simpleProjectPlanAiSection)) {
+                        <button
+                          class="schedule-scope-ai-fill project-plan-simple-ai-fill"
+                          data-project-plan-ai-fill
+                          type="button"
+                          [class.is-loading]="isSimplePlanAiBusy()"
+                          [disabled]="aiAssistStatus === 'filling' || isSimplePlanAiWriting()"
+                          [attr.aria-busy]="isSimplePlanAiBusy()"
+                          aria-label="Fill simple project plan using AI"
+                          (pointerup)="fillSimplePlanDraft()"
+                          (keydown.enter)="fillSimplePlanDraft()"
+                          (keydown.space)="$event.preventDefault(); fillSimplePlanDraft()"
+                          (click)="fillSimplePlanDraft()"
+                        >
+                          <span pmConsoleIcon="wand-sparkles" aria-hidden="true"></span>
+                          <span>{{ isSimplePlanAiBusy() ? 'Filling...' : 'Fill using AI' }}</span>
+                        </button>
                       }
                     </div>
                     <div class="project-plan-topbar-actions">
@@ -4256,10 +4130,17 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                         </div>
                       }
                       <div class="project-plan-detail-toggle" role="tablist" aria-label="Project plan detail mode">
-                        <button [class.active]="projectPlanDetailMode === 'simple'" type="button" role="tab" [attr.aria-selected]="projectPlanDetailMode === 'simple'" (click)="setProjectPlanDetailMode('simple')">Simple</button>
+                        <button [class.active]="projectPlanDetailMode === 'simple'" type="button" role="tab" [attr.aria-selected]="projectPlanDetailMode === 'simple'" (click)="setProjectPlanDetailMode('simple')">
+                          <span>Simple</span>
+                          @if (projectPlanDetailMode === 'simple') {
+                            <span pmConsoleIcon="eye" aria-hidden="true"></span>
+                          }
+                        </button>
                         <button [class.active]="projectPlanDetailMode === 'detailed'" type="button" role="tab" [attr.aria-selected]="projectPlanDetailMode === 'detailed'" (click)="setProjectPlanDetailMode('detailed')">
                           <span>Detailed</span>
-                          <span pmConsoleIcon="eye" aria-hidden="true"></span>
+                          @if (projectPlanDetailMode === 'detailed') {
+                            <span pmConsoleIcon="eye" aria-hidden="true"></span>
+                          }
                         </button>
                       </div>
                       @if (onboardingProjectSetup) {
@@ -4323,21 +4204,44 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                   <main class="project-plan-content plan-builder-workspace quick-plan-workspace" [class.simple-plan-workspace]="projectPlanDetailMode === 'simple'" [class.detailed-plan-workspace]="projectPlanDetailMode === 'detailed'" [@panelMotion]="projectPlanContentMotionKey">
                     <div class="plan-builder-main quick-plan-main project-plan-matrix-main" (scroll)="handleProjectPlanContentScroll($event)" (wheel)="handleProjectPlanContentWheel($event)">
                       @if (projectPlanDetailMode === 'simple') {
-                        <section class="project-plan-form-card plan-builder-card project-plan-matrix-card simple-plan-card" (scroll)="handleProjectPlanContentScroll($event)" (wheel)="handleProjectPlanContentWheel($event)">
+                        <section
+                          class="project-plan-form-card plan-builder-card project-plan-matrix-card simple-plan-card"
+                          [class.ai-section-generating]="isSimplePlanAiGenerating()"
+                          [class.ai-section-writing]="isSimplePlanAiWriting()"
+                          [class.ai-section-filled]="aiRecentlyFilledSection === simpleProjectPlanAiSection"
+                          [attr.aria-busy]="isSimplePlanAiBusy()"
+                          (scroll)="handleProjectPlanContentScroll($event)"
+                          (wheel)="handleProjectPlanContentWheel($event)"
+                        >
                           <div class="simple-plan-sections">
                             @for (section of simplePlanSections; track section.title) {
+                              @let simpleSectionGuide = simplePlanSectionGuide(section);
                               @if (section.readOnly) {
                                 <app-pm-console-project-profile-card
                                   [title]="simplePlanSectionTitle(section)"
                                   [description]="section.body"
                                   [iconName]="iconName(section.icon)"
                                   [fields]="section.fields"
+                                  [aiGuide]="simpleSectionGuide"
                                 />
                               } @else {
                                 <article class="matrix-field-group simple-plan-section-card simple-field-card" [class.simple-budget-section-card]="section.title === 'Budget baseline'">
                                   <div class="simple-field-card-head">
                                     <span class="simple-plan-section-icon" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="iconName(section.icon)"></i></span></span>
-                                    <span class="matrix-field-group-copy"><strong>{{ simplePlanSectionTitle(section) }}</strong><small>{{ section.body }}</small></span>
+                                    <span class="matrix-field-group-copy">
+                                      <span class="simple-plan-heading-line">
+                                        <strong>{{ simplePlanSectionTitle(section) }}</strong>
+                                        @if (simpleSectionGuide) {
+                                          <app-pm-console-ai-guide-chip
+                                            [title]="simpleSectionGuide.title || simplePlanSectionTitle(section)"
+                                            [what]="simpleSectionGuide.what"
+                                            [how]="simpleSectionGuide.how"
+                                            [example]="simpleSectionGuide.example"
+                                          ></app-pm-console-ai-guide-chip>
+                                        }
+                                      </span>
+                                      <small>{{ section.body }}</small>
+                                    </span>
                                   </div>
                                   <div class="matrix-field-group-grid simple-plan-section-fields">
                                     @for (field of section.fields; track field.label) {
@@ -4737,8 +4641,58 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                           </div>
                         </section>
                       } @else {
-                        <section class="project-plan-form-card plan-builder-card project-plan-matrix-card detailed-plan-card" [class.ai-section-filled]="aiRecentlyFilledSection === projectPlanActiveSection" (scroll)="handleProjectPlanContentScroll($event)" (wheel)="handleProjectPlanContentWheel($event)">
+                        <section
+                          class="project-plan-form-card plan-builder-card project-plan-matrix-card detailed-plan-card"
+                          [class.ai-section-generating]="isAiSectionGenerating(projectPlanActiveSection)"
+                          [class.ai-section-writing]="isAiSectionWriting(projectPlanActiveSection)"
+                          [class.ai-section-filled]="aiRecentlyFilledSection === projectPlanActiveSection"
+                          [attr.aria-busy]="isAiSectionBusy(projectPlanActiveSection)"
+                          (scroll)="handleProjectPlanContentScroll($event)"
+                          (wheel)="handleProjectPlanContentWheel($event)"
+                        >
                           <div class="project-plan-section-fields">
+                            @if (showProjectPlanAiAutofill(projectPlanActiveSection) && isProjectPlanAgentBannerSection(projectPlanActiveSection)) {
+                              <app-pm-console-agent-banner
+                                [variant]="projectPlanAgentBannerVariant(projectPlanActiveSection)"
+                                [iconName]="projectPlanAgentBannerIcon(projectPlanActiveSection)"
+                                [title]="projectPlanAgentBannerTitle(projectPlanActiveSection)"
+                                [description]="projectPlanAgentBannerDescription(projectPlanActiveSection)"
+                                [actionLabel]="projectPlanAgentBannerActionLabel(projectPlanActiveSection)"
+                                [ariaLabel]="projectPlanAgentBannerAriaLabel(projectPlanActiveSection)"
+                                [loading]="aiAssistStatus === 'filling' && isAiAssistOpen(projectPlanActiveSection)"
+                                [disabled]="aiAssistStatus === 'filling'"
+                                (action)="fillAiSectionDraft()"
+                              />
+                            } @else {
+                              <header class="schedule-scope-design-top project-plan-section-top">
+                                <div class="overview-form-title">
+                                  <span class="overview-form-title-icon" aria-hidden="true">
+                                    <span [pmConsoleIcon]="iconName(projectPlanSectionHeaderIcon(projectPlanActiveSection))"></span>
+                                  </span>
+                                  <div>
+                                    <h3>{{ projectPlanSectionHeaderTitle(projectPlanActiveSection) }}</h3>
+                                    <p>{{ projectPlanSectionHeaderDescription(projectPlanActiveSection) }}</p>
+                                  </div>
+                                </div>
+                                @if (showProjectPlanAiAutofill(projectPlanActiveSection)) {
+                                  <button
+                                    class="schedule-scope-ai-fill"
+                                    data-project-plan-ai-fill
+                                    type="button"
+                                    [class.is-loading]="isAiSectionBusy(projectPlanActiveSection)"
+                                    [disabled]="aiAssistStatus === 'filling' || isAiSectionWriting(projectPlanActiveSection)"
+                                    [attr.aria-busy]="isAiSectionBusy(projectPlanActiveSection)"
+                                    (pointerup)="fillAiSectionDraft()"
+                                    (keydown.enter)="fillAiSectionDraft()"
+                                    (keydown.space)="$event.preventDefault(); fillAiSectionDraft()"
+                                    (click)="fillAiSectionDraft()"
+                                  >
+                                    <span pmConsoleIcon="wand-sparkles" aria-hidden="true"></span>
+                                    <span>{{ isAiSectionBusy(projectPlanActiveSection) ? 'Autofilling...' : 'Autofill with AI' }}</span>
+                                  </button>
+                                }
+                              </header>
+                            }
                             @if (projectPlanActiveSection === 'Overview') {
                               @let identitySection = projectPlanIdentityCard;
                               <app-pm-console-project-profile-card
@@ -5328,7 +5282,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                               <strong>Project budget</strong>
                                               <small>Baseline, forecast, actual, committed, and available values for {{ year.fy }}</small>
                                             </div>
-                                            <button class="budget-primary-action" type="button" (click)="saveBudgetChanges()">Save budget changes</button>
+                                            <button class="budget-primary-action" type="button" (click)="openBudgetDrawer()">Edit budget values</button>
                                           </div>
                                           <div class="budget-table-wrap budget-detail-table-wrap">
                                             <table class="budget-table budget-project-table" aria-label="Project budget for selected fiscal year">
@@ -5360,15 +5314,15 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                                       <td>{{ formatBudgetCurrency(row.actual) }}</td>
                                                       <td class="budget-available-cell {{ budgetStreamAvailable(row) < 0 ? 'red' : 'green' }}">{{ formatBudgetCurrency(budgetStreamAvailable(row)) }}</td>
                                                     } @else {
-                                                      <td><label class="budget-money-input"><span>SAR</span><input type="number" min="0" step="100" [value]="budgetBreakdownInputValue(row, 'baseline')" (input)="updateBudgetBreakdown(row.stream, 'baseline', $any($event.target).value)" [attr.aria-label]="row.stream + ' FY baseline'" /></label></td>
-                                                      <td><label class="budget-money-input"><span>SAR</span><input type="number" min="0" step="100" [value]="budgetBreakdownInputValue(row, 'forecast')" (input)="updateBudgetBreakdown(row.stream, 'forecast', $any($event.target).value)" [attr.aria-label]="row.stream + ' FY forecast'" /></label></td>
+                                                      <td>{{ formatBudgetCurrency(row.baseline) }}</td>
+                                                      <td>{{ formatBudgetCurrency(row.forecast) }}</td>
                                                       <td class="budget-variance-cell {{ budgetVarianceTone(budgetStreamVariance(row)) }}">
                                                         <strong>{{ formatBudgetSignedCurrency(budgetStreamVariance(row)) }}</strong>
                                                         <small>{{ formatBudgetPercent(budgetStreamVariance(row), row.baseline) }}</small>
                                                       </td>
-                                                      <td><label class="budget-money-input"><span>SAR</span><input type="number" min="0" step="100" [value]="budgetBreakdownInputValue(row, 'committed')" (input)="updateBudgetBreakdown(row.stream, 'committed', $any($event.target).value)" [attr.aria-label]="row.stream + ' committed'" /></label></td>
+                                                      <td>{{ formatBudgetCurrency(row.committed) }}</td>
                                                       <td>{{ formatBudgetCurrency(row.baseline) }}</td>
-                                                      <td><label class="budget-money-input"><span>SAR</span><input type="number" min="0" step="100" [value]="budgetBreakdownInputValue(row, 'actual')" (input)="updateBudgetBreakdown(row.stream, 'actual', $any($event.target).value)" [attr.aria-label]="row.stream + ' YTD actual'" /></label></td>
+                                                      <td>{{ formatBudgetCurrency(row.actual) }}</td>
                                                       <td class="budget-available-cell {{ budgetStreamAvailable(row) < 0 ? 'red' : 'green' }}">{{ formatBudgetCurrency(budgetStreamAvailable(row)) }}</td>
                                                     }
                                                   </tr>
@@ -5419,13 +5373,25 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                           }
                                         </div>
                                       } @else {
-                                        <div class="budget-tab-panel">
+                                        <div class="budget-tab-panel budget-monthly-tab-panel" [class.is-expanded]="isBudgetMonthlyTableExpanded">
                                           <div class="budget-subview-head">
                                             <div>
                                               <strong>{{ budgetPlanConfig.monthlyTitle }}</strong>
                                               <small>{{ budgetMonthlyCountLabel(year) }} for {{ year.fy }}</small>
                                             </div>
-                                            <button class="budget-primary-action" type="button" (click)="openBudgetMonthlyDrawer()">Edit monthly values</button>
+                                            <div class="budget-monthly-head-actions">
+                                              <button
+                                                class="budget-icon-action"
+                                                type="button"
+                                                [attr.aria-label]="isBudgetMonthlyTableExpanded ? 'Collapse monthly budget table' : 'Expand monthly budget table'"
+                                                [attr.title]="isBudgetMonthlyTableExpanded ? 'Collapse table' : 'Expand table'"
+                                                [attr.aria-pressed]="isBudgetMonthlyTableExpanded"
+                                                (click)="toggleBudgetMonthlyTableExpanded()"
+                                              >
+                                                <span [pmConsoleIcon]="isBudgetMonthlyTableExpanded ? 'minimize-2' : 'maximize-2'" aria-hidden="true"></span>
+                                              </button>
+                                              <button class="budget-primary-action" type="button" (click)="openBudgetMonthlyDrawer()">Edit monthly values</button>
+                                            </div>
                                           </div>
                                           <div class="budget-table-wrap budget-detail-table-wrap budget-monthly-table-wrap">
                                             <table class="budget-table budget-monthly-table" aria-label="Monthly budget for selected fiscal year">
@@ -5553,28 +5519,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                               </section>
                             } @else if (projectPlanActiveSection === 'Schedule & Scope') {
                               <section class="schedule-scope-workspace schedule-scope-design-workspace" aria-label="Schedule and scope workspace">
-                                <header class="schedule-scope-design-top">
-                                  <div class="overview-form-title">
-                                    <span class="overview-form-title-icon" aria-hidden="true">
-                                      <span [pmConsoleIcon]="iconName('plan')"></span>
-                                    </span>
-                                    <div>
-                                      <h3>Schedule &amp; Scope</h3>
-                                      <p>Approved dates, current forecast, milestone checkpoints, and the core scope statement in one place.</p>
-                                    </div>
-                                  </div>
-                                  <button
-                                    class="schedule-scope-ai-fill"
-                                    type="button"
-                                    [class.is-loading]="aiAssistStatus === 'filling' && isAiAssistOpen(projectPlanActiveSection)"
-                                    [disabled]="aiAssistStatus === 'filling' || aiAssistStatus === 'refining'"
-                                    (click)="fillAiSectionDraft()"
-                                  >
-                                    <span pmConsoleIcon="wand-sparkles" aria-hidden="true"></span>
-                                    <span>{{ aiAssistStatus === 'filling' && isAiAssistOpen(projectPlanActiveSection) ? 'Autofilling...' : 'Autofill with AI' }}</span>
-                                  </button>
-                                </header>
-
                                 <details
                                   class="overview-form-card overview-collapsible-card schedule-scope-detail-card"
                                   [open]="isProjectPlanCardExpanded(projectPlanActiveSection, 'Overall project schedule', 0)"
@@ -5965,16 +5909,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                             } @else if (projectPlanActiveSection === 'Benefits') {
                               @let register = activeBenefitPlan;
                               <section class="dependency-register-stack benefit-register-stack" aria-label="Benefits register">
-                                @if (!activeBenefitProfile) {
-                                  <app-pm-console-agent-banner
-                                    title="Benefit Agent"
-                                    [description]="'Turn the case for change for ' + scopedProjectName + ' into first-pass benefit statements, owners, and realization timing before you refine the register manually.'"
-                                    actionLabel="Generate Benefits"
-                                    ariaLabel="Benefit agent"
-                                    (action)="openBenefitDrawer()"
-                                  ></app-pm-console-agent-banner>
-                                }
-
                                 @if (activeBenefitProfile; as benefit) {
                                   <app-pm-console-benefit-profile
                                     [benefit]="benefit"
@@ -6226,15 +6160,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                     </div>
                                   </article>
                                 } @else if (register.rows.length) {
-                                  <app-pm-console-agent-banner
-                                    variant="risk"
-                                    title="Risk Agent"
-                                    [description]="'Turn scope, schedule, stakeholders, and dependency signals for ' + scopedProjectName + ' into first-pass risk statements, owners, ratings, and treatments before you refine the register manually.'"
-                                    actionLabel="Generate Risks"
-                                    ariaLabel="Risk agent"
-                                    (action)="openRiskDrawer()"
-                                  ></app-pm-console-agent-banner>
-
                                   <app-pm-console-plan-table
                                     [title]="register.title"
                                     [eyebrow]="register.fieldName + ' · Risk tracking'"
@@ -6297,16 +6222,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                     </div>
                                   </app-pm-console-plan-table>
                                 } @else {
-                                  @if (onboardingProjectSetup) {
-                                    <app-pm-console-agent-banner
-                                      variant="risk"
-                                      title="Risk Agent"
-                                      [description]="'Turn scope, schedule, stakeholders, and dependency signals for ' + scopedProjectName + ' into first-pass risk statements, owners, ratings, and treatments before you refine the register manually.'"
-                                      actionLabel="Generate Risks"
-                                      ariaLabel="Risk agent"
-                                      (action)="openRiskDrawer()"
-                                    ></app-pm-console-agent-banner>
-                                  }
                                   <app-pm-console-plan-empty-state
                                     [title]="register.title"
                                     [description]="register.description"
@@ -6977,6 +6892,10 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                       <app-pm-console-field label="OPEX Baseline (FY)" type="money" inputType="number" [value]="budgetYearDraft.baselineOpex" [placeholder]="budgetPlanConfig.amountPlaceholder" ariaLabel="OPEX Baseline (FY)" fieldClass="dependency-drawer-field" min="0" step="1000" [mandatory]="true" (valueChange)="updateBudgetYearDraft('baselineOpex', $event)" />
                       <app-pm-console-field label="CAPEX Forecast (FY)" type="money" inputType="number" [value]="budgetYearDraft.forecastCapex" [placeholder]="budgetPlanConfig.amountPlaceholder" ariaLabel="CAPEX Forecast (FY)" fieldClass="dependency-drawer-field" min="0" step="1000" [mandatory]="true" (valueChange)="updateBudgetYearDraft('forecastCapex', $event)" />
                       <app-pm-console-field label="OPEX Forecast (FY)" type="money" inputType="number" [value]="budgetYearDraft.forecastOpex" [placeholder]="budgetPlanConfig.amountPlaceholder" ariaLabel="OPEX Forecast (FY)" fieldClass="dependency-drawer-field" min="0" step="1000" [mandatory]="true" (valueChange)="updateBudgetYearDraft('forecastOpex', $event)" />
+                      <app-pm-console-field label="CAPEX Committed" type="money" inputType="number" [value]="budgetYearDraft.committedCapex" [placeholder]="budgetPlanConfig.amountPlaceholder" ariaLabel="CAPEX committed" fieldClass="dependency-drawer-field" min="0" step="100" (valueChange)="updateBudgetYearDraft('committedCapex', $event)" />
+                      <app-pm-console-field label="OPEX Committed" type="money" inputType="number" [value]="budgetYearDraft.committedOpex" [placeholder]="budgetPlanConfig.amountPlaceholder" ariaLabel="OPEX committed" fieldClass="dependency-drawer-field" min="0" step="100" (valueChange)="updateBudgetYearDraft('committedOpex', $event)" />
+                      <app-pm-console-field label="CAPEX YTD Actual" type="money" inputType="number" [value]="budgetYearDraft.actualCapex" [placeholder]="budgetPlanConfig.amountPlaceholder" ariaLabel="CAPEX YTD actual" fieldClass="dependency-drawer-field" min="0" step="100" (valueChange)="updateBudgetYearDraft('actualCapex', $event)" />
+                      <app-pm-console-field label="OPEX YTD Actual" type="money" inputType="number" [value]="budgetYearDraft.actualOpex" [placeholder]="budgetPlanConfig.amountPlaceholder" ariaLabel="OPEX YTD actual" fieldClass="dependency-drawer-field" min="0" step="100" (valueChange)="updateBudgetYearDraft('actualOpex', $event)" />
                     </div>
                   </app-pm-console-plan-drawer>
                 }
@@ -6986,8 +6905,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     [title]="budgetPlanConfig.fundingTitle"
                     [eyebrow]="budgetPlanConfig.fieldName"
                     [description]="budgetPlanConfig.fundingBody"
-                    [summaryLabel]="budgetFundingSourceCountLabel(year)"
-                    [summary]="year ? budgetFundingCoverageLabel(year) : 'Capture the funding source, amount, status, and notes for this fiscal year.'"
                     submitLabel="Add funding source"
                     [submitDisabled]="!year || !canSaveBudgetFundingDraft()"
                     closeAriaLabel="Close funding sources drawer"
@@ -7073,8 +6990,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     [title]="budgetPlanConfig.monthlyTitle"
                     [eyebrow]="budgetPlanConfig.fieldName"
                     [description]="budgetPlanConfig.monthlyBody"
-                    [summaryLabel]="year ? year.fy : budgetPlanConfig.monthlyTitle"
-                    summary="Budget phasing stays visible, while forecast, actual, and committed values can be adjusted month by month with one explicit save."
                     submitLabel="Save monthly budget"
                     [submitDisabled]="!year || !budgetMonthlyEditorRows.length"
                     closeAriaLabel="Close monthly budget drawer"
@@ -7125,8 +7040,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     [title]="benefitDrawerTitle"
                     [eyebrow]="register.fieldName + ' · AI ready'"
                     [description]="register.description"
-                    [summaryLabel]="benefitCountLabel(register)"
-                    summary="Capture the benefit statement first, then layer more evidence and realization commentary later through reporting."
                     [submitLabel]="benefitDrawerSubmitLabel"
                     [submitDisabled]="!canSaveBenefitDraft(register)"
                     closeAriaLabel="Close benefit drawer"
@@ -7149,8 +7062,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     [title]="riskDrawerTitle"
                     [eyebrow]="register.fieldName"
                     [description]="register.description"
-                    [summaryLabel]="riskCountLabel(register)"
-                    summary="Capture the quick risk record here. Use the full profile option when source, consequence, controls, and treatment detail need a richer assessment."
                     [submitLabel]="riskDrawerOpenProfileAfterSave ? 'Save risk and open profile' : editingRiskPlanId ? 'Save changes' : register.actionLabel"
                     [submitDisabled]="!canSaveRiskDraft(register)"
                     closeAriaLabel="Close risk drawer"
@@ -7246,8 +7157,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     [title]="register.title"
                     [eyebrow]="register.fieldName"
                     [description]="register.description"
-                    [summaryLabel]="issueCountLabel(register)"
-                    summary="Capture the issue once with owner, dates, and the current resolution path so project reviews can see what still needs action."
                     [submitLabel]="register.actionLabel"
                     [submitDisabled]="!canSaveIssueDraft(register)"
                     closeAriaLabel="Close issue drawer"
@@ -7275,8 +7184,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     [title]="register.title"
                     [eyebrow]="register.fieldName"
                     [description]="register.description"
-                    [summaryLabel]="relatedLinksCountLabel(register)"
-                    summary="Capture the document name, destination link, and a quick note once so reviewers can open evidence directly from this tab."
                     [submitLabel]="register.actionLabel"
                     [submitDisabled]="!canSaveRelatedLinksDraft(register)"
                     closeAriaLabel="Close related links drawer"
@@ -7296,8 +7203,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     [title]="editingResourcePlanId ? 'Edit resource' : register.title"
                     [eyebrow]="register.fieldName"
                     [description]="register.description"
-                    [summaryLabel]="resourceCountLabel(register)"
-                    summary="Capture the role, FTE demand, and timing once so resourcing can be reviewed directly from this section."
                     [submitLabel]="editingResourcePlanId ? 'Save changes' : register.actionLabel"
                     [submitDisabled]="!canSaveResourceDraft(register)"
                     closeAriaLabel="Close resource drawer"
@@ -7354,8 +7259,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     [title]="register.title"
                     [eyebrow]="register.fieldName"
                     [description]="register.description"
-                    [summaryLabel]="changeImpactCountLabel(register)"
-                    summary="Capture the impacted audience, the level of disruption, and the first change strategy before adoption risk starts landing in delivery."
                     [submitLabel]="register.actionLabel"
                     [submitDisabled]="!canSaveChangeImpactDraft(register)"
                     closeAriaLabel="Close change impact drawer"
@@ -7400,8 +7303,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     [title]="register.title"
                     [eyebrow]="register.fieldName"
                     [description]="register.description"
-                    [summaryLabel]="dependencyCountLabel(register)"
-                    summary="Add the relationship once, then manage it from the dependency table in this section."
                     [submitLabel]="register.actionLabel"
                     [submitDisabled]="!canSaveDependencyDraft(register)"
                     closeAriaLabel="Close dependency drawer"
@@ -7424,8 +7325,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     [title]="overviewDriverDrawerTitle"
                     eyebrow="Business Drivers"
                     description="Capture the strategic reason cleanly in the drawer, then come back to the register to compare all drivers at a glance."
-                    [summaryLabel]="overviewCountLabel(overviewBusinessDriverRows.length, 'driver')"
-                    [summary]="'Priority: ' + (overviewBusinessDriverDraft.priority || 'High')"
                     [submitLabel]="editingOverviewBusinessDriverId ? 'Save changes' : 'Add business driver'"
                     [submitDisabled]="!canSaveOverviewBusinessDriverDraft()"
                     closeAriaLabel="Close business driver drawer"
@@ -7446,8 +7345,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     [title]="overviewOutcomeDrawerTitle"
                     eyebrow="Outcome"
                     description="Move the old inline outcome form into the drawer so the page stays focused on reading, while the form stays focused on writing."
-                    [summaryLabel]="overviewCountLabel(overviewOutcomeRows.length, 'outcome')"
-                    [summary]="'Status: ' + (overviewOutcomeDraft.status || 'Draft')"
                     [submitLabel]="editingOverviewOutcomeId ? 'Save changes' : 'Add outcome'"
                     [submitDisabled]="!canSaveOverviewOutcomeDraft()"
                     closeAriaLabel="Close outcome drawer"
@@ -7468,8 +7365,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     [title]="overviewObjectiveDrawerTitle"
                     eyebrow="Project Alignment (Objectives)"
                     description="Project objectives now sit in the same right-drawer pattern, with the linked strategic objective visible at the same time."
-                    [summaryLabel]="overviewCountLabel(overviewObjectiveRows.length, 'objective')"
-                    [summary]="'Status: ' + (overviewObjectiveDraft.status || 'Draft')"
                     [submitLabel]="editingOverviewObjectiveId ? 'Save changes' : 'Add project objective'"
                     [submitDisabled]="!canSaveOverviewObjectiveDraft()"
                     closeAriaLabel="Close project objective drawer"
@@ -7489,7 +7384,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     [title]="overviewCapabilityDrawerTitle"
                     eyebrow="Link Capabilities"
                     description="Keep capability mapping detailed and deliberate without forcing users to open an inline editor inside the page."
-                    [summary]="overviewCountLabel(overviewSelectedCapabilityCount, 'capability') + ' selected now'"
                     [submitLabel]="editingOverviewCapabilityId ? 'Save changes' : 'Link capabilities'"
                     [submitDisabled]="!canSaveOverviewCapabilityDraft()"
                     closeAriaLabel="Close capability drawer"
@@ -7523,8 +7417,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     [title]="overviewServiceDrawerTitle"
                     eyebrow="Link Services"
                     description="Keep the service mapping flow structured, but contained, so users can complete it without losing the overview context behind the drawer."
-                    [summaryLabel]="overviewCountLabel(overviewServiceRows.length, 'service')"
-                    [summary]="'Selected service: ' + (overviewServiceDraft.service || 'Not chosen')"
                     [submitLabel]="editingOverviewServiceId ? 'Save changes' : 'Link service'"
                     [submitDisabled]="!canSaveOverviewServiceDraft()"
                     closeAriaLabel="Close service drawer"
@@ -7545,8 +7437,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     [title]="scheduleScopeMilestoneDrawerTitle"
                     eyebrow="Milestones"
                     description="Keep schedule checkpoints focused, then manage them from the register instead of expanding an inline form."
-                    [summaryLabel]="scheduleScopeCountLabel(scheduleMilestoneRows.length, 'milestone')"
-                    [summary]="'Due date: ' + (scheduleMilestoneDraft.dueDate ? scheduleScopeDateLabel(scheduleMilestoneDraft.dueDate) : 'Not set')"
                     [submitLabel]="editingScheduleMilestoneId ? 'Save changes' : 'Add milestone'"
                     [submitDisabled]="!canSaveScheduleMilestoneDraft()"
                     closeAriaLabel="Close milestone drawer"
@@ -7568,8 +7458,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     [title]="scheduleScopeEndProductDrawerTitle"
                     eyebrow="End Product (Deliverables)"
                     description="Use the drawer for product setup, then come back to the register table for comparison and review."
-                    [summaryLabel]="scheduleScopeProductBudgetTotal(scheduleEndProductDraft.capex, scheduleEndProductDraft.opex)"
-                    [summary]="'Delivery timeline: ' + scheduleScopeDateRange(scheduleEndProductDraft.startDate, scheduleEndProductDraft.endDate)"
                     [submitLabel]="editingScheduleEndProductId ? 'Save changes' : 'Add end product'"
                     [submitDisabled]="!canSaveScheduleEndProductDraft()"
                     closeAriaLabel="Close end product drawer"
@@ -7693,14 +7581,8 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                         </div>
                       </div>
                       <div class="dependency-drawer-grid">
-                        <label class="matrix-field dependency-drawer-field wide">
-                          <span class="matrix-field-label">Predecessors</span>
-                          <input type="text" [value]="scheduleEndProductDraft.predecessors" (input)="updateScheduleEndProductDraft('predecessors', $any($event.target).value)" aria-label="Predecessors" placeholder="Comma-separated linked projects" />
-                        </label>
-                        <label class="matrix-field dependency-drawer-field wide">
-                          <span class="matrix-field-label">Successors</span>
-                          <input type="text" [value]="scheduleEndProductDraft.successors" (input)="updateScheduleEndProductDraft('successors', $any($event.target).value)" aria-label="Successors" placeholder="Comma-separated linked projects" />
-                        </label>
+                        <app-pm-console-field label="Predecessors" type="select" [value]="scheduleEndProductDraft.predecessors" [options]="scheduleScopeDeliveryLinkOptions" placeholder="Select linked project" [placeholderDisabled]="false" ariaLabel="Predecessors" fieldClass="dependency-drawer-field" [wide]="true" (valueChange)="updateScheduleEndProductDraft('predecessors', $event)" />
+                        <app-pm-console-field label="Successors" type="select" [value]="scheduleEndProductDraft.successors" [options]="scheduleScopeDeliveryLinkOptions" placeholder="Select linked project" [placeholderDisabled]="false" ariaLabel="Successors" fieldClass="dependency-drawer-field" [wide]="true" (valueChange)="updateScheduleEndProductDraft('successors', $event)" />
                       </div>
                     </section>
                   </app-pm-console-plan-drawer>
@@ -7710,8 +7592,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     [title]="scheduleScopeManagementProductDrawerTitle"
                     eyebrow="Management Product"
                     description="Keep governance artefacts in the same drawer pattern so the experience stays consistent across the whole Schedule & Scope tab."
-                    [summaryLabel]="scheduleScopeProductBudgetTotal(scheduleManagementProductDraft.capex, scheduleManagementProductDraft.opex)"
-                    [summary]="'Timeline: ' + scheduleScopeDateRange(scheduleManagementProductDraft.startDate, scheduleManagementProductDraft.endDate)"
                     [submitLabel]="editingScheduleManagementProductId ? 'Save changes' : 'Add management product'"
                     [submitDisabled]="!canSaveScheduleManagementProductDraft()"
                     closeAriaLabel="Close management product drawer"
@@ -7905,8 +7785,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                         [title]="changeRequestDrawerTitle"
                         eyebrow="Project change request"
                         description="Create a single PCR with overview, impact assessment, and evidence links in one side drawer."
-                        [summaryLabel]="changeRequestDrawerSummary"
-                        summary="Save the request as a draft, then submit it to PMO once the impact tabs and supporting links are ready."
                         [submitLabel]="editingChangeRequestId ? 'Save request' : 'Create request'"
                         [submitDisabled]="!canSaveChangeRequestDraft()"
                         closeAriaLabel="Close change request drawer"
@@ -8473,23 +8351,20 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
           } @else {
             <div class="content-grid" [class.pm101-locked-grid]="usesPm101DesignShell" [class.pm101-operational-grid]="usesPm101OperationalLayout">
               <div class="left-column">
-                <section class="workspace-panel" [class.project-workspace-panel]="!isAllProjects && !usesPm101DesignShell" [class.board-workspace-panel]="selectedView === 'board'" [class.calendar-workspace-panel]="selectedView === 'calendar'" [class.pm101-locked-workspace]="usesPm101DesignShell" [class.pm101-operational-workspace]="usesPm101OperationalLayout">
+                <section class="workspace-panel" [class.project-workspace-panel]="!isAllProjects && !usesPm101DesignShell" [class.board-workspace-panel]="selectedView === 'board'" [class.calendar-workspace-panel]="selectedView === 'calendar'" [class.stages-workspace-panel]="selectedView === 'stages'" [class.pm101-locked-workspace]="usesPm101DesignShell" [class.pm101-operational-workspace]="usesPm101OperationalLayout">
                   <div class="workspace-shell-head" [class.pm101-locked-shell-head]="usesPm101DesignShell" [class.pm101-operational-shell-head]="usesPm101OperationalLayout">
                     @if (usesPm101DesignShell) {
                       <img class="workspace-line-art" src="./assets/workspace-line-art.svg" alt="" aria-hidden="true" />
                       <div class="workspace-shell-actions" aria-label="Workspace utilities">
                         @if (showWorkspaceProjectSwitch) {
-                          <label class="workspace-project-switch" data-tour-target="project-switch">
-                            <span class="workspace-project-switch-label">Viewing</span>
-                            <span class="workspace-project-select-wrap">
-                              <select [value]="workspaceHeaderProject" aria-label="Select project" (change)="selectWorkspaceProject($event)">
-                                @for (project of workspaceHeaderProjectOptions; track project.id) {
-                                  <option [value]="project.id" [selected]="project.id === workspaceHeaderProject">{{ project.name }}</option>
-                                }
-                              </select>
-                              <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
-                            </span>
-                          </label>
+                          <app-pm-console-project-dropdown
+                            label="Viewing"
+                            ariaLabel="Select project"
+                            tourTarget="project-switch"
+                            [options]="workspaceHeaderProjectOptions"
+                            [value]="workspaceHeaderProject"
+                            (valueChange)="selectWorkspaceProject($event)"
+                          ></app-pm-console-project-dropdown>
                         } @else {
                           <button class="workspace-filter-button" type="button" aria-label="Refresh workspace">
                             <span class="icon" aria-hidden="true"><i data-lucide="refresh-cw"></i></span>
@@ -8556,13 +8431,13 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                   @if (isActionWorkspaceActive) {
                     <div class="workspace-control-row actions-control-row">
                       @if (selectedView !== 'stages') {
+                        <div class="board-filter action-board-filter" aria-label="Action filters"><details class="work-filter-dropdown"><summary [attr.aria-label]="'Filter actions by ' + selectedBoardFilterOption.label"><span class="work-filter-selected-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(selectedBoardFilterOption.icon)"></i></span></span><span>{{ selectedBoardFilterOption.label }}</span><strong>{{ countForActionFilter(selectedBoardFilterOption) }}</strong><span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span></summary><div class="work-filter-menu" role="menu">@for (filter of boardFilters; track filter.id) { <button [class.active]="selectedBoardFilter === filter.id" type="button" role="menuitemradio" [attr.aria-checked]="selectedBoardFilter === filter.id" (click)="setBoardFilter(filter.id, $event)"><span class="work-filter-option-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(filter.icon)"></i></span></span><span>{{ filter.label }}</span><strong>{{ countForActionFilter(filter) }}</strong></button> }</div></details></div>
+                      }
+                      @if (selectedView !== 'stages') {
                         <label class="workspace-search">
                           <span class="icon" aria-hidden="true"><i data-lucide="search"></i></span>
                           <input type="search" [attr.aria-label]="workspaceSearchPlaceholder" [placeholder]="workspaceSearchPlaceholder" />
                         </label>
-                      }
-                      @if (selectedView === 'board') {
-                        <div class="board-filter action-board-filter" aria-label="Action board filters"><span>Show</span><details class="work-filter-dropdown"><summary [attr.aria-label]="'Filter actions by ' + selectedBoardFilterOption.label"><span class="work-filter-selected-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(selectedBoardFilterOption.icon)"></i></span></span><span>{{ selectedBoardFilterOption.label }}</span><strong>{{ countForFilter(selectedBoardFilterOption) }}</strong><span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span></summary><div class="work-filter-menu" role="menu">@for (filter of boardFilters; track filter.id) { <button [class.active]="selectedBoardFilter === filter.id" type="button" role="menuitemradio" [attr.aria-checked]="selectedBoardFilter === filter.id" (click)="setBoardFilter(filter.id, $event)"><span class="work-filter-option-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(filter.icon)"></i></span></span><span>{{ filter.label }}</span><strong>{{ countForFilter(filter) }}</strong></button> }</div></details></div>
                       }
                       <div
                         class="action-view-switch"
@@ -8608,7 +8483,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                       </div>
                     </div>
                   }
-                  <div class="workspace-body" [@panelMotion]="workspaceMotionKey">
+                  <div class="workspace-body" [class.pm101-onboarding-locked-body]="onboardingPm101Locked && selectedView === 'pm101'" [class.selected-project-operational-body]="showSelectedProjectOverviewQuickLinks && selectedView === 'pm101'" [@panelMotion]="workspaceMotionKey">
                     <div class="board-view" [class.is-hidden]="selectedView !== 'board'" data-work-view="board" data-tour-target="action-board">
                       <div class="kanban-board">@for (column of visibleBoardColumns; track column.column) { <section class="kanban-column {{ column.tone }}"><header><div><span class="board-column-icon {{ column.tone }}"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="boardColumnIcon(column.column)"></i></span></span><h3>{{ column.column }}</h3></div><strong>{{ column.items.length }}</strong></header><div class="task-stack">@for (item of column.items; track item.title) { <article class="task-card {{ taskCardClass(item.type) }}" [attr.data-card-kind]="filterKind(item.type)"><div class="task-top"><span>{{ item.type }}</span></div><h3>{{ item.title }}</h3><p>{{ item.project }}</p><div class="task-bottom"><span class="avatar-sm">{{ item.owner }}</span><small>{{ item.meta }}</small><button class="task-action" type="button" [attr.data-tour-target]="filterKind(item.type) === 'report' ? 'create-psr' : null" (click)="handleTaskAction(item)"><span>{{ item.cta }}</span><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></button></div></article> } @empty { <div class="empty-column">No {{ boardEmptyStateLabel }} in this lane.</div> }</div></section> }</div>
                     </div>
@@ -8625,7 +8500,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                       ></app-pm-console-work-calendar>
                     </div>
                     @if (showWorkspaceOverviewTab) {
-                    <div class="pm101-view" [class.pm101-operational-view]="usesPm101OperationalLayout" [class.selected-project-operational-view]="showSelectedProjectOverviewQuickLinks" [class.is-hidden]="selectedView !== 'pm101'" data-work-view="pm101" data-tour-target="frontdoor-overview">
+                    <div class="pm101-view" [class.pm101-operational-view]="usesPm101OperationalLayout" [class.pm101-onboarding-locked-view]="onboardingPm101Locked" [class.selected-project-operational-view]="showSelectedProjectOverviewQuickLinks" [class.is-hidden]="selectedView !== 'pm101'" data-work-view="pm101" data-tour-target="frontdoor-overview">
                       @if (onboardingPm101Locked) {
                         <article class="pm101-assignment-banner" aria-label="PM 101 assignment status">
                           <img class="pm101-assignment-banner-art" src="./assets/pm101-assignment-banner.png" alt="" aria-hidden="true" />
@@ -8983,8 +8858,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
           [title]="benefitDrawerTitle"
           [eyebrow]="register.fieldName + ' · AI ready'"
           [description]="register.description"
-          [summaryLabel]="benefitCountLabel(register)"
-          summary="Capture the benefit statement first, then layer more evidence and realization commentary later through reporting."
           [submitLabel]="benefitDrawerSubmitLabel"
           [submitDisabled]="!canSaveBenefitDraft(register)"
           closeAriaLabel="Close benefit drawer"
@@ -9008,8 +8881,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
           [title]="riskDrawerTitle"
           [eyebrow]="register.fieldName"
           [description]="register.description"
-          [summaryLabel]="riskCountLabel(register)"
-          summary="Capture the quick risk record here. Use the full profile option when source, consequence, controls, and treatment detail need a richer assessment."
           [submitLabel]="riskDrawerOpenProfileAfterSave ? 'Save risk and open profile' : editingRiskPlanId ? 'Save changes' : register.actionLabel"
           [submitDisabled]="!canSaveRiskDraft(register)"
           closeAriaLabel="Close risk drawer"
@@ -10440,6 +10311,42 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return titles[section.title] || section.title;
   }
 
+  simplePlanSectionGuide(section: SimplePlanSection): PmConsoleAiGuideCopy | null {
+    const guides: Record<string, PmConsoleAiGuideCopy> = {
+      'Project Profile': {
+        title: 'Project profile',
+        what: 'The basic project identity reviewers use to understand ownership, category, business unit, and PMO contact.',
+        how: 'Check that names, owner roles, and mandatory fields match the assignment before completing the plan sections.',
+        example: 'Example: project name, category, business unit, project manager, and PMO contact are all confirmed.',
+      },
+      'Purpose and outcome': {
+        title: 'Overview',
+        what: 'The short case for why the project exists and what outcome it should create.',
+        how: 'Start with the opportunity or problem, add a measurable outcome, then confirm whether AI is part of delivery or governance.',
+        example: 'Example: fragmented research data creates duplicated discovery work; the project creates one governed capability map.',
+      },
+      'Dates and scope': {
+        title: 'Schedule & scope',
+        what: 'The delivery window, scope boundary, milestones, and required products that make the plan reviewable.',
+        how: 'Confirm baseline dates first, then add the in-scope work and minimum deliverables needed for endorsement.',
+        example: 'Example: baseline start and end dates, in-scope audiences, three milestones, and one end product.',
+      },
+      'Budget baseline': {
+        title: 'Budget',
+        what: 'The first approved CAPEX and OPEX view before detailed funding, forecast, and monthly phasing are added.',
+        how: 'Enter the fiscal baseline values reviewers need to understand the scale of the project.',
+        example: 'Example: CAPEX baseline SAR 950K and OPEX baseline SAR 280K for FY 2026-2027.',
+      },
+      Risks: {
+        title: 'Mandatory watchlist',
+        what: 'The minimum benefit and risk evidence needed before the simple plan can be endorsed.',
+        how: 'Add at least one expected benefit and one delivery risk with enough ownership detail for PMO follow-up.',
+        example: 'Example: improved research discovery as a benefit, plus data quality as a delivery risk.',
+      },
+    };
+    return guides[section.title] || this.aiGuideFor(this.simplePlanSectionTitle(section));
+  }
+
   isSimpleScheduleScopeSection(section: SimplePlanSection): boolean {
     return section.title === 'Dates and scope';
   }
@@ -10523,9 +10430,8 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   onboardingPlanActionMessage = '';
   activeAiAssistSection: string | null = null;
   aiAssistStatus: AiSectionAssistStatus = 'idle';
-  aiAssistTypedGuide = '';
-  aiAssistUserPrompt = '';
   aiRecentlyFilledSection: string | null = null;
+  aiWritingSection: string | null = null;
   activeAiGenerationStep = 'Reading project assignment...';
   aiInlineRewrite: AiInlineRewriteState = {
     visible: false,
@@ -10615,6 +10521,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   isBudgetDrawerOpen = false;
   isBudgetFundingDrawerOpen = false;
   isBudgetMonthlyDrawerOpen = false;
+  isBudgetMonthlyTableExpanded = false;
   isBudgetRulesOpen = false;
   isBenefitDrawerOpen = false;
   editingBenefitPlanId: string | null = null;
@@ -10696,6 +10603,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   projectPlanActiveSection = 'Overview';
   projectPlanSectionsExpanded = true;
   projectPlanHeaderCondensed = false;
+  readonly simpleProjectPlanAiSection = 'Simple Project Plan';
   projectPlanExpandedFieldSections: Record<string, boolean> = {};
   projectPlanExpandedCards: Record<string, boolean> = {};
   activeClosureSection: ClosureSectionId = 'overview';
@@ -10707,12 +10615,14 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   private quickLinksPagerBlockHeight = 0;
   private quickLinksToastTimer: number | null = null;
   private guidedTourFrame: number | null = null;
+  private guidedTourPositionUntil = 0;
   private workspaceTableColumnTimers: Partial<Record<WorkspaceTableColumnId, number>> = {};
   private workspaceTableColumnFrames: Partial<Record<WorkspaceTableColumnId, number>> = {};
   private onboardingProjectSetupStateApplied = false;
-  private aiAssistTypingTimer: number | null = null;
   private aiAssistGenerationTimer: number | null = null;
   private aiAssistFilledClearTimer: number | null = null;
+  private aiAssistWritingTimer: number | null = null;
+  private aiAssistStepTimers: number[] = [];
   private projectPlanReturnState: ProjectPlanReturnState | null = null;
   private riskProfileReturnState: RiskProfileReturnState | null = null;
   private projectPlanLastContentScrollTop = 0;
@@ -10842,11 +10752,6 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   get projectPlanIdentityCard(): SimplePlanSection {
     return this.simplePlanSections[0];
-  }
-
-  get activeAiAssistGuide(): AiSectionAssistGuide {
-    if (!this.activeAiAssistSection) return defaultAiSectionAssistGuide;
-    return aiSectionAssistGuides[this.activeAiAssistSection] || defaultAiSectionAssistGuide;
   }
 
   get activeProjectPlanVisibleGroups(): ProjectPlanFieldGroup[] {
@@ -10992,6 +10897,18 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   get scheduleScopeExistingEndProducts(): typeof scheduleScopeExistingEndProducts {
     return scheduleScopeExistingEndProducts;
+  }
+
+  get scheduleScopeDeliveryLinkOptions(): string[] {
+    const currentProduct = this.scheduleEndProductDraft.product.trim();
+    const values = [
+      ...scheduleScopeExistingEndProducts.map((product) => product.product),
+      ...this.scheduleEndProductRows.map((row) => row.product),
+      ...this.scheduleEndProductRows.flatMap((row) => [...row.predecessors, ...row.successors]),
+      this.scheduleEndProductDraft.predecessors,
+      this.scheduleEndProductDraft.successors,
+    ];
+    return [...new Set(values.map((value) => value.trim()).filter((value) => value && value !== currentProduct))];
   }
 
   get scheduleScopeMilestoneDrawerTitle(): string {
@@ -11470,7 +11387,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get isOnboardingAssignedProjectWorkspace(): boolean {
-    return this.isOnboardingAssignedProjectWorkspaceShell && this.selectedView === 'pm101';
+    return (this.isOnboardingAssignedProjectWorkspaceShell || this.isOnboardingProjectSetupHomeWorkspaceShell) && this.selectedView === 'pm101';
   }
 
   get showSelectedProjectOverviewQuickLinks(): boolean {
@@ -11478,7 +11395,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get showOnboardingAssignedRightRail(): boolean {
-    return this.isPm101OnboardingWorkspaceFlow || this.isOnboardingAssignedProjectWorkspaceShell;
+    return this.isPm101OnboardingWorkspaceFlow || this.isOnboardingAssignedProjectWorkspaceShell || this.isOnboardingProjectSetupHomeWorkspaceShell;
   }
 
   get showPortfolioReportTrends(): boolean {
@@ -11491,6 +11408,18 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   get isOnboardingAssignedProjectWorkspaceShell(): boolean {
     return this.isOnboardingAssignedWorkspace && !this.isAllProjects;
+  }
+
+  get isOnboardingProjectSetupHomeWorkspaceShell(): boolean {
+    return (
+      this.frontDoorMode === 'assigned' &&
+      this.onboardingAssignmentFlow &&
+      this.pmoAssignmentReady &&
+      !this.onboardingPm101Locked &&
+      this.onboardingProjectSetup &&
+      this.selectedPage === 'workspace' &&
+      !this.isAllProjects
+    );
   }
 
   get isPm101WelcomeWorkspace(): boolean {
@@ -12137,9 +12066,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       if (this.guidedTourActive) {
         this.guidedTourStep = 0;
         this.prepareGuidedTourTarget();
-        this.scheduleGuidedTourPosition();
+        this.trackGuidedTourPosition();
       } else {
         this.guidedTourStep = 0;
+        this.guidedTourPositionUntil = 0;
       }
       this.iconsHydrated = false;
     }
@@ -12154,6 +12084,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       window.cancelAnimationFrame(this.guidedTourFrame);
       this.guidedTourFrame = null;
     }
+    this.guidedTourPositionUntil = 0;
     if (this.quickLinksToastTimer !== null) {
       window.clearTimeout(this.quickLinksToastTimer);
       this.quickLinksToastTimer = null;
@@ -12178,7 +12109,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   @HostListener('window:resize')
   handleWindowResize(): void {
     if (this.guidedTourActive) {
-      this.scheduleGuidedTourPosition();
+      this.trackGuidedTourPosition();
     }
     this.closeAiInlineRewrite();
     this.scheduleQuickLinksLayoutMeasurement();
@@ -12199,6 +12130,8 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   handleDocumentClick(event: MouseEvent): void {
     const target = event.target;
     if (!(target instanceof Node)) return;
+    const targetElement = target instanceof Element ? target : target.parentElement;
+    const isProjectPlanAiFillTrigger = Boolean(targetElement?.closest('[data-project-plan-ai-fill]'));
     if (this.workspaceColumnMenuOpen) {
       const menu = this.elementRef.nativeElement.querySelector<HTMLElement>('[data-workspace-columns-menu]');
       if (!menu?.contains(target)) this.closeWorkspaceColumnMenu();
@@ -12222,7 +12155,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     }
     if (this.activeAiAssistSection) {
       const assist = this.elementRef.nativeElement.querySelector<HTMLElement>('[data-ai-section-assist]');
-      if (!assist?.contains(target)) this.closeAiAssist();
+      if (!isProjectPlanAiFillTrigger && !assist?.contains(target)) this.closeAiAssist();
     }
     if (this.aiInlineRewrite.visible && !this.isAiInlineRewriteInteractionTarget(target) && !this.aiInlineRewriteTarget?.contains(target)) {
       this.closeAiInlineRewrite();
@@ -12249,6 +12182,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     }
     if (this.isBudgetRulesOpen) {
       this.closeBudgetRulesPopover();
+      return;
+    }
+    if (this.isBudgetMonthlyTableExpanded) {
+      this.closeBudgetMonthlyTableExpanded();
       return;
     }
     if (this.isScheduleDeliverablesMenuOpen) {
@@ -12387,6 +12324,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   completeGuidedTour(): void {
     this.guidedTourActive = false;
     this.guidedTourStep = 0;
+    this.guidedTourPositionUntil = 0;
 
     if (this.guidedTourExitMode === 'unassigned') {
       this.frontDoorMode = 'unassigned';
@@ -12732,30 +12670,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return this.activeAiAssistSection === section;
   }
 
-  openAiAssist(section: string): void {
-    if (!this.onboardingProjectSetup || this.projectPlanEntry !== 'quick') return;
-    if (this.activeAiAssistSection === section && this.aiAssistStatus !== 'idle') return;
-
-    this.activeAiAssistSection = section;
-    this.aiAssistUserPrompt = '';
-    this.startAiAssistTyping();
-    this.iconsHydrated = false;
-  }
-
-  toggleAiAssist(section: string, event?: Event): void {
-    event?.stopPropagation();
-    if (this.activeAiAssistSection === section) {
-      return;
-    }
-    this.openAiAssist(section);
-  }
-
   closeAiAssist(): void {
     this.clearAiAssistTimers();
     this.activeAiAssistSection = null;
     this.aiAssistStatus = 'idle';
-    this.aiAssistTypedGuide = '';
-    this.aiAssistUserPrompt = '';
     this.iconsHydrated = false;
   }
 
@@ -12970,44 +12888,83 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     target.classList.toggle('ai-inline-rewrite-wave', active);
   }
 
-  updateAiAssistPrompt(value: string): void {
-    this.aiAssistUserPrompt = value;
+  isAiSectionGenerating(section: string): boolean {
+    return this.aiAssistStatus === 'filling' && this.isAiAssistOpen(section);
+  }
+
+  isAiSectionBusy(section: string): boolean {
+    return this.isAiSectionGenerating(section) || this.isAiSectionWriting(section);
+  }
+
+  isAiSectionWriting(section: string): boolean {
+    return this.aiWritingSection === section;
+  }
+
+  isSimplePlanAiGenerating(): boolean {
+    return this.isAiSectionGenerating(this.simpleProjectPlanAiSection);
+  }
+
+  isSimplePlanAiBusy(): boolean {
+    return this.isAiSectionBusy(this.simpleProjectPlanAiSection);
+  }
+
+  isSimplePlanAiWriting(): boolean {
+    return this.isAiSectionWriting(this.simpleProjectPlanAiSection);
+  }
+
+  showProjectPlanAiAutofill(_section: string): boolean {
+    return this.onboardingProjectSetup && this.projectPlanEntry === 'quick';
   }
 
   fillAiSectionDraft(): void {
-    const section = this.activeAiAssistSection || this.projectPlanActiveSection;
+    const section =
+      this.activeAiAssistSection && this.activeAiAssistSection !== this.simpleProjectPlanAiSection
+        ? this.activeAiAssistSection
+        : this.projectPlanActiveSection;
+    if (!this.showProjectPlanAiAutofill(section)) return;
+    if (this.aiAssistStatus === 'filling' || this.isAiSectionWriting(section)) return;
     this.clearAiAssistTimers();
     this.activeAiAssistSection = section;
     this.aiAssistStatus = 'filling';
-    this.aiAssistUserPrompt = '';
+    this.aiWritingSection = null;
     this.activeAiGenerationStep = 'Reading project assignment...';
     this.iconsHydrated = false;
 
-    this.aiAssistTypingTimer = window.setTimeout(() => {
-      this.activeAiGenerationStep = 'Drafting section fields...';
-      this.changeDetector.markForCheck();
-    }, 360);
+    this.scheduleAiAssistStep('Reading project assignment...', 0);
+    this.scheduleAiAssistStep('Scanning section fields...', 900);
+    this.scheduleAiAssistStep('Drafting table rows and controls...', 1900);
+    this.scheduleAiAssistStep('Writing generated values...', 3000);
 
     this.aiAssistGenerationTimer = window.setTimeout(() => {
       this.applyAiDraftToSection(section);
+      this.aiWritingSection = section;
       this.finishAiDraft(section, `AI drafted ${section}. Review and refine before submission.`);
-    }, 980);
+      this.aiAssistGenerationTimer = null;
+    }, 3600);
   }
 
-  refineAiSectionDraft(): void {
-    const section = this.activeAiAssistSection || this.projectPlanActiveSection;
-    const prompt = this.aiAssistUserPrompt.trim();
-    if (!prompt || this.aiAssistStatus === 'refining') return;
-
+  fillSimplePlanDraft(): void {
+    const section = this.simpleProjectPlanAiSection;
+    if (!this.showProjectPlanAiAutofill(section)) return;
+    if (this.aiAssistStatus === 'filling' || this.isAiSectionWriting(section)) return;
     this.clearAiAssistTimers();
-    this.aiAssistStatus = 'refining';
-    this.activeAiGenerationStep = 'Applying your changes...';
+    this.activeAiAssistSection = section;
+    this.aiAssistStatus = 'filling';
+    this.aiWritingSection = null;
+    this.activeAiGenerationStep = 'Reading project assignment...';
+    this.iconsHydrated = false;
+
+    this.scheduleAiAssistStep('Reading project assignment...', 0);
+    this.scheduleAiAssistStep('Scanning simple plan blocks...', 900);
+    this.scheduleAiAssistStep('Drafting overview, scope, budget, and watchlist...', 1900);
+    this.scheduleAiAssistStep('Writing generated values...', 3000);
 
     this.aiAssistGenerationTimer = window.setTimeout(() => {
-      this.applyAiDraftToSection(section, prompt);
-      this.aiAssistUserPrompt = '';
-      this.finishAiDraft(section, `AI updated ${section} with your refinement.`);
-    }, 720);
+      this.applySimplePlanAiDraft();
+      this.aiWritingSection = section;
+      this.finishAiDraft(section, 'AI drafted the simple project plan. Review and refine before submission.');
+      this.aiAssistGenerationTimer = null;
+    }, 3600);
   }
 
   setWorkspaceRegister(register: WorkspaceRegister): void {
@@ -13108,8 +13065,11 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     }, 150);
   }
 
-  selectWorkspaceProject(event: Event): void {
-    const value = (event.target as HTMLSelectElement | null)?.value || this.workspaceHeaderProject;
+  selectWorkspaceProject(projectOrEvent: string | Event): void {
+    const value =
+      typeof projectOrEvent === 'string'
+        ? projectOrEvent
+        : (projectOrEvent.target as HTMLSelectElement | null)?.value || this.workspaceHeaderProject;
     const nextProject = this.onboardingPm101Locked ? 'all' : this.isOnboardingAssignedWorkspace || this.onboardingProjectSetup ? firstAssignedProject.id : value;
     if (this.selectedProject === nextProject) return;
     this.selectedProject = nextProject;
@@ -13218,33 +13178,21 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.changeDetector.markForCheck();
   }
 
-  private startAiAssistTyping(): void {
-    this.clearAiAssistTimers();
-    const guide = this.activeAiAssistGuide.guide;
-    let index = 0;
-    this.aiAssistStatus = 'typing';
-    this.aiAssistTypedGuide = '';
-
-    this.aiAssistTypingTimer = window.setInterval(() => {
-      index = Math.min(guide.length, index + 2);
-      this.aiAssistTypedGuide = guide.slice(0, index);
-      if (index >= guide.length) {
-        if (this.aiAssistTypingTimer !== null) {
-          window.clearInterval(this.aiAssistTypingTimer);
-          this.aiAssistTypingTimer = null;
-        }
-        this.aiAssistStatus = 'ready';
-      }
-      this.changeDetector.markForCheck();
-    }, 34);
-  }
-
   private finishAiDraft(section: string, message: string): void {
     this.aiAssistStatus = 'drafted';
     this.aiRecentlyFilledSection = section;
     this.onboardingPlanActionMessage = message;
     this.iconsHydrated = false;
     this.changeDetector.markForCheck();
+
+    if (this.aiAssistWritingTimer !== null) {
+      window.clearTimeout(this.aiAssistWritingTimer);
+    }
+    this.aiAssistWritingTimer = window.setTimeout(() => {
+      this.aiWritingSection = null;
+      this.aiAssistWritingTimer = null;
+      this.changeDetector.markForCheck();
+    }, 2200);
 
     if (this.aiAssistFilledClearTimer !== null) {
       window.clearTimeout(this.aiAssistFilledClearTimer);
@@ -13256,15 +13204,36 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     }, 1800);
   }
 
+  private scheduleAiAssistStep(step: string, delay: number): void {
+    const handle = window.setTimeout(() => {
+      this.activeAiGenerationStep = step;
+      this.changeDetector.markForCheck();
+    }, delay);
+    this.aiAssistStepTimers.push(handle);
+  }
+
   private clearAiAssistTimers(): void {
-    if (this.aiAssistTypingTimer !== null) {
-      window.clearInterval(this.aiAssistTypingTimer);
-      this.aiAssistTypingTimer = null;
-    }
     if (this.aiAssistGenerationTimer !== null) {
       window.clearTimeout(this.aiAssistGenerationTimer);
       this.aiAssistGenerationTimer = null;
     }
+    for (const handle of this.aiAssistStepTimers) {
+      window.clearTimeout(handle);
+    }
+    this.aiAssistStepTimers = [];
+    if (this.aiAssistWritingTimer !== null) {
+      window.clearTimeout(this.aiAssistWritingTimer);
+      this.aiAssistWritingTimer = null;
+    }
+    this.aiWritingSection = null;
+  }
+
+  private applySimplePlanAiDraft(): void {
+    this.applyOverviewAiDraft('');
+    this.applyScheduleScopeAiDraft('');
+    this.applyBudgetAiDraft('');
+    this.applyBenefitsAiDraft('');
+    this.applyRiskAiDraft('');
   }
 
   private applyAiDraftToSection(section: string, refinement = ''): void {
@@ -13688,6 +13657,77 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return labels[section] || section;
   }
 
+  projectPlanSectionHeaderTitle(section: string): string {
+    return this.projectPlanNavLabel(section);
+  }
+
+  projectPlanSectionHeaderDescription(section: string): string {
+    const descriptions: Record<string, string> = {
+      Overview: 'Problem statement, business drivers, outcomes, and strategic alignment for the project.',
+      'Schedule & Scope': 'Approved dates, current forecast, milestone checkpoints, and the core scope statement in one place.',
+      Budget: 'Approved budget summary, forecast position, funding sources, monthly phasing, and budget controls.',
+      Benefits: 'Benefit statements, ownership, category, and realization timing reviewers need before endorsement.',
+      Risk: 'Threats, exposure, owners, controls, and treatment actions that keep delivery risks visible.',
+      Resource: 'Roles, sourcing model, allocation, ownership, timing, and staffing evidence for the delivery team.',
+      Issues: 'Current blockers, decisions, owners, due dates, and resolution status for active management.',
+      'Change Impact': 'Operational impact, stakeholder readiness, and adoption actions for the planned change.',
+      'Related Links': 'Supporting documents, source packs, approvals, dashboards, and reference links for reviewers.',
+      Dependency: 'Upstream and downstream project relationships, timing, owners, products, and delivery impact.',
+      Miscellaneous: 'Extended assurance, legacy, ICT, grants, and admin context retained for governance review.',
+    };
+    return descriptions[section] || this.projectPlanGroupForSection(section).body;
+  }
+
+  isProjectPlanAgentBannerSection(section: string): boolean {
+    return section === 'Benefits' || section === 'Risk';
+  }
+
+  projectPlanAgentBannerVariant(section: string): 'benefit' | 'risk' {
+    return section === 'Risk' ? 'risk' : 'benefit';
+  }
+
+  projectPlanAgentBannerIcon(section: string): string {
+    return section === 'Risk' ? 'triangle-alert' : 'circle-check';
+  }
+
+  projectPlanAgentBannerTitle(section: string): string {
+    return section === 'Risk' ? 'Risk Generator' : 'Benefit Generator';
+  }
+
+  projectPlanAgentBannerDescription(section: string): string {
+    if (section === 'Risk') {
+      return 'Seed likely project risks from scope, schedule, stakeholders, and dependency data, then refine ownership and treatment details manually.';
+    }
+    return 'Generate likely project benefits from outcomes, deliverables, owners, and realization timing, then refine category, measures, and ownership manually.';
+  }
+
+  projectPlanAgentBannerActionLabel(section: string): string {
+    const isGenerating = this.aiAssistStatus === 'filling' && this.isAiAssistOpen(section);
+    if (section === 'Risk') return isGenerating ? 'Generating Risks...' : 'Generate Risks';
+    return isGenerating ? 'Generating Benefits...' : 'Generate Benefits';
+  }
+
+  projectPlanAgentBannerAriaLabel(section: string): string {
+    return section === 'Risk' ? 'AI risk generator' : 'AI benefit generator';
+  }
+
+  projectPlanSectionHeaderIcon(section: string): string {
+    const icons: Record<string, string> = {
+      Overview: 'plan',
+      'Schedule & Scope': 'plan',
+      Budget: 'dollar',
+      Benefits: 'benefit',
+      Risk: 'risks',
+      Resource: 'resources',
+      Issues: 'issues',
+      'Change Impact': 'changeRequest',
+      'Related Links': 'link',
+      Dependency: 'dependencies',
+      Miscellaneous: 'settings',
+    };
+    return icons[section] || this.projectPlanGroupForSection(section).icon;
+  }
+
   isProjectPlanFieldSectionExpanded(section: string): boolean {
     return Boolean(this.projectPlanExpandedFieldSections[section]);
   }
@@ -13791,6 +13831,11 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       selectedPage: this.selectedPage,
       selectedView: this.workspaceViewForProjectScope(this.selectedView),
       workspaceRegister: this.workspaceRegister,
+      frontDoorMode: this.frontDoorMode,
+      pmoAssignmentReady: this.pmoAssignmentReady,
+      onboardingAssignmentFlow: this.onboardingAssignmentFlow,
+      onboardingPm101Locked: this.onboardingPm101Locked,
+      onboardingProjectSetup: this.onboardingProjectSetup,
     };
   }
 
@@ -13837,14 +13882,24 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.closeReport();
     this.closeStageGate();
     this.closeStageRevoke();
-    this.selectedProject = returnState.selectedProject;
-    this.selectedPage = returnState.selectedPage;
-    this.selectedView = this.workspaceViewForProjectScope(returnState.selectedView, returnState.selectedProject, returnState.selectedPage);
+    this.restoreConsoleReturnState(returnState);
     if (returnState.workspaceRegister) {
       this.workspaceRegister = returnState.workspaceRegister;
     }
     this.emitState();
     return true;
+  }
+
+  private restoreConsoleReturnState(returnState: ProjectPlanReturnState): void {
+    this.frontDoorMode = returnState.frontDoorMode;
+    this.pmoAssignmentReady = returnState.pmoAssignmentReady;
+    this.onboardingAssignmentFlow = returnState.onboardingAssignmentFlow;
+    this.onboardingPm101Locked = returnState.onboardingPm101Locked;
+    this.onboardingProjectSetup = returnState.onboardingProjectSetup;
+    this.onboardingProjectSetupStateApplied = returnState.onboardingProjectSetup;
+    this.selectedProject = returnState.selectedProject;
+    this.selectedPage = returnState.selectedPage;
+    this.selectedView = this.workspaceViewForProjectScope(returnState.selectedView, returnState.selectedProject, returnState.selectedPage);
   }
 
   private workspaceViewForProjectScope(view: WorkspaceView, projectId = this.selectedProject, page = this.selectedPage): WorkspaceView {
@@ -13962,11 +14017,6 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return plan.years.some((year) => year.fy === fy);
   }
 
-  budgetFundingSourceCountLabel(year: BudgetYearPlan | null): string {
-    if (!year) return 'No sources';
-    return year.fundingSources.length === 1 ? '1 source' : `${year.fundingSources.length} sources`;
-  }
-
   budgetMonthlyCountLabel(year: BudgetYearPlan | null): string {
     if (!year) return 'No months';
     return year.monthlyRows.length === 1 ? '1 month' : `${year.monthlyRows.length} months`;
@@ -14039,11 +14089,6 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return this.budgetMonthlyTotal(row, 'forecast') - this.budgetMonthlyTotal(row, 'actual');
   }
 
-  budgetBreakdownInputValue(row: BudgetBreakdownRow, field: BudgetBreakdownEditableField): string {
-    const value = row[field];
-    return Number.isInteger(value) ? String(value) : value.toFixed(2);
-  }
-
   formatBudgetCurrency(value: number): string {
     const absolute = Math.abs(value);
     const prefix = value < 0 ? '-' : '';
@@ -14089,56 +14134,15 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   selectBudgetTab(tab: BudgetSubtab): void {
     this.activeBudgetSubtab = tab;
+    if (tab !== 'monthly') this.closeBudgetMonthlyTableExpanded();
     this.closeBudgetRulesPopover();
-    this.iconsHydrated = false;
-  }
-
-  updateBudgetBreakdown(stream: string, field: BudgetBreakdownEditableField, value: string): void {
-    const year = this.activeBudgetYear;
-    if (!year || stream === 'Total') return;
-
-    const amount = Math.max(0, this.parseBudgetInput(value));
-    const budgetStream = stream === 'OPEX' ? 'OPEX' : 'CAPEX';
-
-    this.updateActiveBudgetPlanState((plan) => ({
-      ...plan,
-      years: plan.years.map((entry) => {
-        if (entry.fy !== year.fy) return entry;
-
-        if (field === 'baseline' || field === 'forecast') {
-          const nextYear: BudgetYearPlan = {
-            ...entry,
-            baselineCapex: field === 'baseline' && budgetStream === 'CAPEX' ? amount : entry.baselineCapex,
-            baselineOpex: field === 'baseline' && budgetStream === 'OPEX' ? amount : entry.baselineOpex,
-            forecastCapex: field === 'forecast' && budgetStream === 'CAPEX' ? amount : entry.forecastCapex,
-            forecastOpex: field === 'forecast' && budgetStream === 'OPEX' ? amount : entry.forecastOpex,
-          };
-
-          return {
-            ...nextYear,
-            monthlyRows: this.redistributeBudgetMonthlyRows(entry.monthlyRows, entry.fy, nextYear),
-          };
-        }
-
-        return {
-          ...entry,
-          monthlyRows: this.replaceBudgetMonthlyRollupTotal(entry.monthlyRows, budgetStream, field, amount),
-        };
-      }),
-      lastSavedLabel: 'Unsaved changes',
-    }));
-  }
-
-  saveBudgetChanges(): void {
-    this.updateActiveBudgetPlanState((plan) => ({
-      ...plan,
-      lastSavedLabel: 'Saved just now',
-    }));
     this.iconsHydrated = false;
   }
 
   openBudgetDrawer(): void {
     const year = this.activeBudgetYear;
+    const capex = this.activeBudgetBreakdownRows.find((row) => row.stream === 'CAPEX');
+    const opex = this.activeBudgetBreakdownRows.find((row) => row.stream === 'OPEX');
     this.closeProjectPlanDrawers();
     this.budgetYearDraft = year
       ? {
@@ -14147,6 +14151,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
           baselineOpex: String(year.baselineOpex),
           forecastCapex: String(year.forecastCapex),
           forecastOpex: String(year.forecastOpex),
+          committedCapex: String(capex?.committed ?? 0),
+          committedOpex: String(opex?.committed ?? 0),
+          actualCapex: String(capex?.actual ?? 0),
+          actualOpex: String(opex?.actual ?? 0),
         }
       : {
           ...budgetPlanConfig.yearDraft,
@@ -14172,24 +14180,15 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     const baselineOpex = this.parseBudgetInput(draft.baselineOpex);
     const forecastCapex = this.parseBudgetInput(draft.forecastCapex);
     const forecastOpex = this.parseBudgetInput(draft.forecastOpex);
+    const committedCapex = Math.max(0, this.parseBudgetInput(draft.committedCapex));
+    const committedOpex = Math.max(0, this.parseBudgetInput(draft.committedOpex));
+    const actualCapex = Math.max(0, this.parseBudgetInput(draft.actualCapex));
+    const actualOpex = Math.max(0, this.parseBudgetInput(draft.actualOpex));
 
     this.updateActiveBudgetPlanState((plan) => {
       const existing = plan.years.find((year) => year.fy === fy);
-      const nextYear = existing
-        ? {
-            ...existing,
-            fy,
-            baselineCapex,
-            baselineOpex,
-            forecastCapex,
-            forecastOpex,
-            monthlyRows: this.redistributeBudgetMonthlyRows(existing.monthlyRows, fy, {
-              baselineCapex,
-              baselineOpex,
-              forecastCapex,
-              forecastOpex,
-            }),
-          }
+      const nextYearBase = existing
+        ? existing
         : createBudgetYearPlan(
             `budget-year-${slugifyPlanField(`${this.activeBudgetPlanKey()}-${fy}`)}-${Date.now()}`,
             fy,
@@ -14199,6 +14198,33 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
             forecastOpex,
             [],
           );
+      const redistributedMonthlyRows = this.redistributeBudgetMonthlyRows(nextYearBase.monthlyRows, fy, {
+        baselineCapex,
+        baselineOpex,
+        forecastCapex,
+        forecastOpex,
+      });
+      const monthlyRowsWithCommitted = this.replaceBudgetMonthlyRollupTotal(
+        this.replaceBudgetMonthlyRollupTotal(redistributedMonthlyRows, 'CAPEX', 'committed', committedCapex),
+        'OPEX',
+        'committed',
+        committedOpex,
+      );
+      const monthlyRows = this.replaceBudgetMonthlyRollupTotal(
+        this.replaceBudgetMonthlyRollupTotal(monthlyRowsWithCommitted, 'CAPEX', 'actual', actualCapex),
+        'OPEX',
+        'actual',
+        actualOpex,
+      );
+      const nextYear: BudgetYearPlan = {
+        ...nextYearBase,
+        fy,
+        baselineCapex,
+        baselineOpex,
+        forecastCapex,
+        forecastOpex,
+        monthlyRows,
+      };
 
       const years = existing
         ? plan.years.map((year) => (year.fy === fy ? nextYear : year))
@@ -14303,6 +14329,18 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   closeBudgetMonthlyDrawer(): void {
     if (!this.isBudgetMonthlyDrawerOpen) return;
     this.isBudgetMonthlyDrawerOpen = false;
+    this.iconsHydrated = false;
+  }
+
+  toggleBudgetMonthlyTableExpanded(): void {
+    this.isBudgetMonthlyTableExpanded = !this.isBudgetMonthlyTableExpanded;
+    this.closeBudgetRulesPopover();
+    this.iconsHydrated = false;
+  }
+
+  closeBudgetMonthlyTableExpanded(): void {
+    if (!this.isBudgetMonthlyTableExpanded) return;
+    this.isBudgetMonthlyTableExpanded = false;
     this.iconsHydrated = false;
   }
 
@@ -15433,9 +15471,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.resetProjectPlanHeaderCondensed();
     this.iconsHydrated = false;
     if (returnState) {
-      this.selectedProject = returnState.selectedProject;
-      this.selectedPage = returnState.selectedPage;
-      this.selectedView = returnState.selectedView;
+      this.restoreConsoleReturnState(returnState);
       this.workspaceRegister = returnState.workspaceRegister;
       this.emitState();
     }
@@ -16881,6 +16917,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return this.boardProjectItems.filter((item) => this.filterKind(item.type) === filter.id).length;
   }
 
+  countForActionFilter(filter: BoardFilter): number {
+    return this.selectedView === 'calendar' ? this.countCalendarFilter(filter) : this.countForFilter(filter);
+  }
+
   countCalendarFilter(filter: BoardFilter): number {
     if (filter.id === 'all') return this.calendarProjectItems.length;
     return this.calendarProjectItems.filter((item) => this.timelineItemKind(item) === filter.id).length;
@@ -17311,7 +17351,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.guidedTourStep = Math.min(Math.max(index, 0), guidedTourSteps.length - 1);
     this.prepareGuidedTourTarget();
     this.iconsHydrated = false;
-    this.scheduleGuidedTourPosition();
+    this.trackGuidedTourPosition();
     this.changeDetector.markForCheck();
   }
 
@@ -17337,11 +17377,19 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.syncLastActionWorkspaceView(this.selectedView);
   }
 
+  private trackGuidedTourPosition(duration = 420): void {
+    this.guidedTourPositionUntil = Math.max(this.guidedTourPositionUntil, window.performance.now() + duration);
+    this.scheduleGuidedTourPosition();
+  }
+
   private scheduleGuidedTourPosition(): void {
     if (this.guidedTourFrame !== null) return;
-    this.guidedTourFrame = window.requestAnimationFrame(() => {
+    this.guidedTourFrame = window.requestAnimationFrame((timestamp) => {
       this.guidedTourFrame = null;
       this.positionGuidedTour();
+      if (this.guidedTourActive && timestamp < this.guidedTourPositionUntil) {
+        this.scheduleGuidedTourPosition();
+      }
     });
   }
 
@@ -17366,18 +17414,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     if (!spotlight || !card) return;
 
     const padding = 8;
-    const isRailTour = targetName === 'side-navigation';
-    const railWidth = Math.min(rect.width, 68);
-    const x = isRailTour
-      ? Math.max(8, rect.left + Math.max(0, (rect.width - railWidth) / 2) - padding)
-      : Math.max(8, rect.left - padding);
-    const y = isRailTour ? Math.max(8, rect.top + 8) : Math.max(8, rect.top - padding);
-    const width = isRailTour
-      ? Math.min(window.innerWidth - x - 8, railWidth + padding * 2)
-      : Math.min(window.innerWidth - x - 8, rect.width + padding * 2);
-    const height = isRailTour
-      ? Math.min(window.innerHeight - y - 8, rect.height - 16)
-      : Math.min(window.innerHeight - y - 8, rect.height + padding * 2);
+    const x = Math.max(0, rect.left - padding);
+    const y = Math.max(0, rect.top - padding);
+    const width = Math.min(window.innerWidth - x, rect.width + padding * 2);
+    const height = Math.min(window.innerHeight - y, rect.height + padding * 2);
 
     spotlight.style.left = `${Math.round(x)}px`;
     spotlight.style.top = `${Math.round(y)}px`;
@@ -17386,7 +17426,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
     const cardWidth = card.offsetWidth || 330;
     const cardHeight = card.offsetHeight || 270;
-    let cardX = isRailTour ? x + width + 24 : rect.right + 18;
+    let cardX = rect.right + 18;
     if (cardX + cardWidth > window.innerWidth - 18) {
       cardX = rect.left - cardWidth - 18;
     }
@@ -17394,9 +17434,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       cardX = Math.max(18, Math.min(window.innerWidth - cardWidth - 18, rect.left + rect.width / 2 - cardWidth / 2));
     }
 
-    const cardY = isRailTour
-      ? Math.max(96, Math.min(window.innerHeight - cardHeight - 18, rect.top + 24))
-      : Math.max(84, Math.min(window.innerHeight - cardHeight - 18, rect.top));
+    const cardY = Math.max(84, Math.min(window.innerHeight - cardHeight - 18, rect.top));
     card.style.left = `${Math.round(cardX)}px`;
     card.style.top = `${Math.round(cardY)}px`;
   }
@@ -17985,6 +18023,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.closeBudgetDrawer();
     this.closeBudgetFundingDrawer();
     this.closeBudgetMonthlyDrawer();
+    this.closeBudgetMonthlyTableExpanded();
     this.closeBenefitDrawer();
     this.closeBenefitProfile();
     this.closeRiskDrawer();

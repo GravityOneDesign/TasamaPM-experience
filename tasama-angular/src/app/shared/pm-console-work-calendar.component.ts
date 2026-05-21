@@ -33,49 +33,21 @@ type CalendarPopoverPlacement = 'above' | 'below';
   imports: [CommonModule, PmConsoleIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="calendar-command-row">
-      <div class="calendar-month-picker" aria-label="Calendar month navigation">
-        <button class="calendar-nav-button" type="button" (click)="monthShift.emit(-1)" aria-label="Previous month">
-          <span pmConsoleIcon="chevron-left" aria-hidden="true"></span>
-        </button>
-        <div class="calendar-month-copy">
-          <strong>{{ monthLabel }}</strong>
-          <span>{{ monthItemCount }} item{{ monthItemCount === 1 ? '' : 's' }} this month</span>
-        </div>
-        <button class="calendar-nav-button" type="button" (click)="monthShift.emit(1)" aria-label="Next month">
-          <span pmConsoleIcon="chevron-right" aria-hidden="true"></span>
-        </button>
-      </div>
-
-      <div class="board-filter calendar-filter-bar" aria-label="Quick work filter">
-        <span>Show</span>
-        <details class="work-filter-dropdown">
-          <summary [attr.aria-label]="'Filter work by ' + selectedFilterLabel">
-            <span class="work-filter-selected-icon"><span [pmConsoleIcon]="selectedFilterIcon" aria-hidden="true"></span></span>
-            <span>{{ selectedFilterLabel }}</span>
-            <strong>{{ selectedFilterCount }}</strong>
-            <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
-          </summary>
-          <div class="work-filter-menu" role="menu">
-            @for (filter of filters; track filter.id) {
-              <button
-                [class.active]="selectedFilterId === filter.id"
-                type="button"
-                role="menuitemradio"
-                [attr.aria-checked]="selectedFilterId === filter.id"
-                (click)="selectFilter(filter.id, $event)"
-              >
-                <span class="work-filter-option-icon"><span [pmConsoleIcon]="filter.icon" aria-hidden="true"></span></span>
-                <span>{{ filter.label }}</span>
-                <strong>{{ filter.count }}</strong>
-              </button>
-            }
-          </div>
-        </details>
-      </div>
-    </div>
-
     <div class="timeline-calendar">
+      <div class="calendar-command-row">
+        <div class="calendar-month-picker" aria-label="Calendar month navigation">
+          <button class="calendar-nav-button" type="button" (click)="monthShift.emit(-1)" aria-label="Previous month">
+            <span pmConsoleIcon="chevron-left" aria-hidden="true"></span>
+          </button>
+          <div class="calendar-month-copy">
+            <strong>{{ monthLabel }}</strong>
+            <span>{{ monthItemCount }} item{{ monthItemCount === 1 ? '' : 's' }} this month</span>
+          </div>
+          <button class="calendar-nav-button" type="button" (click)="monthShift.emit(1)" aria-label="Next month">
+            <span pmConsoleIcon="chevron-right" aria-hidden="true"></span>
+          </button>
+        </div>
+      </div>
       <div class="weekdays" aria-hidden="true">
         <span>Mon</span>
         <span>Tue</span>

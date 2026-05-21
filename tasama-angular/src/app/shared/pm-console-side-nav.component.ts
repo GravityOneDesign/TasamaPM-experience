@@ -84,7 +84,7 @@ export class PmConsoleSideNavComponent {
   @Input() primaryItems: readonly PmConsoleSideNavItem[] = [];
   @Input() utilityItems: readonly PmConsoleSideNavItem[] = [];
   @Input() activeItemId = '';
-  @Input() expanded = true;
+  @Input() expanded = false;
 
   @Output() readonly itemSelected = new EventEmitter<PmConsoleSideNavItem>();
   @Output() readonly expandedChange = new EventEmitter<boolean>();

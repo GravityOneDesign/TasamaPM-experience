@@ -6,7 +6,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <figure class="reporting-empty-illustration" aria-hidden="true">
-      <img src="./assets/reporting-trends-empty-state.png" alt="" decoding="async" />
+      <img src="./assets/reporting-trends-empty-state.svg" alt="" decoding="async" />
     </figure>
   `,
   styles: [
@@ -19,7 +19,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
       .reporting-empty-illustration {
         align-items: center;
         display: flex;
-        height: 218px;
+        height: var(--reporting-empty-illustration-height, 218px);
         justify-content: center;
         margin: 0;
         overflow: hidden;
@@ -28,7 +28,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
       .reporting-empty-illustration img {
         display: block;
         height: auto;
-        max-height: 218px;
+        max-height: var(--reporting-empty-illustration-height, 218px);
         max-width: 100%;
         object-fit: contain;
       }
