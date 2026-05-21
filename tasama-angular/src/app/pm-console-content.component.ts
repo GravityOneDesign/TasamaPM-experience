@@ -1437,29 +1437,29 @@ const projectQuickActions: QuickAction[] = [
 
 const unassignedJourneySteps = [
   {
-    title: 'Project assigned',
-    body: 'You’ll receive a PMO assignment notification.',
+    title: 'Framework and configuration',
+    body: 'Set up governance controls, onboard users, and define your portfolio standards.',
     icon: 'bell',
   },
   {
-    title: 'Build project plan',
-    body: 'Set scope, timeline, risks, and dependencies.',
+    title: 'Portfolio design',
+    body: 'Define objectives, add programs and projects, and structure your portfolio.',
     icon: 'plan',
   },
   {
-    title: 'Submit for approval',
-    body: 'Send your baseline for PMO review and endorsement.',
-    icon: 'stageGate',
-  },
-  {
-    title: 'Manage delivery',
-    body: 'Track milestones, issues, and dependencies.',
+    title: 'Manage portfolio',
+    body: 'Review program and project statuses, approve plans, and action flagged risks and benefits.',
     icon: 'playground',
   },
   {
-    title: 'Report progress',
-    body: 'Submit PSRs and maintain delivery health.',
+    title: 'Report and review',
+    body: 'Draft and submit portfolio status reports and review reports from your programs and projects.',
     icon: 'chart',
+  },
+  {
+    title: 'Portfolio performance',
+    body: 'Track delivery health and view insights across your portfolio in one place.',
+    icon: 'stageGate',
   },
 ];
 
@@ -3622,50 +3622,48 @@ const projectReportRegisterRows: PmConsoleRegisterTableRow[] = [
 
 const pm101Steps: Pm101Step[] = [
   {
-    title: 'Project assigned',
-    body: 'You’ll receive a PMO assignment notification.',
+    title: 'Framework and configuration',
+    body: 'Set up governance controls, onboard users, and define your portfolio standards.',
     icon: 'rocket',
     decor: 'burst',
     decorAssets: ['./assets/pm101/decor-1.svg'],
-    footerLabel: 'Project assigned on',
-    footerValue: 'Jul 25, 2026',
+    footerAction: 'Configure Portfolio',
+    footerActionId: 'project-plan',
   },
   {
-    title: 'Build project plan',
-    body: 'Set scope, timeline, risks, and dependencies.',
+    title: 'Portfolio design',
+    body: 'Define objectives, add programs and projects, and structure your portfolio.',
     icon: 'plan',
     decor: 'rings',
     decorAssets: ['./assets/pm101/decor-2.svg'],
-    footerAction: 'Create project plan',
+    footerAction: 'Add Programs & Projects',
     footerActionId: 'project-plan',
-    completedLabel: 'Project plan approved',
-    completedValue: 'Aug 01, 2026',
   },
   {
-    title: 'Manage delivery',
-    body: 'Track milestones, issues, and dependencies.',
+    title: 'Manage portfolio',
+    body: 'Review program and project statuses, approve plans, and action flagged risks and benefits.',
     icon: 'playground',
     decor: 'loops',
     decorAssets: ['./assets/pm101/decor-4.svg'],
-    footerAction: 'Go to workspaces',
+    footerAction: 'View Programs & Projects',
     footerActionId: 'project-workspace',
   },
   {
-    title: 'Report progress',
-    body: 'Submit PSRs and maintain delivery health.',
+    title: 'Report and review',
+    body: 'Draft and submit portfolio status reports and review reports from your programs and projects.',
     icon: 'chart',
     decor: 'hex',
     decorAssets: ['./assets/pm101/decor-5.svg'],
-    footerAction: 'Create Report',
+    footerAction: 'View Reports',
     footerActionId: 'reports',
   },
   {
-    title: 'Progress through stages',
-    body: 'Progress through project lifecycles with a quick & easy checklist!',
+    title: 'Portfolio performance',
+    body: 'Track delivery health and view insights across your portfolio in one place.',
     icon: 'stageGate',
     decor: 'plus',
     decorAssets: ['./assets/pm101/decor-3-group-1.svg', './assets/pm101/decor-3-group-2.svg', './assets/pm101/decor-3-group-3.svg', './assets/pm101/decor-3-group-4.svg'],
-    footerAction: 'Learn more',
+    footerAction: 'View Performance',
     footerActionId: 'learning-hub',
   },
 ];
@@ -8330,9 +8328,9 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                   <span class="unassigned-kicker">{{ pmoAssignmentReady ? 'PMO assignment received' : 'New PM workspace' }}</span>
                   <h1>{{ pmoAssignmentReady ? 'Your first project is ready to plan' : 'Welcome to your PM front door' }}</h1>
                   <p>{{ pmoAssignmentReady ? pmoAssignmentMessage : noAssignmentMessage }}</p>
-                  <button class="unassigned-status-pill" [class.is-ready]="pmoAssignmentReady" type="button" (click)="handleAssignmentPrimaryAction()" [attr.aria-label]="pmoAssignmentReady ? 'Create project plan' : 'Simulate PMO project assignment'">
+                  <button class="unassigned-status-pill" [class.is-ready]="pmoAssignmentReady" type="button" (click)="handleAssignmentPrimaryAction()" [attr.aria-label]="pmoAssignmentReady ? 'Add Programs & Projects' : 'Simulate PMO project assignment'">
                     <span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(pmoAssignmentReady ? 'plan' : 'bell')"></i></span>
-                    <span>{{ pmoAssignmentReady ? 'Create project plan' : 'Waiting for PMO assignment' }}</span>
+                    <span>{{ pmoAssignmentReady ? 'Add Programs & Projects' : 'Waiting for PMO assignment' }}</span>
                   </button>
                 </div>
               </div>
@@ -8342,8 +8340,8 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                   <div class="journey-overview">
                     <div class="unassigned-section-head journey-heading">
                       <span>What happens next</span>
-                      <h2>Your project management journey</h2>
-                      <p>From assignment to regular reporting, these are the steps you will work through in TASAMA.</p>
+                      <h2>Your portfolio management journey</h2>
+                      <p>Configure your portfolio, manage delivery and report progress, all in one place.</p>
                     </div>
                     <div class="journey-status-panel">
                       <span class="journey-status-icon">
@@ -8356,7 +8354,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                       </div>
                       <button class="journey-status-action" [class.is-ready]="pmoAssignmentReady" type="button" (click)="handleAssignmentPrimaryAction()">
                         <span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(pmoAssignmentReady ? 'plan' : 'bell')"></i></span>
-                        <span>{{ pmoAssignmentReady ? 'Create project plan' : 'Waiting for PMO assignment' }}</span>
+                        <span>{{ pmoAssignmentReady ? 'Add Programs & Projects' : 'Waiting for PMO assignment' }}</span>
                       </button>
                     </div>
                   </div>
@@ -8373,7 +8371,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                           @if (pmoAssignmentReady && index === 1) {
                             <button class="journey-plan-cta" type="button" (click)="openAssignedProjectPlan()">
                               <span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName('plan')"></i></span>
-                              <span>Create project plan</span>
+                              <span>Add Programs & Projects</span>
                             </button>
                           }
                         </div>
@@ -8553,8 +8551,8 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                         </article>
                         <div class="pm101-journey-head">
                           <span>What happens next?</span>
-                          <h3>Your project management journey</h3>
-                          <p>From assignment to regular reporting, these are the steps you will work through in TASAMA.</p>
+                          <h3>Your portfolio management journey</h3>
+                          <p>Configure your portfolio, manage delivery and report progress, all in one place.</p>
                         </div>
                       } @else if (isPm101OnboardingWorkspaceFlow) {
                         <div class="pm101-ready-hero-grid" aria-label="First assigned project overview">
@@ -8580,8 +8578,8 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                         </div>
                         <div class="pm101-journey-head">
                           <span>What happens next?</span>
-                          <h3>Your project management journey</h3>
-                          <p>From assignment to regular reporting, these are the steps you will work through in TASAMA.</p>
+                          <h3>Your portfolio management journey</h3>
+                          <p>Configure your portfolio, manage delivery and report progress, all in one place.</p>
                         </div>
                       } @else if (showSelectedProjectOverviewQuickLinks) {
                         <section class="selected-project-operational-workspace" [attr.aria-label]="scopedProjectName + ' operational workspace'">
@@ -8654,8 +8652,8 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                         </article>
                         <div class="pm101-journey-head">
                           <span>What happens next?</span>
-                          <h3>Your project management journey</h3>
-                          <p>From assignment to regular reporting, these are the steps you will work through in TASAMA.</p>
+                          <h3>Your portfolio management journey</h3>
+                          <p>Configure your portfolio, manage delivery and report progress, all in one place.</p>
                         </div>
                       } @else if (isNormalPm101Workspace) {
                         <section
@@ -8698,8 +8696,8 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                         </section>
                         <div class="pm101-journey-head">
                           <span>{{ activePm101Project.title }} PM101 path</span>
-                          <h3>Your project management journey</h3>
-                          <p>From assignment to regular reporting, these are the steps you will work through in TASAMA.</p>
+                          <h3>Your portfolio management journey</h3>
+                          <p>Configure your portfolio, manage delivery and report progress, all in one place.</p>
                         </div>
                       }
                       @if (!showSelectedProjectOverviewQuickLinks) {
