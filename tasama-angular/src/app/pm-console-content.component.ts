@@ -44,6 +44,11 @@ import {
   type PmConsoleRegisterTableRow,
 } from './shared/pm-console-register-table.component';
 import { PmConsoleRowActionMenuComponent } from './shared/pm-console-row-action-menu.component';
+import {
+  PmConsoleRiskProfileComponent,
+  type RiskProfileFieldChange,
+  type RiskTreatmentDraftChange,
+} from './shared/pm-console-risk-profile.component';
 import { PmConsoleRiskMatrixComponent, PmConsoleRiskMatrixSelection } from './shared/pm-console-risk-matrix.component';
 import { PmConsoleStatusPillComponent } from './shared/pm-console-status-pill.component';
 import { PmConsoleTableActionComponent } from './shared/pm-console-table-action.component';
@@ -67,6 +72,21 @@ type RiskProfileTab = 'identification' | 'analysis' | 'treatment';
 type WorkspaceTableColumnId = 'project' | 'stage' | 'trend' | 'manager' | 'baselineStart' | 'baselineEnd' | 'budget' | 'status';
 type WorkspaceTableColumnMotionState = 'visible' | 'entering' | 'exiting';
 type WorkspaceProjectFilterField = 'status' | 'stage' | 'manager';
+type CompactMenuPlacement = 'below' | 'above';
+
+interface CompactMenuPosition {
+  placement: CompactMenuPlacement;
+  top: number;
+  left: number;
+  maxHeight: number;
+}
+
+const defaultCompactMenuPosition: CompactMenuPosition = {
+  placement: 'below',
+  top: 0,
+  left: 0,
+  maxHeight: 132,
+};
 
 const workspaceRegisterTabOrder: WorkspaceRegister[] = ['projects', 'risks', 'benefits'];
 const workspaceRegisterTabWidths: Record<WorkspaceRegister, number> = {
@@ -552,7 +572,6 @@ interface OverviewServiceDraft {
 type ScheduleScopeDrawerMode = 'create' | 'edit';
 type ScheduleDeliverableType = 'end-product' | 'management-product' | 'milestone';
 type MandatoryWatchlistItemType = 'benefit' | 'risk';
-type ScheduleScopeProductSource = 'new' | 'existing';
 
 interface ScheduleScopeState {
   baselineStart: string;
@@ -596,7 +615,6 @@ interface ScheduleScopeProductRow {
 }
 
 interface ScheduleScopeProductDraft {
-  sourceType: ScheduleScopeProductSource;
   product: string;
   description: string;
   owner: string;
@@ -885,14 +903,6 @@ interface ClosureNavItem {
   count?: number;
 }
 
-interface ClosureMetric {
-  label: string;
-  value: string;
-  helper: string;
-  icon: string;
-  tone: string;
-}
-
 interface ClosureTextBlock {
   id: string;
   title: string;
@@ -900,12 +910,6 @@ interface ClosureTextBlock {
   value: string;
   maxLength: number;
   icon: string;
-}
-
-interface ClosureChecklistItem {
-  label: string;
-  state: string;
-  tone: string;
 }
 
 interface ClosureFollowUpAction {
@@ -2022,7 +2026,6 @@ const scheduleMilestoneDraftInitial: ScheduleMilestoneDraft = {
 };
 
 const scheduleEndProductDraftInitial: ScheduleScopeProductDraft = {
-  sourceType: 'new',
   product: '',
   description: '',
   owner: '',
@@ -2474,13 +2477,6 @@ const closureOverviewBlocks: ClosureTextBlock[] = [
     maxLength: 3000,
     icon: 'dollar',
   },
-];
-
-const closureChecklistItems: ClosureChecklistItem[] = [
-  { label: 'Sponsor acceptance recorded', state: 'Ready', tone: 'green' },
-  { label: 'Financial reconciliation reviewed', state: 'In review', tone: 'amber' },
-  { label: 'BAU owner confirmed', state: 'Ready', tone: 'green' },
-  { label: 'Lessons captured', state: 'Draft', tone: 'blue' },
 ];
 
 const closureFollowUpActions: ClosureFollowUpAction[] = [
@@ -3720,6 +3716,7 @@ const benefitRegisterTableColumns: PmConsoleRegisterTableColumn[] = [
   { id: 'measure', label: 'KPI / Measure', minWidth: 210, maxWidth: 320 },
   { id: 'realization', label: 'Realization', minWidth: 140, maxWidth: 180 },
   { id: 'status', label: 'Status', minWidth: 130, maxWidth: 170 },
+  { id: 'actions', label: 'Actions', minWidth: 76, maxWidth: 96, align: 'right' },
 ];
 const riskRegisterTableColumns: PmConsoleRegisterTableColumn[] = [
   { id: 'id', label: 'Risk ID', minWidth: 100, maxWidth: 132 },
@@ -3730,6 +3727,7 @@ const riskRegisterTableColumns: PmConsoleRegisterTableColumn[] = [
   { id: 'reviewDate', label: 'Last Review', minWidth: 128, maxWidth: 170 },
   { id: 'exposure', label: 'Exposure', minWidth: 130, maxWidth: 170 },
   { id: 'status', label: 'Status', minWidth: 130, maxWidth: 170 },
+  { id: 'actions', label: 'Actions', minWidth: 76, maxWidth: 96, align: 'right' },
 ];
 const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
   { id: 'pcrNumber', label: 'PCR Number', minWidth: 132, maxWidth: 170 },
@@ -3737,7 +3735,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
   { id: 'createdDate', label: 'Created Date', minWidth: 128, maxWidth: 170 },
   { id: 'dueDate', label: 'Due Date', minWidth: 128, maxWidth: 170 },
   { id: 'priority', label: 'Priority', minWidth: 116, maxWidth: 150 },
-  { id: 'status', label: 'Status', minWidth: 160, maxWidth: 220 },
+  { id: 'status', label: 'Status', minWidth: 220, maxWidth: 280 },
   { id: 'actions', label: 'Actions', minWidth: 76, maxWidth: 96, align: 'right' },
 ];
 
@@ -3761,6 +3759,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
     PmConsoleRegisterTableComponent,
     PmConsoleReportDrawerComponent,
     PmConsoleRiskMatrixComponent,
+    PmConsoleRiskProfileComponent,
     PmConsoleRowActionMenuComponent,
     PmConsoleStatusPillComponent,
     PmConsoleTableActionComponent,
@@ -3814,7 +3813,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     [productOptions]="benefitProductOptions"
                     [strategicObjectiveOptions]="benefitStrategicObjectiveOptions"
                     (closeProfile)="closeBenefitProfile()"
-                    (saveProfile)="saveBenefitProfile()"
                     (completeProfile)="completeBenefitProfile($event)"
                     (fieldChange)="updateBenefitProfileField($event)"
                     (objectiveAdd)="addBenefitProfileObjective($event)"
@@ -3990,7 +3988,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     <app-pm-console-register-table
                       [columns]="benefitRegisterTableColumns"
                       [rows]="benefitRegisterTableRows"
-                      storageKey="tasama.workspaceBenefits.visibleColumns"
+                      storageKey="tasama.workspaceBenefits.visibleColumns.v2"
                       ariaLabel="Benefit register"
                       itemName="benefits"
                       [itemLabel]="'Items: ' + visibleBenefitRegisterRows.length"
@@ -4000,6 +3998,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                       addButtonAriaLabel="Add benefit"
                       (addItem)="openBenefitDrawer()"
                       (rowOpen)="openBenefitRegisterTableRow($event)"
+                      (cellAction)="handleBenefitRegisterTableAction($event)"
                     ></app-pm-console-register-table>
                   </div>
                 } @else {
@@ -4015,7 +4014,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     <app-pm-console-register-table
                       [columns]="riskRegisterTableColumns"
                       [rows]="riskRegisterTableRows"
-                      storageKey="tasama.workspaceRisks.visibleColumns"
+                      storageKey="tasama.workspaceRisks.visibleColumns.v2"
                       ariaLabel="Risk register"
                       itemName="risks"
                       [itemLabel]="'Items: ' + visibleRiskRegisterRows.length"
@@ -4025,6 +4024,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                       addButtonAriaLabel="Add risk"
                       (addItem)="openRiskDrawer()"
                       (rowOpen)="openRiskRegisterTableRow($event)"
+                      (cellAction)="handleRiskRegisterTableAction($event)"
                     ></app-pm-console-register-table>
                   </div>
                 }
@@ -4253,7 +4253,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                               <h3>Deliverables</h3>
                                               <p>Milestones, end products, and management products for this project.</p>
                                             </div>
-                                            <div class="simple-deliverables-menu simple-deliverables-menu-right" data-schedule-deliverables-menu>
+                                            <div class="simple-deliverables-menu simple-deliverables-menu-right" [class.opens-above]="scheduleDeliverablesMenuPosition.placement === 'above'" data-schedule-deliverables-menu>
                                               <button
                                                 class="simple-deliverables-trigger"
                                                 type="button"
@@ -4265,28 +4265,12 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                                 Add deliverables
                                                 <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
                                               </button>
-                                              @if (isScheduleDeliverablesMenuOpen) {
-                                                <div class="simple-deliverables-popover" role="menu" aria-label="Add deliverables">
-                                                  <button type="button" role="menuitem" (click)="openScheduleDeliverableFromMenu('end-product', $event)">
-                                                    <span pmConsoleIcon="package" aria-hidden="true"></span>
-                                                    End product
-                                                  </button>
-                                                  <button type="button" role="menuitem" (click)="openScheduleDeliverableFromMenu('management-product', $event)">
-                                                    <span pmConsoleIcon="file-check-2" aria-hidden="true"></span>
-                                                    Management product
-                                                  </button>
-                                                  <button type="button" role="menuitem" (click)="openScheduleDeliverableFromMenu('milestone', $event)">
-                                                    <span pmConsoleIcon="milestone" aria-hidden="true"></span>
-                                                    Milestone
-                                                  </button>
-                                                </div>
-                                              }
                                             </div>
                                           </div>
                                         }
                                         @if (isSimpleWatchlistBenefitField(field)) {
                                           <div class="simple-watchlist-action-row simple-field-control wide">
-                                            <div class="simple-deliverables-menu simple-deliverables-menu-right" data-mandatory-watchlist-menu>
+                                            <div class="simple-deliverables-menu simple-deliverables-menu-right" [class.opens-above]="mandatoryWatchlistMenuPosition.placement === 'above'" data-mandatory-watchlist-menu>
                                               <button
                                                 class="simple-deliverables-trigger"
                                                 type="button"
@@ -4298,18 +4282,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                                 Add item
                                                 <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
                                               </button>
-                                              @if (isMandatoryWatchlistMenuOpen) {
-                                                <div class="simple-deliverables-popover" role="menu" aria-label="Add mandatory watchlist item">
-                                                  <button type="button" role="menuitem" (click)="openMandatoryWatchlistItemFromMenu('benefit', $event)">
-                                                    <span pmConsoleIcon="thumbs-up" aria-hidden="true"></span>
-                                                    Benefit
-                                                  </button>
-                                                  <button type="button" role="menuitem" (click)="openMandatoryWatchlistItemFromMenu('risk', $event)">
-                                                    <span pmConsoleIcon="triangle-alert" aria-hidden="true"></span>
-                                                    Risk
-                                                  </button>
-                                                </div>
-                                              }
                                             </div>
                                           </div>
                                         }
@@ -4336,7 +4308,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                                 </thead>
                                                 <tbody>
                                                   @for (row of benefitPlanRows; track row.id) {
-                                                    <tr class="plan-table-clickable-row" role="button" tabindex="0" [attr.aria-label]="'Open complete benefit profile for ' + row.benefitName" (click)="openBenefitProfile(row)" (keydown.enter)="openBenefitProfile(row)" (keydown.space)="$event.preventDefault(); openBenefitProfile(row)">
+                                                    <tr class="plan-table-clickable-row" role="button" tabindex="0" [attr.aria-label]="'Manage benefit profile for ' + row.benefitName" (click)="openBenefitProfile(row)" (keydown.enter)="openBenefitProfile(row)" (keydown.space)="$event.preventDefault(); openBenefitProfile(row)">
                                                       <td class="dependency-register-primary">
                                                         <strong>{{ row.benefitName }}</strong>
                                                         <small>{{ row.description || 'No description added' }}</small>
@@ -4388,6 +4360,10 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                                       <td class="dependency-register-status"><span [pmConsoleStatusPill]="row.status" baseClass="dependency-register-pill" [tone]="riskStatusTone(row.status)"></span></td>
                                                       <td class="schedule-table-actions">
                                                         <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + row.id">
+                                                          <button type="button" role="menuitem" (click)="openRiskRegisterProfile(row)">
+                                                            <span pmConsoleIcon="panel-right-open" aria-hidden="true"></span>
+                                                            Manage
+                                                          </button>
                                                           <button type="button" role="menuitem" (click)="openRiskDrawer(row)">
                                                             <span pmConsoleIcon="pencil" aria-hidden="true"></span>
                                                             Edit
@@ -5644,7 +5620,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                       </div>
                                     </div>
                                     <div class="schedule-scope-card-actions">
-                                      <div class="simple-deliverables-menu simple-deliverables-menu-right" data-schedule-deliverables-menu>
+                                      <div class="simple-deliverables-menu simple-deliverables-menu-right" [class.opens-above]="scheduleDeliverablesMenuPosition.placement === 'above'" data-schedule-deliverables-menu>
                                         <button
                                           class="simple-deliverables-trigger"
                                           type="button"
@@ -5656,22 +5632,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                           Add deliverables
                                           <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
                                         </button>
-                                        @if (isScheduleDeliverablesMenuOpen) {
-                                          <div class="simple-deliverables-popover" role="menu" aria-label="Add deliverables">
-                                            <button type="button" role="menuitem" (click)="openScheduleDeliverableFromMenu('milestone', $event)">
-                                              <span pmConsoleIcon="milestone" aria-hidden="true"></span>
-                                              Add milestone
-                                            </button>
-                                            <button type="button" role="menuitem" (click)="openScheduleDeliverableFromMenu('end-product', $event)">
-                                              <span pmConsoleIcon="package" aria-hidden="true"></span>
-                                              Add end product
-                                            </button>
-                                            <button type="button" role="menuitem" (click)="openScheduleDeliverableFromMenu('management-product', $event)">
-                                              <span pmConsoleIcon="file-check-2" aria-hidden="true"></span>
-                                              Add management product
-                                            </button>
-                                          </div>
-                                        }
                                       </div>
                                       <span class="schedule-scope-collapse-toggle" aria-hidden="true">
                                         <span [pmConsoleIcon]="isProjectPlanCardExpanded(projectPlanActiveSection, 'Deliverables', 1) ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></span>
@@ -5909,7 +5869,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                             } @else if (projectPlanActiveSection === 'Benefits') {
                               @let register = activeBenefitPlan;
                               <section class="dependency-register-stack benefit-register-stack" aria-label="Benefits register">
-                                @if (activeBenefitProfile; as benefit) {
+                                @if (benefitProfileFocusMode && activeBenefitProfile; as benefit) {
                                   <app-pm-console-benefit-profile
                                     [benefit]="benefit"
                                     [projectOptions]="workspaceBenefitProjectOptions"
@@ -5918,7 +5878,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                     [productOptions]="benefitProductOptions"
                                     [strategicObjectiveOptions]="benefitStrategicObjectiveOptions"
                                     (closeProfile)="closeBenefitProfile()"
-                                    (saveProfile)="saveBenefitProfile()"
                                     (completeProfile)="completeBenefitProfile($event)"
                                     (fieldChange)="updateBenefitProfileField($event)"
                                     (objectiveAdd)="addBenefitProfileObjective($event)"
@@ -5929,7 +5888,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                 } @else if (register.rows.length) {
                                 <app-pm-console-plan-table
                                   [title]="register.title"
-                                  [eyebrow]="register.fieldName + ' · Benefit tracking'"
                                   [description]="register.description"
                                   [countLabel]="benefitCountLabel(register)"
                                   [actionLabel]="register.actionLabel"
@@ -5952,7 +5910,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                         </thead>
                                         <tbody>
                                           @for (row of register.rows; track row.id) {
-                                            <tr class="plan-table-clickable-row" role="button" tabindex="0" [attr.aria-label]="'Open complete benefit profile for ' + row.benefitName" (click)="openBenefitProfile(row)" (keydown.enter)="openBenefitProfile(row)" (keydown.space)="$event.preventDefault(); openBenefitProfile(row)">
+                                            <tr class="plan-table-clickable-row" role="button" tabindex="0" [attr.aria-label]="'Manage benefit profile for ' + row.benefitName" (click)="openBenefitProfile(row)" (keydown.enter)="openBenefitProfile(row)" (keydown.space)="$event.preventDefault(); openBenefitProfile(row)">
                                               <td class="dependency-register-primary">
                                                 <strong>{{ row.benefitName }}</strong>
                                                 <small>{{ row.description || 'No description added' }}</small>
@@ -5987,7 +5945,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                             } @else if (projectPlanActiveSection === 'Risk') {
                               @let register = activeRiskPlan;
                               <section class="dependency-register-stack risk-register-stack" aria-label="Risk register">
-                                @if (activeRiskProfile; as risk) {
+                                @if (riskProfileFocusMode && activeRiskProfile; as risk) {
                                   <article class="risk-profile-shell" aria-label="Risk profile">
                                     <header class="risk-profile-header">
                                       <div class="risk-profile-title">
@@ -5999,12 +5957,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                           <h3>{{ risk.riskName }}</h3>
                                           <small>Created on {{ riskDateLabel(risk.createdOn) }} · Owner {{ risk.owner }}</small>
                                         </div>
-                                      </div>
-                                      <div class="risk-profile-actions">
-                                        <span [pmConsoleStatusPill]="risk.status" baseClass="dependency-register-pill" [tone]="riskStatusTone(risk.status)"></span>
-                                        <button class="risk-profile-secondary" type="button">View activity</button>
-                                        <button class="risk-profile-primary" type="button" (click)="saveRiskProfile()">Save</button>
-                                        <button class="risk-profile-primary" type="button" (click)="completeRiskAssessment(risk.id)">Complete assessment</button>
                                       </div>
                                     </header>
 
@@ -6158,11 +6110,17 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                         }
                                       </section>
                                     </div>
+                                    <footer class="risk-profile-footer">
+                                      <div class="risk-profile-actions">
+                                        <span [pmConsoleStatusPill]="risk.status" baseClass="dependency-register-pill" [tone]="riskStatusTone(risk.status)"></span>
+                                        <button class="risk-profile-secondary" type="button">View activity</button>
+                                        <button class="risk-profile-primary" type="button" (click)="completeRiskAssessment(risk.id)">Complete assessment</button>
+                                      </div>
+                                    </footer>
                                   </article>
                                 } @else if (register.rows.length) {
                                   <app-pm-console-plan-table
                                     [title]="register.title"
-                                    [eyebrow]="register.fieldName + ' · Risk tracking'"
                                     [description]="register.description"
                                     [countLabel]="riskCountLabel(register)"
                                     [actionLabel]="register.actionLabel"
@@ -6207,7 +6165,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                                 <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + row.id">
                                                   <button type="button" role="menuitem" (click)="openRiskProfile(row)">
                                                     <span pmConsoleIcon="panel-right-open" aria-hidden="true"></span>
-                                                    Open details
+                                                    Manage
                                                   </button>
                                                   <button type="button" role="menuitem" (click)="openRiskDrawer(row)">
                                                     <span pmConsoleIcon="pencil" aria-hidden="true"></span>
@@ -7062,24 +7020,13 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     [title]="riskDrawerTitle"
                     [eyebrow]="register.fieldName"
                     [description]="register.description"
-                    [submitLabel]="riskDrawerOpenProfileAfterSave ? 'Save risk and open profile' : editingRiskPlanId ? 'Save changes' : register.actionLabel"
+                    [submitLabel]="editingRiskPlanId ? 'Save changes' : register.actionLabel"
                     [submitDisabled]="!canSaveRiskDraft(register)"
                     closeAriaLabel="Close risk drawer"
                     panelClass="risk-drawer"
                     (close)="closeRiskDrawer()"
                     (submitForm)="saveRiskDrawer($event)"
                   >
-                    <div planDrawerBody class="risk-drawer-profile-cta" [class.is-selected]="riskDrawerOpenProfileAfterSave">
-                      <div>
-                        <strong>Complete risk profile</strong>
-                        <small>Open Identification, Analysis, and Treatment after saving this quick risk.</small>
-                      </div>
-                      <button type="button" (click)="markRiskDrawerForFullProfile()">
-                        <span pmConsoleIcon="chevron-right" aria-hidden="true"></span>
-                        Create full profile
-                      </button>
-                    </div>
-
                     <div planDrawerBody class="risk-drawer-layout">
                       <div class="dependency-drawer-grid risk-drawer-grid">
                         <app-pm-console-field label="Risk Category" type="select" [value]="register.draft.riskCategory" [options]="register.categoryOptions" [placeholder]="register.categoryPlaceholder" ariaLabel="Risk Category" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateRiskDraft('riskCategory', $event)" />
@@ -7465,45 +7412,11 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     (close)="closeScheduleEndProductDrawer()"
                     (submitForm)="saveScheduleEndProductDrawer($event)"
                   >
-                    <section planDrawerBody class="schedule-drawer-section">
-                      <div class="schedule-drawer-section-head">
-                        <div>
-                          <strong>Product source</strong>
-                          <small>Mirror the current workflow but keep it consistent with the new right-drawer pattern.</small>
-                        </div>
-                      </div>
-                      <div class="schedule-source-toggle" role="radiogroup" aria-label="End product source">
-                        <label>
-                          <input type="radio" name="end-product-source" [checked]="scheduleEndProductDraft.sourceType === 'new'" (change)="setScheduleEndProductSource('new')" />
-                          <span>Add product</span>
-                        </label>
-                        <label>
-                          <input type="radio" name="end-product-source" [checked]="scheduleEndProductDraft.sourceType === 'existing'" (change)="setScheduleEndProductSource('existing')" />
-                          <span>Add an existing product</span>
-                        </label>
-                      </div>
-                    </section>
-
                     <div planDrawerBody class="dependency-drawer-grid">
-                      @if (scheduleEndProductDraft.sourceType === 'existing') {
-                        <label class="matrix-field matrix-field-select dependency-drawer-field wide">
-                          <span class="matrix-field-label">Existing product <b>*</b></span>
-                          <span class="matrix-select-wrap">
-                            <select [value]="scheduleEndProductDraft.product" (change)="applyExistingEndProductSelection($any($event.target).value)" aria-label="Existing product">
-                              <option value="" disabled>Select existing product</option>
-                              @for (option of scheduleScopeExistingEndProducts; track option.product) {
-                                <option [value]="option.product">{{ option.product }}</option>
-                              }
-                            </select>
-                            <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                          </span>
-                        </label>
-                      } @else {
-                        <label class="matrix-field dependency-drawer-field wide">
-                          <span class="matrix-field-label">Product <b>*</b></span>
-                          <input type="text" [value]="scheduleEndProductDraft.product" (input)="updateScheduleEndProductDraft('product', $any($event.target).value)" aria-label="Product" placeholder="Name the end product" />
-                        </label>
-                      }
+                      <label class="matrix-field dependency-drawer-field wide">
+                        <span class="matrix-field-label">Product <b>*</b></span>
+                        <input type="text" [value]="scheduleEndProductDraft.product" (input)="updateScheduleEndProductDraft('product', $any($event.target).value)" aria-label="Product" placeholder="Name the end product" />
+                      </label>
 
                       <label class="matrix-field matrix-field-textarea dependency-drawer-field wide">
                         <span class="matrix-field-label">Product description</span>
@@ -7663,6 +7576,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                         [ariaLabel]="scopedProjectName + ' report register'"
                         itemName="reports"
                         [itemLabel]="'Items: ' + projectReportRegisterRows.length"
+                        toolbarClass="pm-workspace-register-toolbar"
                         [selectable]="false"
                         [showGroupBy]="true"
                         (rowOpen)="openProjectReportRow($event, scopedProjectName)"
@@ -7981,7 +7895,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                       }
                     </div>
                     <div class="project-plan-topbar-actions project-closure-actions" aria-label="Closure actions">
-                      <button class="project-closure-secondary" type="button"><span pmConsoleIcon="save" aria-hidden="true"></span><span>Save draft</span></button>
                       <button class="change-request-primary" type="button"><span pmConsoleIcon="send" aria-hidden="true"></span><span>Submit closure</span></button>
                     </div>
                   </div>
@@ -8024,21 +7937,11 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                               <span [pmConsoleIcon]="iconName(activeClosureNavItem.icon)"></span>
                             </span>
                             <div>
-                              <span class="change-request-kicker">Project closure</span>
                               <h3>{{ activeClosureNavItem.label }}</h3>
                               <p>{{ closureSectionDescription(activeClosureSection) }}</p>
                             </div>
                           </div>
                         </header>
-
-                        <div class="project-closure-metric-grid" aria-label="Closure summary">
-                          @for (metric of closureOverviewMetrics; track metric.label) {
-                            <article class="project-closure-metric {{ metric.tone }}">
-                              <span class="project-closure-metric-icon" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="iconName(metric.icon)"></i></span></span>
-                              <div><small>{{ metric.label }}</small><strong>{{ metric.value }}</strong><p>{{ metric.helper }}</p></div>
-                            </article>
-                          }
-                        </div>
 
                         @switch (activeClosureSection) {
                           @case ('overview') {
@@ -8070,27 +7973,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                       <div class="closure-readonly-field"><span>Gate target</span><strong>31/12/2026</strong></div>
                                     </div>
                                   </article>
-
-                                  <aside class="closure-readiness-panel" aria-label="Closure readiness checklist">
-                                    <div class="closure-readiness-summary">
-                                      <div class="closure-readiness-head">
-                                        <span>{{ closureReadinessPercent }}%</span>
-                                        <div>
-                                          <strong>Readiness</strong>
-                                          <small>{{ closureReadyItemCount }} of {{ closureChecklistList.length }} checks ready</small>
-                                        </div>
-                                      </div>
-                                      <div class="closure-readiness-track" aria-hidden="true"><span [style.width.%]="closureReadinessPercent"></span></div>
-                                    </div>
-                                    <div class="closure-checklist">
-                                      @for (item of closureChecklistList; track item.label) {
-                                        <article class="{{ item.tone }}">
-                                          <span class="icon" aria-hidden="true"><i [attr.data-lucide]="item.tone === 'green' ? 'check' : item.tone === 'amber' ? 'clock-3' : 'circle-dot'"></i></span>
-                                          <div><strong>{{ item.label }}</strong><small>{{ item.state }}</small></div>
-                                        </article>
-                                      }
-                                    </div>
-                                  </aside>
 
                                   <div class="closure-editor-grid">
                                     @for (block of closureOverviewBlockList; track block.id) {
@@ -8282,20 +8164,26 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
 
                           @case ('lessons') {
                             <section class="project-closure-section" aria-label="Closure lessons learnt">
-                              <div class="closure-lessons-head">
-                                <div><span class="change-request-kicker">Lessons learnt</span><h3>Learning captured for future projects</h3></div>
-                                <button class="project-closure-secondary" type="button"><span pmConsoleIcon="plus" aria-hidden="true"></span><span>Add new</span></button>
-                              </div>
-                              <div class="dependency-register-table-shell closure-wide-table">
-                                <table class="dependency-register-table closure-lessons-table" aria-label="Closure lessons learnt">
-                                  <thead><tr><th>Title</th><th>Category</th><th>Issues</th><th>Recommendations</th><th aria-label="Edit"></th><th aria-label="Delete"></th></tr></thead>
-                                  <tbody>
-                                    @for (row of closureLessonRowList; track row.title) {
-                                      <tr><td>{{ row.title }}</td><td>{{ row.category }}</td><td>{{ row.issue }}</td><td>{{ row.recommendation }}</td><td class="change-request-action-cell"><button pmConsoleTableAction iconName="pencil" type="button" [attr.aria-label]="'Edit ' + row.title"></button></td><td class="change-request-action-cell"><button pmConsoleTableAction iconName="trash-2" actionClass="schedule-table-action danger" type="button" [attr.aria-label]="'Delete ' + row.title"></button></td></tr>
-                                    }
-                                  </tbody>
-                                </table>
-                              </div>
+                              <app-pm-console-plan-table
+                                title="Learning captured for future projects"
+                                eyebrow="Lessons learnt"
+                                description="Issues, recommendations, and ownership notes carried forward."
+                                [countLabel]="closureLessonRowList.length + ' lessons'"
+                                actionLabel="Add new"
+                                [iconName]="iconName('lessons')"
+                                panelClass="closure-table-card"
+                              >
+                                <div class="dependency-register-table-shell closure-wide-table">
+                                  <table class="dependency-register-table closure-lessons-table" aria-label="Closure lessons learnt">
+                                    <thead><tr><th>Title</th><th>Category</th><th>Issues</th><th>Recommendations</th><th aria-label="Edit"></th><th aria-label="Delete"></th></tr></thead>
+                                    <tbody>
+                                      @for (row of closureLessonRowList; track row.title) {
+                                        <tr><td>{{ row.title }}</td><td>{{ row.category }}</td><td>{{ row.issue }}</td><td>{{ row.recommendation }}</td><td class="change-request-action-cell"><button pmConsoleTableAction iconName="pencil" type="button" [attr.aria-label]="'Edit ' + row.title"></button></td><td class="change-request-action-cell"><button pmConsoleTableAction iconName="trash-2" actionClass="schedule-table-action danger" type="button" [attr.aria-label]="'Delete ' + row.title"></button></td></tr>
+                                      }
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </app-pm-console-plan-table>
                               <article class="closure-comment-card"><label class="matrix-field matrix-field-textarea wide"><span class="matrix-field-label">Lessons summary</span><textarea aria-label="Lessons summary" [value]="closureLessonsComment" (input)="closureLessonsComment = $any($event.target).value"></textarea></label></article>
                             </section>
                           }
@@ -8858,6 +8746,67 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
       </div>
     </main>
 
+    @if (isScheduleDeliverablesMenuOpen) {
+      <div
+        class="simple-deliverables-popover simple-deliverables-floating-popover"
+        role="menu"
+        aria-label="Add deliverables"
+        [class.opens-above]="scheduleDeliverablesMenuPosition.placement === 'above'"
+        [style.left.px]="scheduleDeliverablesMenuPosition.left"
+        [style.top.px]="scheduleDeliverablesMenuPosition.top"
+        [style.max-height.px]="scheduleDeliverablesMenuPosition.maxHeight"
+      >
+        @if (projectPlanDetailMode === 'simple') {
+          <button type="button" role="menuitem" (click)="openScheduleDeliverableFromMenu('end-product', $event)">
+            <span pmConsoleIcon="package" aria-hidden="true"></span>
+            End product
+          </button>
+          <button type="button" role="menuitem" (click)="openScheduleDeliverableFromMenu('management-product', $event)">
+            <span pmConsoleIcon="file-check-2" aria-hidden="true"></span>
+            Management product
+          </button>
+          <button type="button" role="menuitem" (click)="openScheduleDeliverableFromMenu('milestone', $event)">
+            <span pmConsoleIcon="milestone" aria-hidden="true"></span>
+            Milestone
+          </button>
+        } @else {
+          <button type="button" role="menuitem" (click)="openScheduleDeliverableFromMenu('milestone', $event)">
+            <span pmConsoleIcon="milestone" aria-hidden="true"></span>
+            Add milestone
+          </button>
+          <button type="button" role="menuitem" (click)="openScheduleDeliverableFromMenu('end-product', $event)">
+            <span pmConsoleIcon="package" aria-hidden="true"></span>
+            Add end product
+          </button>
+          <button type="button" role="menuitem" (click)="openScheduleDeliverableFromMenu('management-product', $event)">
+            <span pmConsoleIcon="file-check-2" aria-hidden="true"></span>
+            Add management product
+          </button>
+        }
+      </div>
+    }
+
+    @if (isMandatoryWatchlistMenuOpen) {
+      <div
+        class="simple-deliverables-popover simple-deliverables-floating-popover"
+        role="menu"
+        aria-label="Add mandatory watchlist item"
+        [class.opens-above]="mandatoryWatchlistMenuPosition.placement === 'above'"
+        [style.left.px]="mandatoryWatchlistMenuPosition.left"
+        [style.top.px]="mandatoryWatchlistMenuPosition.top"
+        [style.max-height.px]="mandatoryWatchlistMenuPosition.maxHeight"
+      >
+        <button type="button" role="menuitem" (click)="openMandatoryWatchlistItemFromMenu('benefit', $event)">
+          <span pmConsoleIcon="thumbs-up" aria-hidden="true"></span>
+          Benefit
+        </button>
+        <button type="button" role="menuitem" (click)="openMandatoryWatchlistItemFromMenu('risk', $event)">
+          <span pmConsoleIcon="triangle-alert" aria-hidden="true"></span>
+          Risk
+        </button>
+      </div>
+    }
+
     @if (activeReportProject) {
       <app-pm-console-report-drawer
         [projectName]="activeReport.project"
@@ -8916,24 +8865,13 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
           [title]="riskDrawerTitle"
           [eyebrow]="register.fieldName"
           [description]="register.description"
-          [submitLabel]="riskDrawerOpenProfileAfterSave ? 'Save risk and open profile' : editingRiskPlanId ? 'Save changes' : register.actionLabel"
+          [submitLabel]="editingRiskPlanId ? 'Save changes' : register.actionLabel"
           [submitDisabled]="!canSaveRiskDraft(register)"
           closeAriaLabel="Close risk drawer"
           panelClass="risk-drawer"
           (close)="closeRiskDrawer()"
           (submitForm)="saveRiskDrawer($event)"
         >
-          <div planDrawerBody class="risk-drawer-profile-cta" [class.is-selected]="riskDrawerOpenProfileAfterSave">
-            <div>
-              <strong>Complete risk profile</strong>
-              <small>Open Identification, Analysis, and Treatment after saving this quick risk.</small>
-            </div>
-            <button type="button" (click)="markRiskDrawerForFullProfile()">
-              <span pmConsoleIcon="chevron-right" aria-hidden="true"></span>
-              Create full profile
-            </button>
-          </div>
-
           <div planDrawerBody class="risk-drawer-layout">
             <div class="dependency-drawer-grid risk-drawer-grid">
               <app-pm-console-field label="Risk Category" type="select" [value]="register.draft.riskCategory" [options]="register.categoryOptions" [placeholder]="register.categoryPlaceholder" ariaLabel="Risk Category" fieldClass="dependency-drawer-field" [mandatory]="true" (valueChange)="updateRiskDraft('riskCategory', $event)" />
@@ -9005,6 +8943,54 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
           </section>
         </app-pm-console-plan-drawer>
       }
+    }
+
+    @if (activeBenefitProfile; as benefit) {
+      @let register = activeBenefitPlan;
+      <div class="benefit-profile-drawer-shell" aria-live="polite">
+        <button class="benefit-profile-drawer-backdrop" type="button" (click)="closeBenefitProfile()" aria-label="Close benefit profile drawer"></button>
+        <aside class="benefit-profile-drawer" role="dialog" aria-modal="true" [attr.aria-label]="'Manage benefit ' + benefit.id">
+          <app-pm-console-benefit-profile
+            [benefit]="benefit"
+            [projectOptions]="workspaceBenefitProjectOptions"
+            [categoryOptions]="register.benefitCategoryOptions"
+            [ownerOptions]="register.ownerOptions"
+            [productOptions]="benefitProductOptions"
+            [strategicObjectiveOptions]="benefitStrategicObjectiveOptions"
+            (closeProfile)="closeBenefitProfile()"
+            (completeProfile)="completeBenefitProfile($event)"
+            (fieldChange)="updateBenefitProfileField($event)"
+            (objectiveAdd)="addBenefitProfileObjective($event)"
+            (recipientAdd)="addBenefitProfileRecipient($event)"
+            (measureAdd)="addBenefitProfileMeasure($event)"
+            (removeMeasure)="removeBenefitProfileMeasure($event)"
+          ></app-pm-console-benefit-profile>
+        </aside>
+      </div>
+    }
+
+    @if (activeRiskProfile; as risk) {
+      <div class="risk-profile-drawer-shell" aria-live="polite">
+        <button class="risk-profile-drawer-backdrop" type="button" (click)="closeRiskProfile()" aria-label="Close risk profile drawer"></button>
+        <aside class="risk-profile-drawer" role="dialog" aria-modal="true" [attr.aria-label]="'Manage risk ' + risk.id">
+          <app-pm-console-risk-profile
+            [risk]="risk"
+            [config]="activeRiskPlan"
+            [activeTab]="activeRiskProfileTab"
+            [treatmentDraft]="riskTreatmentDraft"
+            [projectRiskCount]="activeRiskPlan.rows.length"
+            (closeProfile)="closeRiskProfile()"
+            (completeProfile)="completeRiskAssessment($event)"
+            (tabChange)="setRiskProfileTab($event)"
+            (fieldChange)="handleRiskProfileFieldChange($event)"
+            (sharedRiskChange)="updateRiskProfileSharedRisk($event)"
+            (matrixChange)="updateRiskProfileMatrix($event.kind, $event.selection)"
+            (treatmentDraftChange)="handleRiskTreatmentDraftChange($event)"
+            (treatmentAdd)="addRiskTreatmentToProfile()"
+            (treatmentRemove)="removeRiskTreatmentFromProfile($event)"
+          ></app-pm-console-risk-profile>
+        </aside>
+      </div>
     }
 
     @if (false && activeReportProject) {
@@ -10537,6 +10523,8 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   scheduleScopeState: ScheduleScopeState = { ...scheduleScopeStateInitial };
   isScheduleDeliverablesMenuOpen = false;
   isMandatoryWatchlistMenuOpen = false;
+  scheduleDeliverablesMenuPosition: CompactMenuPosition = { ...defaultCompactMenuPosition };
+  mandatoryWatchlistMenuPosition: CompactMenuPosition = { ...defaultCompactMenuPosition };
   isScheduleMilestoneDrawerOpen = false;
   editingScheduleMilestoneId: string | null = null;
   scheduleMilestoneRows: ScheduleMilestoneRow[] = scheduleMilestoneRowsInitial.map((row) => ({ ...row }));
@@ -10578,7 +10566,6 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   activeRiskProfileId: string | null = null;
   activeRiskProfileTab: RiskProfileTab = 'identification';
   riskProfileFocusMode = false;
-  riskDrawerOpenProfileAfterSave = false;
   activeDependencyRegisterKey: DependencyRegisterKey | null = null;
   budgetPlanStates: Record<string, BudgetPlanState> = this.cloneBudgetPlanStateMap(budgetPlanSeeds);
   budgetYearDraft: BudgetYearDraft = { ...budgetPlanConfig.yearDraft };
@@ -10606,7 +10593,6 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   changeImpactDraft: ChangeImpactDraft = { ...changeImpactConfig.draft, strategies: [...changeImpactConfig.draft.strategies] };
   onboardingProjectPlanFields: ProjectPlanField[] = createOnboardingProjectPlanFields();
   readonly closureReasonOptionsList = closureReasonOptions;
-  readonly closureChecklistList = closureChecklistItems;
   readonly closureFollowUpActionList = closureFollowUpActions;
   readonly closureRecommendationList = closureRecommendations;
   readonly closureBenefitRowList = closureBenefitRows;
@@ -10935,10 +10921,6 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return scheduleScopeCapabilityOptions;
   }
 
-  get scheduleScopeExistingEndProducts(): typeof scheduleScopeExistingEndProducts {
-    return scheduleScopeExistingEndProducts;
-  }
-
   get scheduleScopeDeliveryLinkOptions(): string[] {
     const currentProduct = this.scheduleEndProductDraft.product.trim();
     const values = [
@@ -11123,7 +11105,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get benefitDrawerTitle(): string {
-    return this.editingBenefitPlanId ? 'Edit benefit' : this.activeBenefitPlan.title;
+    return this.editingBenefitPlanId ? 'Edit benefit' : 'Add benefit';
   }
 
   get benefitDrawerSubmitLabel(): string {
@@ -11288,53 +11270,6 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   get activeClosureNavItem(): ClosureNavItem {
     return this.closureNavigationItems.find((item) => item.id === this.activeClosureSection) || this.closureNavigationItems[0];
-  }
-
-  get closureReadyItemCount(): number {
-    return this.closureChecklistList.filter((item) => item.tone === 'green').length;
-  }
-
-  get closureReadinessPercent(): number {
-    if (!this.closureChecklistList.length) return 0;
-    return Math.round((this.closureReadyItemCount / this.closureChecklistList.length) * 100);
-  }
-
-  get closureOpenActionCount(): number {
-    return this.closureFollowUpActionList.filter((row) => row.status.toLowerCase().includes('open')).length;
-  }
-
-  get closureOverviewMetrics(): ClosureMetric[] {
-    const budgetVariance = this.activeBudgetOverviewMetrics.find((metric) => metric.label.toLowerCase().includes('variance'));
-    return [
-      {
-        label: 'Closure status',
-        value: 'Draft',
-        helper: 'Ready for PMO review once open checks are cleared',
-        icon: 'closure',
-        tone: 'amber',
-      },
-      {
-        label: 'Readiness',
-        value: `${this.closureReadinessPercent}%`,
-        helper: `${this.closureReadyItemCount} of ${this.closureChecklistList.length} closure checks ready`,
-        icon: 'checklist',
-        tone: this.closureReadinessPercent >= 75 ? 'green' : 'amber',
-      },
-      {
-        label: 'Budget variance',
-        value: budgetVariance?.value || 'SAR 0',
-        helper: budgetVariance?.helper || 'No variance recorded',
-        icon: 'dollar',
-        tone: budgetVariance?.tone || 'neutral',
-      },
-      {
-        label: 'Open follow-ups',
-        value: String(this.closureOpenActionCount),
-        helper: `${this.closureFollowUpActionList.length} actions captured for closure`,
-        icon: 'todo',
-        tone: this.closureOpenActionCount ? 'amber' : 'green',
-      },
-    ];
   }
 
   get closureBudgetSummaryLabel(): string {
@@ -11734,24 +11669,33 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   get visibleRiskRegisterRows(): RiskRegisterRow[] {
     if (this.onboardingProjectSetup) return [];
-    return this.isAllProjects ? riskRegisterRows : riskRegisterRows.filter((row) => row.project === this.selectedProject);
+    const rows = this.workspaceRiskRegisterRows;
+    return this.isAllProjects ? rows : rows.filter((row) => row.project === this.selectedProject);
   }
 
   get benefitRegisterTableRows(): PmConsoleRegisterTableRow[] {
     return this.visibleBenefitRegisterRows.map((row) => {
       const cells: Record<string, PmConsoleRegisterTableCell> = {
         id: { kind: 'text', text: row.id, strong: true },
-        benefit: { kind: 'primary', title: row.benefit, ariaLabel: `Open complete benefit profile for ${row.id}` },
+        benefit: { kind: 'primary', title: row.benefit, ariaLabel: `Manage benefit profile for ${row.id}` },
         project: { kind: 'text', text: row.project },
         owner: { kind: 'text', text: row.owner },
         targetDate: { kind: 'text', text: row.targetDate, muted: true },
         measure: { kind: 'text', text: row.measure },
         realization: { kind: 'status', label: row.realization, tone: row.realizationTone },
         status: { kind: 'status', label: row.status, tone: row.statusTone },
+        actions: {
+          kind: 'menu',
+          ariaLabel: `Actions for ${row.id}`,
+          actions: [
+            { id: 'manage', label: 'Manage', icon: 'panel-right-open', ariaLabel: `Manage ${row.id}` },
+            { id: 'edit', label: 'Edit', icon: 'pencil', ariaLabel: `Edit ${row.id}` },
+          ],
+        },
       };
       return {
         id: row.id,
-        ariaLabel: `Open complete benefit profile for ${row.id}`,
+        ariaLabel: `Manage benefit profile for ${row.id}`,
         cells,
       };
     });
@@ -11768,6 +11712,14 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
         reviewDate: { kind: 'text', text: row.reviewDate, muted: true },
         exposure: { kind: 'status', label: row.exposure, tone: row.exposureTone },
         status: { kind: 'status', label: row.status, tone: row.statusTone },
+        actions: {
+          kind: 'menu',
+          ariaLabel: `Actions for ${row.id}`,
+          actions: [
+            { id: 'manage', label: 'Manage', icon: 'panel-right-open', ariaLabel: `Manage ${row.id}` },
+            { id: 'edit', label: 'Edit', icon: 'pencil', ariaLabel: `Edit ${row.id}` },
+          ],
+        },
       };
       return {
         id: row.id,
@@ -11786,6 +11738,14 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     const merged = new Map<string, BenefitRegisterRow>(benefitRegisterRows.map((row) => [row.id, row]));
     this.benefitPlanRows.forEach((row) => {
       merged.set(row.id, this.benefitRegisterRowFromPlanRow(row));
+    });
+    return Array.from(merged.values());
+  }
+
+  private get workspaceRiskRegisterRows(): RiskRegisterRow[] {
+    const merged = new Map<string, RiskRegisterRow>(riskRegisterRows.map((row) => [row.id, row]));
+    this.riskPlanRows.forEach((row) => {
+      merged.set(row.id, this.riskRegisterRowFromPlanRow(row));
     });
     return Array.from(merged.values());
   }
@@ -14962,16 +14922,39 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return `${startLabel} - ${endLabel}`;
   }
 
+  private compactMenuPosition(event?: Event, estimatedMenuHeight = 132, menuWidth = 218): CompactMenuPosition {
+    const trigger = event?.currentTarget instanceof HTMLElement ? event.currentTarget : null;
+    if (!trigger) return { ...defaultCompactMenuPosition };
+
+    const margin = 12;
+    const gap = 8;
+    const triggerRect = trigger.getBoundingClientRect();
+    const availableBelow = window.innerHeight - triggerRect.bottom - gap - margin;
+    const availableAbove = triggerRect.top - gap - margin;
+    const placement: CompactMenuPlacement = availableBelow < estimatedMenuHeight && availableAbove > availableBelow ? 'above' : 'below';
+    const maxHeight = Math.min(estimatedMenuHeight, Math.max(72, window.innerHeight - margin * 2));
+    const left = Math.max(margin, Math.min(triggerRect.right - menuWidth, window.innerWidth - menuWidth - margin));
+    const top =
+      placement === 'above'
+        ? Math.max(margin, triggerRect.top - gap - maxHeight)
+        : Math.min(triggerRect.bottom + gap, window.innerHeight - margin - maxHeight);
+
+    return { placement, top, left, maxHeight };
+  }
+
   toggleScheduleDeliverablesMenu(event?: Event): void {
     event?.stopPropagation();
     this.closeMandatoryWatchlistMenu();
-    this.isScheduleDeliverablesMenuOpen = !this.isScheduleDeliverablesMenuOpen;
+    const shouldOpen = !this.isScheduleDeliverablesMenuOpen;
+    this.scheduleDeliverablesMenuPosition = shouldOpen ? this.compactMenuPosition(event) : { ...defaultCompactMenuPosition };
+    this.isScheduleDeliverablesMenuOpen = shouldOpen;
     this.iconsHydrated = false;
   }
 
   closeScheduleDeliverablesMenu(): void {
     if (!this.isScheduleDeliverablesMenuOpen) return;
     this.isScheduleDeliverablesMenuOpen = false;
+    this.scheduleDeliverablesMenuPosition = { ...defaultCompactMenuPosition };
     this.iconsHydrated = false;
   }
 
@@ -14990,13 +14973,16 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   toggleMandatoryWatchlistMenu(event?: Event): void {
     event?.stopPropagation();
     this.closeScheduleDeliverablesMenu();
-    this.isMandatoryWatchlistMenuOpen = !this.isMandatoryWatchlistMenuOpen;
+    const shouldOpen = !this.isMandatoryWatchlistMenuOpen;
+    this.mandatoryWatchlistMenuPosition = shouldOpen ? this.compactMenuPosition(event, 104) : { ...defaultCompactMenuPosition };
+    this.isMandatoryWatchlistMenuOpen = shouldOpen;
     this.iconsHydrated = false;
   }
 
   closeMandatoryWatchlistMenu(): void {
     if (!this.isMandatoryWatchlistMenuOpen) return;
     this.isMandatoryWatchlistMenuOpen = false;
+    this.mandatoryWatchlistMenuPosition = { ...defaultCompactMenuPosition };
     this.iconsHydrated = false;
   }
 
@@ -15128,7 +15114,6 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.editingScheduleEndProductId = row?.id || null;
     this.scheduleEndProductDraft = row
       ? {
-          sourceType: 'new',
           product: row.product,
           description: row.description,
           owner: row.owner,
@@ -15185,30 +15170,6 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.scheduleEndProductDraft = {
       ...this.scheduleEndProductDraft,
       [field]: value,
-    };
-  }
-
-  setScheduleEndProductSource(source: ScheduleScopeProductSource): void {
-    this.scheduleEndProductDraft = {
-      ...this.scheduleEndProductDraft,
-      sourceType: source,
-    };
-    if (source === 'existing' && !this.scheduleEndProductDraft.product.trim()) {
-      this.applyExistingEndProductSelection(scheduleScopeExistingEndProducts[0]?.product || '');
-    }
-  }
-
-  applyExistingEndProductSelection(productName: string): void {
-    const selected = scheduleScopeExistingEndProducts.find((product) => product.product === productName);
-    if (!selected) return;
-    this.scheduleEndProductDraft = {
-      ...this.scheduleEndProductDraft,
-      sourceType: 'existing',
-      product: selected.product,
-      description: selected.description,
-      owner: selected.owner,
-      category: selected.category,
-      capability: selected.capability,
     };
   }
 
@@ -15362,17 +15323,25 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     if (benefit) this.openWorkspaceBenefitProfile(benefit);
   }
 
+  handleBenefitRegisterTableAction(event: PmConsoleRegisterTableActionEvent): void {
+    const benefit = this.visibleBenefitRegisterRows.find((item) => item.id === event.row.id);
+    if (!benefit) return;
+    const benefitProfile = this.ensureBenefitPlanRowFromRegisterRow(benefit);
+    if (event.action?.id === 'edit') {
+      this.openBenefitDrawer(benefitProfile);
+      return;
+    }
+    this.openBenefitRegisterProfile(benefitProfile);
+  }
+
   openBenefitRegisterProfile(row: BenefitPlanRow): void {
     this.closeProjectPlanDrawers();
     this.closeReport();
     this.closeStageGate();
     this.closeStageRevoke();
-    this.selectedPage = 'workspaces';
-    this.workspaceRegister = 'benefits';
     this.activeBenefitProfileId = row.id;
-    this.benefitProfileFocusMode = true;
+    this.benefitProfileFocusMode = false;
     this.iconsHydrated = false;
-    this.emitState();
   }
 
   openBenefitProfile(row: BenefitPlanRow): void {
@@ -15388,10 +15357,6 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     if (!this.activeBenefitProfileId && !this.benefitProfileFocusMode) return;
     this.activeBenefitProfileId = null;
     this.benefitProfileFocusMode = false;
-    this.iconsHydrated = false;
-  }
-
-  saveBenefitProfile(): void {
     this.iconsHydrated = false;
   }
 
@@ -15451,12 +15416,23 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   openWorkspaceRiskProfile(row: RiskRegisterRow): void {
     const risk = this.ensureRiskPlanRowFromRegisterRow(row);
-    this.openRiskRegisterProfile(risk, row.project, this.currentRiskProfileReturnState());
+    this.openRiskRegisterProfile(risk, row.project);
   }
 
   openRiskRegisterTableRow(row: PmConsoleRegisterTableRow): void {
     const risk = this.visibleRiskRegisterRows.find((item) => item.id === row.id);
     if (risk) this.openWorkspaceRiskProfile(risk);
+  }
+
+  handleRiskRegisterTableAction(event: PmConsoleRegisterTableActionEvent): void {
+    const risk = this.visibleRiskRegisterRows.find((item) => item.id === event.row.id);
+    if (!risk) return;
+    const riskProfile = this.ensureRiskPlanRowFromRegisterRow(risk);
+    if (event.action?.id === 'edit') {
+      this.openRiskDrawer(riskProfile);
+      return;
+    }
+    this.openRiskRegisterProfile(riskProfile, risk.project);
   }
 
   openRiskDrawer(row?: RiskPlanRow): void {
@@ -15469,7 +15445,6 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
           treatments: riskPlanConfig.draft.treatments.map((treatment) => ({ ...treatment })),
         };
     this.riskTreatmentDraft = { ...riskTreatmentDraftInitial };
-    this.riskDrawerOpenProfileAfterSave = false;
     this.isRiskDrawerOpen = true;
     this.iconsHydrated = false;
   }
@@ -15478,7 +15453,6 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     if (!this.isRiskDrawerOpen) return;
     this.isRiskDrawerOpen = false;
     this.editingRiskPlanId = null;
-    this.riskDrawerOpenProfileAfterSave = false;
     this.iconsHydrated = false;
   }
 
@@ -15528,12 +15502,8 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       ? this.riskPlanRows.map((row) => (row.id === rowId ? nextRow : row))
       : [...this.riskPlanRows, nextRow];
 
-    const shouldOpenProfile = this.riskDrawerOpenProfileAfterSave;
     this.resetRiskDraft();
     this.closeRiskDrawer();
-    if (shouldOpenProfile) {
-      this.openRiskProfile(nextRow);
-    }
   }
 
   updateRiskDraft(field: RiskPlanDraftField, value: string): void {
@@ -15590,26 +15560,23 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return Boolean(draft.riskCategory.trim() && draft.riskName.trim() && draft.startDate.trim() && draft.endDate.trim() && draft.status.trim());
   }
 
-  markRiskDrawerForFullProfile(): void {
-    this.riskDrawerOpenProfileAfterSave = true;
-  }
-
-  openRiskRegisterProfile(row: RiskPlanRow, projectId = this.selectedProject, returnState: RiskProfileReturnState | null = null): void {
+  openRiskRegisterProfile(row: RiskPlanRow, projectId = this.selectedProject, _returnState: RiskProfileReturnState | null = null): void {
     this.closeProjectPlanDrawers();
     this.closeReport();
     this.closeStageGate();
     this.closeStageRevoke();
-    this.selectedProject = projectId;
-    this.selectedPage = 'project-plan';
-    this.projectPlanEntry = 'quick';
-    this.projectPlanDetailMode = 'detailed';
-    this.projectPlanActiveSection = 'Risk';
-    this.projectPlanExpandedFieldSections = {};
-    this.resetProjectPlanHeaderCondensed();
+    if (this.selectedPage === 'project-plan') {
+      this.selectedProject = projectId;
+      this.projectPlanEntry = 'quick';
+      this.projectPlanDetailMode = 'detailed';
+      this.projectPlanActiveSection = 'Risk';
+      this.projectPlanExpandedFieldSections = {};
+      this.resetProjectPlanHeaderCondensed();
+    }
     this.openRiskProfile(row);
-    this.riskProfileFocusMode = Boolean(returnState);
-    this.riskProfileReturnState = returnState;
-    this.emitState();
+    this.riskProfileFocusMode = false;
+    this.riskProfileReturnState = null;
+    this.iconsHydrated = false;
   }
 
   openRiskProfile(row: RiskPlanRow): void {
@@ -15677,6 +15644,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     });
   }
 
+  handleRiskProfileFieldChange(change: RiskProfileFieldChange): void {
+    this.updateRiskProfileField(change.field as RiskPlanRowField, change.value);
+  }
+
   updateRiskProfileEnterpriseImpact(value: boolean): void {
     this.updateRiskProfileBoolean('enterpriseImpact', value);
   }
@@ -15712,6 +15683,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       ...this.riskTreatmentDraft,
       [field]: value,
     };
+  }
+
+  handleRiskTreatmentDraftChange(change: RiskTreatmentDraftChange): void {
+    this.updateRiskTreatmentDraft(change.field as keyof RiskTreatmentDraft, change.value);
   }
 
   canAddRiskTreatmentDraft(): boolean {
@@ -15947,6 +15922,53 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   private defaultBenefitProject(): string {
     if (this.selectedProject && this.selectedProject !== 'all') return this.selectedProject;
     return '';
+  }
+
+  private riskRegisterRowFromPlanRow(row: RiskPlanRow): RiskRegisterRow {
+    const exposure = this.riskRegisterExposureFromRating(row.actualRating);
+    return {
+      id: row.id,
+      risk: row.riskName,
+      project: this.defaultRiskProject(row),
+      owner: row.owner,
+      mitigation: row.treatments[0]?.treatment || row.treatmentComment || row.controlSummary || 'Mitigation to confirm',
+      reviewDate: this.riskDateLabel(row.reviewDueDate || row.endDate),
+      exposure,
+      exposureTone: this.riskRegisterExposureTone(exposure),
+      status: row.status,
+      statusTone: this.riskRegisterStatusTone(row.status),
+    };
+  }
+
+  private defaultRiskProject(row: RiskPlanRow): string {
+    if (this.selectedProject && this.selectedProject !== 'all') return this.selectedProject;
+    const sourceProject = workspaceTableProjects.find((project) => project.title === row.source || project.id === row.source);
+    return sourceProject?.title || firstAssignedProject.id;
+  }
+
+  private riskRegisterExposureFromRating(rating: string): string {
+    const normalized = rating.toLowerCase();
+    if (normalized === 'extreme') return 'Critical';
+    if (normalized === 'high') return 'High';
+    if (normalized === 'medium') return 'Medium';
+    if (normalized === 'low') return 'Low';
+    return 'Not rated';
+  }
+
+  private riskRegisterExposureTone(exposure: string): string {
+    const normalized = exposure.toLowerCase();
+    if (normalized === 'critical' || normalized === 'high') return 'red';
+    if (normalized === 'medium') return 'amber';
+    if (normalized === 'low') return 'blue';
+    return 'neutral';
+  }
+
+  private riskRegisterStatusTone(status: string): string {
+    const normalized = status.toLowerCase();
+    if (normalized.includes('closed')) return 'green';
+    if (normalized.includes('escalated')) return 'red';
+    if (normalized.includes('monitor') || normalized.includes('active')) return 'amber';
+    return 'blue';
   }
 
   private benefitStageTone(stage: string): string {
@@ -17959,7 +17981,6 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       treatments: riskPlanConfig.draft.treatments.map((treatment) => ({ ...treatment })),
     };
     this.riskTreatmentDraft = { ...riskTreatmentDraftInitial };
-    this.riskDrawerOpenProfileAfterSave = false;
   }
 
   private resetIssueDraft(): void {

@@ -135,13 +135,6 @@ interface MeasureDraft {
               <small>{{ record.project }} · Owner {{ record.owner || 'Owner to confirm' }}</small>
             </div>
           </div>
-          <div class="risk-profile-actions benefit-profile-actions">
-            <span [pmConsoleStatusPill]="record.overallStatus || 'To Commence'" baseClass="dependency-register-pill" [tone]="benefitStatusTone(record.overallStatus)"></span>
-            <button class="risk-profile-secondary" type="button">View activity</button>
-            <button class="risk-profile-secondary" type="button">More actions</button>
-            <button class="risk-profile-primary" type="button" (click)="saveProfile.emit()">Save</button>
-            <button class="risk-profile-primary benefit-profile-complete" type="button" (click)="completeProfile.emit(record.id)">Mark realized</button>
-          </div>
         </header>
 
         <div class="benefit-profile-tabs" role="tablist" aria-label="Benefit profile tabs">
@@ -387,6 +380,15 @@ interface MeasureDraft {
             </section>
           </section>
         }
+
+        <footer class="risk-profile-footer benefit-profile-footer">
+          <div class="risk-profile-actions benefit-profile-actions">
+            <span [pmConsoleStatusPill]="record.overallStatus || 'To Commence'" baseClass="dependency-register-pill" [tone]="benefitStatusTone(record.overallStatus)"></span>
+            <button class="risk-profile-secondary" type="button">View activity</button>
+            <button class="risk-profile-secondary" type="button">More actions</button>
+            <button class="risk-profile-primary benefit-profile-complete" type="button" (click)="completeProfile.emit(record.id)">Mark realized</button>
+          </div>
+        </footer>
       </article>
 
       <ng-template #measureTable let-measures="measures">
@@ -494,7 +496,7 @@ interface MeasureDraft {
       }
 
       .benefit-profile-focus-frame .benefit-profile-shell {
-        grid-template-rows: auto auto minmax(0, 1fr);
+        grid-template-rows: auto auto minmax(0, 1fr) auto;
         height: 100%;
         min-height: 0;
       }
@@ -529,7 +531,7 @@ interface MeasureDraft {
 
       .benefit-profile-actions {
         align-items: center;
-        justify-content: flex-start;
+        justify-content: flex-end;
       }
 
       .benefit-profile-shell .risk-profile-eyebrow,
@@ -956,7 +958,6 @@ export class PmConsoleBenefitProfileComponent {
   @Input() strategicObjectiveOptions: string[] = [];
 
   @Output() readonly closeProfile = new EventEmitter<void>();
-  @Output() readonly saveProfile = new EventEmitter<void>();
   @Output() readonly completeProfile = new EventEmitter<string>();
   @Output() readonly fieldChange = new EventEmitter<BenefitProfileFieldChange>();
   @Output() readonly objectiveAdd = new EventEmitter<BenefitProfileObjectiveLink>();

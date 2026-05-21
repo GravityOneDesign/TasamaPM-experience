@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostListener, Input, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostBinding, HostListener, Input, OnDestroy } from '@angular/core';
 
 export interface PmConsoleAiGuideCopy {
   title?: string;
@@ -171,7 +171,7 @@ let nextAiGuideIconGradientId = 0;
         [class.align-right]="align === 'right'"
         [class.is-open]="open"
         (mouseenter)="openGuide()"
-        (mouseleave)="closeGuide()"
+        (mouseleave)="queueCloseGuide()"
       >
         <button
           class="ai-guide-chip-trigger"
@@ -200,7 +200,17 @@ let nextAiGuideIconGradientId = 0;
           </svg>
         </button>
         @if (open) {
-          <aside class="ai-guide-popover" role="tooltip" (click)="$event.stopPropagation()">
+          <aside
+            class="ai-guide-popover"
+            [class.opens-above]="popoverPlacement === 'above'"
+            role="tooltip"
+            [style.left.px]="popoverLeft"
+            [style.top.px]="popoverTop"
+            [style.max-height.px]="popoverMaxHeight"
+            (mouseenter)="cancelCloseGuide()"
+            (mouseleave)="queueCloseGuide()"
+            (click)="$event.stopPropagation()"
+          >
             <header class="ai-guide-popover-head">
               <span aria-hidden="true"></span>
               <div>
@@ -231,6 +241,10 @@ let nextAiGuideIconGradientId = 0;
         min-width: 0;
         position: relative;
         z-index: 16;
+      }
+
+      :host(.ai-guide-host-open) {
+        z-index: 1200;
       }
 
       .ai-guide-chip {
@@ -320,17 +334,13 @@ let nextAiGuideIconGradientId = 0;
         display: grid;
         gap: 12px;
         left: 0;
+        overflow-y: auto;
         padding: 14px;
-        position: absolute;
+        position: fixed;
         text-align: left;
-        top: calc(100% + 10px);
-        width: min(348px, calc(100vw - 40px));
-        z-index: 40;
-      }
-
-      .ai-guide-chip.align-right .ai-guide-popover {
-        left: auto;
-        right: 0;
+        top: 0;
+        width: min(348px, calc(100vw - 24px));
+        z-index: 1200;
       }
 
       .ai-guide-popover::before {
@@ -349,6 +359,15 @@ let nextAiGuideIconGradientId = 0;
       .ai-guide-chip.align-right .ai-guide-popover::before {
         left: auto;
         right: 10px;
+      }
+
+      .ai-guide-popover.opens-above::before {
+        border-bottom: 1px solid rgba(120, 143, 190, 0.22);
+        border-left: 0;
+        border-right: 1px solid rgba(120, 143, 190, 0.22);
+        border-top: 0;
+        bottom: -6px;
+        top: auto;
       }
 
       .ai-guide-popover-head {
@@ -492,12 +511,23 @@ export class PmConsoleAiGuideChipComponent implements OnDestroy {
   @Input() how = '';
   @Input() example = '';
   @Input() align: 'left' | 'right' = 'left';
+  @HostBinding('attr.title') readonly nativeTitle = null;
+  @HostBinding('class.ai-guide-host-open')
+  get hostOpen(): boolean {
+    return this.open;
+  }
 
   readonly iconGradientId = `ai-guide-chat-gradient-${nextAiGuideIconGradientId++}`;
 
   open = false;
+  popoverLeft = 0;
+  popoverTop = 0;
+  popoverMaxHeight = 280;
+  popoverPlacement: 'above' | 'below' = 'below';
   typedCharacterCount = 0;
   private typingTimer: number | null = null;
+  private closeTimer: number | null = null;
+  private positionFrame: number | null = null;
 
   constructor(
     private readonly elementRef: ElementRef<HTMLElement>,
@@ -534,16 +564,31 @@ export class PmConsoleAiGuideChipComponent implements OnDestroy {
 
   openGuide(): void {
     if (!this.hasGuide) return;
+    this.cancelCloseGuide();
     this.setOpen(true);
   }
 
   closeGuide(): void {
+    this.cancelCloseGuide();
     this.setOpen(false);
+  }
+
+  queueCloseGuide(): void {
+    this.clearCloseTimer();
+    this.closeTimer = window.setTimeout(() => {
+      this.closeTimer = null;
+      this.setOpen(false);
+    }, 120);
+  }
+
+  cancelCloseGuide(): void {
+    this.clearCloseTimer();
   }
 
   toggleGuide(event: MouseEvent): void {
     event.stopPropagation();
     if (!this.hasGuide) return;
+    this.cancelCloseGuide();
     this.setOpen(!this.open);
   }
 
@@ -560,19 +605,95 @@ export class PmConsoleAiGuideChipComponent implements OnDestroy {
     this.setOpen(false);
   }
 
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    if (!this.open) return;
+    this.schedulePositionPopover();
+  }
+
+  @HostListener('window:scroll')
+  onWindowScroll(): void {
+    if (!this.open) return;
+    this.schedulePositionPopover();
+  }
+
   ngOnDestroy(): void {
     this.clearTypingTimer();
+    this.clearCloseTimer();
+    this.clearPositionFrame();
   }
 
   private setOpen(open: boolean): void {
-    if (this.open === open) return;
+    if (this.open === open) {
+      if (open) {
+        this.schedulePositionPopover();
+      }
+      return;
+    }
     this.open = open;
     if (open) {
+      this.schedulePositionPopover();
       this.startTyping();
     } else {
       this.clearTypingTimer();
+      this.clearPositionFrame();
       this.typedCharacterCount = 0;
     }
+    this.changeDetectorRef.markForCheck();
+  }
+
+  private schedulePositionPopover(): void {
+    this.positionPopover();
+    this.clearPositionFrame();
+    this.positionFrame = window.requestAnimationFrame(() => {
+      this.positionFrame = null;
+      this.positionPopover();
+    });
+  }
+
+  private positionPopover(): void {
+    if (!this.open) return;
+
+    const trigger = this.elementRef.nativeElement.querySelector<HTMLElement>('.ai-guide-chip-trigger');
+    if (!trigger) return;
+
+    const triggerRect = trigger.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const margin = 12;
+    const gap = 10;
+    const preferredWidth = 348;
+    const preferredHeight = 246;
+    const popoverWidth = Math.min(preferredWidth, Math.max(220, viewportWidth - margin * 2));
+    const availableBelow = viewportHeight - triggerRect.bottom - margin - gap;
+    const availableAbove = triggerRect.top - margin - gap;
+    const placement: 'above' | 'below' =
+      availableBelow < 176 && availableAbove > availableBelow ? 'above' : 'below';
+    const availableHeight = placement === 'above' ? availableAbove : availableBelow;
+    const maxHeight = Math.min(280, Math.max(136, availableHeight));
+    const renderedPopover = this.elementRef.nativeElement.querySelector<HTMLElement>('.ai-guide-popover');
+    const renderedHeight = renderedPopover?.getBoundingClientRect().height || preferredHeight;
+    const popoverHeight = Math.min(renderedHeight, maxHeight);
+    const targetLeft = this.align === 'right' ? triggerRect.right - popoverWidth + 12 : triggerRect.left - 12;
+    const left = Math.min(Math.max(margin, targetLeft), Math.max(margin, viewportWidth - margin - popoverWidth));
+    const belowTop = Math.min(triggerRect.bottom + gap, viewportHeight - margin - maxHeight);
+    const aboveTop = Math.max(margin, triggerRect.top - gap - popoverHeight);
+    const targetTop = placement === 'above' ? aboveTop : belowTop;
+    let correctedLeft = left;
+    let correctedTop = targetTop;
+
+    if (renderedPopover) {
+      const renderedRect = renderedPopover.getBoundingClientRect();
+      const currentLeft = Number.parseFloat(renderedPopover.style.left) || left;
+      const currentTop = Number.parseFloat(renderedPopover.style.top) || targetTop;
+      correctedLeft = currentLeft + (left - renderedRect.left);
+      correctedTop = currentTop + (targetTop - renderedRect.top);
+    }
+
+    this.popoverLeft = Math.round(correctedLeft);
+    this.popoverTop = Math.round(correctedTop);
+    this.popoverMaxHeight = Math.round(maxHeight);
+    this.popoverPlacement = placement;
     this.changeDetectorRef.markForCheck();
   }
 
@@ -586,6 +707,7 @@ export class PmConsoleAiGuideChipComponent implements OnDestroy {
       this.typedCharacterCount = Math.min(total, this.typedCharacterCount + 2);
       if (this.typedCharacterCount >= total) {
         this.clearTypingTimer();
+        this.schedulePositionPopover();
       }
       this.changeDetectorRef.markForCheck();
     }, 34);
@@ -595,5 +717,17 @@ export class PmConsoleAiGuideChipComponent implements OnDestroy {
     if (this.typingTimer === null) return;
     window.clearInterval(this.typingTimer);
     this.typingTimer = null;
+  }
+
+  private clearCloseTimer(): void {
+    if (this.closeTimer === null) return;
+    window.clearTimeout(this.closeTimer);
+    this.closeTimer = null;
+  }
+
+  private clearPositionFrame(): void {
+    if (this.positionFrame === null) return;
+    window.cancelAnimationFrame(this.positionFrame);
+    this.positionFrame = null;
   }
 }
