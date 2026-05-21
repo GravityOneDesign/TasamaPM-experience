@@ -9,7 +9,6 @@ import {
   riskRegisterData,
   benefitsRegisterData,
   ProgramRow,
-  ProjectRow
 } from './portfolio-workspace.data';
 
 type SubTab = 'projects' | 'risks' | 'benefits';
@@ -23,7 +22,7 @@ type SubTab = 'projects' | 'risks' | 'benefits';
     <div class="workspace-registers-tab">
       
       <!-- Sub-tab bar -->
-      <div class="pm-register-tabs sub-tabs">
+      <div class="sub-tabs pm-register-tabs">
         <button
           class="pm-register-tab"
           [class.is-active]="activeSubTab === 'projects'"
@@ -57,43 +56,43 @@ type SubTab = 'projects' | 'risks' | 'benefits';
         @case ('projects') {
           <div class="tab-content-container animation-slide">
             <!-- Stats row -->
-            <div class="stats-row">
-              <article class="pm-project-table-stat cursor-pointer" (click)="filterStatus(null)">
-                <span [pmConsoleIcon]="'layers'" class="stat-icon p-icon"></span>
-                <div class="stat-meta">
-                  <span class="stat-label">All Programs</span>
+            <div class="pm-project-table-stats">
+              <article class="pm-project-table-stat blue cursor-pointer" [class.active-filter]="statusFilter === null" (click)="filterStatus(null)">
+                <span><span [pmConsoleIcon]="'layers'"></span></span>
+                <div class="stat-body">
+                  <small class="stat-label">All Programs</small>
                   <strong class="stat-value">{{ allProgramsCount }}</strong>
                 </div>
               </article>
 
-              <article class="pm-project-table-stat cursor-pointer border-emerald" (click)="filterStatus('on-track')">
-                <span [pmConsoleIcon]="'check-circle'" class="stat-icon text-success"></span>
-                <div class="stat-meta">
-                  <span class="stat-label">On-Track</span>
+              <article class="pm-project-table-stat green cursor-pointer" [class.active-filter]="statusFilter === 'on-track'" (click)="filterStatus('on-track')">
+                <span><span [pmConsoleIcon]="'check-circle'"></span></span>
+                <div class="stat-body">
+                  <small class="stat-label">On-Track</small>
                   <strong class="stat-value text-success">{{ onTrackCount }}</strong>
                 </div>
               </article>
 
-              <article class="pm-project-table-stat cursor-pointer border-red" (click)="filterStatus('off-track')">
-                <span [pmConsoleIcon]="'alert-triangle'" class="stat-icon text-danger"></span>
-                <div class="stat-meta">
-                  <span class="stat-label">Off-Track</span>
+              <article class="pm-project-table-stat red cursor-pointer" [class.active-filter]="statusFilter === 'off-track'" (click)="filterStatus('off-track')">
+                <span><span [pmConsoleIcon]="'alert-triangle'"></span></span>
+                <div class="stat-body">
+                  <small class="stat-label">Off-Track</small>
                   <strong class="stat-value text-danger">{{ offTrackCount }}</strong>
                 </div>
               </article>
 
-              <article class="pm-project-table-stat cursor-pointer border-amber" (click)="filterStatus('alert')">
-                <span [pmConsoleIcon]="'shield-alert'" class="stat-icon text-warning"></span>
-                <div class="stat-meta">
-                  <span class="stat-label">Alert</span>
+              <article class="pm-project-table-stat amber cursor-pointer" [class.active-filter]="statusFilter === 'alert'" (click)="filterStatus('alert')">
+                <span><span [pmConsoleIcon]="'shield-alert'"></span></span>
+                <div class="stat-body">
+                  <small class="stat-label">Alert</small>
                   <strong class="stat-value text-warning">{{ alertCount }}</strong>
                 </div>
               </article>
 
-              <article class="pm-project-table-stat cursor-pointer border-grey" (click)="filterStatus('not-started')">
-                <span [pmConsoleIcon]="'clock'" class="stat-icon text-muted"></span>
-                <div class="stat-meta">
-                  <span class="stat-label">Not Started</span>
+              <article class="pm-project-table-stat neutral cursor-pointer" [class.active-filter]="statusFilter === 'not-started'" (click)="filterStatus('not-started')">
+                <span><span [pmConsoleIcon]="'clock'"></span></span>
+                <div class="stat-body">
+                  <small class="stat-label">Not Started</small>
                   <strong class="stat-value text-muted">{{ notStartedCount }}</strong>
                 </div>
               </article>
@@ -121,17 +120,17 @@ type SubTab = 'projects' | 'risks' | 'benefits';
             </div>
 
             <!-- Table -->
-            <div class="pm-project-table-view">
-              <table class="program-register-table">
+            <div class="pm-project-table-scroll">
+              <table class="pm-project-table">
                 <thead>
                   <tr>
                     <th style="width: 40px"><input type="checkbox" aria-label="Select all rows" /></th>
-                    <th style="width: 40%">Program / Project Name</th>
+                    <th style="width: 38%">Program / Project Name</th>
                     <th style="width: 12%">Stage</th>
-                    <th style="width: 12%">Status Trend</th>
+                    <th style="width: 15%">Status Trend</th>
                     <th style="width: 15%">Manager</th>
-                    <th style="width: 15%">Start Date</th>
-                    <th style="width: 12%">Budget Utilised</th>
+                    <th style="width: 12%">Start Date</th>
+                    <th style="width: 8%">Budget Utilised</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -256,8 +255,8 @@ type SubTab = 'projects' | 'risks' | 'benefits';
               </div>
             </div>
 
-            <div class="pm-project-table-view">
-              <table class="program-register-table">
+            <div class="pm-project-table-scroll">
+              <table class="pm-project-table">
                 <thead>
                   <tr>
                     <th style="width: 10%">Risk ID</th>
@@ -276,11 +275,11 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                       <td>
                         <div class="avatar-cell">
                           <div class="avatar-circle">{{ getInitials(risk.owner) }}</div>
-                          <span>{{ risk.owner }}</span>
+                          <span class="owner-name">{{ risk.owner }}</span>
                         </div>
                       </td>
                       <td>
-                        <span class="risk-rating-badge" [style.background]="risk.ratingColor + '20'" [style.color]="risk.ratingColor" [style.border]="'1px solid ' + risk.ratingColor + '40'">
+                        <span class="risk-rating-badge" [style.background]="risk.ratingColor + '15'" [style.color]="risk.ratingColor" [style.border]="'1px solid ' + risk.ratingColor + '30'">
                           {{ risk.rating }}
                         </span>
                       </td>
@@ -301,8 +300,8 @@ type SubTab = 'projects' | 'risks' | 'benefits';
               </div>
             </div>
 
-            <div class="pm-project-table-view">
-              <table class="program-register-table">
+            <div class="pm-project-table-scroll">
+              <table class="pm-project-table">
                 <thead>
                   <tr>
                     <th style="width: 25%">Strategic Benefit</th>
@@ -323,7 +322,7 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                       <td>
                         <div class="avatar-cell">
                           <div class="avatar-circle">{{ getInitials(b.owner) }}</div>
-                          <span>{{ b.owner }}</span>
+                          <span class="owner-name">{{ b.owner }}</span>
                         </div>
                       </td>
                       <td>
@@ -344,27 +343,28 @@ type SubTab = 'projects' | 'risks' | 'benefits';
     .workspace-registers-tab {
       display: flex;
       flex-direction: column;
-      gap: 20px;
-      padding: 24px;
+      gap: 24px;
+      padding: 10px 0;
       animation: fadeIn 0.3s ease-out;
     }
 
     /* Sub-tabs styling */
     .sub-tabs.pm-register-tabs {
-      border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+      border-bottom: 1px solid #edf0f6;
       padding-bottom: 0px;
       margin-bottom: 4px;
       display: flex;
       gap: 24px;
+      background: transparent;
     }
 
     .sub-tabs .pm-register-tab {
       background: transparent;
       border: none;
       padding: 10px 4px;
-      font-size: 13px;
+      font-size: 13.5px;
       font-weight: 500;
-      color: var(--color-text-muted, #8e8e93);
+      color: #707788;
       cursor: pointer;
       position: relative;
       transition: color 0.2s ease;
@@ -382,12 +382,12 @@ type SubTab = 'projects' | 'risks' | 'benefits';
     }
 
     .sub-tabs .pm-register-tab.is-active {
-      color: var(--color-primary, #007aff);
+      color: var(--brand, #007aff);
       font-weight: 600;
     }
 
     .sub-tabs .pm-register-tab.is-active::after {
-      background: var(--color-primary, #007aff);
+      background: var(--brand, #007aff);
     }
 
     .tab-content-container {
@@ -397,56 +397,33 @@ type SubTab = 'projects' | 'risks' | 'benefits';
     }
 
     /* Stats row */
-    .stats-row {
+    .pm-project-table-stats {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 16px;
+      gap: 12px;
+      margin: 4px 0;
     }
 
     .cursor-pointer {
       cursor: pointer;
     }
 
-    .pm-project-table-stat {
-      background: var(--bg-card, rgba(255, 255, 255, 0.04));
-      border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
-      border-radius: 12px;
-      padding: 16px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-      transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+    .active-filter {
+      border-color: var(--brand, #007aff) !important;
+      box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1) !important;
     }
 
-    .pm-project-table-stat:hover {
-      transform: translateY(-1px);
-      background: rgba(255, 255, 255, 0.06);
-    }
-
-    .stat-icon {
-      font-size: 22px;
-    }
-
-    .p-icon {
-      color: #007aff;
-    }
-
-    .border-emerald:hover { border-color: rgba(52, 199, 89, 0.4); }
-    .border-red:hover { border-color: rgba(255, 69, 58, 0.4); }
-    .border-amber:hover { border-color: rgba(255, 159, 10, 0.4); }
-    .border-grey:hover { border-color: rgba(142, 142, 147, 0.4); }
-
-    .stat-meta {
+    .stat-body {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      flex-grow: 1;
+      min-width: 0;
     }
 
     .stat-label {
       font-size: 11px;
       font-weight: 600;
-      color: var(--color-text-muted, #8e8e93);
+      color: #707788;
       text-transform: uppercase;
       letter-spacing: 0.02em;
     }
@@ -454,23 +431,24 @@ type SubTab = 'projects' | 'risks' | 'benefits';
     .stat-value {
       font-size: 20px;
       font-weight: 700;
-      color: var(--color-text, #ffffff);
+      color: #252a34;
     }
 
-    .text-success { color: #30d158 !important; }
-    .text-danger { color: #ff453a !important; }
-    .text-warning { color: #ff9f0a !important; }
-    .text-muted { color: #aeaeb2 !important; }
+    .text-success { color: #16a15f !important; }
+    .text-danger { color: #de350b !important; }
+    .text-warning { color: #b27b00 !important; }
+    .text-muted { color: #5e6c84 !important; }
 
     /* Toolbar */
     .register-toolbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: var(--bg-card, rgba(255, 255, 255, 0.02));
-      border: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
-      border-radius: 8px;
-      padding: 12px 16px;
+      background: #ffffff;
+      border: 1px solid #e3e5e9;
+      border-radius: 12px;
+      padding: 12px 20px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
     }
 
     .toolbar-left {
@@ -480,24 +458,31 @@ type SubTab = 'projects' | 'risks' | 'benefits';
     }
 
     .items-count {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
-      color: var(--color-text-muted, #8e8e93);
+      color: #707788;
     }
 
     .search-box {
       display: flex;
       align-items: center;
       gap: 8px;
-      background: var(--bg-input, rgba(0, 0, 0, 0.3));
-      border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
-      border-radius: 6px;
+      background: #f4f5f7;
+      border: 1px solid #e3e5e9;
+      border-radius: 8px;
       padding: 6px 12px;
       width: 260px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .search-box:focus-within {
+      border-color: var(--brand, #007aff);
+      background: #ffffff;
+      box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
     }
 
     .search-box span {
-      color: var(--color-text-muted, #8e8e93);
+      color: #707788;
       font-size: 14px;
     }
 
@@ -505,7 +490,7 @@ type SubTab = 'projects' | 'risks' | 'benefits';
       background: transparent;
       border: none;
       outline: none;
-      color: var(--color-text, #ffffff);
+      color: #252a34;
       font-size: 13px;
       width: 100%;
     }
@@ -520,75 +505,39 @@ type SubTab = 'projects' | 'risks' | 'benefits';
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 6px;
-      padding: 8px 12px;
-      color: var(--color-text, #ffffff);
+      background: #ffffff;
+      border: 1px solid #e3e5e9;
+      border-radius: 8px;
+      padding: 8px 14px;
+      color: #252a34;
       font-size: 12px;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
-      transition: background-color 0.2s ease;
+      transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     }
 
     .tb-btn:hover {
-      background: rgba(255, 255, 255, 0.08);
+      background: #f8fafc;
+      border-color: #cbd5e1;
     }
 
     .primary-tb {
-      background: var(--color-primary, #007aff);
-      border-color: var(--color-primary, #007aff);
+      background: var(--brand, #007aff);
+      border-color: var(--brand, #007aff);
+      color: #ffffff;
     }
 
     .primary-tb:hover {
       background: #0062cc;
-    }
-
-    /* Table styling */
-    .pm-project-table-view {
-      border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
-      border-radius: 12px;
-      overflow: hidden;
-      background: var(--bg-card, rgba(255, 255, 255, 0.04));
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-    }
-
-    .program-register-table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-    }
-
-    .program-register-table th {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--color-text-muted, #8e8e93);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
-      background: rgba(0, 0, 0, 0.15);
-    }
-
-    .program-register-table td {
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
-      font-size: 13px;
-      color: var(--color-text, #ffffff);
-      vertical-align: middle;
+      border-color: #0062cc;
     }
 
     .program-row {
-      background: rgba(255, 255, 255, 0.01);
       transition: background-color 0.15s ease;
     }
 
-    .program-row:hover {
-      background: rgba(255, 255, 255, 0.03);
-    }
-
     .program-row.is-expanded {
-      background: rgba(0, 122, 255, 0.02);
+      background: rgba(0, 122, 255, 0.02) !important;
     }
 
     .name-cell-wrapper {
@@ -604,7 +553,7 @@ type SubTab = 'projects' | 'risks' | 'benefits';
     .expand-toggle-btn {
       background: transparent;
       border: none;
-      color: var(--color-text-muted, #8e8e93);
+      color: #707788;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -617,8 +566,8 @@ type SubTab = 'projects' | 'risks' | 'benefits';
     }
 
     .expand-toggle-btn:hover {
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--color-text, #ffffff);
+      background: rgba(15, 23, 42, 0.04);
+      color: #252a34;
     }
 
     .chevron-icon {
@@ -633,38 +582,38 @@ type SubTab = 'projects' | 'risks' | 'benefits';
 
     .title-meta strong {
       font-weight: 600;
-      color: var(--color-text, #ffffff);
+      color: #252a34;
     }
 
     .badge-tag {
       font-size: 9px;
-      font-weight: 600;
+      font-weight: 700;
       text-transform: uppercase;
       padding: 2px 6px;
       border-radius: 4px;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.04em;
     }
 
     .program-tag {
-      background: rgba(0, 122, 255, 0.15);
+      background: rgba(0, 122, 255, 0.08);
       color: #007aff;
-      border: 1px solid rgba(0, 122, 255, 0.25);
+      border: 1px solid rgba(0, 122, 255, 0.2);
     }
 
     .project-tag {
-      background: rgba(255, 159, 10, 0.1);
+      background: rgba(255, 159, 10, 0.08);
       color: #ff9f0a;
       border: 1px solid rgba(255, 159, 10, 0.2);
     }
 
     .standalone-tag {
-      background: rgba(142, 142, 147, 0.12);
-      color: #aeaeb2;
-      border: 1px solid rgba(142, 142, 147, 0.2);
+      background: #f4f5f7;
+      color: #5e6c84;
+      border: 1px solid rgba(94, 108, 132, 0.2);
     }
 
     .stage-span {
-      color: var(--color-text-muted, #8e8e93);
+      color: #555555;
       font-size: 12px;
     }
 
@@ -679,15 +628,15 @@ type SubTab = 'projects' | 'risks' | 'benefits';
     }
 
     .trend-icon.up {
-      color: #30d158;
+      color: #16a15f;
     }
 
     .trend-icon.stable {
-      color: #007aff;
+      color: var(--brand, #007aff);
     }
 
     .trend-icon.down {
-      color: #ff453a;
+      color: #de350b;
     }
 
     .avatar-cell {
@@ -700,34 +649,34 @@ type SubTab = 'projects' | 'risks' | 'benefits';
       width: 24px;
       height: 24px;
       border-radius: 50%;
-      background: var(--color-primary-soft, rgba(0, 122, 255, 0.15));
-      color: var(--color-primary, #007aff);
-      font-size: 9px;
+      background: rgba(0, 122, 255, 0.08);
+      color: #007aff;
+      font-size: 9.5px;
       font-weight: 600;
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 1px solid rgba(0, 122, 255, 0.2);
+      border: 1.5px solid rgba(0, 122, 255, 0.2);
     }
 
     .avatar-circle.secondary-circle {
-      background: rgba(255, 159, 10, 0.1);
+      background: rgba(255, 159, 10, 0.08);
       color: #ff9f0a;
       border-color: rgba(255, 159, 10, 0.2);
     }
 
-    .manager-name {
-      font-size: 12px;
-      color: var(--color-text-semi, #e5e5ea);
+    .manager-name, .owner-name {
+      font-size: 13px;
+      color: #252a34;
     }
 
     .date-col, .budget-col {
-      color: var(--color-text-semi, #e5e5ea);
+      color: #555555;
     }
 
     /* Child rows styling */
     .project-child-row {
-      background: rgba(0, 0, 0, 0.12);
+      background: #f8fafc !important;
     }
 
     .indented-col {
@@ -735,23 +684,23 @@ type SubTab = 'projects' | 'risks' | 'benefits';
     }
 
     .corner-arrow {
-      color: var(--color-text-muted, #8e8e93);
+      color: #707788;
       font-size: 14px;
     }
 
     .project-name-span {
-      color: var(--color-text-semi, #e5e5ea);
+      color: #252a34;
       font-size: 13px;
     }
 
     .standalone-row {
-      border-top: 1.5px solid rgba(255, 255, 255, 0.08);
-      background: rgba(255, 255, 255, 0.02);
+      border-top: 1.5px solid #edf0f6 !important;
+      background: #ffffff;
     }
 
     /* Risk / Benefit styling modifications */
     .description-text {
-      color: var(--color-text-semi, #e5e5ea);
+      color: #555555;
       line-height: 1.4;
       font-size: 13px;
     }
@@ -759,10 +708,11 @@ type SubTab = 'projects' | 'risks' | 'benefits';
     .risk-id-badge {
       font-family: monospace;
       font-weight: 600;
-      background: rgba(255, 255, 255, 0.08);
+      background: #f4f5f7;
       padding: 2px 6px;
       border-radius: 4px;
-      color: var(--color-text-muted, #8e8e93);
+      color: #5e6c84;
+      border: 1px solid rgba(94, 108, 132, 0.15);
     }
 
     .risk-rating-badge {
@@ -772,10 +722,11 @@ type SubTab = 'projects' | 'risks' | 'benefits';
       padding: 3px 8px;
       border-radius: 4px;
       letter-spacing: 0.03em;
+      display: inline-block;
     }
 
     .baseline-col, .target-col {
-      color: var(--color-text-semi, #e5e5ea);
+      color: #555555;
     }
 
     /* Animations */
@@ -911,3 +862,4 @@ export class PortfolioWorkspaceRegistersComponent {
     }
   }
 }
+

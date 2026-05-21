@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PmConsoleIconComponent } from '../shared/pm-console-icon.component';
 import { PmConsoleStatusPillComponent } from '../shared/pm-console-status-pill.component';
-import { portfolioReports, AwaitingReviewRow, ScheduledReportRow, PastReportRow } from './portfolio-workspace.data';
+import { portfolioReports } from './portfolio-workspace.data';
 
 type ReportsTab = 'awaiting' | 'scheduled' | 'past';
 
@@ -113,15 +113,15 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
             </div>
 
             <!-- Table -->
-            <div class="pm-project-table-view">
-              <table class="reports-table">
+            <div class="pm-project-table-scroll">
+              <table class="pm-project-table">
                 <thead>
                   <tr>
-                    <th>Reporting Interval</th>
-                    <th>Due By</th>
-                    <th>Reporting Status</th>
-                    <th>Project Status</th>
-                    <th style="text-align: right">Actions</th>
+                    <th style="width: 35%">Reporting Interval</th>
+                    <th style="width: 20%">Due By</th>
+                    <th style="width: 15%">Reporting Status</th>
+                    <th style="width: 15%">Project Status</th>
+                    <th style="width: 15%; text-align: right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -191,16 +191,16 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
             </div>
 
             <!-- Table -->
-            <div class="pm-project-table-view">
-              <table class="reports-table">
+            <div class="pm-project-table-scroll">
+              <table class="pm-project-table">
                 <thead>
                   <tr>
-                    <th>Report Name</th>
-                    <th>Scope</th>
-                    <th>Frequency</th>
-                    <th>Next Due</th>
-                    <th>Assignee</th>
-                    <th>Status</th>
+                    <th style="width: 30%">Report Name</th>
+                    <th style="width: 15%">Scope</th>
+                    <th style="width: 15%">Frequency</th>
+                    <th style="width: 15%">Next Due</th>
+                    <th style="width: 15%">Assignee</th>
+                    <th style="width: 10%">Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -213,7 +213,7 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
                       <td>
                         <div class="avatar-cell">
                           <div class="avatar-circle">{{ getInitials(row.assignee) }}</div>
-                          <span>{{ row.assignee }}</span>
+                          <span class="owner-name">{{ row.assignee }}</span>
                         </div>
                       </td>
                       <td>
@@ -263,16 +263,16 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
             </div>
 
             <!-- Table -->
-            <div class="pm-project-table-view">
-              <table class="reports-table">
+            <div class="pm-project-table-scroll">
+              <table class="pm-project-table">
                 <thead>
                   <tr>
-                    <th>Report Name</th>
-                    <th>Reporting Period</th>
-                    <th>Status</th>
-                    <th>Created By</th>
-                    <th>Created At</th>
-                    <th style="text-align: right">Actions</th>
+                    <th style="width: 30%">Report Name</th>
+                    <th style="width: 20%">Reporting Period</th>
+                    <th style="width: 15%">Status</th>
+                    <th style="width: 20%">Created By</th>
+                    <th style="width: 15%">Created At</th>
+                    <th style="width: 10%; text-align: right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -286,7 +286,7 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
                       <td>
                         <div class="avatar-cell">
                           <div class="avatar-circle">{{ getInitials(row.createdBy) }}</div>
-                          <span>{{ row.createdBy }}</span>
+                          <span class="owner-name">{{ row.createdBy }}</span>
                         </div>
                       </td>
                       <td class="date-cell">{{ formatDate(row.createdAt) }}</td>
@@ -311,8 +311,8 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
     .workspace-reports-tab {
       display: flex;
       flex-direction: column;
-      gap: 20px;
-      padding: 24px;
+      gap: 24px;
+      padding: 10px 0;
       animation: fadeIn 0.3s ease-out;
     }
 
@@ -320,7 +320,7 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+      border-bottom: 1px solid #edf0f6;
     }
 
     /* Sub-tabs styling */
@@ -329,15 +329,16 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
       padding-bottom: 0px;
       display: flex;
       gap: 24px;
+      background: transparent;
     }
 
     .sub-tabs .pm-register-tab {
       background: transparent;
       border: none;
       padding: 12px 4px;
-      font-size: 13px;
+      font-size: 13.5px;
       font-weight: 500;
-      color: var(--color-text-muted, #8e8e93);
+      color: #707788;
       cursor: pointer;
       position: relative;
       transition: color 0.2s ease;
@@ -355,27 +356,27 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
     }
 
     .sub-tabs .pm-register-tab.is-active {
-      color: var(--color-primary, #007aff);
+      color: var(--brand, #007aff);
       font-weight: 600;
     }
 
     .sub-tabs .pm-register-tab.is-active::after {
-      background: var(--color-primary, #007aff);
+      background: var(--brand, #007aff);
     }
 
     .create-report-btn {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: var(--color-primary, #007aff);
-      border: 1px solid var(--color-primary, #007aff);
-      border-radius: 6px;
+      background: var(--brand, #007aff);
+      border: 1px solid var(--brand, #007aff);
+      border-radius: 8px;
       padding: 8px 14px;
       color: #ffffff;
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+      box-shadow: 0 1px 2px rgba(0, 122, 255, 0.15);
       transition: background-color 0.15s ease;
     }
 
@@ -393,19 +394,18 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
     .dashboard-stats-grid {
       display: grid;
       grid-template-columns: 280px 280px 1fr;
-      gap: 16px;
+      gap: 12px;
     }
 
     .dashboard-stat-card {
-      background: var(--bg-card, rgba(255, 255, 255, 0.04));
-      border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+      background: #ffffff;
+      border: 1px solid #e3e5e9;
       border-radius: 12px;
       padding: 16px 20px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
       display: flex;
       align-items: center;
       gap: 20px;
-      backdrop-filter: blur(10px);
     }
 
     .flex-row-card {
@@ -416,13 +416,13 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
     }
 
     .s-card-icon {
-      font-size: 24px;
+      font-size: 20px;
     }
 
-    .text-primary { color: #007aff; }
-    .text-warning { color: #ff9f0a; }
-    .text-emerald { color: #30d158; }
-    .text-success { color: #30d158; }
+    .text-primary { color: var(--brand, #007aff) !important; }
+    .text-warning { color: #b27b00 !important; }
+    .text-emerald { color: #16a15f !important; }
+    .text-success { color: #16a15f !important; }
 
     .donut-indicator-wrapper {
       position: relative;
@@ -434,35 +434,35 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
       width: 52px;
       height: 52px;
       border-radius: 50%;
-      background: rgba(0, 0, 0, 0.2);
-      border: 3.5px solid rgba(0, 122, 255, 0.15);
-      border-top-color: #007aff;
-      border-right-color: #007aff;
+      background: #f8fafc;
+      border: 3.5px solid rgba(0, 122, 255, 0.1);
+      border-top-color: var(--brand, #007aff);
+      border-right-color: var(--brand, #007aff);
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
     .donut-value {
-      font-size: 11px;
+      font-size: 11.5px;
       font-weight: 700;
-      color: #ffffff;
+      color: #252a34;
     }
 
     .compliance-circle {
       width: 52px;
       height: 52px;
       border-radius: 50%;
-      background: rgba(52, 199, 89, 0.1);
-      border: 3.5px solid rgba(52, 199, 89, 0.2);
+      background: #e8f7ee;
+      border: 3.5px solid rgba(22, 161, 95, 0.2);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #30d158;
+      color: #16a15f;
     }
 
     .comp-val {
-      font-size: 13px;
+      font-size: 13.5px;
       font-weight: 700;
     }
 
@@ -477,9 +477,9 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
     }
 
     .stat-label {
-      font-size: 10.5px;
+      font-size: 11px;
       font-weight: 600;
-      color: var(--color-text-muted, #8e8e93);
+      color: #707788;
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
@@ -487,13 +487,13 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
     .stat-highlight {
       font-size: 14px;
       font-weight: 600;
-      color: #ffffff;
+      color: #252a34;
     }
 
     .stat-value {
       font-size: 20px;
       font-weight: 700;
-      color: #ffffff;
+      color: #252a34;
     }
 
     /* Horizontal Segmented Bar */
@@ -502,7 +502,7 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
       height: 10px;
       border-radius: 5px;
       overflow: hidden;
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(15, 23, 42, 0.04);
       margin: 8px 0 10px 0;
     }
 
@@ -510,9 +510,9 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
       height: 100%;
     }
 
-    .segment.off-track { background: #ff453a; }
-    .segment.delayed { background: #ff9f0a; }
-    .segment.on-track { background: #30d158; }
+    .segment.off-track { background: #de350b; }
+    .segment.delayed { background: #b27b00; }
+    .segment.on-track { background: #16a15f; }
 
     .bar-legend {
       display: flex;
@@ -523,8 +523,8 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 11px;
-      color: var(--color-text-muted, #8e8e93);
+      font-size: 11.5px;
+      color: #555555;
       font-weight: 500;
     }
 
@@ -535,25 +535,26 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
       display: inline-block;
     }
 
-    .bg-red { background: #ff453a; }
-    .bg-amber { background: #ff9f0a; }
-    .bg-emerald { background: #30d158; }
+    .bg-red { background: #de350b; }
+    .bg-amber { background: #b27b00; }
+    .bg-emerald { background: #16a15f; }
 
     /* Reports Toolbar */
     .reports-toolbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: var(--bg-card, rgba(255, 255, 255, 0.02));
-      border: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
-      border-radius: 8px;
-      padding: 10px 16px;
+      background: #ffffff;
+      border: 1px solid #e3e5e9;
+      border-radius: 12px;
+      padding: 12px 20px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
     }
 
     .items-count {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
-      color: var(--color-text-muted, #8e8e93);
+      color: #707788;
     }
 
     .toolbar-actions {
@@ -566,24 +567,31 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
       display: flex;
       align-items: center;
       gap: 8px;
-      background: var(--bg-input, rgba(0, 0, 0, 0.25));
-      border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
-      border-radius: 6px;
-      padding: 5px 10px;
+      background: #f4f5f7;
+      border: 1px solid #e3e5e9;
+      border-radius: 8px;
+      padding: 6px 12px;
       width: 200px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .search-box:focus-within {
+      border-color: var(--brand, #007aff);
+      background: #ffffff;
+      box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
     }
 
     .search-box span {
-      color: var(--color-text-muted, #8e8e93);
-      font-size: 12px;
+      color: #707788;
+      font-size: 13px;
     }
 
     .search-box input {
       background: transparent;
       border: none;
       outline: none;
-      color: #ffffff;
-      font-size: 12px;
+      color: #252a34;
+      font-size: 13px;
       width: 100%;
     }
 
@@ -591,63 +599,33 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 6px;
-      padding: 6px 12px;
-      color: #ffffff;
+      background: #ffffff;
+      border: 1px solid #e3e5e9;
+      border-radius: 8px;
+      padding: 8px 14px;
+      color: #252a34;
       font-size: 12px;
-      cursor: pointer;
-    }
-
-    /* Table styling */
-    .pm-project-table-view {
-      border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
-      border-radius: 12px;
-      overflow: hidden;
-      background: var(--bg-card, rgba(255, 255, 255, 0.04));
-    }
-
-    .reports-table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-    }
-
-    .reports-table th {
-      font-size: 11px;
       font-weight: 600;
-      color: var(--color-text-muted, #8e8e93);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
-      background: rgba(0, 0, 0, 0.15);
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     }
 
-    .reports-table td {
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
-      font-size: 13px;
-      color: var(--color-text, #ffffff);
-      vertical-align: middle;
-    }
-
-    .reports-table tr:hover {
-      background: rgba(255, 255, 255, 0.02);
+    .tb-btn:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
     }
 
     .date-cell, .period-text {
-      color: var(--color-text-semi, #e5e5ea);
+      color: #555555;
     }
 
     .scope-tag {
       font-size: 10px;
-      font-weight: 600;
+      font-weight: 700;
       text-transform: uppercase;
       padding: 2px 6px;
       border-radius: 4px;
-      background: rgba(0, 122, 255, 0.15);
+      background: rgba(0, 122, 255, 0.08);
       color: #007aff;
       border: 1px solid rgba(0, 122, 255, 0.25);
     }
@@ -662,14 +640,19 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
       width: 24px;
       height: 24px;
       border-radius: 50%;
-      background: var(--color-primary-soft, rgba(0, 122, 255, 0.15));
-      color: var(--color-primary, #007aff);
-      font-size: 9px;
+      background: rgba(0, 122, 255, 0.08);
+      color: #007aff;
+      font-size: 9.5px;
       font-weight: 600;
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 1px solid rgba(0, 122, 255, 0.2);
+      border: 1.5px solid rgba(0, 122, 255, 0.2);
+    }
+
+    .owner-name {
+      font-size: 13px;
+      color: #252a34;
     }
 
     /* Action Buttons */
@@ -677,38 +660,77 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
       font-size: 11px;
       font-weight: 600;
       text-transform: uppercase;
-      padding: 5px 12px;
-      border-radius: 4px;
+      padding: 6px 14px;
+      border-radius: 6px;
       cursor: pointer;
-      transition: background-color 0.15s ease;
+      transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
       display: inline-flex;
       align-items: center;
       gap: 4px;
     }
 
     .report-row-create {
-      background: var(--color-primary, #007aff);
+      background: var(--brand, #007aff);
       color: #ffffff;
-      border: 1px solid var(--color-primary, #007aff);
+      border: 1px solid var(--brand, #007aff);
     }
 
     .report-row-create:hover {
       background: #0062cc;
+      border-color: #0062cc;
     }
 
     .report-row-preview {
-      background: rgba(255, 255, 255, 0.06);
-      color: var(--color-text, #ffffff);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #ffffff;
+      color: #252a34;
+      border: 1px solid #e3e5e9;
     }
 
     .report-row-preview:hover {
-      background: rgba(255, 255, 255, 0.1);
+      background: #f8fafc;
+      border-color: #cbd5e1;
     }
 
     .preview-eye {
       font-size: 12px;
-      color: var(--color-primary, #007aff);
+      color: var(--brand, #007aff);
+    }
+
+    /* Status Pill Tones */
+    ::ng-deep .dependency-register-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    ::ng-deep .dependency-register-pill.emerald {
+      background: #e8f7ee;
+      color: #16a15f;
+      border: 1px solid rgba(22, 161, 95, 0.2);
+    }
+
+    ::ng-deep .dependency-register-pill.amber {
+      background: #fff8e6;
+      color: #b27b00;
+      border: 1px solid rgba(178, 123, 0, 0.2);
+    }
+
+    ::ng-deep .dependency-register-pill.red {
+      background: #fdf2f2;
+      color: #de350b;
+      border: 1px solid rgba(222, 53, 11, 0.2);
+    }
+
+    ::ng-deep .dependency-register-pill.neutral {
+      background: #f4f5f7;
+      color: #5e6c84;
+      border: 1px solid rgba(94, 108, 132, 0.2);
     }
 
     /* Animations */
@@ -777,3 +799,4 @@ export class PortfolioWorkspaceReportsComponent {
     }
   }
 }
+

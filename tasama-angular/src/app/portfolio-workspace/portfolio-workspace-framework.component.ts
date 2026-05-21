@@ -19,7 +19,7 @@ interface FrameworkSection {
       
       <!-- Left sidebar -->
       <aside class="framework-sidebar">
-        <span class="eyebrow-label">Framework</span>
+        <span class="eyebrow-label">Framework Settings</span>
         <nav class="framework-nav">
           @for (sec of sections; track sec.id) {
             <button
@@ -59,8 +59,8 @@ interface FrameworkSection {
       display: grid;
       grid-template-columns: 240px 1fr;
       gap: 24px;
-      padding: 24px;
-      min-height: calc(100vh - 220px);
+      padding: 10px 0;
+      min-height: calc(100vh - 260px);
       animation: fadeIn 0.3s ease-out;
     }
 
@@ -69,8 +69,8 @@ interface FrameworkSection {
       display: flex;
       flex-direction: column;
       gap: 12px;
-      border-right: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
-      padding-right: 16px;
+      border-right: 1px solid #e3e5e9;
+      padding-right: 20px;
     }
 
     .eyebrow-label {
@@ -78,7 +78,7 @@ interface FrameworkSection {
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-text-muted, #8e8e93);
+      color: #707788;
       padding-left: 12px;
       margin-bottom: 4px;
     }
@@ -97,24 +97,24 @@ interface FrameworkSection {
       border: none;
       border-left: 3px solid transparent;
       padding: 10px 12px;
-      color: var(--color-text-muted, #8e8e93);
-      font-size: 13px;
+      color: #555555;
+      font-size: 13.5px;
       font-weight: 500;
       text-align: left;
       cursor: pointer;
       border-radius: 0 6px 6px 0;
-      transition: background-color 0.2s ease, color 0.2s ease, border-left-color 0.2s ease;
+      transition: background-color 0.15s ease, color 0.15s ease, border-left-color 0.15s ease;
     }
 
     .sidebar-nav-btn:hover {
-      background: rgba(255, 255, 255, 0.03);
-      color: var(--color-text, #ffffff);
+      background: #f4f5f7;
+      color: #202633;
     }
 
     .sidebar-nav-btn.is-active {
-      background: var(--color-primary-soft, rgba(0, 122, 255, 0.08));
-      color: var(--color-primary, #007aff);
-      border-left-color: var(--color-primary, #007aff);
+      background: rgba(0, 122, 255, 0.08);
+      color: var(--brand, #007aff);
+      border-left-color: var(--brand, #007aff);
       font-weight: 600;
     }
 
@@ -132,12 +132,12 @@ interface FrameworkSection {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: var(--bg-card, rgba(255, 255, 255, 0.02));
-      border: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+      background: #ffffff;
+      border: 1px solid #e3e5e9;
       border-radius: 12px;
-      padding: 40px;
-      min-height: 400px;
-      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+      padding: 48px;
+      min-height: 420px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
     }
 
     .empty-state-card {
@@ -151,20 +151,20 @@ interface FrameworkSection {
     .illustration-elem {
       --reporting-empty-illustration-height: 140px;
       margin-bottom: 24px;
-      opacity: 0.85;
+      opacity: 0.95;
     }
 
     .empty-heading {
       font-size: 18px;
       font-weight: 600;
-      color: var(--color-text, #ffffff);
+      color: #202633;
       margin: 0 0 8px 0;
     }
 
     .empty-subtext {
       font-size: 13.5px;
       line-height: 1.6;
-      color: var(--color-text-muted, #aeaeb2);
+      color: #555555;
       margin: 0 0 20px 0;
     }
 
@@ -177,20 +177,20 @@ interface FrameworkSection {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #f4f5f7;
+      border: 1px solid #e3e5e9;
       border-radius: 20px;
-      padding: 4px 10px;
+      padding: 4px 12px;
       font-size: 11px;
       font-weight: 600;
-      color: var(--color-text-muted, #aeaeb2);
+      color: #707788;
       text-transform: uppercase;
       letter-spacing: 0.02em;
     }
 
     .tag-icon {
       font-size: 12px;
-      color: var(--color-primary, #007aff);
+      color: var(--brand, #007aff);
     }
 
     /* Animations */

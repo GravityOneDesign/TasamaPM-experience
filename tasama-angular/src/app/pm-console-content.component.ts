@@ -19,6 +19,8 @@ import { PmConsolePlanDrawerComponent } from './pm-console-plan-drawer.component
 import { PmConsolePlanEmptyStateComponent } from './pm-console-plan-empty-state.component';
 import { PmConsolePlanTableComponent } from './pm-console-plan-table.component';
 import { PmConsoleReportDrawerComponent } from './pm-console-report-drawer.component';
+import { PortfolioWorkspaceComponent } from './portfolio-workspace/portfolio-workspace.component';
+import { PortfolioManagerLandingCardsComponent } from './shared/portfolio-manager-landing-cards.component';
 import { PmConsoleMountOptions, ProjectOption } from './pm-console.types';
 import { PmConsoleAiGuideChipComponent, pmConsoleAiGuideFor, type PmConsoleAiGuideCopy } from './shared/pm-console-ai-guide-chip.component';
 import { PmConsoleAgentBannerComponent } from './shared/pm-console-agent-banner.component';
@@ -55,7 +57,7 @@ import {
   type PmConsoleCalendarItem,
 } from './shared/pm-console-work-calendar.component';
 
-type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground';
+type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground' | 'portfolio-workspace';
 type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
 type ActionWorkspaceView = 'board' | 'calendar' | 'stages';
 type WorkspaceRegister = 'projects' | 'benefits' | 'risks';
@@ -3764,6 +3766,8 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
     PmConsoleTableActionComponent,
     PmConsoleToolbarComponent,
     PmConsoleWorkCalendarComponent,
+    PortfolioWorkspaceComponent,
+    PortfolioManagerLandingCardsComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
@@ -3795,7 +3799,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
     ]),
   ],
   template: `
-    <main class="app-canvas" [class.workspaces-canvas]="selectedPage === 'workspaces'" [class.wbs-canvas]="selectedPage === 'wbs'" [class.project-plan-canvas]="selectedPage === 'project-plan'" [class.playground-canvas]="selectedPage === 'playground'" [class.unassigned-canvas]="frontDoorMode === 'unassigned'" [class.pm101-locked-canvas]="usesPm101DesignShell" [class.pm101-operational-canvas]="usesPm101OperationalLayout" [class.risk-profile-focus-canvas]="riskProfileFocusMode" [class.benefit-profile-focus-canvas]="benefitProfileFocusMode">
+    <main class="app-canvas" [class.workspaces-canvas]="selectedPage === 'workspaces'" [class.portfolio-workspace-canvas]="selectedPage === 'portfolio-workspace'" [class.wbs-canvas]="selectedPage === 'wbs'" [class.project-plan-canvas]="selectedPage === 'project-plan'" [class.playground-canvas]="selectedPage === 'playground'" [class.unassigned-canvas]="frontDoorMode === 'unassigned'" [class.pm101-locked-canvas]="usesPm101DesignShell" [class.pm101-operational-canvas]="usesPm101OperationalLayout" [class.risk-profile-focus-canvas]="riskProfileFocusMode" [class.benefit-profile-focus-canvas]="benefitProfileFocusMode">
       <div class="page-motion-host" [@pageMotion]="pageMotionKey" [@.disabled]="prefersReducedMotion">
       @switch (selectedPage) {
         @case ('workspaces') {
@@ -8320,6 +8324,9 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
             <div class="playground-shell"><aside class="playground-palette"><h2>Relationships</h2>@for (action of projectQuickActions.slice(4, 13); track action.id) { <button class="playground-palette-item" type="button"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(action.icon)"></i></span><strong>{{ action.title }}</strong></button> }</aside><div class="playground-surface"><article class="playground-node playground-project-node"><div class="playground-project-copy"><span>Project</span><h2>{{ scopedProjectName }}</h2></div></article></div></div>
           </section>
         }
+        @case ('portfolio-workspace') {
+          <app-portfolio-workspace />
+        }
         @default {
           @if (frontDoorMode === 'unassigned') {
             <section class="unassigned-frontdoor" [class.assignment-ready]="pmoAssignmentReady" [attr.aria-label]="pmoAssignmentReady ? 'Project assigned' : 'No projects assigned yet'">
@@ -8656,49 +8663,58 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                           <p>Configure your portfolio, manage delivery and report progress, all in one place.</p>
                         </div>
                       } @else if (isNormalPm101Workspace) {
-                        <section
-                          class="pm101-selection-panel"
-                          [class.pm101-active-project-0]="activePm101ProjectIndex === 0"
-                          [class.pm101-active-project-1]="activePm101ProjectIndex === 1"
-                          [class.pm101-active-project-2]="activePm101ProjectIndex === 2"
-                          [attr.aria-label]="activePm101Project.title + ' PM101 path selected'"
-                        >
-                          <div class="pm101-project-strip" aria-label="PM101 project overview">
-                            @for (project of pm101ProjectPreviews; track project.id) {
-                              <div class="pm101-project-card-slot" [class.is-selected]="project.id === activePm101ProjectId">
-                                <button
-                                  class="pm101-project-card"
-                                  [class.pm101-project-card-assigned]="project.tone === 'assigned'"
-                                  [class.pm101-project-card-active]="project.tone === 'active'"
-                                  [class.is-selected]="project.id === activePm101ProjectId"
-                                  [attr.aria-pressed]="project.id === activePm101ProjectId"
-                                  [attr.aria-label]="project.id === activePm101ProjectId && project.routeProjectId ? 'Go to ' + project.title + ' project' : 'Show ' + project.title + ' PM101 journey'"
-                                  type="button"
-                                  (click)="handlePm101ProjectPreview(project)"
-                                >
-                                  <img class="pm101-project-card-art" [src]="project.art" alt="" aria-hidden="true" />
-                                  <span class="pm101-project-chip">{{ project.chip }}</span>
-                                  <strong>{{ project.title }}</strong>
-                                  @if (project.id === activePm101ProjectId) {
-                                    @if (project.routeProjectId) {
-                                      <span class="pm101-project-cta">
-                                        <span>Go to Project</span>
-                                        <span class="pm101-project-cta-arrow" aria-hidden="true"></span>
-                                      </span>
-                                    }
-                                  } @else {
-                                    <span class="pm101-project-ghost-arrow" aria-hidden="true"></span>
-                                  }
-                                </button>
-                              </div>
-                            }
+                        @if (pmMode === 'fatima') {
+                          <app-portfolio-manager-landing-cards (onOverviewClick)="openAssignedProjectWorkspace()" />
+                          <div class="pm101-journey-head">
+                            <span>Portfolio Overview PM101 path</span>
+                            <h3>Your portfolio management journey</h3>
+                            <p>Configure your portfolio, manage delivery and report progress, all in one place.</p>
                           </div>
-                        </section>
-                        <div class="pm101-journey-head">
-                          <span>{{ activePm101Project.title }} PM101 path</span>
-                          <h3>Your portfolio management journey</h3>
-                          <p>Configure your portfolio, manage delivery and report progress, all in one place.</p>
-                        </div>
+                        } @else {
+                          <section
+                            class="pm101-selection-panel"
+                            [class.pm101-active-project-0]="activePm101ProjectIndex === 0"
+                            [class.pm101-active-project-1]="activePm101ProjectIndex === 1"
+                            [class.pm101-active-project-2]="activePm101ProjectIndex === 2"
+                            [attr.aria-label]="activePm101Project.title + ' PM101 path selected'"
+                          >
+                            <div class="pm101-project-strip" aria-label="PM101 project overview">
+                              @for (project of pm101ProjectPreviews; track project.id) {
+                                <div class="pm101-project-card-slot" [class.is-selected]="project.id === activePm101ProjectId">
+                                  <button
+                                    class="pm101-project-card"
+                                    [class.pm101-project-card-assigned]="project.tone === 'assigned'"
+                                    [class.pm101-project-card-active]="project.tone === 'active'"
+                                    [class.is-selected]="project.id === activePm101ProjectId"
+                                    [attr.aria-pressed]="project.id === activePm101ProjectId"
+                                    [attr.aria-label]="project.id === activePm101ProjectId && project.routeProjectId ? 'Go to ' + project.title + ' project' : 'Show ' + project.title + ' PM101 journey'"
+                                    type="button"
+                                    (click)="handlePm101ProjectPreview(project)"
+                                  >
+                                    <img class="pm101-project-card-art" [src]="project.art" alt="" aria-hidden="true" />
+                                    <span class="pm101-project-chip">{{ project.chip }}</span>
+                                    <strong>{{ project.title }}</strong>
+                                    @if (project.id === activePm101ProjectId) {
+                                      @if (project.routeProjectId) {
+                                        <span class="pm101-project-cta">
+                                          <span>Go to Project</span>
+                                          <span class="pm101-project-cta-arrow" aria-hidden="true"></span>
+                                        </span>
+                                      }
+                                    } @else {
+                                      <span class="pm101-project-ghost-arrow" aria-hidden="true"></span>
+                                    }
+                                  </button>
+                                </div>
+                              }
+                            </div>
+                          </section>
+                          <div class="pm101-journey-head">
+                            <span>{{ activePm101Project.title }} PM101 path</span>
+                            <h3>Your portfolio management journey</h3>
+                            <p>Configure your portfolio, manage delivery and report progress, all in one place.</p>
+                          </div>
+                        }
                       }
                       @if (!showSelectedProjectOverviewQuickLinks) {
                       <div class="pm101-flow" aria-label="PM 101 project delivery flow">
@@ -9547,7 +9563,16 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
   `,
 })
 export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, OnDestroy {
+  @Input() pmMode: 'muna' | 'fatima' = 'muna';
   @Input() projectOptions: readonly ProjectOption[] = [];
+
+  get contextTitle(): string {
+    return this.pmMode === 'fatima' ? 'Portfolio Manager Console' : 'PM Console';
+  }
+
+  get workspaceAriaSuffix(): string {
+    return this.pmMode === 'fatima' ? 'Portfolio Manager Console' : 'PM Console';
+  }
   @Input() selectedProject = 'all';
   @Input() selectedPage: ConsolePage = 'workspace';
   @Input() selectedView: WorkspaceView = 'board';
@@ -11398,6 +11423,9 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get workspaceSubtitle(): string {
+    if (this.pmMode === 'fatima') {
+      return 'Track portfolio health, clear pending approvals, and stay across all programs and projects in one place.';
+    }
     return 'Plan your month, clear overdue work, and track project stages without opening every project.';
   }
 
@@ -11549,9 +11577,9 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get workspaceRegisterAriaLabel(): string {
-    if (this.workspaceRegister === 'benefits') return 'PM Console benefit register';
-    if (this.workspaceRegister === 'risks') return 'PM Console risk register';
-    return 'PM Console project register';
+    if (this.workspaceRegister === 'benefits') return `${this.workspaceAriaSuffix} benefit register`;
+    if (this.workspaceRegister === 'risks') return `${this.workspaceAriaSuffix} risk register`;
+    return `${this.workspaceAriaSuffix} project register`;
   }
 
   get workspaceRegisterSubtitle(): string {
@@ -13936,32 +13964,37 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   navigate(page: ConsolePage, projectPlanEntry: ProjectPlanEntry = 'quick'): void {
-    if (this.onboardingPm101Locked && page === 'workspaces') return;
-    if (this.onboardingAssignmentFlow && this.pmoAssignmentReady && !this.onboardingProjectSetup && page === 'workspaces') {
+    let targetPage = page;
+    if (this.pmMode === 'fatima' && targetPage === 'workspaces') {
+      targetPage = 'portfolio-workspace' as ConsolePage;
+    }
+    const checkPage = this.pmMode === 'fatima' ? 'portfolio-workspace' : 'workspaces';
+    if (this.onboardingPm101Locked && targetPage === checkPage) return;
+    if (this.onboardingAssignmentFlow && this.pmoAssignmentReady && !this.onboardingProjectSetup && targetPage === checkPage) {
       this.openOnboardingProjectSetupWorkspace();
       return;
     }
-    if (page === 'workspace' && this.isProjectScopedSelectedPage() && this.restoreProjectPlanReturnState()) {
+    if (targetPage === 'workspace' && this.isProjectScopedSelectedPage() && this.restoreProjectPlanReturnState()) {
       return;
     }
     this.closeProjectPlanDrawers();
     this.closeReport();
     this.closeStageGate();
     this.closeStageRevoke();
-    const isProjectScopedPage = page === 'project-plan' || page === 'wbs' || page === 'playground';
-    if (isProjectScopedPage && this.selectedPage !== page) {
+    const isProjectScopedPage = targetPage === 'project-plan' || targetPage === 'wbs' || targetPage === 'playground';
+    if (isProjectScopedPage && this.selectedPage !== targetPage) {
       this.projectPlanReturnState = this.currentProjectPlanReturnState();
     }
     if (!isProjectScopedPage) {
       this.projectPlanReturnState = null;
     }
-    this.selectedPage = page;
-    if (page === 'project-plan') {
+    this.selectedPage = targetPage;
+    if (targetPage === 'project-plan') {
       this.projectPlanEntry = this.normalizeProjectPlanEntry(projectPlanEntry);
       this.projectPlanActiveSection = 'Overview';
       this.projectPlanExpandedFieldSections = {};
     }
-    if ((page === 'project-plan' || page === 'wbs' || page === 'playground') && this.isAllProjects) {
+    if ((targetPage === 'project-plan' || targetPage === 'wbs' || targetPage === 'playground') && this.isAllProjects) {
       this.selectedProject = firstAssignedProject.id;
     }
     this.emitState();
@@ -18478,7 +18511,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       <thead><tr>${headerCells}</tr></thead>
       <tbody>${bodyRows}</tbody>
     </table>
-    <footer>Tasama PM Console</footer>
+    <footer>Tasama ${this.pmMode === 'fatima' ? 'Portfolio Manager Console' : 'PM Console'}</footer>
   </body>
 </html>`;
   }

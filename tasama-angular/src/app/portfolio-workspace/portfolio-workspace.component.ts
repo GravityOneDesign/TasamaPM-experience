@@ -6,6 +6,7 @@ import { PortfolioWorkspacePlanComponent } from './portfolio-workspace-plan.comp
 import { PortfolioWorkspaceRegistersComponent } from './portfolio-workspace-registers.component';
 import { PortfolioWorkspaceReportsComponent } from './portfolio-workspace-reports.component';
 import { PortfolioWorkspaceFrameworkComponent } from './portfolio-workspace-framework.component';
+import { PmConsoleIconComponent } from '../shared/pm-console-icon.component';
 
 type WorkspaceTab = 'overview' | 'plan' | 'registers' | 'reports' | 'framework' | 'performance';
 
@@ -18,114 +19,67 @@ type WorkspaceTab = 'overview' | 'plan' | 'registers' | 'reports' | 'framework' 
     PortfolioWorkspacePlanComponent,
     PortfolioWorkspaceRegistersComponent,
     PortfolioWorkspaceReportsComponent,
-    PortfolioWorkspaceFrameworkComponent
+    PortfolioWorkspaceFrameworkComponent,
+    PmConsoleIconComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="portfolio-workspace-page-container">
       
-      <!-- Portfolio Page Header -->
-      <header class="portfolio-workspace-header">
-        <div class="header-main-info">
-          <span class="page-eyebrow">PORTFOLIO WORKSPACE</span>
-          <h1 class="page-title">{{ portfolioName }}</h1>
+      <!-- Standard Folder-Tabs Layout Canvas -->
+      <div class="pm-projects-shell" style="flex: 1; min-height: 0;">
+        <!-- Horizontal Sliding Tab Navigation Bar -->
+        <div 
+          class="pm-register-tabs" 
+          role="tablist" 
+          aria-label="Portfolio workspace tabs"
+          [style.--register-tab-left]="portfolioTabIndicatorLeft" 
+          [style.--register-tab-width]="portfolioTabIndicatorWidth"
+        >
+          <span class="pm-register-tab-indicator" aria-hidden="true"></span>
+          @for (tab of tabs; track tab.id) {
+            <button
+              class="pm-register-tab"
+              [class.active]="activeTab === tab.id"
+              [class.is-disabled]="tab.id === 'performance'"
+              type="button"
+              role="tab"
+              [attr.aria-selected]="activeTab === tab.id"
+              [style.width]="portfolioTabWidth(tab.id)"
+              [disabled]="tab.id === 'performance'"
+              (click)="setActiveTab(tab.id)"
+            >
+              <span class="pm-register-tab-icon">
+                <span [pmConsoleIcon]="tab.icon"></span>
+              </span>
+              <span class="pm-register-tab-copy"><strong>{{ tab.label }}</strong></span>
+            </button>
+          }
         </div>
-        
-        <div class="header-chips-row">
-          <div class="meta-chip">
-            <span class="chip-label">Portfolio Owner</span>
-            <div class="chip-content">
-              <div class="avatar-circle font-owner">{{ getInitials(owner) }}</div>
-              <strong class="chip-name">{{ owner }}</strong>
-            </div>
-          </div>
 
-          <span class="chip-divider"></span>
-
-          <div class="meta-chip">
-            <span class="chip-label">Portfolio Sponsor</span>
-            <div class="chip-content">
-              <div class="avatar-circle font-sponsor">{{ getInitials(sponsor) }}</div>
-              <strong class="chip-name">{{ sponsor }}</strong>
-            </div>
-          </div>
+        <!-- Scrollable Tab Content Outlet inside white Board Container -->
+        <div class="pm-projects-board">
+          <main class="pm-projects-board-body portfolio-workspace-body">
+            @switch (activeTab) {
+              @case ('overview') {
+                <app-portfolio-workspace-overview></app-portfolio-workspace-overview>
+              }
+              @case ('plan') {
+                <app-portfolio-workspace-plan></app-portfolio-workspace-plan>
+              }
+              @case ('registers') {
+                <app-portfolio-workspace-registers></app-portfolio-workspace-registers>
+              }
+              @case ('reports') {
+                <app-portfolio-workspace-reports></app-portfolio-workspace-reports>
+              }
+              @case ('framework') {
+                <app-portfolio-workspace-framework></app-portfolio-workspace-framework>
+              }
+            }
+          </main>
         </div>
-      </header>
-
-      <!-- Horizontal Tab Navigation Bar -->
-      <div class="pm-register-tabs portfolio-top-tabs">
-        <button
-          class="pm-register-tab"
-          [class.is-active]="activeTab === 'overview'"
-          type="button"
-          (click)="setActiveTab('overview')"
-        >
-          <span>Overview</span>
-        </button>
-        <button
-          class="pm-register-tab"
-          [class.is-active]="activeTab === 'plan'"
-          type="button"
-          (click)="setActiveTab('plan')"
-        >
-          <span>Portfolio Plan</span>
-        </button>
-        <button
-          class="pm-register-tab"
-          [class.is-active]="activeTab === 'registers'"
-          type="button"
-          (click)="setActiveTab('registers')"
-        >
-          <span>Registers</span>
-        </button>
-        <button
-          class="pm-register-tab"
-          [class.is-active]="activeTab === 'reports'"
-          type="button"
-          (click)="setActiveTab('reports')"
-        >
-          <span>Reports</span>
-        </button>
-        <button
-          class="pm-register-tab"
-          [class.is-active]="activeTab === 'framework'"
-          type="button"
-          (click)="setActiveTab('framework')"
-        >
-          <span>Framework & Configuration</span>
-        </button>
-        <button
-          class="pm-register-tab is-disabled"
-          [class.is-active]="activeTab === 'performance'"
-          type="button"
-          disabled
-          aria-disabled="true"
-          title="Portfolio Performance is disabled"
-        >
-          <span>Portfolio Performance</span>
-        </button>
       </div>
-
-      <!-- Scrollable Tab Content Outlet -->
-      <main class="portfolio-workspace-body">
-        @switch (activeTab) {
-          @case ('overview') {
-            <app-portfolio-workspace-overview></app-portfolio-workspace-overview>
-          }
-          @case ('plan') {
-            <app-portfolio-workspace-plan></app-portfolio-workspace-plan>
-          }
-          @case ('registers') {
-            <app-portfolio-workspace-registers></app-portfolio-workspace-registers>
-          }
-          @case ('reports') {
-            <app-portfolio-workspace-reports></app-portfolio-workspace-reports>
-          }
-          @case ('framework') {
-            <app-portfolio-workspace-framework></app-portfolio-workspace-framework>
-          }
-        }
-      </main>
 
     </div>
   `,
@@ -135,161 +89,16 @@ type WorkspaceTab = 'overview' | 'plan' | 'registers' | 'reports' | 'framework' 
       flex-direction: column;
       height: 100%;
       background: transparent;
-      color: var(--color-text, #ffffff);
-    }
-
-    /* Page Header */
-    .portfolio-workspace-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 24px 24px 16px 24px;
-      border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
-    }
-
-    .header-main-info {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .page-eyebrow {
-      font-size: 10.5px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      color: var(--color-primary, #007aff);
-      text-transform: uppercase;
-    }
-
-    .page-title {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--color-text, #ffffff);
-      margin: 0;
-      letter-spacing: -0.01em;
-    }
-
-    .header-chips-row {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      background: var(--bg-card, rgba(255, 255, 255, 0.03));
-      border: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
-      border-radius: 12px;
-      padding: 10px 18px;
-      backdrop-filter: blur(10px);
-    }
-
-    .meta-chip {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .chip-label {
-      font-size: 9.5px;
-      font-weight: 600;
-      color: var(--color-text-muted, #8e8e93);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .chip-content {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .avatar-circle {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      font-size: 9.5px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .font-owner {
-      background: rgba(0, 122, 255, 0.15);
-      color: #007aff;
-      border: 1.5px solid rgba(0, 122, 255, 0.35);
-    }
-
-    .font-sponsor {
-      background: rgba(255, 159, 10, 0.1);
-      color: #ff9f0a;
-      border: 1.5px solid rgba(255, 159, 10, 0.25);
-    }
-
-    .chip-name {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--color-text, #ffffff);
-    }
-
-    .chip-divider {
-      width: 1px;
-      height: 28px;
-      background: var(--border-color, rgba(255, 255, 255, 0.08));
-      align-self: center;
-    }
-
-    /* Top Tabs Styling */
-    .portfolio-top-tabs.pm-register-tabs {
-      background: rgba(0, 0, 0, 0.15);
-      border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
-      padding: 0 24px;
-      display: flex;
-      gap: 28px;
-    }
-
-    .portfolio-top-tabs .pm-register-tab {
-      background: transparent;
-      border: none;
-      padding: 16px 4px;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--color-text-muted, #8e8e93);
-      cursor: pointer;
-      position: relative;
-      transition: color 0.15s ease;
-    }
-
-    .portfolio-top-tabs .pm-register-tab::after {
-      content: '';
-      position: absolute;
-      bottom: -1px;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: transparent;
-      transition: background-color 0.15s ease;
-    }
-
-    .portfolio-top-tabs .pm-register-tab:hover:not(.is-disabled) {
-      color: var(--color-text, #ffffff);
-    }
-
-    .portfolio-top-tabs .pm-register-tab.is-active {
-      color: var(--color-primary, #007aff);
-      font-weight: 600;
-    }
-
-    .portfolio-top-tabs .pm-register-tab.is-active::after {
-      background: var(--color-primary, #007aff);
-    }
-
-    .portfolio-top-tabs .pm-register-tab.is-disabled {
-      opacity: 0.35;
-      cursor: not-allowed;
+      color: #202633;
+      padding: 16px 24px 24px 24px;
     }
 
     /* Scrollable Outlet Body */
     .portfolio-workspace-body {
       flex-grow: 1;
       overflow-y: auto;
+      background: #ffffff;
+      padding: 20px 10px 10px;
     }
   `]
 })
@@ -299,6 +108,57 @@ export class PortfolioWorkspaceComponent {
   sponsor = portfolioSummary.sponsor;
 
   activeTab: WorkspaceTab = 'overview';
+
+  tabs = [
+    { id: 'overview', label: 'Overview', icon: 'grid' },
+    { id: 'plan', label: 'Portfolio Plan', icon: 'calendar' },
+    { id: 'registers', label: 'Registers', icon: 'clipboard-list' },
+    { id: 'reports', label: 'Reports', icon: 'file-text' },
+    { id: 'framework', label: 'Framework & Configuration', icon: 'settings' },
+    { id: 'performance', label: 'Portfolio Performance', icon: 'activity' },
+  ] as const;
+
+  get portfolioTabIndex(): number {
+    return Math.max(0, ['overview', 'plan', 'registers', 'reports', 'framework', 'performance'].indexOf(this.activeTab));
+  }
+
+  get portfolioTabIndicatorLeft(): string {
+    const order: WorkspaceTab[] = ['overview', 'plan', 'registers', 'reports', 'framework', 'performance'];
+    const widths: Record<WorkspaceTab, number> = {
+      overview: 135,
+      plan: 165,
+      registers: 140,
+      reports: 130,
+      framework: 260,
+      performance: 220,
+    };
+    const left = order.slice(0, this.portfolioTabIndex).reduce((total, tab) => total + widths[tab], 0);
+    return `${left}px`;
+  }
+
+  get portfolioTabIndicatorWidth(): string {
+    const widths: Record<WorkspaceTab, number> = {
+      overview: 135,
+      plan: 165,
+      registers: 140,
+      reports: 130,
+      framework: 260,
+      performance: 220,
+    };
+    return `${widths[this.activeTab]}px`;
+  }
+
+  portfolioTabWidth(id: WorkspaceTab): string {
+    const widths: Record<WorkspaceTab, number> = {
+      overview: 135,
+      plan: 165,
+      registers: 140,
+      reports: 130,
+      framework: 260,
+      performance: 220,
+    };
+    return `${widths[id]}px`;
+  }
 
   setActiveTab(tab: WorkspaceTab): void {
     if (tab === 'performance') return;

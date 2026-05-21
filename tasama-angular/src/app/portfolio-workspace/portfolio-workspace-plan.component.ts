@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PmConsoleIconComponent } from '../shared/pm-console-icon.component';
 import { PmConsoleStatusPillComponent } from '../shared/pm-console-status-pill.component';
-import { planContent, MilestoneRow, MandatoryWatchlistRow } from './portfolio-workspace.data';
+import { planContent } from './portfolio-workspace.data';
 
 @Component({
   selector: 'app-portfolio-workspace-plan',
@@ -54,13 +54,13 @@ import { planContent, MilestoneRow, MandatoryWatchlistRow } from './portfolio-wo
 
           <div class="milestones-wrapper">
             <h6 class="card-subtitle">Milestones Progress</h6>
-            <div class="pm-project-table-view">
-              <table class="milestones-table">
+            <div class="pm-project-table-scroll">
+              <table class="pm-project-table">
                 <thead>
                   <tr>
-                    <th>Milestone</th>
-                    <th>Date</th>
-                    <th>Status</th>
+                    <th style="width: 50%">Milestone</th>
+                    <th style="width: 30%">Date</th>
+                    <th style="width: 20%">Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -88,26 +88,30 @@ import { planContent, MilestoneRow, MandatoryWatchlistRow } from './portfolio-wo
         </div>
         <div class="section-card">
           <div class="budget-stats-grid">
-            <article class="pm-project-table-stat budget-stat-card">
-              <span [pmConsoleIcon]="'dollar-sign'" class="b-icon"></span>
-              <div class="stat-meta">
-                <span class="stat-label">Total Budget</span>
-                <strong class="stat-value text-primary">{{ budget.total }}</strong>
+            <article class="pm-project-table-stat blue">
+              <span><span [pmConsoleIcon]="'dollar-sign'"></span></span>
+              <div class="stat-body">
+                <small class="stat-label">Total Budget</small>
+                <div class="stat-value-row">
+                  <strong class="stat-value text-primary">{{ budget.total }}</strong>
+                </div>
               </div>
             </article>
 
-            <article class="pm-project-table-stat budget-stat-card">
-              <span [pmConsoleIcon]="'trending-up'" class="b-icon"></span>
-              <div class="stat-meta">
-                <span class="stat-label">Spent to Date</span>
-                <strong class="stat-value text-success">{{ budget.spent }}</strong>
+            <article class="pm-project-table-stat green">
+              <span><span [pmConsoleIcon]="'trending-up'"></span></span>
+              <div class="stat-body">
+                <small class="stat-label">Spent to Date</small>
+                <div class="stat-value-row">
+                  <strong class="stat-value text-success">{{ budget.spent }}</strong>
+                </div>
               </div>
             </article>
 
-            <article class="pm-project-table-stat budget-stat-card resource-card">
-              <span [pmConsoleIcon]="'users'" class="b-icon"></span>
-              <div class="stat-meta">
-                <span class="stat-label">Non-Financial Resources</span>
+            <article class="pm-project-table-stat neutral resource-card">
+              <span><span [pmConsoleIcon]="'users'"></span></span>
+              <div class="stat-body">
+                <small class="stat-label">Non-Financial Resources</small>
                 <p class="stat-desc">{{ budget.nonFinancialResources }}</p>
               </div>
             </article>
@@ -127,8 +131,8 @@ import { planContent, MilestoneRow, MandatoryWatchlistRow } from './portfolio-wo
             <span class="count-badge">{{ watchlist.length }} Items</span>
           </div>
 
-          <div class="pm-project-table-view">
-            <table class="watchlist-table">
+          <div class="pm-project-table-scroll">
+            <table class="pm-project-table">
               <thead>
                 <tr>
                   <th style="width: 40%">Watchlist Item</th>
@@ -167,8 +171,8 @@ import { planContent, MilestoneRow, MandatoryWatchlistRow } from './portfolio-wo
     .workspace-plan-tab {
       display: flex;
       flex-direction: column;
-      gap: 32px;
-      padding: 24px;
+      gap: 24px;
+      padding: 10px 0;
       animation: fadeIn 0.3s ease-out;
     }
 
@@ -187,25 +191,24 @@ import { planContent, MilestoneRow, MandatoryWatchlistRow } from './portfolio-wo
     }
 
     .sidebar-icon {
-      font-size: 24px;
-      color: var(--color-primary, #007aff);
+      font-size: 18px;
+      color: var(--brand, #007aff);
     }
 
     .section-sidebar h5 {
       font-size: 14px;
       font-weight: 600;
-      color: var(--color-text, #ffffff);
+      color: #202633;
       margin: 0;
       line-height: 1.4;
     }
 
     .section-card {
-      background: var(--bg-card, rgba(255, 255, 255, 0.04));
-      border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+      background: #ffffff;
+      border: 1px solid #e3e5e9;
       border-radius: 12px;
-      padding: 24px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-      backdrop-filter: blur(10px);
+      padding: 20px 24px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
     }
 
     .text-block-wrapper {
@@ -214,22 +217,22 @@ import { planContent, MilestoneRow, MandatoryWatchlistRow } from './portfolio-wo
       gap: 8px;
     }
 
-    .block-label {
+    .block-label, .field-label {
       font-size: 11px;
       font-weight: 600;
-      color: var(--color-text-muted, #8e8e93);
+      color: #707788;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
 
     .read-only-text {
-      background: var(--bg-input, rgba(0, 0, 0, 0.2));
-      border: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+      background: #f8fafc;
+      border: 1px solid #edf0f6;
       border-radius: 8px;
       padding: 16px;
       font-size: 14px;
       line-height: 1.6;
-      color: var(--color-text-semi, #e5e5ea);
+      color: #252a34;
       min-height: 80px;
     }
 
@@ -237,7 +240,7 @@ import { planContent, MilestoneRow, MandatoryWatchlistRow } from './portfolio-wo
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 20px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     .date-field-group {
@@ -246,35 +249,27 @@ import { planContent, MilestoneRow, MandatoryWatchlistRow } from './portfolio-wo
       gap: 8px;
     }
 
-    .field-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--color-text-muted, #8e8e93);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
     .date-input-display {
-      background: var(--bg-input, rgba(0, 0, 0, 0.2));
-      border: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+      background: #f8fafc;
+      border: 1px solid #edf0f6;
       border-radius: 8px;
       padding: 12px 16px;
       font-size: 14px;
-      color: var(--color-text, #ffffff);
+      color: #252a34;
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
     .input-icon {
-      color: var(--color-primary, #007aff);
+      color: var(--brand, #007aff);
       font-size: 16px;
     }
 
     .card-subtitle {
       font-size: 13px;
       font-weight: 600;
-      color: var(--color-text-muted, #8e8e93);
+      color: #707788;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       margin: 0 0 12px 0;
@@ -286,99 +281,66 @@ import { planContent, MilestoneRow, MandatoryWatchlistRow } from './portfolio-wo
 
     .milestones-wrapper {
       margin-top: 16px;
-      border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+      border-top: 1px solid #edf0f6;
       padding-top: 20px;
     }
 
-    .milestones-table, .watchlist-table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-    }
-
-    .milestones-table th, .watchlist-table th {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--color-text-muted, #8e8e93);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
-    }
-
-    .milestones-table td, .watchlist-table td {
-      padding: 12px;
-      border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.04));
-      font-size: 13px;
-      color: var(--color-text, #ffffff);
-      vertical-align: middle;
-    }
-
     .milestone-name strong, .watchlist-item-name strong {
-      font-weight: 500;
-      color: var(--color-text, #ffffff);
+      font-weight: 600;
+      color: #252a34;
     }
 
     .milestone-date, .watchlist-date {
-      color: var(--color-text-muted, #8e8e93);
+      color: #555555;
     }
 
     .budget-stats-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-    }
-
-    .budget-stat-card {
-      background: var(--bg-input, rgba(0, 0, 0, 0.15));
-      border: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
-      border-radius: 10px;
-      padding: 16px;
-      display: flex;
-      align-items: center;
       gap: 12px;
+      margin: 4px 0;
     }
 
-    .b-icon {
-      font-size: 20px;
-      color: var(--color-primary, #007aff);
-    }
-
-    .stat-meta {
+    .stat-body {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      flex-grow: 1;
+      min-width: 0;
     }
 
     .stat-label {
       font-size: 11px;
       font-weight: 600;
-      color: var(--color-text-muted, #8e8e93);
+      color: #707788;
       text-transform: uppercase;
       letter-spacing: 0.03em;
+    }
+
+    .stat-value-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      width: 100%;
     }
 
     .stat-value {
       font-size: 20px;
       font-weight: 700;
+      color: #252a34;
     }
 
     .stat-value.text-primary {
-      color: #007aff;
+      color: var(--brand, #007aff) !important;
     }
 
     .stat-value.text-success {
-      color: #30d158;
-    }
-
-    .resource-card {
-      grid-column: span 1;
+      color: #16a15f !important;
     }
 
     .stat-desc {
-      font-size: 12px;
-      color: var(--color-text-semi, #e5e5ea);
-      margin: 2px 0 0 0;
+      font-size: 13px;
+      color: #252a34;
+      margin: 4px 0 0 0;
       line-height: 1.4;
     }
 
@@ -392,7 +354,7 @@ import { planContent, MilestoneRow, MandatoryWatchlistRow } from './portfolio-wo
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+      border-bottom: 1px solid #edf0f6;
       padding-bottom: 12px;
     }
 
@@ -401,8 +363,8 @@ import { planContent, MilestoneRow, MandatoryWatchlistRow } from './portfolio-wo
       font-weight: 600;
       padding: 3px 8px;
       border-radius: 20px;
-      background: var(--color-primary-soft, rgba(0, 122, 255, 0.15));
-      color: var(--color-primary, #007aff);
+      background: rgba(0, 122, 255, 0.08);
+      color: var(--brand, #007aff);
     }
 
     .avatar-cell {
@@ -415,19 +377,19 @@ import { planContent, MilestoneRow, MandatoryWatchlistRow } from './portfolio-wo
       width: 24px;
       height: 24px;
       border-radius: 50%;
-      background: var(--color-primary-soft, rgba(0, 122, 255, 0.15));
-      color: var(--color-primary, #007aff);
-      font-size: 9px;
+      font-size: 9.5px;
       font-weight: 600;
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 1px solid rgba(0, 122, 255, 0.2);
+      background: rgba(0, 122, 255, 0.08);
+      color: #007aff;
+      border: 1.5px solid rgba(0, 122, 255, 0.2);
     }
 
     .owner-name {
-      font-size: 12px;
-      color: var(--color-text-semi, #e5e5ea);
+      font-size: 13px;
+      color: #252a34;
     }
 
     /* Status Pill Tones */
@@ -444,27 +406,27 @@ import { planContent, MilestoneRow, MandatoryWatchlistRow } from './portfolio-wo
     }
 
     ::ng-deep .dependency-register-pill.emerald {
-      background: rgba(52, 199, 89, 0.12);
-      color: #30d158;
-      border: 1px solid rgba(52, 199, 89, 0.2);
+      background: #e8f7ee;
+      color: #16a15f;
+      border: 1px solid rgba(22, 161, 95, 0.2);
     }
 
     ::ng-deep .dependency-register-pill.amber {
-      background: rgba(255, 159, 10, 0.12);
-      color: #ff9f0a;
-      border: 1px solid rgba(255, 159, 10, 0.2);
+      background: #fff8e6;
+      color: #b27b00;
+      border: 1px solid rgba(178, 123, 0, 0.2);
     }
 
     ::ng-deep .dependency-register-pill.red {
-      background: rgba(255, 69, 58, 0.12);
-      color: #ff453a;
-      border: 1px solid rgba(255, 69, 58, 0.2);
+      background: #fdf2f2;
+      color: #de350b;
+      border: 1px solid rgba(222, 53, 11, 0.2);
     }
 
     ::ng-deep .dependency-register-pill.neutral {
-      background: rgba(142, 142, 147, 0.12);
-      color: #aeaeb2;
-      border: 1px solid rgba(142, 142, 147, 0.2);
+      background: #f4f5f7;
+      color: #5e6c84;
+      border: 1px solid rgba(94, 108, 132, 0.2);
     }
 
     @keyframes fadeIn {
@@ -515,3 +477,4 @@ export class PortfolioWorkspacePlanComponent {
     }
   }
 }
+

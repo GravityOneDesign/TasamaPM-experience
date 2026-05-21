@@ -1,6 +1,6 @@
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, Input, OnInit } from '@angular/core';
 import { PmConsoleContentComponent } from './pm-console-content.component';
-import { PortfolioManagerLandingComponent } from './portfolio-manager-landing.component';
+import { PortfolioManagerConsoleComponent } from './portfolio-manager-console.component';
 import { PmConsoleIconService } from './pm-console-icon.service';
 import { PmConsoleMountOptions, ProjectOption } from './pm-console.types';
 import { PmConsoleNotificationsComponent } from './pm-console-notifications.component';
@@ -22,7 +22,7 @@ const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
 @Component({
   selector: 'app-pm-console-shell',
   standalone: true,
-  imports: [PmConsoleAgentDockComponent, PmConsoleContentComponent, PortfolioManagerLandingComponent, PmConsoleIconComponent, PmConsoleNotificationsComponent, PmConsoleSideNavComponent],
+  imports: [PmConsoleAgentDockComponent, PmConsoleContentComponent, PortfolioManagerConsoleComponent, PmConsoleIconComponent, PmConsoleNotificationsComponent, PmConsoleSideNavComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="modern-shell" [class.side-nav-expanded]="sideNavExpanded" [class.playground-mode]="selectedPage === 'playground'" [class.wbs-mode]="selectedPage === 'wbs'" [class.project-plan-mode]="selectedPage === 'project-plan'" [class.unassigned-mode]="frontDoorMode === 'unassigned'">
@@ -117,7 +117,7 @@ const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
           (consoleStateChange)="applyContentState($event)"
         />
       } @else {
-        <app-portfolio-manager-landing
+        <app-portfolio-manager-console
           [projectOptions]="projects"
           [selectedProject]="selectedProject"
           [selectedPage]="selectedPage"
