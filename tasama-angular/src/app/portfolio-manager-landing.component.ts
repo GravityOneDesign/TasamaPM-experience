@@ -8642,48 +8642,97 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                           <p>Configure your portfolio, manage delivery and report progress, all in one place.</p>
                         </div>
                       } @else if (isNormalPm101Workspace) {
-                        <section
-                          class="pm101-selection-panel"
-                          [class.pm101-active-project-0]="activePm101ProjectIndex === 0"
-                          [class.pm101-active-project-1]="activePm101ProjectIndex === 1"
-                          [class.pm101-active-project-2]="activePm101ProjectIndex === 2"
-                          [attr.aria-label]="activePm101Project.title + ' PM101 path selected'"
-                        >
-                          <div class="pm101-project-strip" aria-label="PM101 project overview">
-                            @for (project of pm101ProjectPreviews; track project.id) {
-                              <div class="pm101-project-card-slot" [class.is-selected]="project.id === activePm101ProjectId">
-                                <button
-                                  class="pm101-project-card"
-                                  [class.pm101-project-card-assigned]="project.tone === 'assigned'"
-                                  [class.pm101-project-card-active]="project.tone === 'active'"
-                                  [class.is-selected]="project.id === activePm101ProjectId"
-                                  [attr.aria-pressed]="project.id === activePm101ProjectId"
-                                  [attr.aria-label]="project.id === activePm101ProjectId && project.routeProjectId ? 'Go to ' + project.title + ' project' : 'Show ' + project.title + ' PM101 journey'"
-                                  type="button"
-                                  (click)="handlePm101ProjectPreview(project)"
-                                >
-                                  <img class="pm101-project-card-art" [src]="project.art" alt="" aria-hidden="true" />
-                                  @if (project.chip) {
-                                    <span class="pm101-project-chip">{{ project.chip }}</span>
-                                  }
-                                  <strong>{{ project.title }}</strong>
-                                  @if (project.id === activePm101ProjectId) {
-                                    @if (project.routeProjectId) {
-                                      <span class="pm101-project-cta">
-                                        <span>{{ project.id === firstAssignedProject.id ? 'Go to Overview' : 'Go to Project' }}</span>
-                                        <span class="pm101-project-cta-arrow" aria-hidden="true"></span>
-                                      </span>
-                                    }
-                                  } @else {
-                                    <span class="pm101-project-ghost-arrow" aria-hidden="true"></span>
-                                  }
-                                </button>
+                        <div class="pm101-four-cards-strip">
+                          <!-- Card 1: Portfolio Overview -->
+                          <button 
+                            class="pm101-static-card card-overview" 
+                            type="button" 
+                            (click)="openAssignedProjectWorkspace()"
+                            aria-label="View Portfolio Overview"
+                          >
+                            <img class="pm101-project-card-art" src="./assets/pm101-first-project-card-bg.png" alt="" aria-hidden="true" />
+                            <div class="pm101-static-card-content">
+                              <strong>Portfolio Overview</strong>
+                              <span class="pm101-project-cta">
+                                <span>View Portfolio</span>
+                                <span class="pm101-project-cta-arrow" aria-hidden="true"></span>
+                              </span>
+                            </div>
+                          </button>
+
+                          <!-- Card 2: Your portfolio at a glance -->
+                          <div class="pm101-static-card card-active">
+                            <img class="pm101-project-card-art pattern-bg" src="./assets/pm101-active-card-bg.jpg" alt="" aria-hidden="true" />
+                            <div class="pm101-static-card-content">
+                              <div>
+                                <span class="pm101-card-kicker">OVERVIEW</span>
+                                <strong>Your portfolio at a glance</strong>
                               </div>
-                            }
+                              <div class="pm101-stats-row">
+                                <div class="pm101-stat-item">
+                                  <span class="pm101-stat-number">10</span>
+                                  <span class="pm101-stat-label">Programs</span>
+                                </div>
+                                <div class="pm101-stat-item">
+                                  <span class="pm101-stat-number">10</span>
+                                  <span class="pm101-stat-label">Projects</span>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                        </section>
+
+                          <!-- Card 3: Portfolio Health -->
+                          <div class="pm101-static-card card-active">
+                            <img class="pm101-project-card-art pattern-bg" src="./assets/pm101-active-card-bg.jpg" alt="" aria-hidden="true" />
+                            <div class="pm101-static-card-content">
+                              <div class="pm101-card-header-row">
+                                <strong>Portfolio Health</strong>
+                                <span class="pm101-status-pill on-track">On Track</span>
+                              </div>
+                              <ul class="pm101-health-list">
+                                <li class="pm101-health-item">
+                                  <span class="health-dot dot-green"></span>
+                                  <span class="health-count">72</span>
+                                  <span class="health-label">On track</span>
+                                </li>
+                                <li class="pm101-health-item">
+                                  <span class="health-dot dot-amber"></span>
+                                  <span class="health-count">14</span>
+                                  <span class="health-label">Delayed</span>
+                                </li>
+                                <li class="pm101-health-item">
+                                  <span class="health-dot dot-red"></span>
+                                  <span class="health-count">5</span>
+                                  <span class="health-label">Critical</span>
+                                </li>
+                              </ul>
+                            </div>
+                          </div>
+
+                          <!-- Card 4: Financial overview -->
+                          <div class="pm101-static-card card-active">
+                            <img class="pm101-project-card-art pattern-bg" src="./assets/pm101-active-card-bg.jpg" alt="" aria-hidden="true" />
+                            <div class="pm101-static-card-content">
+                              <strong style="margin-bottom: 8px;">Financial overview</strong>
+                              <ul class="pm101-finance-list">
+                                <li class="pm101-finance-item">
+                                  <span class="finance-label">Total budget</span>
+                                  <span class="finance-value">AED 112.9M</span>
+                                </li>
+                                <li class="pm101-finance-item">
+                                  <span class="finance-label">Spent to date</span>
+                                  <span class="finance-value font-highlight">AED 479.9K</span>
+                                </li>
+                                <li class="pm101-finance-item">
+                                  <span class="finance-label">Non-financial resources</span>
+                                  <span class="finance-value">63 tracked</span>
+                                </li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
                         <div class="pm101-journey-head">
-                          <span>{{ activePm101Project.title }} PM101 path</span>
+                          <span>Portfolio Overview PM101 path</span>
                           <h3>Your portfolio management journey</h3>
                           <p>Configure your portfolio, manage delivery and report progress, all in one place.</p>
                         </div>

@@ -31284,3 +31284,258 @@ b {
 .schedule-overview-table-shell .schedule-milestone-table td::before {
   font-weight: 400 !important;
 }
+
+/* --- TASAMA PM101 4-CARD PORTFOLIO OVERVIEW STRIP --- */
+.pm101-four-cards-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.pm101-static-card {
+  position: relative;
+  border-radius: 10px;
+  height: 160px;
+  box-sizing: border-box;
+  overflow: hidden;
+  box-shadow: 
+    0 1px 1px rgba(1, 10, 15, 0.04),
+    0 2px 4px rgba(1, 10, 15, 0.12);
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0;
+  border: 1px solid transparent;
+  appearance: none;
+  background: none;
+  font-family: inherit;
+  transition: box-shadow 260ms var(--motion-ease), transform 260ms var(--motion-ease);
+}
+
+.pm101-static-card.card-overview {
+  background: #0b0b0b;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  cursor: pointer;
+}
+
+.pm101-static-card.card-overview::after {
+  content: "";
+  inset: 0;
+  position: absolute;
+  pointer-events: none;
+  background: linear-gradient(245.91deg, rgba(11, 11, 11, 0) 2.78%, rgba(11, 11, 11, 0.5) 98.05%);
+  z-index: 2;
+  border-radius: inherit;
+}
+
+.pm101-static-card.card-overview:hover,
+.pm101-static-card.card-overview:focus-visible {
+  filter: saturate(1.06);
+  outline: none;
+  box-shadow: 
+    0 0 0 3px rgba(173, 220, 145, 0.62),
+    0 18px 36px rgba(1, 10, 15, 0.18);
+  transform: translateY(-2px) scale(1.006);
+}
+
+.pm101-static-card.card-overview:hover .pm101-project-card-art,
+.pm101-static-card.card-overview:focus-visible .pm101-project-card-art {
+  filter: brightness(1.06);
+  transform: scale(1.055);
+}
+
+.pm101-static-card.card-active {
+  background: linear-gradient(270deg, #10069f 0%, #060239 97.34%);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.pm101-static-card.card-active .pattern-bg {
+  opacity: 0.15;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+.pm101-static-card-content {
+  position: relative;
+  z-index: 3;
+  height: 100%;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.pm101-static-card strong {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 20px;
+  margin: 0;
+  color: #ffffff;
+  display: block;
+}
+
+.pm101-card-kicker {
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+  display: block;
+}
+
+.pm101-stats-row {
+  display: flex;
+  gap: 24px;
+  margin-top: auto;
+}
+
+.pm101-stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.pm101-stat-number {
+  color: #addc91;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 36px;
+}
+
+.pm101-stat-label {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  margin-top: 2px;
+}
+
+.pm101-card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.pm101-status-pill {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pm101-status-pill.on-track {
+  background: rgba(173, 220, 145, 0.12);
+  color: #addc91;
+  border: 1px solid rgba(173, 220, 145, 0.4);
+}
+
+.pm101-health-list {
+  list-style: none;
+  padding: 0;
+  margin: auto 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pm101-health-item {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 16px;
+}
+
+.health-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 8px;
+  display: inline-block;
+}
+
+.health-dot.dot-green {
+  background-color: #addc91;
+}
+
+.health-dot.dot-amber {
+  background-color: #ffb800;
+}
+
+.health-dot.dot-red {
+  background-color: #ff4d4f;
+}
+
+.health-count {
+  font-weight: 600;
+  margin-right: 4px;
+  color: #ffffff;
+}
+
+.health-label {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.pm101-finance-list {
+  list-style: none;
+  padding: 0;
+  margin: auto 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.pm101-finance-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  line-height: 14px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pm101-finance-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.finance-label {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.finance-value {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.finance-value.font-highlight {
+  color: #addc91;
+}
+
+@media (max-width: 1024px) {
+  .pm101-four-cards-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+}
+
+@media (max-width: 640px) {
+  .pm101-four-cards-strip {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
