@@ -92,41 +92,45 @@ type CalendarPopoverPlacement = 'above' | 'below';
             [class.muted]="!cell.current"
             [class.today]="cell.today"
             [class.has-items]="cell.items.length > 0"
-            [class.has-overflow]="hiddenCellCount(cell) > 0"
+            [class.has-overflow]="isCollapsedCell(cell)"
             (mouseenter)="showCellPreview(cell, $event)"
             (mouseleave)="hidePreviewSoon()"
           >
             <span class="calendar-day-number">{{ cell.day }}</span>
             @if (cell.items.length) {
               <div class="calendar-event-stack" [attr.aria-label]="cellAgendaLabel(cell)">
-                @for (item of visibleCellItems(cell); track item.date + item.label + item.project) {
+                @if (isCollapsedCell(cell)) {
                   <button
-                    class="calendar-event {{ item.tone }}"
+                    class="calendar-event calendar-action-summary"
                     type="button"
-                    [attr.aria-label]="calendarEventLabel(item)"
-                    (mouseenter)="showItemPreview(item, $event)"
-                    (mouseleave)="hidePreviewSoon()"
-                    (focus)="showItemPreview(item, $event)"
-                    (blur)="hidePreviewSoon()"
-                    (click)="openAgendaItem(item, $event)"
-                  >
-                    <span class="calendar-event-dot"></span>
-                    <span class="calendar-event-title">{{ item.label }}</span>
-                  </button>
-                }
-                @if (hiddenCellCount(cell) > 0) {
-                  <button
-                    class="calendar-more-button"
-                    type="button"
-                    [attr.aria-label]="moreItemsLabel(cell)"
+                    [attr.aria-label]="summaryItemsLabel(cell)"
+                    aria-haspopup="dialog"
+                    [attr.aria-expanded]="previewCell?.key === cell.key"
                     (mouseenter)="showDayPreview(cell, $event)"
                     (mouseleave)="hidePreviewSoon()"
                     (focus)="showDayPreview(cell, $event)"
                     (blur)="hidePreviewSoon()"
                     (click)="showDayPreviewFromClick(cell, $event)"
                   >
-                    +{{ hiddenCellCount(cell) }} more
+                    <span class="calendar-summary-count" aria-hidden="true">{{ cell.items.length }}</span>
+                    <span class="calendar-event-title">actions</span>
                   </button>
+                } @else {
+                  @for (item of visibleCellItems(cell); track item.date + item.label + item.project) {
+                    <button
+                      class="calendar-event {{ item.tone }}"
+                      type="button"
+                      [attr.aria-label]="calendarEventLabel(item)"
+                      (mouseenter)="showItemPreview(item, $event)"
+                      (mouseleave)="hidePreviewSoon()"
+                      (focus)="showItemPreview(item, $event)"
+                      (blur)="hidePreviewSoon()"
+                      (click)="openAgendaItem(item, $event)"
+                    >
+                      <span class="calendar-event-dot"></span>
+                      <span class="calendar-event-title">{{ item.label }}</span>
+                    </button>
+                  }
                 }
               </div>
             }
@@ -186,7 +190,10 @@ type CalendarPopoverPlacement = 'above' | 'below';
                 <strong>{{ item.label }}</strong>
                 <small>{{ item.project }} - {{ itemKindLabel(item) }}</small>
               </span>
-              <span pmConsoleIcon="arrow-right" aria-hidden="true"></span>
+              <span class="calendar-agenda-cta">
+                <span>{{ actionLabel(item) }}</span>
+                <span pmConsoleIcon="arrow-right" aria-hidden="true"></span>
+              </span>
             </button>
           }
         </div>
@@ -239,6 +246,41 @@ type CalendarPopoverPlacement = 'above' | 'below';
         margin-top: 0;
         max-width: calc(100% - 2px);
         padding: 0 8px;
+      }
+
+      .calendar-action-summary {
+        background: #f7f7ff;
+        border-color: rgba(16, 6, 159, 0.24);
+        border-style: dashed;
+        color: #10069f;
+        gap: 6px;
+        max-width: 100%;
+        padding-left: 5px;
+        padding-right: 8px;
+        width: fit-content;
+      }
+
+      .calendar-action-summary:hover,
+      .calendar-action-summary:focus-visible,
+      .calendar-action-summary[aria-expanded='true'] {
+        background: #f1f0ff;
+        border-color: rgba(16, 6, 159, 0.32);
+      }
+
+      .calendar-summary-count {
+        align-items: center;
+        background: #10069f;
+        border-radius: 999px;
+        color: #ffffff;
+        display: inline-flex;
+        flex: 0 0 auto;
+        font-size: 9px;
+        font-weight: 700;
+        height: 14px;
+        justify-content: center;
+        line-height: 1;
+        min-width: 14px;
+        padding: 0 4px;
       }
 
       .calendar-more-button {
@@ -481,6 +523,18 @@ type CalendarPopoverPlacement = 'above' | 'below';
         margin-top: 2px;
       }
 
+      .calendar-agenda-cta {
+        align-items: center;
+        color: #10069f;
+        display: inline-flex;
+        font-size: 10.5px;
+        font-weight: 600;
+        gap: 4px;
+        justify-content: flex-end;
+        min-width: 76px;
+        white-space: nowrap;
+      }
+
       .calendar-agenda-row .calendar-event-dot {
         margin: 0;
       }
@@ -502,6 +556,34 @@ type CalendarPopoverPlacement = 'above' | 'below';
       }
 
       @media (max-width: 700px) {
+        .calendar-event.calendar-action-summary {
+          justify-content: center;
+          max-width: none;
+          min-width: 58px;
+          padding: 0 6px;
+          width: max-content;
+        }
+
+        .calendar-event.calendar-action-summary .calendar-event-title {
+          display: inline;
+          overflow: visible;
+          text-overflow: clip;
+        }
+
+        .calendar-summary-count {
+          display: inline-flex;
+        }
+
+        .calendar-agenda-row {
+          grid-template-columns: auto minmax(0, 1fr);
+        }
+
+        .calendar-agenda-cta {
+          grid-column: 2;
+          justify-content: flex-start;
+          min-width: 0;
+        }
+
         .calendar-more-button {
           padding: 0 7px;
           width: auto;
@@ -529,7 +611,8 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
   @Output() readonly filterChange = new EventEmitter<string>();
   @Output() readonly itemOpen = new EventEmitter<PmConsoleCalendarItem>();
 
-  readonly maxVisibleItems = 3;
+  readonly maxInlineItems = 2;
+  readonly maxSummaryDots = 3;
 
   previewItem: PmConsoleCalendarItem | null = null;
   previewCell: PmConsoleCalendarCell | null = null;
@@ -538,6 +621,7 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
   previewPlacement: CalendarPopoverPlacement = 'above';
 
   private previewHideTimer: number | null = null;
+  private previewPinned = false;
 
   ngOnDestroy(): void {
     this.clearPreviewHideTimer();
@@ -560,11 +644,15 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
   }
 
   visibleCellItems(cell: PmConsoleCalendarCell): PmConsoleCalendarItem[] {
-    return cell.items.slice(0, this.maxVisibleItems);
+    return this.isCollapsedCell(cell) ? [] : cell.items.slice(0, this.maxInlineItems);
   }
 
-  hiddenCellCount(cell: PmConsoleCalendarCell): number {
-    return Math.max(cell.items.length - this.maxVisibleItems, 0);
+  isCollapsedCell(cell: PmConsoleCalendarCell): boolean {
+    return cell.items.length > this.maxInlineItems;
+  }
+
+  summaryToneItems(cell: PmConsoleCalendarCell): PmConsoleCalendarItem[] {
+    return cell.items.slice(0, this.maxSummaryDots);
   }
 
   selectFilter(filterId: string, event: MouseEvent): void {
@@ -575,6 +663,7 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
   }
 
   showItemPreview(item: PmConsoleCalendarItem, event: MouseEvent | FocusEvent): void {
+    this.previewPinned = false;
     this.keepPreview();
     const anchor = this.eventAnchor(event);
     if (!anchor) return;
@@ -587,6 +676,7 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
   }
 
   showDayPreview(cell: PmConsoleCalendarCell, event: MouseEvent | FocusEvent): void {
+    this.previewPinned = false;
     this.keepPreview();
     const anchor = this.eventAnchor(event);
     if (!anchor) return;
@@ -606,6 +696,7 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
   showDayPreviewFromClick(cell: PmConsoleCalendarCell, event: MouseEvent): void {
     event.stopPropagation();
     this.showDayPreview(cell, event);
+    this.previewPinned = true;
   }
 
   keepPreview(): void {
@@ -613,6 +704,7 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
   }
 
   hidePreviewSoon(): void {
+    if (this.previewPinned) return;
     this.clearPreviewHideTimer();
     this.previewHideTimer = window.setTimeout(() => {
       this.hidePreview();
@@ -621,6 +713,7 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
 
   hidePreview(): void {
     this.clearPreviewHideTimer();
+    this.previewPinned = false;
     this.previewItem = null;
     this.previewCell = null;
   }
@@ -639,8 +732,8 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
     return `${this.dateLabel(cell.key)} has ${cell.items.length} scheduled item${cell.items.length === 1 ? '' : 's'}`;
   }
 
-  moreItemsLabel(cell: PmConsoleCalendarCell): string {
-    return `Show ${this.hiddenCellCount(cell)} more item${this.hiddenCellCount(cell) === 1 ? '' : 's'} on ${this.dateLabel(cell.key)}`;
+  summaryItemsLabel(cell: PmConsoleCalendarCell): string {
+    return `Show ${cell.items.length} actions on ${this.dateLabel(cell.key)}`;
   }
 
   itemKindLabel(item: PmConsoleCalendarItem): string {
@@ -675,6 +768,11 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
 
   @HostListener('window:keydown.escape')
   handleEscapeKey(): void {
+    this.hidePreview();
+  }
+
+  @HostListener('document:click')
+  handleDocumentClick(): void {
     this.hidePreview();
   }
 

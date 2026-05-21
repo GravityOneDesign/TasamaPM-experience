@@ -15,7 +15,7 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Output } from '@angul
         </div>
       </div>
       <div class="onboarding-intro">
-        <h1><span>Welcome,</span><em>Ahmed Khalid</em></h1>
+        <h1><span>Welcome,</span><em>Muna Hassan</em></h1>
         <p>Manage projects, delivery &amp; reporting, in one intelligent operational workspace.</p>
         <div class="onboarding-actions">
           <button class="onboarding-primary" type="button" (click)="takeTour.emit()">

@@ -74,6 +74,7 @@ const workspaceRegisterTabWidths: Record<WorkspaceRegister, number> = {
   benefits: 194,
 };
 const projectPlanEntryOrder: ProjectPlanEntry[] = ['quick', 'reports', 'stages', 'change-request', 'closure'];
+const onboardingProjectPlanEntryOrder: ProjectPlanEntry[] = ['quick', 'stages'];
 const projectPlanEntryTabWidths: Record<ProjectPlanEntry, number> = {
   quick: 156,
   reports: 122,
@@ -4132,16 +4133,20 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                       <button class="project-plan-back" type="button" aria-label="Go back" (click)="goBack()"><span class="icon" aria-hidden="true"><i data-lucide="arrow-left"></i></span></button>
                       <h1>{{ scopedProjectName }}</h1>
                     </div>
-                    <div class="project-plan-meta"><span>Stage: <b class="blue">{{ projectPlanStage }}</b></span><span>State: <b class="green">Active</b></span><span>Plan: <b class="draft">Draft</b></span></div>
+                    <div class="project-plan-meta"><span>Stage: <b class="blue">{{ projectPlanStage }}</b></span><span>State: <b class="green">Active</b></span><span>Plan: <b [class.purple]="!onboardingProjectSetup" [class.draft]="onboardingProjectSetup">{{ onboardingProjectSetup ? 'Draft' : 'Endorsed' }}</b></span></div>
                   </div>
                   <div class="plan-builder-modebar project-modebar project-modebar-inline" aria-label="Project workspace mode">
                     <div class="plan-builder-mode-toggle project-mode-toggle" [style.--project-entry-tab-left]="projectPlanEntryIndicatorLeft" [style.--project-entry-tab-width]="projectPlanEntryIndicatorWidth">
                       <span class="project-mode-tab-indicator" aria-hidden="true"></span>
                       <button [class.active]="projectPlanEntry === 'quick'" [style.width]="projectPlanEntryTabWidth('quick')" type="button" (click)="setProjectPlanEntry('quick')"><span class="icon" aria-hidden="true"><i data-lucide="folder"></i></span>Project Plan</button>
-                      <button [class.active]="projectPlanEntry === 'reports'" [style.width]="projectPlanEntryTabWidth('reports')" type="button" (click)="setProjectPlanEntry('reports')"><span class="icon" aria-hidden="true"><i data-lucide="panels-top-left"></i></span>Reports</button>
+                      @if (!onboardingProjectSetup) {
+                        <button [class.active]="projectPlanEntry === 'reports'" [style.width]="projectPlanEntryTabWidth('reports')" type="button" (click)="setProjectPlanEntry('reports')"><span class="icon" aria-hidden="true"><i data-lucide="panels-top-left"></i></span>Reports</button>
+                      }
                       <button [class.active]="projectPlanEntry === 'stages'" [style.width]="projectPlanEntryTabWidth('stages')" type="button" (click)="setProjectPlanEntry('stages')"><span class="icon" aria-hidden="true"><i data-lucide="route"></i></span>Stages</button>
-                      <button [class.active]="projectPlanEntry === 'change-request'" [style.width]="projectPlanEntryTabWidth('change-request')" type="button" (click)="setProjectPlanEntry('change-request')"><span class="icon" aria-hidden="true"><i data-lucide="chart-pie"></i></span>Change requests</button>
-                      <button [class.active]="projectPlanEntry === 'closure'" [style.width]="projectPlanEntryTabWidth('closure')" type="button" (click)="setProjectPlanEntry('closure')"><span class="icon" aria-hidden="true"><i data-lucide="chart-pie"></i></span>Closure</button>
+                      @if (!onboardingProjectSetup) {
+                        <button [class.active]="projectPlanEntry === 'change-request'" [style.width]="projectPlanEntryTabWidth('change-request')" type="button" (click)="setProjectPlanEntry('change-request')"><span class="icon" aria-hidden="true"><i data-lucide="chart-pie"></i></span>Change requests</button>
+                        <button [class.active]="projectPlanEntry === 'closure'" [style.width]="projectPlanEntryTabWidth('closure')" type="button" (click)="setProjectPlanEntry('closure')"><span class="icon" aria-hidden="true"><i data-lucide="chart-pie"></i></span>Closure</button>
+                      }
                     </div>
                   </div>
                 </div>
@@ -8868,6 +8873,8 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                 <span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
                               </button>
                             </article>
+                          } @empty {
+                            <div class="empty-column">No project stages assigned yet.</div>
                           }
                         </div>
                       }
@@ -8904,7 +8911,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                   </section>
                 } @else if (onboardingPm101Locked) {
                   <section class="top-deck" aria-label="PM front door actions" data-tour-target="frontdoor-actions">
-                    <button class="action-card workspace-command is-locked" type="button" (click)="navigate('workspaces')" aria-disabled="true" title="Available after PM 101 onboarding">
+                    <button class="action-card workspace-command is-locked" type="button" disabled aria-disabled="true" title="Available after PMO assigns a project">
                       <span class="action-icon"><img src="./assets/workspace-card-box.svg" alt="" aria-hidden="true" /></span>
                       <span class="action-copy"><strong>Workspaces</strong><small>Open project rooms</small></span>
                       <span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span>
@@ -10761,16 +10768,16 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get projectPlanEntryIndex(): number {
-    return Math.max(0, projectPlanEntryOrder.indexOf(this.projectPlanEntry));
+    return Math.max(0, this.visibleProjectPlanEntryOrder.indexOf(this.projectPlanEntry));
   }
 
   get projectPlanEntryIndicatorLeft(): string {
-    const left = projectPlanEntryOrder.slice(0, this.projectPlanEntryIndex).reduce((total, entry) => total + projectPlanEntryTabWidths[entry], 0);
+    const left = this.visibleProjectPlanEntryOrder.slice(0, this.projectPlanEntryIndex).reduce((total, entry) => total + projectPlanEntryTabWidths[entry], 0);
     return `${left}px`;
   }
 
   get projectPlanEntryIndicatorWidth(): string {
-    return `${projectPlanEntryTabWidths[this.projectPlanEntry]}px`;
+    return `${projectPlanEntryTabWidths[this.normalizedProjectPlanEntry]}px`;
   }
 
   projectPlanEntryTabWidth(entry: ProjectPlanEntry): string {
@@ -10790,12 +10797,20 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return this.selectedProject === 'all';
   }
 
+  get visibleProjectPlanEntryOrder(): ProjectPlanEntry[] {
+    return this.onboardingProjectSetup ? onboardingProjectPlanEntryOrder : projectPlanEntryOrder;
+  }
+
+  get normalizedProjectPlanEntry(): ProjectPlanEntry {
+    return this.normalizeProjectPlanEntry(this.projectPlanEntry);
+  }
+
   get scopedProjectName(): string {
     return this.isAllProjects ? 'All projects' : this.selectedProject;
   }
 
   get projectPlanStage(): string {
-    if (this.onboardingPm101Locked && this.selectedProject === firstAssignedProject.id) return 'Planning';
+    if ((this.onboardingPm101Locked || this.onboardingProjectSetup) && this.selectedProject === firstAssignedProject.id) return 'Planning';
     const profile = stageProfiles.find((item) => item.project === this.selectedProject);
     return profile ? stageDefinitions[profile.currentStage]?.label || 'Execution' : 'Execution';
   }
@@ -11422,6 +11437,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return this.isActionWorkspaceView(this.selectedView);
   }
 
+  get actionWorkspaceIsEmpty(): boolean {
+    return this.onboardingPm101Locked && !this.pmoAssignmentReady;
+  }
+
   get topActionWorkspaceView(): ActionWorkspaceView {
     return this.isActionWorkspaceView(this.selectedView) ? this.selectedView : this.lastActionWorkspaceView;
   }
@@ -11794,6 +11813,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   get visibleBoardColumns(): typeof actions {
     const filterId = this.selectedBoardFilter;
+    if (this.actionWorkspaceIsEmpty) {
+      return actions.map((column) => ({ ...column, items: [] }));
+    }
+
     return actions.map((column) => ({
       ...column,
       items: column.items
@@ -11803,6 +11826,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get boardProjectItems(): Array<(typeof actions)[number]['items'][number]> {
+    if (this.actionWorkspaceIsEmpty) return [];
     return actions
       .flatMap((column) => column.items)
       .filter((item) => this.isAllProjects || item.project === this.selectedProject);
@@ -11826,11 +11850,16 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get monthItems(): PmConsoleCalendarItem[] {
+    if (this.actionWorkspaceIsEmpty) return [];
     return timelineItems.filter((item) => this.sameMonth(this.parseDate(item.date), this.calendarMonth));
   }
 
+  get calendarProjectItems(): PmConsoleCalendarItem[] {
+    return this.monthItems.filter((item) => this.isAllProjects || item.project === this.selectedProject);
+  }
+
   get visibleMonthItems(): PmConsoleCalendarItem[] {
-    return this.monthItems.filter((item) => this.selectedBoardFilter === 'all' || this.timelineItemKind(item) === this.selectedBoardFilter);
+    return this.calendarProjectItems.filter((item) => this.selectedBoardFilter === 'all' || this.timelineItemKind(item) === this.selectedBoardFilter);
   }
 
   get calendarMonthLabel(): string {
@@ -12012,6 +12041,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get stageProfilesForSelection(): StageProfile[] {
+    if (this.actionWorkspaceIsEmpty) return [];
     if (this.onboardingPm101Locked) {
       const profile = this.stageProfileForProject(firstAssignedProject.id);
       return profile ? [profile] : [];
@@ -12476,7 +12506,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     }
 
     if (project.routeProjectId) {
-      this.openProject(project.routeProjectId, this.projectWorkspaceReturnState(project.routeProjectId));
+      this.openProject(project.routeProjectId, this.currentProjectPlanReturnState());
     }
   }
 
@@ -12491,7 +12521,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.selectedProject = firstAssignedProject.id;
     this.selectedPage = 'project-plan';
     this.selectedView = 'board';
-    this.projectPlanEntry = entry;
+    this.projectPlanEntry = this.normalizeProjectPlanEntry(entry);
     this.projectPlanDetailMode = 'simple';
     this.projectPlanActiveSection = 'Overview';
     this.projectPlanSectionsExpanded = true;
@@ -13092,13 +13122,14 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   setProjectPlanEntry(entry: ProjectPlanEntry): void {
+    const nextEntry = this.normalizeProjectPlanEntry(entry);
     this.closeProjectPlanDrawers();
     this.closeAiAssist();
     this.resetProjectPlanHeaderCondensed();
-    this.projectPlanEntry = entry;
+    this.projectPlanEntry = nextEntry;
     this.projectPlanActiveSection = 'Overview';
     this.projectPlanExpandedFieldSections = {};
-    if (entry === 'closure') this.activeClosureSection = 'overview';
+    if (nextEntry === 'closure') this.activeClosureSection = 'overview';
     this.iconsHydrated = false;
   }
 
@@ -13729,7 +13760,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     }
     this.selectedPage = page;
     if (page === 'project-plan') {
-      this.projectPlanEntry = projectPlanEntry;
+      this.projectPlanEntry = this.normalizeProjectPlanEntry(projectPlanEntry);
       this.projectPlanActiveSection = 'Overview';
       this.projectPlanExpandedFieldSections = {};
     }
@@ -13747,7 +13778,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.projectPlanReturnState = returnState ?? (this.selectedPage === 'project-plan' ? null : this.currentProjectPlanReturnState());
     this.selectedProject = projectId;
     this.selectedPage = 'project-plan';
-    this.projectPlanEntry = entry;
+    this.projectPlanEntry = this.normalizeProjectPlanEntry(entry);
     this.projectPlanDetailMode = this.onboardingProjectSetup ? 'simple' : this.projectPlanDetailMode;
     this.projectPlanActiveSection = 'Overview';
     this.projectPlanExpandedFieldSections = {};
@@ -13760,15 +13791,6 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       selectedPage: this.selectedPage,
       selectedView: this.workspaceViewForProjectScope(this.selectedView),
       workspaceRegister: this.workspaceRegister,
-    };
-  }
-
-  private projectWorkspaceReturnState(projectId: string): ProjectPlanReturnState {
-    return {
-      ...this.currentProjectPlanReturnState(),
-      selectedProject: projectId,
-      selectedPage: 'workspace',
-      selectedView: 'pm101',
     };
   }
 
@@ -16860,8 +16882,8 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   countCalendarFilter(filter: BoardFilter): number {
-    if (filter.id === 'all') return this.monthItems.length;
-    return this.monthItems.filter((item) => this.timelineItemKind(item) === filter.id).length;
+    if (filter.id === 'all') return this.calendarProjectItems.length;
+    return this.calendarProjectItems.filter((item) => this.timelineItemKind(item) === filter.id).length;
   }
 
   operationalQuickLinkTitle(action: QuickAction): string {
@@ -17491,7 +17513,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   private stageProfileForProject(project: string): StageProfile | undefined {
     const profile = stageProfiles.find((item) => item.project === project);
-    if (this.onboardingPm101Locked && project === firstAssignedProject.id && profile) {
+    if ((this.onboardingPm101Locked || this.onboardingProjectSetup) && project === firstAssignedProject.id && profile) {
       return {
         ...profile,
         currentStage: 1,
@@ -17504,7 +17526,12 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   private projectPlanEntryFromAction(entry: string | undefined): ProjectPlanEntry {
-    return entry === 'reports' || entry === 'stages' || entry === 'change-request' || entry === 'closure' ? entry : 'quick';
+    const projectPlanEntry = entry === 'reports' || entry === 'stages' || entry === 'change-request' || entry === 'closure' ? entry : 'quick';
+    return this.normalizeProjectPlanEntry(projectPlanEntry);
+  }
+
+  private normalizeProjectPlanEntry(entry: ProjectPlanEntry): ProjectPlanEntry {
+    return this.visibleProjectPlanEntryOrder.includes(entry) ? entry : 'quick';
   }
 
   projectPlanFieldOptions(field: ProjectPlanField): string[] {
