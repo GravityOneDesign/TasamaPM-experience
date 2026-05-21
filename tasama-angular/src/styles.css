@@ -2671,6 +2671,11 @@ b {
   padding: 9px 8px 16px;
 }
 
+.portfolio-workspace-canvas {
+  overflow: hidden !important;
+  padding: 0 !important;
+}
+
 .pm-projects-page {
   display: grid;
   gap: 10px;
@@ -31161,58 +31166,58 @@ b {
 }
 
 /* Front door pages scroll as a whole instead of clipping to the viewport. */
-.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) {
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) {
   overflow-x: hidden;
   overflow-y: auto;
 }
 
-.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .content-grid {
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) .content-grid {
   align-items: stretch;
   grid-template-rows: auto;
   height: auto;
   min-height: 100%;
 }
 
-.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .workspace-panel,
-.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .pm101-operational-workspace {
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) .workspace-panel,
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) .pm101-operational-workspace {
   height: auto;
   max-height: none;
   min-height: 100%;
   overflow: visible;
 }
 
-.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .workspace-panel > .workspace-shell-head {
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) .workspace-panel > .workspace-shell-head {
   border-top-left-radius: 15px;
   border-top-right-radius: 15px;
 }
 
-.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .workspace-body,
-.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .board-workspace-panel .workspace-body,
-.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .board-view,
-.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .calendar-view,
-.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .pm101-view,
-.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .pm101-operational-view,
-.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .stages-view,
-.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .timeline-view {
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) .workspace-body,
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) .board-workspace-panel .workspace-body,
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) .board-view,
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) .calendar-view,
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) .pm101-view,
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) .pm101-operational-view,
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) .stages-view,
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) .timeline-view {
   height: auto;
   max-height: none;
   overflow: visible;
 }
 
-.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .board-workspace-panel .workspace-body {
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) .board-workspace-panel .workspace-body {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
   min-height: 0;
 }
 
-.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .board-workspace-panel .board-view,
-.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .board-workspace-panel .kanban-board {
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) .board-workspace-panel .board-view,
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) .board-workspace-panel .kanban-board {
   flex: 1 1 auto;
   min-height: 0;
 }
 
-.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .calendar-workspace-panel .workspace-body {
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) .calendar-workspace-panel .workspace-body {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -31220,9 +31225,9 @@ b {
   overflow: hidden;
 }
 
-.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .calendar-workspace-panel .calendar-view,
-.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .calendar-workspace-panel app-pm-console-work-calendar,
-.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .calendar-workspace-panel .timeline-calendar {
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) .calendar-workspace-panel .calendar-view,
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) .calendar-workspace-panel app-pm-console-work-calendar,
+.app-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) .calendar-workspace-panel .timeline-calendar {
   flex: 1 1 auto;
   height: 100%;
   max-height: 100%;
@@ -31231,22 +31236,22 @@ b {
 }
 
 @media (min-width: 1181px) {
-  .app-canvas.pm101-operational-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .content-grid {
+  .app-canvas.pm101-operational-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) .content-grid {
     grid-template-rows: minmax(0, 1fr);
     height: 100%;
     min-height: 0;
   }
 
-  .app-canvas.pm101-operational-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .workspace-panel,
-  .app-canvas.pm101-operational-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .pm101-operational-workspace {
+  .app-canvas.pm101-operational-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) .workspace-panel,
+  .app-canvas.pm101-operational-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) .pm101-operational-workspace {
     height: 100%;
     max-height: 100%;
     min-height: 0;
     overflow: hidden;
   }
 
-  .app-canvas.pm101-operational-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .pm101-view,
-  .app-canvas.pm101-operational-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas) .pm101-operational-view {
+  .app-canvas.pm101-operational-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) .pm101-view,
+  .app-canvas.pm101-operational-canvas:not(.workspaces-canvas):not(.wbs-canvas):not(.project-plan-canvas):not(.playground-canvas):not(.portfolio-workspace-canvas) .pm101-operational-view {
     height: 100%;
     max-height: 100%;
     min-height: 0;

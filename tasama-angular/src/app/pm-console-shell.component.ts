@@ -14,7 +14,7 @@ interface RailItem extends PmConsoleSideNavItem {
   home?: boolean;
 }
 
-type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground';
+type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground' | 'portfolio-workspace';
 type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
 const ONBOARDING_PM101_PROJECT_ID = 'all';
 const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
@@ -105,7 +105,7 @@ const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
         <app-pm-console-content
           [projectOptions]="projects"
           [selectedProject]="selectedProject"
-          [selectedPage]="selectedPage"
+          [selectedPage]="$any(selectedPage)"
           [selectedView]="selectedView"
           [frontDoorMode]="frontDoorMode"
           [pmoAssignmentReady]="pmoAssignmentReady"
@@ -265,13 +265,17 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
 
   setPage(page: ConsolePage): void {
     if (this.frontDoorMode === 'unassigned' && page !== 'workspace') return;
-    if (this.onboardingAssignmentFlow && this.pmoAssignmentReady && !this.onboardingProjectSetup && page === 'workspaces') {
+    let targetPage = page;
+    if (this.currentUser === 'fatima' && targetPage === 'workspaces') {
+      targetPage = 'portfolio-workspace';
+    }
+    if (this.onboardingAssignmentFlow && this.pmoAssignmentReady && !this.onboardingProjectSetup && targetPage === 'workspaces') {
       this.onboardingProjectSetup = true;
       this.onboardingPm101Locked = false;
       this.selectedProject = ONBOARDING_ASSIGNED_PROJECT_ID;
       this.selectedView = 'pm101';
     }
-    this.selectedPage = page;
+    this.selectedPage = targetPage;
     if (this.isProjectScopedPage && this.selectedProject === 'all') {
       this.selectedProject = ONBOARDING_ASSIGNED_PROJECT_ID;
     }
@@ -340,7 +344,11 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
 
   applyContentState(state: Partial<PmConsoleMountOptions>): void {
     this.selectedProject = state.projectId || this.selectedProject;
-    this.selectedPage = (state.selectedPage as ConsolePage) || this.selectedPage;
+    let targetPage = (state.selectedPage as ConsolePage) || this.selectedPage;
+    if (this.currentUser === 'fatima' && targetPage === 'workspaces') {
+      targetPage = 'portfolio-workspace';
+    }
+    this.selectedPage = targetPage;
     this.selectedView = (state.selectedView as WorkspaceView) || this.selectedView;
     this.frontDoorMode = state.frontDoorMode || this.frontDoorMode;
     if ('pmoAssignmentReady' in state) {
@@ -391,7 +399,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   }
 
   private get currentRailItemId(): string {
-    if (this.selectedPage === 'workspaces' || ['wbs', 'project-plan', 'playground'].includes(this.selectedPage)) return 'register';
+    if (this.selectedPage === 'workspaces' || this.selectedPage === 'portfolio-workspace' || ['wbs', 'project-plan', 'playground'].includes(this.selectedPage)) return 'register';
     if (this.selectedPage === 'workspace' && this.selectedView === 'pm101') return 'home';
     if (this.selectedPage === 'workspace') return 'dashboards';
     return '';

@@ -15,6 +15,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { PmConsoleIconService } from './pm-console-icon.service';
+import { PortfolioWorkspaceComponent } from './portfolio-workspace/portfolio-workspace.component';
 import { PmConsolePlanDrawerComponent } from './pm-console-plan-drawer.component';
 import { PmConsolePlanEmptyStateComponent } from './pm-console-plan-empty-state.component';
 import { PmConsolePlanTableComponent } from './pm-console-plan-table.component';
@@ -55,7 +56,7 @@ import {
   type PmConsoleCalendarItem,
 } from './shared/pm-console-work-calendar.component';
 
-type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground';
+type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground' | 'portfolio-workspace';
 type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
 type ActionWorkspaceView = 'board' | 'calendar' | 'stages';
 type WorkspaceRegister = 'projects' | 'benefits' | 'risks';
@@ -3763,6 +3764,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
     PmConsoleTableActionComponent,
     PmConsoleToolbarComponent,
     PmConsoleWorkCalendarComponent,
+    PortfolioWorkspaceComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
@@ -3794,7 +3796,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
     ]),
   ],
   template: `
-    <main class="app-canvas" [class.workspaces-canvas]="selectedPage === 'workspaces'" [class.wbs-canvas]="selectedPage === 'wbs'" [class.project-plan-canvas]="selectedPage === 'project-plan'" [class.playground-canvas]="selectedPage === 'playground'" [class.unassigned-canvas]="frontDoorMode === 'unassigned'" [class.pm101-locked-canvas]="usesPm101DesignShell" [class.pm101-operational-canvas]="usesPm101OperationalLayout" [class.risk-profile-focus-canvas]="riskProfileFocusMode" [class.benefit-profile-focus-canvas]="benefitProfileFocusMode">
+    <main class="app-canvas" [class.workspaces-canvas]="selectedPage === 'workspaces'" [class.portfolio-workspace-canvas]="selectedPage === 'portfolio-workspace'" [class.wbs-canvas]="selectedPage === 'wbs'" [class.project-plan-canvas]="selectedPage === 'project-plan'" [class.playground-canvas]="selectedPage === 'playground'" [class.unassigned-canvas]="frontDoorMode === 'unassigned'" [class.pm101-locked-canvas]="usesPm101DesignShell" [class.pm101-operational-canvas]="usesPm101OperationalLayout" [class.risk-profile-focus-canvas]="riskProfileFocusMode" [class.benefit-profile-focus-canvas]="benefitProfileFocusMode">
       <div class="page-motion-host" [@pageMotion]="pageMotionKey" [@.disabled]="prefersReducedMotion">
       @switch (selectedPage) {
         @case ('workspaces') {
@@ -8319,6 +8321,9 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
             <div class="playground-shell"><aside class="playground-palette"><h2>Relationships</h2>@for (action of projectQuickActions.slice(4, 13); track action.id) { <button class="playground-palette-item" type="button"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(action.icon)"></i></span><strong>{{ action.title }}</strong></button> }</aside><div class="playground-surface"><article class="playground-node playground-project-node"><div class="playground-project-copy"><span>Project</span><h2>{{ scopedProjectName }}</h2></div></article></div></div>
           </section>
         }
+        @case ('portfolio-workspace') {
+          <app-portfolio-workspace />
+        }
         @default {
           @if (frontDoorMode === 'unassigned') {
             <section class="unassigned-frontdoor" [class.assignment-ready]="pmoAssignmentReady" [attr.aria-label]="pmoAssignmentReady ? 'Project assigned' : 'No projects assigned yet'">
@@ -8830,7 +8835,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
               <div class="right-column" [class.portfolio-frontdoor]="showPortfolioReportTrends || showOnboardingAssignedRightRail || onboardingPm101Locked" [class.project-frontdoor]="!isAllProjects && !onboardingPm101Locked" [class.pm101-locked-right]="onboardingPm101Locked || showOnboardingAssignedRightRail || isSelectedProjectWorkspaceShell">
                 @if (showOnboardingAssignedRightRail) {
                   <section class="top-deck" aria-label="PM front door actions" data-tour-target="frontdoor-actions">
-                    <button class="action-card workspace-command" type="button" (click)="navigate('workspaces')">
+                    <button class="action-card workspace-command" type="button" (click)="navigate('portfolio-workspace')">
                       <span class="action-icon"><img src="./assets/workspace-card-box.svg" alt="" aria-hidden="true" /></span>
                       <span class="action-copy"><strong>Workspaces</strong><small>Open project rooms</small></span>
                       <span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span>
@@ -8881,7 +8886,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     </div>
                   </section>
                 } @else {
-                  @if (showPortfolioReportTrends) { <section class="top-deck" aria-label="PM front door actions" data-tour-target="frontdoor-actions"><button class="action-card workspace-command" type="button" (click)="navigate('workspaces')" [disabled]="onboardingPm101Locked" [attr.aria-disabled]="onboardingPm101Locked ? 'true' : null" [attr.title]="onboardingPm101Locked ? 'Available after PM 101 onboarding' : null"><span class="action-icon"><img src="./assets/workspace-card-box.svg" alt="" aria-hidden="true" /></span><span class="action-copy"><strong>Workspaces</strong><small>Open project rooms</small></span><span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span></button><button class="action-card learning-command is-unavailable" type="button" disabled aria-disabled="true" title="Learning Hub coming soon"><span class="action-icon"><img src="./assets/workspace-card-notebook.svg" alt="" aria-hidden="true" /></span><span class="action-copy"><strong>Learning Hub</strong><small>Guides and playbooks</small></span><span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span></button></section> }
+                  @if (showPortfolioReportTrends) { <section class="top-deck" aria-label="PM front door actions" data-tour-target="frontdoor-actions"><button class="action-card workspace-command" type="button" (click)="navigate('portfolio-workspace')" [disabled]="onboardingPm101Locked" [attr.aria-disabled]="onboardingPm101Locked ? 'true' : null" [attr.title]="onboardingPm101Locked ? 'Available after PM 101 onboarding' : null"><span class="action-icon"><img src="./assets/workspace-card-box.svg" alt="" aria-hidden="true" /></span><span class="action-copy"><strong>Workspaces</strong><small>Open project rooms</small></span><span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span></button><button class="action-card learning-command is-unavailable" type="button" disabled aria-disabled="true" title="Learning Hub coming soon"><span class="action-icon"><img src="./assets/workspace-card-notebook.svg" alt="" aria-hidden="true" /></span><span class="action-copy"><strong>Learning Hub</strong><small>Guides and playbooks</small></span><span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span></button></section> }
                   <section class="side-card report-widget" [class.portfolio-report-widget]="showPortfolioReportTrends" data-tour-target="right-report-widget"><div class="report-widget-head"><div><h2>{{ showPortfolioReportTrends ? 'Reporting trends' : 'Project report trend' }}</h2><small>Last 3 PSR statuses</small></div></div><div class="report-trend-list">@for (report of visibleReportRows; track report.project) { <article class="report-trend-row {{ reportFrontdoorTone(report) }}"><div class="report-trend-row-head"><strong>{{ report.project }}</strong><span class="report-health-chip {{ reportFrontdoorTone(report) }}">{{ reportDueToneLabel(reportFrontdoorTone(report)) }}</span></div><div class="report-trend" style="--report-trend-count:3" aria-label="Status report trend">@for (point of report.trend; track point.label) { <span class="report-trend-point {{ reportStatusTone(point.status) }}"><span class="report-status-icon {{ reportStatusTone(point.status) }}" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="reportStatusIcon(point.status)"></i></span></span><small>{{ point.label }}</small></span> }</div><div class="report-trend-row-foot"><span class="report-row-due"><span class="icon" aria-hidden="true"><i data-lucide="history"></i></span><span>{{ reportDueText(report) }}</span></span><button class="report-row-create" type="button" (click)="openReport(report.project)"><span class="icon" aria-hidden="true"><i data-lucide="file-text"></i></span><span>Create</span></button></div></article> }</div></section>
                   @if (!showPortfolioReportTrends) { <ng-container [ngTemplateOutlet]="quickLinksPanel"></ng-container> }
                 }
@@ -13974,32 +13979,36 @@ export class PortfolioManagerLandingComponent implements AfterViewChecked, OnCha
   }
 
   navigate(page: ConsolePage, projectPlanEntry: ProjectPlanEntry = 'quick'): void {
-    if (this.onboardingPm101Locked && page === 'workspaces') return;
-    if (this.onboardingAssignmentFlow && this.pmoAssignmentReady && !this.onboardingProjectSetup && page === 'workspaces') {
+    let targetPage = page;
+    if (targetPage === 'workspaces') {
+      targetPage = 'portfolio-workspace';
+    }
+    if (this.onboardingPm101Locked && targetPage === 'portfolio-workspace') return;
+    if (this.onboardingAssignmentFlow && this.pmoAssignmentReady && !this.onboardingProjectSetup && targetPage === 'portfolio-workspace') {
       this.openOnboardingProjectSetupWorkspace();
       return;
     }
-    if (page === 'workspace' && this.isProjectScopedSelectedPage() && this.restoreProjectPlanReturnState()) {
+    if (targetPage === 'workspace' && this.isProjectScopedSelectedPage() && this.restoreProjectPlanReturnState()) {
       return;
     }
     this.closeProjectPlanDrawers();
     this.closeReport();
     this.closeStageGate();
     this.closeStageRevoke();
-    const isProjectScopedPage = page === 'project-plan' || page === 'wbs' || page === 'playground';
-    if (isProjectScopedPage && this.selectedPage !== page) {
+    const isProjectScopedPage = targetPage === 'project-plan' || targetPage === 'wbs' || targetPage === 'playground';
+    if (isProjectScopedPage && this.selectedPage !== targetPage) {
       this.projectPlanReturnState = this.currentProjectPlanReturnState();
     }
     if (!isProjectScopedPage) {
       this.projectPlanReturnState = null;
     }
-    this.selectedPage = page;
-    if (page === 'project-plan') {
+    this.selectedPage = targetPage;
+    if (targetPage === 'project-plan') {
       this.projectPlanEntry = this.normalizeProjectPlanEntry(projectPlanEntry);
       this.projectPlanActiveSection = 'Overview';
       this.projectPlanExpandedFieldSections = {};
     }
-    if ((page === 'project-plan' || page === 'wbs' || page === 'playground') && this.isAllProjects) {
+    if ((targetPage === 'project-plan' || targetPage === 'wbs' || targetPage === 'playground') && this.isAllProjects) {
       this.selectedProject = firstAssignedProject.id;
     }
     this.emitState();
