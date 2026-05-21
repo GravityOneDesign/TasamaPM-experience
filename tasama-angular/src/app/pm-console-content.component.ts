@@ -7961,6 +7961,24 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     <div class="project-plan-content-heading">
                       <h2>Project Closure</h2>
                       <span class="closure-content-modebar-note">Draft evidence pack</span>
+                      @if (showClosureAiAutofill()) {
+                        <button
+                          class="schedule-scope-ai-fill project-closure-ai-fill"
+                          data-project-plan-ai-fill
+                          type="button"
+                          [class.is-loading]="isClosureAiSectionBusy()"
+                          [disabled]="aiAssistStatus === 'filling' || isClosureAiSectionWriting()"
+                          [attr.aria-busy]="isClosureAiSectionBusy()"
+                          aria-label="Fill closure section using AI"
+                          (pointerup)="fillClosureDraft()"
+                          (keydown.enter)="fillClosureDraft()"
+                          (keydown.space)="$event.preventDefault(); fillClosureDraft()"
+                          (click)="fillClosureDraft()"
+                        >
+                          <span pmConsoleIcon="wand-sparkles" aria-hidden="true"></span>
+                          <span>{{ isClosureAiSectionBusy() ? 'Filling...' : 'Fill using AI' }}</span>
+                        </button>
+                      }
                     </div>
                     <div class="project-plan-topbar-actions project-closure-actions" aria-label="Closure actions">
                       <button class="project-closure-secondary" type="button"><span pmConsoleIcon="save" aria-hidden="true"></span><span>Save draft</span></button>
@@ -7990,12 +8008,26 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                   </aside>
                   <main class="project-plan-content plan-builder-workspace quick-plan-workspace detailed-plan-workspace project-closure-workspace" [@panelMotion]="projectPlanContentMotionKey">
                     <div class="plan-builder-main quick-plan-main project-plan-matrix-main project-closure-main">
-                      <section class="project-plan-form-card plan-builder-card project-plan-matrix-card detailed-plan-card project-closure-board" [attr.aria-label]="scopedProjectName + ' closure workspace'" (scroll)="handleProjectPlanContentScroll($event)" (wheel)="handleProjectPlanContentWheel($event)">
-                        <header class="project-closure-head">
-                          <div>
-                            <span class="change-request-kicker">Project closure</span>
-                            <h2>{{ activeClosureNavItem.label }}</h2>
-                            <p>Record final evidence, open actions, and handover notes for PMO review.</p>
+                      <section
+                        class="project-plan-form-card plan-builder-card project-plan-matrix-card detailed-plan-card project-closure-board"
+                        [class.ai-section-generating]="isClosureAiSectionGenerating()"
+                        [class.ai-section-writing]="isClosureAiSectionWriting()"
+                        [class.ai-section-filled]="aiRecentlyFilledSection === activeClosureAiSectionKey"
+                        [attr.aria-busy]="isClosureAiSectionBusy()"
+                        [attr.aria-label]="scopedProjectName + ' closure workspace'"
+                        (scroll)="handleProjectPlanContentScroll($event)"
+                        (wheel)="handleProjectPlanContentWheel($event)"
+                      >
+                        <header class="schedule-scope-design-top project-plan-section-top project-closure-head">
+                          <div class="overview-form-title">
+                            <span class="overview-form-title-icon" aria-hidden="true">
+                              <span [pmConsoleIcon]="iconName(activeClosureNavItem.icon)"></span>
+                            </span>
+                            <div>
+                              <span class="change-request-kicker">Project closure</span>
+                              <h3>{{ activeClosureNavItem.label }}</h3>
+                              <p>{{ closureSectionDescription(activeClosureSection) }}</p>
+                            </div>
                           </div>
                         </header>
 
@@ -8046,7 +8078,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                           <span class="closure-editor-icon" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="iconName(block.icon)"></i></span></span>
                                           <div><strong>{{ block.title }}</strong><small>{{ block.description }}</small></div>
                                         </header>
-                                        <textarea [value]="block.value" [attr.aria-label]="block.title" [attr.maxlength]="block.maxLength"></textarea>
+                                        <textarea [value]="block.value" [attr.aria-label]="block.title" [attr.maxlength]="block.maxLength" (input)="updateClosureBlockValue(block.id, $any($event.target).value)"></textarea>
                                         <span class="closure-character-count">Characters: {{ closureCharacterCount(block) }}</span>
                                       </article>
                                     }
@@ -8166,7 +8198,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                               </app-pm-console-plan-table>
 
                               <article class="closure-comment-card">
-                                <label class="matrix-field matrix-field-textarea wide"><span class="matrix-field-label">Overall budget comments</span><textarea aria-label="Overall budget comments">Final budget position is within tolerance. Finance reconciliation should confirm funding source allocation before PMO approval.</textarea></label>
+                                <label class="matrix-field matrix-field-textarea wide"><span class="matrix-field-label">Overall budget comments</span><textarea aria-label="Overall budget comments" [value]="closureBudgetComment" (input)="closureBudgetComment = $any($event.target).value"></textarea></label>
                               </article>
                             </section>
                           }
@@ -8196,7 +8228,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                   </table>
                                 </div>
                               </app-pm-console-plan-table>
-                              <article class="closure-comment-card"><label class="matrix-field matrix-field-textarea wide"><span class="matrix-field-label">Overall benefits comments</span><textarea aria-label="Overall benefits comments">Realization tracking continues after close-out with the named benefit owners. Measures without targets should be reviewed in the first BAU checkpoint.</textarea></label></article>
+                              <article class="closure-comment-card"><label class="matrix-field matrix-field-textarea wide"><span class="matrix-field-label">Overall benefits comments</span><textarea aria-label="Overall benefits comments" [value]="closureBenefitsComment" (input)="closureBenefitsComment = $any($event.target).value"></textarea></label></article>
                             </section>
                           }
 
@@ -8221,7 +8253,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                   </table>
                                 </div>
                               </app-pm-console-plan-table>
-                              <article class="closure-comment-card"><label class="matrix-field matrix-field-textarea wide"><span class="matrix-field-label">Overall risk comments</span><textarea aria-label="Overall risk comments">Residual risks are acceptable for closure once BAU ownership confirms the monitoring cadence and escalations path.</textarea></label></article>
+                              <article class="closure-comment-card"><label class="matrix-field matrix-field-textarea wide"><span class="matrix-field-label">Overall risk comments</span><textarea aria-label="Overall risk comments" [value]="closureRiskComment" (input)="closureRiskComment = $any($event.target).value"></textarea></label></article>
                             </section>
                           }
 
@@ -8242,7 +8274,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                   </tbody>
                                 </table>
                               </div>
-                              <article class="closure-comment-card"><label class="matrix-field matrix-field-textarea wide"><span class="matrix-field-label">Overall issue comments</span><textarea aria-label="Overall issue comments">Open issues have resolutions and owners. PMO should confirm no issue blocks sponsor acceptance before closure approval.</textarea></label></article>
+                              <article class="closure-comment-card"><label class="matrix-field matrix-field-textarea wide"><span class="matrix-field-label">Overall issue comments</span><textarea aria-label="Overall issue comments" [value]="closureIssueComment" (input)="closureIssueComment = $any($event.target).value"></textarea></label></article>
                             </section>
                           }
 
@@ -8262,6 +8294,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                   </tbody>
                                 </table>
                               </div>
+                              <article class="closure-comment-card"><label class="matrix-field matrix-field-textarea wide"><span class="matrix-field-label">Lessons summary</span><textarea aria-label="Lessons summary" [value]="closureLessonsComment" (input)="closureLessonsComment = $any($event.target).value"></textarea></label></article>
                             </section>
                           }
                         }
@@ -10571,7 +10604,6 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   changeImpactDraft: ChangeImpactDraft = { ...changeImpactConfig.draft, strategies: [...changeImpactConfig.draft.strategies] };
   onboardingProjectPlanFields: ProjectPlanField[] = createOnboardingProjectPlanFields();
   readonly closureReasonOptionsList = closureReasonOptions;
-  readonly closureOverviewBlockList = closureOverviewBlocks;
   readonly closureChecklistList = closureChecklistItems;
   readonly closureFollowUpActionList = closureFollowUpActions;
   readonly closureRecommendationList = closureRecommendations;
@@ -10579,6 +10611,12 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   readonly closureRiskRowList = closureRiskRows;
   readonly closureIssueRowList = closureIssueRows;
   readonly closureLessonRowList = closureLessonRows;
+  closureOverviewBlockList: ClosureTextBlock[] = closureOverviewBlocks.map((block) => ({ ...block }));
+  closureBudgetComment = 'Final budget position is within tolerance. Finance reconciliation should confirm funding source allocation before PMO approval.';
+  closureBenefitsComment = 'Realization tracking continues after close-out with the named benefit owners. Measures without targets should be reviewed in the first BAU checkpoint.';
+  closureRiskComment = 'Residual risks are acceptable for closure once BAU ownership confirms the monitoring cadence and escalations path.';
+  closureIssueComment = 'Open issues have resolutions and owners. PMO should confirm no issue blocks sponsor acceptance before closure approval.';
+  closureLessonsComment = 'Lessons have been captured for vendor performance and architecture review. PMO should reuse the recommendations in the next planning cycle.';
   changeRequestRows: ChangeRequestRow[] = changeRequestRowsInitial.map((row) => ({
     ...row,
     types: [...row.types],
@@ -11311,6 +11349,26 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   get closureBenefitManager(): string {
     return this.closureBenefitRowList[0]?.owner || 'Benefit owner TBD';
+  }
+
+  get activeClosureAiSectionKey(): string {
+    return this.closureAiSectionKey(this.activeClosureSection);
+  }
+
+  closureSectionDescription(section: ClosureSectionId): string {
+    const descriptions: Record<ClosureSectionId, string> = {
+      overview: 'Record final evidence, open actions, readiness checks, and handover notes for PMO review.',
+      budget: 'Confirm the final financial position, evidence links, variance explanation, and reconciliation status.',
+      benefits: 'Carry forward benefit ownership, realization dates, measurement coverage, and post-closure tracking.',
+      risk: 'Confirm residual risks, treatment confidence, monitoring ownership, and BAU escalation paths.',
+      issues: 'Close or transfer remaining issues with owners, due dates, and clear resolution notes.',
+      lessons: 'Capture reusable lessons and recommendations so future projects can improve from this delivery.',
+    };
+    return descriptions[section];
+  }
+
+  updateClosureBlockValue(blockId: string, value: string): void {
+    this.closureOverviewBlockList = this.closureOverviewBlockList.map((block) => (block.id === blockId ? { ...block, value } : block));
   }
 
   get visibleDependencyRegisters(): DependencyRegisterConfig[] {
@@ -12916,6 +12974,47 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return this.onboardingProjectSetup && this.projectPlanEntry === 'quick';
   }
 
+  showClosureAiAutofill(): boolean {
+    return this.projectPlanEntry === 'closure';
+  }
+
+  isClosureAiSectionGenerating(): boolean {
+    return this.isAiSectionGenerating(this.activeClosureAiSectionKey);
+  }
+
+  isClosureAiSectionBusy(): boolean {
+    return this.isAiSectionBusy(this.activeClosureAiSectionKey);
+  }
+
+  isClosureAiSectionWriting(): boolean {
+    return this.isAiSectionWriting(this.activeClosureAiSectionKey);
+  }
+
+  fillClosureDraft(): void {
+    if (!this.showClosureAiAutofill()) return;
+    const section = this.activeClosureSection;
+    const aiSection = this.closureAiSectionKey(section);
+    if (this.aiAssistStatus === 'filling' || this.isAiSectionWriting(aiSection)) return;
+    this.clearAiAssistTimers();
+    this.activeAiAssistSection = aiSection;
+    this.aiAssistStatus = 'filling';
+    this.aiWritingSection = null;
+    this.activeAiGenerationStep = 'Reading project plan evidence...';
+    this.iconsHydrated = false;
+
+    this.scheduleAiAssistStep('Reading project plan evidence...', 0);
+    this.scheduleAiAssistStep('Checking closure controls...', 700);
+    this.scheduleAiAssistStep('Drafting PMO closure language...', 1500);
+    this.scheduleAiAssistStep('Writing closure content...', 2400);
+
+    this.aiAssistGenerationTimer = window.setTimeout(() => {
+      this.applyClosureAiDraft(section);
+      this.aiWritingSection = aiSection;
+      this.finishAiDraft(aiSection, `AI filled ${this.activeClosureNavItem.label.toLowerCase()} closure content. Review before submission.`);
+      this.aiAssistGenerationTimer = null;
+    }, 3000);
+  }
+
   fillAiSectionDraft(): void {
     const section =
       this.activeAiAssistSection && this.activeAiAssistSection !== this.simpleProjectPlanAiSection
@@ -13234,6 +13333,64 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.applyBudgetAiDraft('');
     this.applyBenefitsAiDraft('');
     this.applyRiskAiDraft('');
+  }
+
+  private closureAiSectionKey(section: ClosureSectionId): string {
+    return `Closure:${section}`;
+  }
+
+  private applyClosureAiDraft(section: ClosureSectionId): void {
+    const projectName = this.scopedProjectName || firstAssignedProject.name;
+    switch (section) {
+      case 'overview':
+        this.closureOverviewBlockList = [
+          {
+            ...this.closureOverviewBlockList[0],
+            value: `${projectName} has completed the planned close-out review. Sponsor acceptance is recorded, remaining actions have named owners, and the handover pack is ready for PMO approval once finance reconciliation is confirmed.`,
+          },
+          {
+            ...this.closureOverviewBlockList[1],
+            value:
+              'Scope was delivered against the approved baseline with minor timing movement absorbed in the final readiness window. Cost variance remains within tolerance and no further baseline change is required for closure.',
+          },
+          {
+            ...this.closureOverviewBlockList[2],
+            value:
+              'Priority quality checks are complete. Accepted exceptions are logged as follow-up actions, and no unresolved quality issue prevents sponsor sign-off or BAU transfer.',
+          },
+          {
+            ...this.closureOverviewBlockList[3],
+            value:
+              'Operational ownership transfers to the Research Office with PMO reporting support through the first month after closure. The BAU owner, data steward, and escalation route are confirmed.',
+          },
+          {
+            ...this.closureOverviewBlockList[4],
+            value:
+              'Capitalizable assets and final funding evidence are ready for finance review. Monthly actuals, funding source allocation, and final variance commentary should be attached before submission.',
+          },
+        ];
+        break;
+      case 'budget':
+        this.closureBudgetComment =
+          'AI draft: final budget remains within tolerance. PMO should confirm the funding source split, monthly actuals, and variance evidence before approving closure.';
+        break;
+      case 'benefits':
+        this.closureBenefitsComment =
+          'AI draft: benefits ownership transfers to BAU with realization tracking active for the first post-closure checkpoint. Measures without confirmed targets should be reviewed by the benefit manager.';
+        break;
+      case 'risk':
+        this.closureRiskComment =
+          'AI draft: residual risks are acceptable for closure once BAU monitoring cadence, escalation ownership, and remaining treatment actions are confirmed.';
+        break;
+      case 'issues':
+        this.closureIssueComment =
+          'AI draft: open issues have resolution paths and owners. PMO should confirm no issue blocks sponsor acceptance, then transfer any remaining actions into BAU tracking.';
+        break;
+      case 'lessons':
+        this.closureLessonsComment =
+          'AI draft: future projects should confirm data owners before initiation, increase architecture review cadence, and preserve vendor performance evidence for procurement and delivery assurance.';
+        break;
+    }
   }
 
   private applyAiDraftToSection(section: string, refinement = ''): void {

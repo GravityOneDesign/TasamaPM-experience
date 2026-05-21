@@ -491,7 +491,7 @@ interface PmConsoleAgentUploadedFile {
           @if (messages.length === 0) {
             <section class="agent-panel-greeting" aria-label="Assistant start prompts">
               <h2 class="agent-panel-greeting-copy">
-                <span>Hey Omar,</span>
+                <span>Hey Muna,</span>
                 <strong>Where should we start today?</strong>
               </h2>
               <div class="agent-panel-chips">
