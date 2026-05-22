@@ -43,6 +43,10 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
 import { PmConsoleProjectProfileCardComponent } from './shared/pm-console-project-profile-card.component';
 import { PmConsoleReportingEmptyIllustrationComponent } from './shared/pm-console-reporting-empty-illustration.component';
 import {
+  PmConsoleReportingTrendsComponent,
+  type PmConsoleReportingTrendRow,
+} from './shared/pm-console-reporting-trends.component';
+import {
   PmConsoleRegisterTableComponent,
   type PmConsoleRegisterTableActionEvent,
   type PmConsoleRegisterTableCell,
@@ -3263,13 +3267,48 @@ const timelineItems: PmConsoleCalendarItem[] = [
   { date: '2026-05-29', label: 'Benefits review', tone: 'blue', project: 'Smart City Alpha', kind: 'benefit' },
 ];
 
-const reportStatusHistory = [
-  { project: 'UAE Research Map', dueLabel: 'On track', dueTone: 'green', trend: [{ label: 'Mar', status: 'submitted' }, { label: 'Apr', status: 'submitted' }, { label: 'May', status: 'submitted' }] },
-  { project: 'Vision 2030', dueLabel: 'Overdue 5 days', dueTone: 'red', trend: [{ label: 'Mar', status: 'attention' }, { label: 'Apr', status: 'submitted' }, { label: 'May', status: 'overdue' }] },
-  { project: 'NEOM Integration', dueLabel: 'Due today', dueTone: 'amber', trend: [{ label: 'Mar', status: 'attention' }, { label: 'Apr', status: 'submitted' }, { label: 'May', status: 'due' }] },
-  { project: 'Smart City Alpha', dueLabel: 'On track', dueTone: 'green', trend: [{ label: 'Mar', status: 'attention' }, { label: 'Apr', status: 'submitted' }, { label: 'May', status: 'submitted' }] },
-  { project: 'PMO Capability', dueLabel: 'Due this week', dueTone: 'amber', trend: [{ label: 'Mar', status: 'submitted' }, { label: 'Apr', status: 'submitted' }, { label: 'May', status: 'draft' }] },
-  { project: 'Counter Terrorism Operations', dueLabel: 'Overdue 2 days', dueTone: 'red', trend: [{ label: 'Mar', status: 'submitted' }, { label: 'Apr', status: 'attention' }, { label: 'May', status: 'overdue' }] },
+const currentReportingTrendProjectOrder = [firstAssignedProject.id, 'Global Anti-Scam Taskforce', 'Counter Terrorism Operations'];
+
+const reportStatusHistory: PmConsoleReportingTrendRow[] = [
+  {
+    project: 'UAE Research Map',
+    dueLabel: 'Submitted on 18 May',
+    dueTone: 'green',
+    statusLabel: 'On track',
+    actionLabel: 'Preview',
+    actionIcon: 'eye',
+    trend: [
+      { label: 'Mar', status: 'submitted' },
+      { label: 'Apr', status: 'submitted' },
+      { label: 'May', status: 'submitted' },
+    ],
+  },
+  {
+    project: 'Global Anti-Scam Taskforce',
+    dueLabel: 'Overdue by 5 days',
+    dueTone: 'red',
+    statusLabel: 'Off track',
+    trend: [
+      { label: 'Mar', status: 'attention' },
+      { label: 'Apr', status: 'submitted' },
+      { label: 'May', status: 'overdue' },
+    ],
+  },
+  {
+    project: 'Counter Terrorism Operations',
+    dueLabel: 'Due on 18 Jun',
+    dueTone: 'green',
+    statusLabel: 'Not Created',
+    trend: [
+      { label: 'Mar', status: 'attention' },
+      { label: 'Apr', status: 'submitted' },
+      { label: 'Jun', status: 'not-created' },
+    ],
+  },
+  { project: 'Vision 2030', dueLabel: 'Overdue by 5 days', dueTone: 'red', statusLabel: 'Off track', trend: [{ label: 'Mar', status: 'attention' }, { label: 'Apr', status: 'submitted' }, { label: 'May', status: 'overdue' }] },
+  { project: 'NEOM Integration', dueLabel: 'Due on 18 Jun', dueTone: 'green', statusLabel: 'Not Created', trend: [{ label: 'Mar', status: 'attention' }, { label: 'Apr', status: 'submitted' }, { label: 'Jun', status: 'not-created' }] },
+  { project: 'Smart City Alpha', dueLabel: 'Submitted on 16 May', dueTone: 'green', statusLabel: 'On track', actionLabel: 'Preview', actionIcon: 'eye', trend: [{ label: 'Mar', status: 'attention' }, { label: 'Apr', status: 'submitted' }, { label: 'May', status: 'submitted' }] },
+  { project: 'PMO Capability', dueLabel: 'Due this week', dueTone: 'amber', statusLabel: 'Alert', trend: [{ label: 'Mar', status: 'submitted' }, { label: 'Apr', status: 'submitted' }, { label: 'May', status: 'draft' }] },
 ];
 
 const reportCreationDetails: Record<string, ReportCreationDetail> = {
@@ -3286,6 +3325,20 @@ const reportCreationDetails: Record<string, ReportCreationDetail> = {
     comments: 'Initiation is active. Scope, stakeholder alignment, and plan evidence need to be captured for the first reporting cycle.',
     achievements: 'Project assignment accepted. Initial outcomes, capabilities, and sponsor context are being drafted.',
     planned: 'Complete baseline planning, confirm research owners, and prepare initiation gate evidence for PMO review.',
+  },
+  'Global Anti-Scam Taskforce': {
+    intervalStart: '18 May 2026',
+    intervalEnd: '18 Jun 2026',
+    intervalStatus: 'Draft due',
+    stage: 'Closure',
+    state: 'Active',
+    overallTrend: 'Needs attention',
+    progress: 76,
+    baselineEnd: '22 Mar 2026',
+    forecastEnd: '18 Jun 2026',
+    comments: 'Closure reporting needs final protocol evidence, partner sign-off, and the PMO exception note before submission.',
+    achievements: 'Joint operating protocols signed and cross-border taskforce readiness evidence collected.',
+    planned: 'Complete closure evidence, confirm sponsor acceptance, and submit the final reporting pack.',
   },
   'Vision 2030': {
     intervalStart: '30/04/2026',
@@ -3768,6 +3821,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
     PmConsoleProjectDropdownComponent,
     PmConsoleProjectProfileCardComponent,
     PmConsoleReportingEmptyIllustrationComponent,
+    PmConsoleReportingTrendsComponent,
     PmConsoleRegisterTableComponent,
     PmConsoleReportDrawerComponent,
     PmConsoleRiskMatrixComponent,
@@ -8787,7 +8841,13 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                   </section>
                 } @else {
                   @if (showPortfolioReportTrends) { <section class="top-deck" aria-label="PM front door actions" data-tour-target="frontdoor-actions"><button class="action-card workspace-command" type="button" (click)="navigate('workspaces')" [disabled]="onboardingPm101Locked" [attr.aria-disabled]="onboardingPm101Locked ? 'true' : null" [attr.title]="onboardingPm101Locked ? 'Available after PM 101 onboarding' : null"><span class="action-icon"><img src="./assets/workspace-card-box.svg" alt="" aria-hidden="true" /></span><span class="action-copy"><strong>Workspaces</strong><small>Open project rooms</small></span><span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span></button><button class="action-card learning-command is-unavailable" type="button" disabled aria-disabled="true" title="Learning Hub coming soon"><span class="action-icon"><img src="./assets/workspace-card-notebook.svg" alt="" aria-hidden="true" /></span><span class="action-copy"><strong>Learning Hub</strong><small>Guides and playbooks</small></span><span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span></button></section> }
-                  <section class="side-card report-widget" [class.portfolio-report-widget]="showPortfolioReportTrends" data-tour-target="right-report-widget"><div class="report-widget-head"><div><h2>{{ showPortfolioReportTrends ? 'Reporting trends' : 'Project report trend' }}</h2><small>Last 3 PSR statuses</small></div></div><div class="report-trend-list">@for (report of visibleReportRows; track report.project) { <article class="report-trend-row {{ reportFrontdoorTone(report) }}"><div class="report-trend-row-head"><strong>{{ report.project }}</strong><span class="report-health-chip {{ reportFrontdoorTone(report) }}">{{ reportDueToneLabel(reportFrontdoorTone(report)) }}</span></div><div class="report-trend" style="--report-trend-count:3" aria-label="Status report trend">@for (point of report.trend; track point.label) { <span class="report-trend-point {{ reportStatusTone(point.status) }}"><span class="report-status-icon {{ reportStatusTone(point.status) }}" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="reportStatusIcon(point.status)"></i></span></span><small>{{ point.label }}</small></span> }</div><div class="report-trend-row-foot"><span class="report-row-due"><span class="icon" aria-hidden="true"><i data-lucide="history"></i></span><span>{{ reportDueText(report) }}</span></span><button class="report-row-create" type="button" (click)="openReport(report.project)"><span class="icon" aria-hidden="true"><i data-lucide="file-text"></i></span><span>Create</span></button></div></article> }</div></section>
+                  <app-pm-console-reporting-trends
+                    [title]="showPortfolioReportTrends ? 'Reporting trends' : 'Project report trend'"
+                    subtitle="Last 3 PSR statuses"
+                    [rows]="visibleReportRows"
+                    [portfolio]="showPortfolioReportTrends"
+                    (reportAction)="openReport($event)"
+                  />
                   @if (!showPortfolioReportTrends) { <ng-container [ngTemplateOutlet]="quickLinksPanel"></ng-container> }
                 }
               </div>
@@ -11941,14 +12001,13 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     });
   }
 
-  get visibleReportRows(): typeof reportStatusHistory {
+  get visibleReportRows(): PmConsoleReportingTrendRow[] {
     const rows = this.showPortfolioReportTrends ? reportStatusHistory : reportStatusHistory.filter((report) => report.project === this.selectedProject);
     if (!this.showPortfolioReportTrends) return rows;
-    const order = [firstAssignedProject.id, 'Vision 2030', 'NEOM Integration'];
-    return order.map((project) => rows.find((row) => row.project === project)).filter((row): row is (typeof reportStatusHistory)[number] => Boolean(row));
+    return currentReportingTrendProjectOrder.map((project) => rows.find((row) => row.project === project)).filter((row): row is PmConsoleReportingTrendRow => Boolean(row));
   }
 
-  get activeReport(): (typeof reportStatusHistory)[number] {
+  get activeReport(): PmConsoleReportingTrendRow {
     const project = this.activeReportProject || firstAssignedProject.id;
     return reportStatusHistory.find((report) => report.project === project) || reportStatusHistory[0];
   }
@@ -17385,25 +17444,6 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     if (status === 'missed' || status === 'overdue') return 'off-track';
     if (status === 'due' || status === 'attention' || status === 'draft') return 'alert';
     return 'on-track';
-  }
-
-  reportStatusIcon(status: string): string {
-    return this.reportStatusTone(status) === 'off-track' ? 'circle-x' : this.reportStatusTone(status) === 'alert' ? 'triangle-alert' : 'circle-check';
-  }
-
-  reportFrontdoorTone(report: { project: string; dueTone: string }): string {
-    return ({ [firstAssignedProject.id]: 'green', 'Vision 2030': 'red', 'NEOM Integration': 'green', 'PMO Capability': 'amber' } as Record<string, string>)[report.project] || report.dueTone;
-  }
-
-  reportDueToneLabel(tone: string): string {
-    if (tone === 'red') return 'Off track';
-    if (tone === 'amber') return 'Alert';
-    if (tone === 'green') return 'On track';
-    return 'Review';
-  }
-
-  reportDueText(report: { dueLabel: string }): string {
-    return report.dueLabel === 'Overdue 5 days' ? 'Overdue by 5 days' : report.dueLabel;
   }
 
   private reportToneToken(status: string): string {
