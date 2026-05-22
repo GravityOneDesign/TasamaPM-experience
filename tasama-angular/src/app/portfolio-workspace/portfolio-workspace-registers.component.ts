@@ -47,6 +47,13 @@ type SubTab = 'projects' | 'risks' | 'benefits';
         >
           <span>Benefits Register</span>
         </button>
+        <button
+          class="pm-register-tab"
+          type="button"
+          [disabled]="true"
+        >
+          <span>Issues Register</span>
+        </button>
       </div>
 
       <!-- Tab Outlet -->
@@ -499,6 +506,11 @@ type SubTab = 'projects' | 'risks' | 'benefits';
       cursor: pointer;
       position: relative;
       transition: color 0.2s ease;
+    }
+
+    .sub-tabs .pm-register-tab:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
     .sub-tabs .pm-register-tab::after {

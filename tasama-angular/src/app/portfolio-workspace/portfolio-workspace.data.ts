@@ -240,8 +240,8 @@ export const portfolioReports = {
     { name: 'April 2026 Monthly Summary', period: '2026-04-01 - 2026-04-30', status: 'Submitted', createdBy: 'Fatima Qahtani', createdAt: '2026-05-02' },
     { name: 'Q1 2026 Performance Review', period: '2026-01-01 - 2026-03-31', status: 'Submitted', createdBy: 'Fatima Qahtani', createdAt: '2026-04-12' },
     { name: 'Central SOC Rollout Assessment', period: 'Ad-hoc', status: 'Submitted', createdBy: 'Dr. Khalid Al-Mansoori', createdAt: '2026-03-10' },
-    { name: 'March 2026 Monthly Summary', period: '2026-03-01 - 2026-03-31', status: 'Submitted', createdBy: 'Fatima Qahtani', createdAt: '2026-04-02' },
-    { name: 'February 2026 Monthly Summary', period: '2026-02-01 - 2026-02-28', status: 'Submitted', createdBy: 'Fatima Qahtani', createdAt: '2026-03-02' },
+    { name: 'March 2026 Monthly Summary', period: '2026-03-01 - 2026-03-31', status: 'Draft', createdBy: 'Fatima Qahtani', createdAt: '2026-04-02' },
+    { name: 'February 2026 Monthly Summary', period: '2026-02-01 - 2026-02-28', status: 'Draft', createdBy: 'Fatima Qahtani', createdAt: '2026-03-02' },
     { name: 'Safe Security Baseline Proposal', period: 'Initiation', status: 'Submitted', createdBy: 'Dr. Khalid Al-Mansoori', createdAt: '2026-01-20' }
   ] as PastReportRow[]
 };

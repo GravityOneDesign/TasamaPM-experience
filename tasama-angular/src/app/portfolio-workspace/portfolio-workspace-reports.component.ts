@@ -17,293 +17,91 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
       <!-- Sub-tabs header -->
       <div class="reports-header-row">
         <div class="sub-tabs">
-          <button
-            class="pm-register-tab"
-            [class.is-active]="activeTab === 'awaiting'"
-            type="button"
-            (click)="setTab('awaiting')"
-          >
-            <span>Awaiting Review</span>
-          </button>
-          <button
-            class="pm-register-tab"
-            [class.is-active]="activeTab === 'scheduled'"
-            type="button"
-            (click)="setTab('scheduled')"
-          >
-            <span>Scheduled Reports</span>
-          </button>
-          <button
-            class="pm-register-tab"
-            [class.is-active]="activeTab === 'past'"
-            type="button"
-            (click)="setTab('past')"
-          >
+          <div class="pm-register-tab is-active" style="cursor: default;">
             <span>Past Portfolio Reports</span>
-          </button>
+          </div>
         </div>
 
-        @if (activeTab === 'past') {
-          <button class="create-report-btn" type="button">
-            <span [pmConsoleIcon]="'plus'"></span>
-            <span>Create Report</span>
-          </button>
-        }
+        <button class="create-report-btn" type="button">
+          <span [pmConsoleIcon]="'plus'"></span>
+          <span>Create Report</span>
+        </button>
       </div>
 
       <!-- Content Outlets -->
-      @switch (activeTab) {
-        
-        <!-- AWAITING REVIEW -->
-        @case ('awaiting') {
-          <div class="reports-outlet-content animation-slide">
-            <!-- Premium Stats Bar -->
-            <div class="dashboard-stats-grid">
-              
-              <article class="dashboard-stat-card total-reports-card">
-                <div class="donut-indicator-wrapper">
-                  <div class="donut-ring">
-                    <span class="donut-value">10/16</span>
-                  </div>
-                </div>
-                <div class="stat-copy">
-                  <span class="stat-label">Total Reports</span>
-                  <strong class="stat-highlight">Submitted 10 · Due 6</strong>
-                </div>
-              </article>
-
-              <article class="dashboard-stat-card compliance-card">
-                <div class="compliance-circle">
-                  <span class="comp-val">75%</span>
-                </div>
-                <div class="stat-copy">
-                  <span class="stat-label">Reporting Compliance</span>
-                  <strong class="stat-highlight text-emerald">+26% Increase ↑</strong>
-                </div>
-              </article>
-
-              <article class="dashboard-stat-card project-health-distribution">
-                <div class="stat-copy w-full">
-                  <span class="stat-label">Project Health Distribution</span>
-                  <div class="health-segmented-bar">
-                    <div class="segment off-track" style="width: 60%" title="Off track: 60%"></div>
-                    <div class="segment delayed" style="width: 25%" title="Delayed: 25%"></div>
-                    <div class="segment on-track" style="width: 15%" title="On track: 15%"></div>
-                  </div>
-                  <div class="bar-legend">
-                    <span><span class="dot bg-red"></span>Off Track (60%)</span>
-                    <span><span class="dot bg-amber"></span>Delayed (25%)</span>
-                    <span><span class="dot bg-emerald"></span>On Track (15%)</span>
-                  </div>
-                </div>
-              </article>
-
+      <div class="reports-outlet-content animation-slide">
+        <!-- Stats row -->
+        <div class="dashboard-stats-grid">
+          <article class="dashboard-stat-card flex-row-card">
+            <span [pmConsoleIcon]="'folder-check'" class="s-card-icon text-success"></span>
+            <div class="stat-copy">
+              <span class="stat-label">Total Past Reports</span>
+              <strong class="stat-value">{{ past.length }} Submitted</strong>
             </div>
+          </article>
 
-            <!-- Toolbar & Items Count -->
-            <div class="reports-toolbar">
-              <span class="items-count">{{ awaitingReview.length }} reports awaiting review</span>
-              <div class="toolbar-actions">
-                <label class="search-box">
-                  <span pmConsoleIcon="search"></span>
-                  <input type="search" placeholder="Search intervals..." />
-                </label>
-                <button class="tb-btn" type="button"><span [pmConsoleIcon]="'filter'"></span><span>Filter</span></button>
-              </div>
+          <article class="dashboard-stat-card flex-row-card">
+            <span [pmConsoleIcon]="'calendar'" class="s-card-icon text-primary"></span>
+            <div class="stat-copy">
+              <span class="stat-label">Last Submitted Report</span>
+              <strong class="stat-value">May 02, 2026</strong>
             </div>
+          </article>
 
-            <!-- Table -->
-            <div class="pm-project-table-scroll">
-              <table class="pm-project-table">
-                <thead>
-                  <tr>
-                    <th style="width: 35%">Reporting Interval</th>
-                    <th style="width: 20%">Due By</th>
-                    <th style="width: 15%">Reporting Status</th>
-                    <th style="width: 15%">Project Status</th>
-                    <th style="width: 15%; text-align: right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (row of awaitingReview; track row.interval) {
-                    <tr>
-                      <td><strong>{{ row.interval }}</strong></td>
-                      <td class="date-cell">{{ formatDate(row.dueBy) }}</td>
-                      <td>
-                        <span [pmConsoleStatusPill]="row.reportingStatus" baseClass="dependency-register-pill" [tone]="statusTone(row.reportingStatus)"></span>
-                      </td>
-                      <td>
-                        <span [pmConsoleStatusPill]="row.projectStatus" baseClass="dependency-register-pill" [tone]="statusTone(row.projectStatus)"></span>
-                      </td>
-                      <td style="text-align: right">
-                        @if (row.reportingStatus === 'Draft') {
-                          <button class="report-action-btn report-row-create" type="button">Resume</button>
-                        } @else if (row.reportingStatus === 'Not Created') {
-                          <button class="report-action-btn report-row-create" type="button">Create</button>
-                        } @else {
-                          <button class="report-action-btn report-row-preview" type="button">
-                            <span [pmConsoleIcon]="'eye'" class="preview-eye"></span>
-                            <span>Preview</span>
-                          </button>
-                        }
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
+          <article class="dashboard-stat-card flex-row-card">
+            <span [pmConsoleIcon]="'award'" class="s-card-icon text-warning"></span>
+            <div class="stat-copy">
+              <span class="stat-label">Average Submission Score</span>
+              <strong class="stat-value">94.8%</strong>
             </div>
-          </div>
-        }
+          </article>
+        </div>
 
-        <!-- SCHEDULED REPORTS -->
-        @case ('scheduled') {
-          <div class="reports-outlet-content animation-slide">
-            <!-- Stats Row -->
-            <div class="dashboard-stats-grid">
-              <article class="dashboard-stat-card flex-row-card">
-                <span [pmConsoleIcon]="'clock'" class="s-card-icon text-primary"></span>
-                <div class="stat-copy">
-                  <span class="stat-label">Total Scheduled</span>
-                  <strong class="stat-value">{{ scheduled.length }} Reports</strong>
-                </div>
-              </article>
+        <!-- Toolbar -->
+        <div class="reports-toolbar">
+          <span class="items-count">{{ past.length }} archival summaries found</span>
+        </div>
 
-              <article class="dashboard-stat-card flex-row-card">
-                <span [pmConsoleIcon]="'calendar'" class="s-card-icon text-warning"></span>
-                <div class="stat-copy">
-                  <span class="stat-label">Next Portfolio Due</span>
-                  <strong class="stat-value">May 26, 2026</strong>
-                </div>
-              </article>
-
-              <article class="dashboard-stat-card flex-row-card">
-                <span [pmConsoleIcon]="'layers'" class="s-card-icon text-emerald"></span>
-                <div class="stat-copy">
-                  <span class="stat-label">Frequency Breakdown</span>
-                  <strong class="stat-highlight">1 Weekly · 2 Monthly · 1 Quarterly</strong>
-                </div>
-              </article>
-            </div>
-
-            <!-- Toolbar -->
-            <div class="reports-toolbar">
-              <span class="items-count">{{ scheduled.length }} active report schedules</span>
-            </div>
-
-            <!-- Table -->
-            <div class="pm-project-table-scroll">
-              <table class="pm-project-table">
-                <thead>
-                  <tr>
-                    <th style="width: 30%">Report Name</th>
-                    <th style="width: 15%">Scope</th>
-                    <th style="width: 15%">Frequency</th>
-                    <th style="width: 15%">Next Due</th>
-                    <th style="width: 15%">Assignee</th>
-                    <th style="width: 10%">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (row of scheduled; track row.name) {
-                    <tr>
-                      <td><strong>{{ row.name }}</strong></td>
-                      <td><span class="scope-tag">{{ row.scope }}</span></td>
-                      <td>{{ row.frequency }}</td>
-                      <td class="date-cell">{{ formatDate(row.nextDue) }}</td>
-                      <td>
-                        <div class="avatar-cell">
-                          <div class="avatar-circle">{{ getInitials(row.assignee) }}</div>
-                          <span class="owner-name">{{ row.assignee }}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <span [pmConsoleStatusPill]="row.status" baseClass="dependency-register-pill" [tone]="row.status === 'Active' ? 'emerald' : 'neutral'"></span>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          </div>
-        }
-
-        <!-- PAST PORTFOLIO REPORTS -->
-        @case ('past') {
-          <div class="reports-outlet-content animation-slide">
-            <!-- Stats row -->
-            <div class="dashboard-stats-grid">
-              <article class="dashboard-stat-card flex-row-card">
-                <span [pmConsoleIcon]="'folder-check'" class="s-card-icon text-success"></span>
-                <div class="stat-copy">
-                  <span class="stat-label">Total Past Reports</span>
-                  <strong class="stat-value">{{ past.length }} Submitted</strong>
-                </div>
-              </article>
-
-              <article class="dashboard-stat-card flex-row-card">
-                <span [pmConsoleIcon]="'calendar'" class="s-card-icon text-primary"></span>
-                <div class="stat-copy">
-                  <span class="stat-label">Last Submitted Report</span>
-                  <strong class="stat-value">May 02, 2026</strong>
-                </div>
-              </article>
-
-              <article class="dashboard-stat-card flex-row-card">
-                <span [pmConsoleIcon]="'award'" class="s-card-icon text-warning"></span>
-                <div class="stat-copy">
-                  <span class="stat-label">Average Submission Score</span>
-                  <strong class="stat-value">94.8%</strong>
-                </div>
-              </article>
-            </div>
-
-            <!-- Toolbar -->
-            <div class="reports-toolbar">
-              <span class="items-count">{{ past.length }} archival summaries found</span>
-            </div>
-
-            <!-- Table -->
-            <div class="pm-project-table-scroll">
-              <table class="pm-project-table">
-                <thead>
-                  <tr>
-                    <th style="width: 30%">Report Name</th>
-                    <th style="width: 20%">Reporting Period</th>
-                    <th style="width: 15%">Status</th>
-                    <th style="width: 20%">Created By</th>
-                    <th style="width: 15%">Created At</th>
-                    <th style="width: 10%; text-align: right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (row of past; track row.name) {
-                    <tr>
-                      <td><strong>{{ row.name }}</strong></td>
-                      <td class="period-text">{{ row.period }}</td>
-                      <td>
-                        <span [pmConsoleStatusPill]="row.status" baseClass="dependency-register-pill" [tone]="row.status === 'Submitted' ? 'emerald' : 'amber'"></span>
-                      </td>
-                      <td>
-                        <div class="avatar-cell">
-                          <div class="avatar-circle">{{ getInitials(row.createdBy) }}</div>
-                          <span class="owner-name">{{ row.createdBy }}</span>
-                        </div>
-                      </td>
-                      <td class="date-cell">{{ formatDate(row.createdAt) }}</td>
-                      <td style="text-align: right">
-                        <button class="report-action-btn report-row-preview" type="button">
-                          <span [pmConsoleIcon]="'eye'" class="preview-eye"></span>
-                          <span>Preview</span>
-                        </button>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          </div>
-        }
-      }
+        <!-- Table -->
+        <div class="pm-project-table-scroll">
+          <table class="pm-project-table">
+            <thead>
+              <tr>
+                <th style="width: 30%">Report Name</th>
+                <th style="width: 20%">Reporting Period</th>
+                <th style="width: 15%">Status</th>
+                <th style="width: 20%">Created By</th>
+                <th style="width: 15%">Created At</th>
+                <th style="width: 10%; text-align: right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of past; track row.name) {
+                <tr>
+                  <td><strong>{{ row.name }}</strong></td>
+                  <td class="period-text">{{ row.period }}</td>
+                  <td>
+                    <span [pmConsoleStatusPill]="row.status" baseClass="dependency-register-pill" [tone]="row.status === 'Submitted' ? 'emerald' : 'amber'"></span>
+                  </td>
+                  <td>
+                    <div class="avatar-cell">
+                      <div class="avatar-circle">{{ getInitials(row.createdBy) }}</div>
+                      <span class="owner-name">{{ row.createdBy }}</span>
+                    </div>
+                  </td>
+                  <td class="date-cell">{{ formatDate(row.createdAt) }}</td>
+                  <td style="text-align: right">
+                    <button class="report-action-btn report-row-preview" type="button">
+                      <span [pmConsoleIcon]="'eye'" class="preview-eye"></span>
+                      <span>Preview</span>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
 
     </div>
   `,
@@ -750,7 +548,7 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
   `]
 })
 export class PortfolioWorkspaceReportsComponent {
-  activeTab: ReportsTab = 'awaiting';
+  activeTab: ReportsTab = 'past';
 
   awaitingReview = portfolioReports.awaitingReview;
   scheduled = portfolioReports.scheduled;

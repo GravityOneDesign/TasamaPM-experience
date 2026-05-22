@@ -109,11 +109,6 @@ const reportStatusHistory = [
 
           <div class="right-column portfolio-frontdoor pm101-locked-right">
             <section class="top-deck" aria-label="PM front door actions" data-tour-target="frontdoor-actions">
-              <button class="action-card workspace-command" type="button" (click)="openAssignedProjectWorkspace()">
-                <span class="action-icon"><img src="./assets/workspace-card-box.svg" alt="" aria-hidden="true" /></span>
-                <span class="action-copy"><strong>Workspaces</strong><small>Open project rooms</small></span>
-                <span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span>
-              </button>
               <button class="action-card framework-command" type="button" (click)="openFrameworkPage()">
                 <span class="action-icon"><img src="./assets/workspace-card-settings.svg" alt="" aria-hidden="true" /></span>
                 <span class="action-copy"><strong>Framework & Configuration</strong><small>Settings and structures</small></span>
