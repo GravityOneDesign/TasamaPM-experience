@@ -34,7 +34,7 @@ const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
             aria-label="Go to home"
             (click)="goHome()"
           >
-            <img class="brand-logo" src="./assets/tasama-small.svg" alt="Tasama" />
+            <img class="brand-logo" [src]="currentUser === 'fatima' ? './assets/client-logo-nav.svg' : './assets/tasama-small.svg'" [alt]="currentUser === 'fatima' ? 'Client Logo' : 'Tasama'" />
           </button>
 
           @if (usesConsoleHeader) {

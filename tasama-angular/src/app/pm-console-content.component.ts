@@ -8416,7 +8416,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                       </div>
                       <div class="workspace-locked-title-row">
                         <span class="workspace-pane-icon" aria-hidden="true">
-                          <img src="./assets/pane-top-icon.svg" alt="" />
+                          <img [src]="pmMode === 'fatima' ? './assets/client-logo-icon.svg' : './assets/pane-top-icon.svg'" alt="" />
                         </span>
                         <div class="workspace-title">
                           <h2>{{ workspaceTitle }}</h2>
@@ -11525,7 +11525,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get showWorkspaceProjectSwitch(): boolean {
-    return this.frontDoorMode !== 'unassigned' && this.usesPm101OperationalLayout && this.workspaceHeaderProjectOptions.length > 0;
+    return this.pmMode !== 'fatima' && this.frontDoorMode !== 'unassigned' && this.usesPm101OperationalLayout && this.workspaceHeaderProjectOptions.length > 0;
   }
 
   get workspaceHeaderProject(): string {

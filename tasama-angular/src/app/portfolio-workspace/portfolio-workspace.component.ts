@@ -112,24 +112,24 @@ export class PortfolioWorkspaceComponent {
   tabs = [
     { id: 'overview', label: 'Overview', icon: 'grid' },
     { id: 'plan', label: 'Portfolio Plan', icon: 'calendar' },
-    { id: 'registers', label: 'Registers', icon: 'clipboard-list' },
-    { id: 'reports', label: 'Reports', icon: 'file-text' },
     { id: 'framework', label: 'Framework & Configuration', icon: 'settings' },
+    { id: 'registers', label: 'Program & Project Register', icon: 'clipboard-list' },
+    { id: 'reports', label: 'Reports', icon: 'file-text' },
     { id: 'performance', label: 'Portfolio Performance', icon: 'activity' },
   ] as const;
 
   get portfolioTabIndex(): number {
-    return Math.max(0, ['overview', 'plan', 'registers', 'reports', 'framework', 'performance'].indexOf(this.activeTab));
+    return Math.max(0, ['overview', 'plan', 'framework', 'registers', 'reports', 'performance'].indexOf(this.activeTab));
   }
 
   get portfolioTabIndicatorLeft(): string {
-    const order: WorkspaceTab[] = ['overview', 'plan', 'registers', 'reports', 'framework', 'performance'];
+    const order: WorkspaceTab[] = ['overview', 'plan', 'framework', 'registers', 'reports', 'performance'];
     const widths: Record<WorkspaceTab, number> = {
       overview: 135,
       plan: 165,
-      registers: 140,
-      reports: 130,
       framework: 260,
+      registers: 260,
+      reports: 130,
       performance: 220,
     };
     const left = order.slice(0, this.portfolioTabIndex).reduce((total, tab) => total + widths[tab], 0);
@@ -140,9 +140,9 @@ export class PortfolioWorkspaceComponent {
     const widths: Record<WorkspaceTab, number> = {
       overview: 135,
       plan: 165,
-      registers: 140,
-      reports: 130,
       framework: 260,
+      registers: 260,
+      reports: 130,
       performance: 220,
     };
     return `${widths[this.activeTab]}px`;
@@ -152,9 +152,9 @@ export class PortfolioWorkspaceComponent {
     const widths: Record<WorkspaceTab, number> = {
       overview: 135,
       plan: 165,
-      registers: 140,
-      reports: 130,
       framework: 260,
+      registers: 260,
+      reports: 130,
       performance: 220,
     };
     return `${widths[id]}px`;
