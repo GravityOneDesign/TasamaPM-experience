@@ -129,6 +129,7 @@ const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
           [onboardingAssignmentFlow]="onboardingAssignmentFlow"
           [onboardingPm101Locked]="onboardingPm101Locked"
           [onboardingProjectSetup]="onboardingProjectSetup"
+          [portfolioWorkspaceTab]="portfolioWorkspaceTab"
           (consoleStateChange)="applyContentState($event)"
         />
       }
@@ -181,6 +182,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   onboardingAssignmentFlow = false;
   onboardingPm101Locked = false;
   onboardingProjectSetup = false;
+  portfolioWorkspaceTab = 'overview';
   sideNavExpanded = false;
   currentUser: 'muna' | 'fatima' = 'muna';
   isProfileMenuOpen = false;
@@ -251,6 +253,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     this.onboardingAssignmentFlow = Boolean(this.initialState.onboardingAssignmentFlow);
     this.onboardingPm101Locked = Boolean(this.initialState.onboardingPm101Locked);
     this.onboardingProjectSetup = Boolean(this.initialState.onboardingProjectSetup);
+    this.portfolioWorkspaceTab = this.initialState.portfolioWorkspaceTab || 'overview';
     if (this.onboardingPm101Locked) {
       this.selectedProject = ONBOARDING_PM101_PROJECT_ID;
       this.selectedView = 'pm101';
@@ -368,6 +371,9 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     }
     if ('onboardingProjectSetup' in state) {
       this.onboardingProjectSetup = Boolean(state.onboardingProjectSetup);
+    }
+    if ('portfolioWorkspaceTab' in state) {
+      this.portfolioWorkspaceTab = state.portfolioWorkspaceTab || 'overview';
     }
     this.markShellChanged();
   }

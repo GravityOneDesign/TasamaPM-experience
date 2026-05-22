@@ -247,9 +247,11 @@ export const portfolioReports = {
 };
 
 export const riskRegisterData = [
-  { id: 'r-1', source: 'Internal Security Audit', description: 'MFA rollout delayed due to legacy identity providers integration issues.', owner: 'Saeed Al-Mansoori', category: 'Technical Integration', rating: 'Extreme', ratingColor: '#FF3B30' },
-  { id: 'r-2', source: 'External Threat Report', description: 'Zero-day vulnerability found in core government proxy infrastructure.', owner: 'Amna Al-Hammadi', category: 'External Cyber Threat', rating: 'High', ratingColor: '#FF9500' },
-  { id: 'r-3', source: 'Agency Feedback Survey', description: 'Low endpoint security agent compliance in local municipal offices.', owner: 'Ali Al-Hashimi', category: 'User Adoption', rating: 'Medium', ratingColor: '#FFCC00' }
+  { id: 'RSK-01', risk: 'Stakeholder data quality gaps delaying onboarding insights.', linkedInitiative: 'UAE Research Map', initiativeType: 'Project' as const, owner: 'Muna Hassan', mitigation: 'Run a cleansing sprint and enforce schema constraints.', lastReview: '05/08/2026', exposure: 'Medium' as const, status: 'Monitoring' as const },
+  { id: 'RSK-02', risk: 'Commercial overrun on third-party security integration APIs.', linkedInitiative: 'NEOM Integration', initiativeType: 'Program' as const, owner: 'Fatima Ali', mitigation: 'Rebaseline the contract scope with vendors.', lastReview: '05/10/2026', exposure: 'Critical' as const, status: 'Escalated' as const },
+  { id: 'RSK-03', risk: 'Vendor dependency slippage impacts milestone delivery.', linkedInitiative: 'Smart City Alpha', initiativeType: 'Project' as const, owner: 'Khalid Omar', mitigation: 'Add recovery buffer and source secondary contractor.', lastReview: '05/06/2026', exposure: 'High' as const, status: 'Active' as const },
+  { id: 'RSK-04', risk: 'Stage-gate evidence packages delayed by local office compliance.', linkedInitiative: 'Vision 2030', initiativeType: 'Portfolio' as const, owner: 'PMO Desk', mitigation: 'Prepare the evidence package templates early.', lastReview: '05/11/2026', exposure: 'Medium' as const, status: 'Active' as const },
+  { id: 'RSK-05', risk: 'Benefits owner responsiveness limits baseline signoff.', linkedInitiative: 'PMO Capability', initiativeType: 'Program' as const, owner: 'Laila Noor', mitigation: 'Follow up weekly with a dedicated prioritization meeting.', lastReview: '05/09/2026', exposure: 'Low' as const, status: 'Watching' as const }
 ];
 
 export const benefitsRegisterData = [

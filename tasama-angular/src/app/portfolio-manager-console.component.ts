@@ -15,7 +15,7 @@ type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
   template: `
     @switch (selectedPage) {
       @case ('portfolio-workspace') {
-        <app-portfolio-workspace />
+        <app-portfolio-workspace [activeTab]="$any(portfolioWorkspaceTab)" (activeTabChange)="consoleStateChange.emit({ portfolioWorkspaceTab: $event })" />
       }
       @default {
         <app-pm-console-content
@@ -49,5 +49,6 @@ export class PortfolioManagerConsoleComponent {
   @Input() onboardingAssignmentFlow = false;
   @Input() onboardingPm101Locked = false;
   @Input() onboardingProjectSetup = false;
+  @Input() portfolioWorkspaceTab: any = 'overview';
   @Output() readonly consoleStateChange = new EventEmitter<Partial<PmConsoleMountOptions>>();
 }

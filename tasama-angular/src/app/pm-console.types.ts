@@ -11,6 +11,7 @@ export interface PmConsoleMountOptions {
   onboardingProjectSetup?: boolean;
   notificationPanelOpen?: boolean;
   pmoAssignmentReady?: boolean;
+  portfolioWorkspaceTab?: string;
 }
 
 export interface ProjectOption {

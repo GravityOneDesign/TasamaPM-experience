@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { portfolioSummary } from './portfolio-workspace.data';
 import { PortfolioWorkspaceOverviewComponent } from './portfolio-workspace-overview.component';
@@ -107,7 +107,8 @@ export class PortfolioWorkspaceComponent {
   owner = portfolioSummary.owner;
   sponsor = portfolioSummary.sponsor;
 
-  activeTab: WorkspaceTab = 'overview';
+  @Input() activeTab: WorkspaceTab = 'overview';
+  @Output() readonly activeTabChange = new EventEmitter<WorkspaceTab>();
 
   tabs = [
     { id: 'overview', label: 'Overview', icon: 'grid' },
@@ -163,6 +164,7 @@ export class PortfolioWorkspaceComponent {
   setActiveTab(tab: WorkspaceTab): void {
     if (tab === 'performance') return;
     this.activeTab = tab;
+    this.activeTabChange.emit(tab);
   }
 
   getInitials(name: string): string {

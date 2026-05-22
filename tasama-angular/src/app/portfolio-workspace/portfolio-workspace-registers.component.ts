@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PmConsoleIconComponent } from '../shared/pm-console-icon.component';
@@ -29,7 +29,7 @@ type SubTab = 'projects' | 'risks' | 'benefits';
           type="button"
           (click)="setSubTab('projects')"
         >
-          <span>Project Register</span>
+          <span>Program & Project Register</span>
         </button>
         <button
           class="pm-register-tab"
@@ -100,8 +100,28 @@ type SubTab = 'projects' | 'risks' | 'benefits';
 
             <!-- Toolbar -->
             <div class="register-toolbar">
-              <div class="toolbar-left">
+              <div class="toolbar-left" style="display: flex; align-items: center; gap: 16px;">
                 <span class="items-count">{{ totalRowsCount }} items found</span>
+                <!-- Create Dropdown Container -->
+                <div class="create-dropdown-container" style="position: relative; display: inline-block;">
+                  <button class="tb-btn primary-tb" type="button" (click)="toggleCreateDropdown($event)" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <span [pmConsoleIcon]="'plus'"></span>
+                    <span>Create</span>
+                    <span [pmConsoleIcon]="'chevron-down'" style="margin-left: 2px; font-size: 10px; opacity: 0.85;"></span>
+                  </button>
+                  @if (showCreateDropdown) {
+                    <div class="create-dropdown-menu" style="position: absolute; left: 0; top: 100%; margin-top: 6px; background: white; border: 1px solid #edf0f6; border-radius: 10px; box-shadow: 0 10px 25px rgba(25, 33, 61, 0.12); width: 150px; z-index: 100; padding: 6px; display: flex; flex-direction: column; gap: 4px;">
+                      <button class="dropdown-item" type="button" (click)="onCreateOption('New Project')" style="background: transparent; border: none; padding: 8px 12px; font-size: 13px; font-weight: 500; color: #252a34; text-align: left; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; width: 100%; transition: background-color 0.15s ease;">
+                        <span [pmConsoleIcon]="'folder'" style="font-size: 14px; color: #707788;"></span>
+                        <span>New Project</span>
+                      </button>
+                      <button class="dropdown-item" type="button" (click)="onCreateOption('New Program')" style="background: transparent; border: none; padding: 8px 12px; font-size: 13px; font-weight: 500; color: #252a34; text-align: left; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; width: 100%; transition: background-color 0.15s ease;">
+                        <span [pmConsoleIcon]="'layers'" style="font-size: 14px; color: #707788;"></span>
+                        <span>New Program</span>
+                      </button>
+                    </div>
+                  }
+                </div>
               </div>
               <div class="toolbar-right">
                 <!-- Toggleable Search -->
@@ -137,11 +157,12 @@ type SubTab = 'projects' | 'risks' | 'benefits';
               <table class="pm-project-table">
                 <thead>
                   <tr>
-                    <th style="width: 38%">Program / Project Name</th>
-                    <th style="width: 12%">Stage</th>
-                    <th style="width: 15%">Status Trend</th>
+                    <th style="width: 30%">Program / Project Name</th>
+                    <th style="width: 10%">Stage</th>
+                    <th style="width: 13%">Status Trend</th>
                     <th style="width: 15%">Manager</th>
-                    <th style="width: 12%">Start Date</th>
+                    <th style="width: 10%">Start Date</th>
+                    <th style="width: 14%">Status</th>
                     <th style="width: 8%">Budget Utilised</th>
                   </tr>
                 </thead>
@@ -191,6 +212,11 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                         </div>
                       </td>
                       <td class="date-col">{{ formatDate(prog.startDate) }}</td>
+                      <td>
+                        <span class="status-pill {{ getRowStatusClass(prog.id, prog.status) }}">
+                          {{ getRowStatusLabel(prog.id, prog.status) }}
+                        </span>
+                      </td>
                       <td class="budget-col">{{ prog.budgetUtilised }}</td>
                     </tr>
 
@@ -233,6 +259,11 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                             </div>
                           </td>
                           <td class="date-col">{{ formatDate(proj.startDate) }}</td>
+                          <td>
+                            <span class="status-pill {{ getRowStatusClass(proj.id, proj.status) }}">
+                              {{ getRowStatusLabel(proj.id, proj.status) }}
+                            </span>
+                          </td>
                           <td class="budget-col">{{ proj.budgetUtilised }}</td>
                         </tr>
                       }
@@ -276,6 +307,11 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                         </div>
                       </td>
                       <td class="date-col">{{ formatDate(sa.startDate) }}</td>
+                      <td>
+                        <span class="status-pill {{ getRowStatusClass(sa.id, sa.status) }}">
+                          {{ getRowStatusLabel(sa.id, sa.status) }}
+                        </span>
+                      </td>
                       <td class="budget-col">{{ sa.budgetUtilised }}</td>
                     </tr>
                   }
@@ -290,12 +326,40 @@ type SubTab = 'projects' | 'risks' | 'benefits';
           <div class="tab-content-container animation-slide">
             <div class="register-toolbar">
               <div class="toolbar-left">
-                <span class="items-count">3 active risks tracked</span>
+                <span class="items-count">Items: {{ filteredRisks.length }}</span>
               </div>
               <div class="toolbar-right">
+                <!-- Toggleable Search for Risks -->
+                <div class="search-toggle-container" [class.is-expanded]="showRiskSearch">
+                  <button class="tb-btn search-toggle-btn" type="button" (click)="showRiskSearch = !showRiskSearch" aria-label="Toggle risk search">
+                    <span [pmConsoleIcon]="'search'"></span>
+                  </button>
+                  @if (showRiskSearch) {
+                    <input
+                      type="search"
+                      class="toolbar-search-input"
+                      placeholder="Search Risks..."
+                      [(ngModel)]="riskSearchQuery"
+                      (input)="onRiskSearch()"
+                      autofocus
+                    />
+                  }
+                </div>
+
+                <button class="tb-btn" type="button" aria-label="Filter options">
+                  <span [pmConsoleIcon]="'filter'"></span>
+                  <span>Filter</span>
+                </button>
+                <button class="tb-btn" type="button" aria-label="Export">
+                  <span [pmConsoleIcon]="'download-cloud'"></span>
+                  <span>Export</span>
+                </button>
                 <button class="tb-btn primary-tb" type="button">
                   <span [pmConsoleIcon]="'plus'"></span>
-                  <span>Log Risk</span>
+                  <span>Add Risk</span>
+                </button>
+                <button class="tb-btn settings-btn" type="button" aria-label="Settings">
+                  <span [pmConsoleIcon]="'settings'"></span>
                 </button>
               </div>
             </div>
@@ -304,28 +368,52 @@ type SubTab = 'projects' | 'risks' | 'benefits';
               <table class="pm-project-table">
                 <thead>
                   <tr>
+                    <th style="width: 4%; text-align: center;"><input type="checkbox" style="cursor: pointer;" /></th>
                     <th style="width: 10%">Risk ID</th>
-                    <th style="width: 15%">Source</th>
-                    <th style="width: 45%">Description</th>
-                    <th style="width: 15%">Owner</th>
-                    <th style="width: 15%">Rating</th>
+                    <th style="width: 22%">Risk</th>
+                    <th style="width: 14%">Linked Initiative</th>
+                    <th style="width: 12%">Initiative Type</th>
+                    <th style="width: 12%">Owner</th>
+                    <th style="width: 12%">Mitigation</th>
+                    <th style="width: 8%">Last Review</th>
+                    <th style="width: 8%">Exposure</th>
+                    <th style="width: 8%">Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  @for (risk of risks; track risk.id) {
+                  @for (risk of filteredRisks; track risk.id) {
                     <tr>
+                      <td style="text-align: center;"><input type="checkbox" style="cursor: pointer;" /></td>
                       <td><span class="risk-id-badge">{{ risk.id }}</span></td>
-                      <td><strong>{{ risk.source }}</strong></td>
-                      <td class="description-text">{{ risk.description }}</td>
                       <td>
-                        <div class="avatar-cell">
-                          <div class="avatar-circle">{{ getInitials(risk.owner) }}</div>
-                          <span class="owner-name">{{ risk.owner }}</span>
-                        </div>
+                        <a class="risk-name-link">{{ risk.risk }}</a>
+                      </td>
+                      <td style="color: #252a34; font-size: 13px;"><strong>{{ risk.linkedInitiative }}</strong></td>
+                      <td>
+                        <span class="initiative-type-chip {{ risk.initiativeType.toLowerCase() }}">
+                          {{ risk.initiativeType }}
+                        </span>
                       </td>
                       <td>
-                        <span class="risk-rating-badge" [style.background]="risk.ratingColor + '15'" [style.color]="risk.ratingColor" [style.border]="'1px solid ' + risk.ratingColor + '30'">
-                          {{ risk.rating }}
+                        <div class="avatar-cell">
+                          <div class="avatar-circle" [style.background]="'rgba(0, 122, 255, 0.08)'" [style.color]="'#007aff'" [style.borderColor]="'rgba(0, 122, 255, 0.2)'">
+                            {{ getInitials(risk.owner) }}
+                          </div>
+                          <span class="owner-name" style="font-size: 13px; color: #252a34;">{{ risk.owner }}</span>
+                        </div>
+                      </td>
+                      <td class="description-text" style="max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="risk.mitigation">
+                        {{ risk.mitigation }}
+                      </td>
+                      <td style="color: #555555; font-size: 12.5px;">{{ risk.lastReview }}</td>
+                      <td>
+                        <span class="exposure-badge {{ risk.exposure.toLowerCase() }}">
+                          {{ risk.exposure }}
+                        </span>
+                      </td>
+                      <td>
+                        <span class="risk-status-badge {{ risk.status.toLowerCase() }}">
+                          {{ risk.status }}
                         </span>
                       </td>
                     </tr>
@@ -859,6 +947,44 @@ type SubTab = 'projects' | 'risks' | 'benefits';
       color: #555555;
     }
 
+    .status-pill {
+      align-items: center;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      display: inline-flex;
+      font-size: 11px;
+      font-weight: 600;
+      height: 22px;
+      justify-content: center;
+      padding: 0 10px;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .status-pill.on-track {
+      background: #e8f7ee;
+      border-color: rgba(22, 161, 95, 0.2);
+      color: #16a15f;
+    }
+    .status-pill.critical {
+      background: #fff0f0;
+      border-color: rgba(222, 53, 11, 0.2);
+      color: #de350b;
+    }
+    .status-pill.needs-attention {
+      background: #fff5e6;
+      border-color: rgba(217, 119, 6, 0.2);
+      color: #d97706;
+    }
+    .status-pill.review-needed {
+      background: #eef2ff;
+      border-color: rgba(16, 6, 159, 0.15);
+      color: #10069f;
+    }
+    .create-dropdown-menu .dropdown-item:hover {
+      background-color: #f4f5f7 !important;
+    }
+
     /* Animations */
     .animation-slide {
       animation: slideIn 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -873,6 +999,121 @@ type SubTab = 'projects' | 'risks' | 'benefits';
       from { opacity: 0; transform: translateX(8px); }
       to { opacity: 1; transform: translateX(0); }
     }
+
+    /* New styles for Risk Register chips & badges */
+    .risk-name-link {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--brand, #007aff);
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.15s ease;
+    }
+    .risk-name-link:hover {
+      color: #0056cc;
+      text-decoration: underline;
+    }
+
+    .initiative-type-chip {
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.04em;
+      display: inline-block;
+      border: 1px solid transparent;
+    }
+    .initiative-type-chip.project {
+      background: rgba(0, 122, 255, 0.08);
+      color: #007aff;
+      border-color: rgba(0, 122, 255, 0.15);
+    }
+    .initiative-type-chip.program {
+      background: rgba(147, 51, 234, 0.08);
+      color: #9333ea;
+      border-color: rgba(147, 51, 234, 0.15);
+    }
+    .initiative-type-chip.portfolio {
+      background: rgba(245, 158, 11, 0.08);
+      color: #f59e0b;
+      border-color: rgba(245, 158, 11, 0.15);
+    }
+
+    .exposure-badge {
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 999px;
+      letter-spacing: 0.04em;
+      display: inline-block;
+      border: 1px solid transparent;
+      text-align: center;
+      min-width: 65px;
+    }
+    .exposure-badge.critical {
+      background: #fff0f0;
+      color: #ef4444;
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+    .exposure-badge.high {
+      background: #fff5eb;
+      color: #f97316;
+      border-color: rgba(249, 115, 22, 0.2);
+    }
+    .exposure-badge.medium {
+      background: #fffbeb;
+      color: #d97706;
+      border-color: rgba(217, 119, 6, 0.2);
+    }
+    .exposure-badge.low {
+      background: #f8fafc;
+      color: #64748b;
+      border-color: rgba(100, 116, 139, 0.2);
+    }
+
+    .risk-status-badge {
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 999px;
+      letter-spacing: 0.04em;
+      display: inline-block;
+      border: 1px solid transparent;
+      text-align: center;
+      min-width: 85px;
+    }
+    .risk-status-badge.monitoring {
+      background: #fffbeb;
+      color: #d97706;
+      border-color: rgba(217, 119, 6, 0.2);
+    }
+    .risk-status-badge.escalated {
+      background: #fff0f0;
+      color: #ef4444;
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+    .risk-status-badge.active {
+      background: #fffbeb;
+      color: #d97706;
+      border-color: rgba(217, 119, 6, 0.2);
+    }
+    .risk-status-badge.watching {
+      background: #eff6ff;
+      color: #3b82f6;
+      border-color: rgba(59, 130, 246, 0.2);
+    }
+
+    .settings-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      padding: 0 !important;
+    }
   `]
 })
 export class PortfolioWorkspaceRegistersComponent {
@@ -881,11 +1122,68 @@ export class PortfolioWorkspaceRegistersComponent {
   searchQuery = '';
   statusFilter: string | null = null;
   showSearch = false; // toggleable search bar
+  showCreateDropdown = false;
+
+  riskSearchQuery = '';
+  showRiskSearch = false;
 
   programs = portfolioProgramRows;
   standaloneList = standaloneProjects;
   risks = riskRegisterData;
   benefits = benefitsRegisterData;
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.showCreateDropdown = false;
+  }
+
+  toggleCreateDropdown(event: MouseEvent): void {
+    event.stopPropagation();
+    this.showCreateDropdown = !this.showCreateDropdown;
+  }
+
+  onCreateOption(option: string): void {
+    console.log('Selected option:', option);
+    this.showCreateDropdown = false;
+  }
+
+  getRowStatusLabel(id: string, defaultStatus: string): string {
+    // The first three top-level rows visible are 'prog-1', 'prog-2', 'prog-3'
+    if (id === 'prog-1' || id === 'prog-2' || id === 'prog-3') {
+      return 'Review Needed';
+    }
+    switch (defaultStatus) {
+      case 'on-track':
+      case 'completed':
+        return 'On Track';
+      case 'off-track':
+      case 'delayed':
+        return 'Critical';
+      case 'alert':
+      case 'not-started':
+        return 'Needs Attention';
+      case 'under-review':
+        return 'Review Needed';
+      default:
+        return 'On Track';
+    }
+  }
+
+  getRowStatusClass(id: string, defaultStatus: string): string {
+    const label = this.getRowStatusLabel(id, defaultStatus);
+    switch (label) {
+      case 'On Track':
+        return 'on-track';
+      case 'Critical':
+        return 'critical';
+      case 'Needs Attention':
+        return 'needs-attention';
+      case 'Review Needed':
+        return 'review-needed';
+      default:
+        return 'on-track';
+    }
+  }
 
   setSubTab(tab: SubTab): void {
     this.activeSubTab = tab;
@@ -909,6 +1207,25 @@ export class PortfolioWorkspaceRegistersComponent {
 
   onSearch(): void {
     // Component search query handled reactively in getter below
+  }
+
+  onRiskSearch(): void {
+    // handled reactively in getter
+  }
+
+  get filteredRisks(): any[] {
+    let list = this.risks;
+    if (this.riskSearchQuery) {
+      const q = this.riskSearchQuery.toLowerCase();
+      list = list.filter(r => 
+        r.id.toLowerCase().includes(q) ||
+        r.risk.toLowerCase().includes(q) ||
+        r.linkedInitiative.toLowerCase().includes(q) ||
+        r.owner.toLowerCase().includes(q) ||
+        r.mitigation.toLowerCase().includes(q)
+      );
+    }
+    return list;
   }
 
   getProgramDisplayId(id: string): string {

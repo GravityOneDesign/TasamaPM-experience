@@ -59,7 +59,7 @@ import {
 
 type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground' | 'portfolio-workspace';
 type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
-type ActionWorkspaceView = 'board' | 'calendar' | 'stages';
+type ActionWorkspaceView = 'board' | 'calendar';
 type WorkspaceRegister = 'projects' | 'benefits' | 'risks';
 type ProjectPlanEntry = 'quick' | 'reports' | 'stages' | 'change-request' | 'closure';
 type ProjectPlanDetailMode = 'simple' | 'detailed';
@@ -1520,9 +1520,22 @@ const riskRegisterRows: RiskRegisterRow[] = [
 ];
 
 const actions = [
-  { column: 'Overdue', tone: 'red', items: [{ type: 'Project Status Report', title: 'Submit Vision 2030 weekly report', project: 'Vision 2030', meta: 'Overdue by 5 days', owner: 'SA', cta: 'Submit' }, { type: 'Risk Escalation', title: 'Budget overrun response', project: 'NEOM Integration', meta: 'High priority', owner: 'AH', cta: 'Resolve' }, { type: 'Project Status Report', title: 'Submit UAE Research Map weekly report', project: 'UAE Research Map', meta: 'Overdue by 2 days', owner: 'MH', cta: 'Submit' }, { type: 'Dependency', title: 'Confirm research partner data owners', project: 'UAE Research Map', meta: 'Escalate today', owner: 'MH', cta: 'Chase' }] },
-  { column: 'This week', tone: 'blue', items: [{ type: 'Dependency', title: 'Confirm API dependency owner', project: 'Smart City Alpha', meta: 'Due today', owner: 'FA', cta: 'Chase' }, { type: 'Benefit', title: 'Benefits owner response', project: 'Smart City Alpha', meta: 'Due in 2 days', owner: 'FA', cta: 'Review' }, { type: 'Milestone', title: 'Complete initiation gate evidence pack', project: 'UAE Research Map', meta: 'Due Friday', owner: 'MH', cta: 'Open' }, { type: 'Risk', title: 'Review stakeholder data quality risk', project: 'UAE Research Map', meta: 'Due in 3 days', owner: 'MH', cta: 'Review' }] },
-  { column: 'Upcoming', tone: 'amber', items: [{ type: 'Milestone', title: 'Execution gate readiness', project: 'Vision 2030', meta: 'Due Jun 12', owner: 'MH', cta: 'Open' }, { type: 'Risk', title: 'Initial RAID refresh', project: 'NEOM Integration', meta: 'Next week', owner: 'AH', cta: 'Plan' }] },
+  { column: 'Overdue', tone: 'red', items: [
+    { type: 'Review Plan', title: 'Q2 Roadmap Alignment Plan', project: 'Vision 2030', meta: 'Overdue by 5 days', owner: 'SA', cta: 'Submit' },
+    { type: 'Review Risk', title: 'Identify mitigations for funding shortfall', project: 'NEOM Integration', meta: 'High priority', owner: 'AH', cta: 'Resolve' },
+    { type: 'Review Benefit', title: 'Validate energy savings benefit projection', project: 'Vision 2030', meta: 'Overdue by 2 days', owner: 'MH', cta: 'Review' },
+    { type: 'Review', title: 'Review supplier SLA alignment document', project: 'UAE Research Map', meta: 'Escalate today', owner: 'MH', cta: 'Chase' }
+  ] },
+  { column: 'This week', tone: 'blue', items: [
+    { type: 'Review Plan', title: 'Verify smart grid integration plan', project: 'Smart City Alpha', meta: 'Due today', owner: 'FA', cta: 'Chase' },
+    { type: 'Review Benefit', title: 'Confirm citizen satisfaction target', project: 'Smart City Alpha', meta: 'Due in 2 days', owner: 'FA', cta: 'Review' },
+    { type: 'Review Stagegate Assesment', title: 'Execution gate entry evidence checklist', project: 'UAE Research Map', meta: 'Due Friday', owner: 'MH', cta: 'Open' },
+    { type: 'Review Risk', title: 'Access control and data security risk review', project: 'UAE Research Map', meta: 'Due in 3 days', owner: 'MH', cta: 'Review' }
+  ] },
+  { column: 'Upcoming', tone: 'amber', items: [
+    { type: 'Review Stagegate Assesment', title: 'Design stagegate approval review', project: 'Vision 2030', meta: 'Due Jun 12', owner: 'MH', cta: 'Open' },
+    { type: 'Review Risk', title: 'Update RAID registry for upcoming transition', project: 'NEOM Integration', meta: 'Next week', owner: 'AH', cta: 'Plan' }
+  ] },
 ];
 
 const boardFilters: BoardFilter[] = [
@@ -3246,17 +3259,17 @@ const guidedTourSteps: GuidedTourStep[] = [
 ];
 
 const timelineItems: PmConsoleCalendarItem[] = [
-  { date: '2026-05-04', label: 'PMO pack', tone: 'green', project: 'PMO Capability', kind: 'management-product' },
-  { date: '2026-05-06', label: 'Benefit baseline', tone: 'green', project: 'Vision 2030', kind: 'benefit' },
-  { date: '2026-05-09', label: 'Status report', tone: 'red', project: 'Vision 2030', kind: 'report' },
-  { date: '2026-05-10', label: 'Budget risk', tone: 'red', project: 'NEOM Integration', kind: 'risk' },
-  { date: '2026-05-15', label: 'Forum pack', tone: 'neutral', project: 'PMO Capability', kind: 'management-product' },
-  { date: '2026-05-15', label: 'Risk review', tone: 'red', project: 'UAE Research Map', kind: 'risk' },
-  { date: '2026-05-15', label: 'Owner follow-up', tone: 'blue', project: 'Vision 2030', kind: 'dependency' },
-  { date: '2026-05-19', label: 'API dependency', tone: 'red', project: 'Smart City Alpha', kind: 'dependency' },
-  { date: '2026-05-22', label: 'Product evidence', tone: 'neutral', project: 'Vision 2030', kind: 'end-product' },
-  { date: '2026-05-25', label: 'CSAT target', tone: 'blue', project: 'Smart City Alpha', kind: 'benefit' },
-  { date: '2026-05-29', label: 'Benefits review', tone: 'blue', project: 'Smart City Alpha', kind: 'benefit' },
+  { date: '2026-05-04', label: 'Review Stagegate Assesment', tone: 'green', project: 'PMO Capability', kind: 'milestone' },
+  { date: '2026-05-06', label: 'Review Benefit', tone: 'blue', project: 'Vision 2030', kind: 'benefit' },
+  { date: '2026-05-09', label: 'Review Plan', tone: 'blue', project: 'Vision 2030', kind: 'report' },
+  { date: '2026-05-10', label: 'Review Risk', tone: 'red', project: 'NEOM Integration', kind: 'risk' },
+  { date: '2026-05-15', label: 'Review', tone: 'neutral', project: 'PMO Capability', kind: 'task' },
+  { date: '2026-05-15', label: 'Review Risk', tone: 'red', project: 'UAE Research Map', kind: 'risk' },
+  { date: '2026-05-15', label: 'Review Plan', tone: 'blue', project: 'Vision 2030', kind: 'report' },
+  { date: '2026-05-19', label: 'Review Risk', tone: 'red', project: 'Smart City Alpha', kind: 'risk' },
+  { date: '2026-05-22', label: 'Review', tone: 'neutral', project: 'Vision 2030', kind: 'task' },
+  { date: '2026-05-25', label: 'Review Benefit', tone: 'blue', project: 'Smart City Alpha', kind: 'benefit' },
+  { date: '2026-05-29', label: 'Review Benefit', tone: 'blue', project: 'Smart City Alpha', kind: 'benefit' },
 ];
 
 const reportStatusHistory = [
@@ -3448,7 +3461,7 @@ interface ProjectPlanStageRow {
   canRevoke: boolean;
 }
 
-type Pm101StepAction = 'project-plan' | 'project-workspace' | 'reports' | 'learning-hub';
+type Pm101StepAction = 'project-plan' | 'project-workspace' | 'reports' | 'learning-hub' | 'framework' | 'registers';
 
 interface Pm101Step {
   title: string;
@@ -3464,6 +3477,7 @@ interface Pm101Step {
   completedValue?: string;
   footerStandalone?: boolean;
   footerIconOnly?: boolean;
+  comingSoon?: boolean;
 }
 
 interface Pm101ProjectPreview {
@@ -3798,6 +3812,49 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
       ]),
     ]),
   ],
+  styles: [`
+    .pm101-card-coming-soon {
+      position: relative !important;
+      cursor: default !important;
+    }
+    .coming-soon-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.45);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+      z-index: 10;
+      pointer-events: none;
+    }
+    .pm101-card-coming-soon:hover .coming-soon-overlay {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .coming-soon-badge {
+      background: rgba(15, 23, 42, 0.9);
+      color: #ffffff;
+      padding: 8px 16px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transform: translateY(10px);
+      transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .pm101-card-coming-soon:hover .coming-soon-badge {
+      transform: translateY(0);
+    }
+  `],
   template: `
     <main class="app-canvas" [class.workspaces-canvas]="selectedPage === 'workspaces'" [class.portfolio-workspace-canvas]="selectedPage === 'portfolio-workspace'" [class.wbs-canvas]="selectedPage === 'wbs'" [class.project-plan-canvas]="selectedPage === 'project-plan'" [class.playground-canvas]="selectedPage === 'playground'" [class.unassigned-canvas]="frontDoorMode === 'unassigned'" [class.pm101-locked-canvas]="usesPm101DesignShell" [class.pm101-operational-canvas]="usesPm101OperationalLayout" [class.risk-profile-focus-canvas]="riskProfileFocusMode" [class.benefit-profile-focus-canvas]="benefitProfileFocusMode">
       <div class="page-motion-host" [@pageMotion]="pageMotionKey" [@.disabled]="prefersReducedMotion">
@@ -8325,7 +8382,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
           </section>
         }
         @case ('portfolio-workspace') {
-          <app-portfolio-workspace />
+          <app-portfolio-workspace [activeTab]="$any(portfolioWorkspaceTab)" (activeTabChange)="consoleStateChange.emit({ portfolioWorkspaceTab: $event })" />
         }
         @default {
           @if (frontDoorMode === 'unassigned') {
@@ -8479,6 +8536,12 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                           <input type="search" [attr.aria-label]="workspaceSearchPlaceholder" [placeholder]="workspaceSearchPlaceholder" />
                         </label>
                       }
+                      @if (selectedView !== 'stages') {
+                        <button class="add-action-item-button" type="button" (click)="handleAddActionItem()">
+                          <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>
+                          <span>Add Item</span>
+                        </button>
+                      }
                       <div
                         class="action-view-switch"
                         [class.pm101-locked-action-view-switch]="onboardingPm101Locked"
@@ -8509,17 +8572,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                           <span class="icon" aria-hidden="true"><i data-lucide="columns-3"></i></span>
                           <span>Board</span>
                         </button>
-                        <button
-                          [class.active]="selectedView === 'stages'"
-                          type="button"
-                          role="tab"
-                          data-action-view="stages"
-                          [attr.aria-selected]="selectedView === 'stages'"
-                          (click)="setView('stages')"
-                        >
-                          <span class="icon" aria-hidden="true"><i data-lucide="target"></i></span>
-                          <span>Stages</span>
-                        </button>
+
                       </div>
                     </div>
                   }
@@ -8719,9 +8772,14 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                       @if (!showSelectedProjectOverviewQuickLinks) {
                       <div class="pm101-flow" aria-label="PM 101 project delivery flow">
                         <ol class="pm101-step-list">
-                          @for (step of pm101Steps; track step.title; let index = $index) {
+                          @for (step of stepsToRender; track step.title; let index = $index) {
                             <li class="pm101-step">
-                              <article class="pm101-card">
+                              <article class="pm101-card" [class.pm101-card-coming-soon]="step.comingSoon">
+                                @if (step.comingSoon) {
+                                  <div class="coming-soon-overlay">
+                                    <span class="coming-soon-badge">Coming soon</span>
+                                  </div>
+                                }
                                 <span class="pm101-card-icon">
                                   <span [pmConsoleIcon]="iconName(step.icon)" aria-hidden="true"></span>
                                 </span>
@@ -8745,16 +8803,16 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                     <strong>{{ step.footerValue }}</strong>
                                   </div>
                                 } @else if (step.footerAction && step.footerStandalone) {
-                                  <button class="pm101-card-footer pm101-card-footer-link pm101-card-footer-text-only" type="button" (click)="handlePm101StepAction(step)">
+                                  <button class="pm101-card-footer pm101-card-footer-link pm101-card-footer-text-only" type="button" (click)="!step.comingSoon && handlePm101StepAction(step)">
                                     <span>{{ step.footerAction }}</span>
                                   </button>
                                 } @else if (step.footerAction) {
-                                  <button class="pm101-card-footer pm101-card-footer-link" type="button" (click)="handlePm101StepAction(step)">
+                                  <button class="pm101-card-footer pm101-card-footer-link" type="button" (click)="!step.comingSoon && handlePm101StepAction(step)">
                                     <span>{{ step.footerAction }}</span>
                                     <span class="pm101-card-footer-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
                                   </button>
                                 } @else if (step.footerIconOnly) {
-                                  <button class="pm101-card-footer pm101-card-footer-icon-only" type="button" (click)="handlePm101StepAction(step)" [attr.aria-label]="pm101StepActionLabel(step)">
+                                  <button class="pm101-card-footer pm101-card-footer-icon-only" type="button" (click)="!step.comingSoon && handlePm101StepAction(step)" [attr.aria-label]="pm101StepActionLabel(step)">
                                     <span class="pm101-card-footer-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
                                   </button>
                                 }
@@ -8861,7 +8919,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                   </section>
                 } @else {
                   @if (showPortfolioReportTrends) { <section class="top-deck" aria-label="PM front door actions" data-tour-target="frontdoor-actions"><button class="action-card workspace-command" type="button" (click)="navigate('workspaces')" [disabled]="onboardingPm101Locked" [attr.aria-disabled]="onboardingPm101Locked ? 'true' : null" [attr.title]="onboardingPm101Locked ? 'Available after PM 101 onboarding' : null"><span class="action-icon"><img src="./assets/workspace-card-box.svg" alt="" aria-hidden="true" /></span><span class="action-copy"><strong>Workspaces</strong><small>Open project rooms</small></span><span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span></button><button class="action-card learning-command is-unavailable" type="button" disabled aria-disabled="true" title="Learning Hub coming soon"><span class="action-icon"><img src="./assets/workspace-card-notebook.svg" alt="" aria-hidden="true" /></span><span class="action-copy"><strong>Learning Hub</strong><small>Guides and playbooks</small></span><span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span></button></section> }
-                  <section class="side-card report-widget" [class.portfolio-report-widget]="showPortfolioReportTrends" data-tour-target="right-report-widget"><div class="report-widget-head"><div><h2>{{ showPortfolioReportTrends ? 'Reporting trends' : 'Project report trend' }}</h2><small>Last 3 PSR statuses</small></div></div><div class="report-trend-list">@for (report of visibleReportRows; track report.project) { <article class="report-trend-row {{ reportFrontdoorTone(report) }}"><div class="report-trend-row-head"><strong>{{ report.project }}</strong><span class="report-health-chip {{ reportFrontdoorTone(report) }}">{{ reportDueToneLabel(reportFrontdoorTone(report)) }}</span></div><div class="report-trend" style="--report-trend-count:3" aria-label="Status report trend">@for (point of report.trend; track point.label) { <span class="report-trend-point {{ reportStatusTone(point.status) }}"><span class="report-status-icon {{ reportStatusTone(point.status) }}" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="reportStatusIcon(point.status)"></i></span></span><small>{{ point.label }}</small></span> }</div><div class="report-trend-row-foot"><span class="report-row-due"><span class="icon" aria-hidden="true"><i data-lucide="history"></i></span><span>{{ reportDueText(report) }}</span></span><button class="report-row-create" type="button" (click)="openReport(report.project)"><span class="icon" aria-hidden="true"><i data-lucide="file-text"></i></span><span>Create</span></button></div></article> }</div></section>
+                  <section class="side-card report-widget" [class.portfolio-report-widget]="showPortfolioReportTrends" data-tour-target="right-report-widget"><div class="report-widget-head"><div><h2>{{ showPortfolioReportTrends ? 'Reporting trends' : 'Project report trend' }}</h2><small>Last 3 PSR statuses</small></div></div><div class="report-trend-list">@for (report of visibleReportRows; track report.project) { <article class="report-trend-row {{ showPortfolioReportTrends ? report.dueTone : reportFrontdoorTone(report) }}"><div class="report-trend-row-head"><strong>{{ report.project }}</strong><span class="report-health-chip {{ showPortfolioReportTrends ? report.dueTone : reportFrontdoorTone(report) }}">{{ reportDueToneLabel(showPortfolioReportTrends ? report.dueTone : reportFrontdoorTone(report)) }}</span></div><div class="report-trend" style="--report-trend-count:3" aria-label="Status report trend">@for (point of report.trend; track point.label) { <span class="report-trend-point {{ reportStatusTone(point.status) }}"><span class="report-status-icon {{ reportStatusTone(point.status) }}" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="reportStatusIcon(point.status)"></i></span></span><small>{{ point.label }}</small></span> }</div><div class="report-trend-row-foot"><span class="report-row-due"><span class="icon" aria-hidden="true"><i data-lucide="history"></i></span><span>{{ reportDueText(report) }}</span></span><button class="report-row-create" type="button" (click)="openReport(report.project)"><span class="icon" aria-hidden="true"><i data-lucide="file-text"></i></span><span>Create</span></button></div></article> }</div></section>
                   @if (!showPortfolioReportTrends) { <ng-container [ngTemplateOutlet]="quickLinksPanel"></ng-container> }
                 }
               </div>
@@ -9564,7 +9622,53 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
 })
 export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, OnDestroy {
   @Input() pmMode: 'muna' | 'fatima' = 'muna';
+  @Input() portfolioWorkspaceTab = 'overview';
   @Input() projectOptions: readonly ProjectOption[] = [];
+
+  get stepsToRender(): Pm101Step[] {
+    if (this.pmMode === 'fatima') {
+      return [
+        {
+          title: 'Framework and configuration',
+          body: 'Set up governance controls, onboard users, and define your portfolio standards.',
+          icon: 'rocket',
+          decor: 'burst',
+          decorAssets: ['./assets/pm101/decor-1.svg'],
+          footerAction: 'Configure Portfolio',
+          footerActionId: 'framework',
+        },
+        {
+          title: 'Manage portfolio',
+          body: 'Review program and project statuses, approve plans, and action flagged risks and benefits.',
+          icon: 'playground',
+          decor: 'loops',
+          decorAssets: ['./assets/pm101/decor-4.svg'],
+          footerAction: 'View Programs & Projects',
+          footerActionId: 'registers',
+        },
+        {
+          title: 'Report and review',
+          body: 'Draft and submit portfolio status reports and review reports from your programs and projects.',
+          icon: 'chart',
+          decor: 'hex',
+          decorAssets: ['./assets/pm101/decor-5.svg'],
+          footerAction: 'View Reports',
+          footerActionId: 'reports',
+        },
+        {
+          title: 'Portfolio performance',
+          body: 'Track delivery health and view insights across your portfolio in one place.',
+          icon: 'stageGate',
+          decor: 'plus',
+          decorAssets: ['./assets/pm101/decor-3-group-1.svg', './assets/pm101/decor-3-group-2.svg', './assets/pm101/decor-3-group-3.svg', './assets/pm101/decor-3-group-4.svg'],
+          footerAction: 'View Performance',
+          footerActionId: 'learning-hub',
+          comingSoon: true,
+        },
+      ];
+    }
+    return this.pm101Steps;
+  }
 
   get contextTitle(): string {
     return this.pmMode === 'fatima' ? 'Portfolio Manager Console' : 'PM Console';
@@ -11905,7 +12009,17 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     const rows = this.showPortfolioReportTrends ? reportStatusHistory : reportStatusHistory.filter((report) => report.project === this.selectedProject);
     if (!this.showPortfolioReportTrends) return rows;
     const order = [firstAssignedProject.id, 'Vision 2030', 'NEOM Integration'];
-    return order.map((project) => rows.find((row) => row.project === project)).filter((row): row is (typeof reportStatusHistory)[number] => Boolean(row));
+    return order.map((project) => {
+      const row = rows.find((r) => r.project === project);
+      if (!row) return undefined;
+      if (row.project === 'Vision 2030') {
+        return { ...row, dueLabel: 'Overdue by 5 days', dueTone: 'red' };
+      }
+      if (row.project === 'NEOM Integration') {
+        return { ...row, dueTone: 'green' };
+      }
+      return row;
+    }).filter((row): row is (typeof reportStatusHistory)[number] => Boolean(row));
   }
 
   get activeReport(): (typeof reportStatusHistory)[number] {
@@ -12562,6 +12676,17 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   handlePm101StepAction(step: Pm101Step): void {
+    if (this.pmMode === 'fatima') {
+      const tabId = step.footerActionId;
+      if (tabId === 'framework' || tabId === 'registers' || tabId === 'reports') {
+        this.consoleStateChange.emit({
+          selectedPage: 'portfolio-workspace',
+          portfolioWorkspaceTab: tabId
+        });
+        return;
+      }
+    }
+
     switch (step.footerActionId) {
       case 'project-plan':
         if (this.isNormalPm101Workspace) {
@@ -17061,6 +17186,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.iconsHydrated = false;
   }
 
+  handleAddActionItem(): void {
+    console.log('Add Action Item clicked');
+  }
+
   handleCalendarItemOpen(item: PmConsoleCalendarItem): void {
     const kind = this.timelineItemKind(item);
     if (kind === 'report') {
@@ -17247,8 +17376,8 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     if (normalized.includes('risk')) return 'risk';
     if (normalized.includes('dependency')) return 'dependency';
     if (normalized.includes('benefit')) return 'benefit';
-    if (normalized.includes('report')) return 'report';
-    if (normalized.includes('milestone') || normalized.includes('gate')) return 'milestone';
+    if (normalized.includes('report') || normalized.includes('plan')) return 'report';
+    if (normalized.includes('milestone') || normalized.includes('gate') || normalized.includes('assesment') || normalized.includes('stagegate')) return 'milestone';
     return 'task';
   }
 
@@ -18371,7 +18500,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   private isActionWorkspaceView(view: WorkspaceView): view is ActionWorkspaceView {
-    return view === 'board' || view === 'calendar' || view === 'stages';
+    return view === 'board' || view === 'calendar';
   }
 
   private matchesSelectedProject(projectId: string | undefined): boolean {
