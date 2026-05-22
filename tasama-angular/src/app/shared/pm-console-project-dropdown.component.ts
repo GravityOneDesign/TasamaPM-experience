@@ -102,7 +102,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
         display: grid;
         font: inherit;
         font-size: 12px;
-        font-weight: 600;
+        font-weight: 500;
         grid-template-columns: 18px minmax(0, 1fr);
         gap: 8px;
         min-height: 38px;

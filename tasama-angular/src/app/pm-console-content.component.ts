@@ -3675,27 +3675,27 @@ const WORKSPACE_TABLE_COLUMN_MOTION_MS = 280;
 const defaultPinnedQuickLinkIds = ['project-plan', 'wbs'];
 const selectedProjectOperationalQuickLinkIds = [
   'project-plan',
-  'stage-gate',
+  'wbs',
   'dependencies',
   'resources',
-  'issues',
-  'wbs',
-  'change-request',
-  'end-products',
-  'risks',
   'project-closure',
+  'lessons-learnt',
+  'stage-gate',
+  'change-request',
+  'risks',
+  'issues',
 ];
 const selectedProjectOperationalQuickLinkDescriptions: Record<string, string> = {
   'project-plan': 'Build and maintain scope, schedule, budget, and baseline.',
-  'stage-gate': 'Review stage readiness, evidence, and approval status.',
+  wbs: 'Break the project into work packages and deliverables.',
   dependencies: 'Track linked work, owners, due dates, and delivery impact.',
   resources: 'Plan team assignments, capacity, and role ownership.',
-  issues: 'Log blockers, assign owners, and follow resolution progress.',
-  wbs: 'Break the project into work packages and deliverables.',
-  'change-request': 'Capture scope, timeline, or budget changes for approval.',
-  'end-products': 'Confirm final outputs, acceptance criteria, and delivery status.',
-  risks: 'Identify threats, assess exposure, and monitor treatments.',
   'project-closure': 'Complete handover, lessons, benefits, and final approvals.',
+  'lessons-learnt': 'Capture reusable lessons and recommendations for future delivery.',
+  'stage-gate': 'Review stage readiness, evidence, and approval status.',
+  'change-request': 'Capture scope, timeline, or budget changes for approval.',
+  risks: 'Identify threats, assess exposure, and monitor treatments.',
+  issues: 'Log blockers, assign owners, and follow resolution progress.',
 };
 const workspaceTableColumns: WorkspaceTableColumn[] = [
   { id: 'project', label: 'Project Name' },
@@ -3781,6 +3781,15 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
         animate('220ms cubic-bezier(0.2, 0.8, 0.2, 1)', style({ opacity: 1, transform: 'translateY(0)' })),
       ]),
     ]),
+    trigger('pm101OverviewContentMotion', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(14px) scale(0.992)' }),
+        animate('260ms 50ms cubic-bezier(0.2, 0.8, 0.2, 1)', style({ opacity: 1, transform: 'translateY(0) scale(1)' })),
+      ]),
+      transition(':leave', [
+        animate('160ms cubic-bezier(0.4, 0, 0.2, 1)', style({ opacity: 0, transform: 'translateY(-8px) scale(0.996)' })),
+      ]),
+    ]),
     trigger('registerPanelMotion', [
       transition(':increment', [
         style({ opacity: 0, transform: 'translateX(18px)' }),
@@ -3799,9 +3808,11 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
   template: `
     <ng-template #pm101JourneyHead let-eyebrow="eyebrow">
       <div class="pm101-journey-head" [class.pm101-journey-head-with-toggle]="showPm101JourneyQuickLinksToggle">
-        <span>{{ eyebrow }}</span>
+        @if (eyebrow && !showPm101JourneyQuickLinksToggle) {
+          <span>{{ eyebrow }}</span>
+        }
         <div class="pm101-journey-title-row">
-          <h3>Your project management journey</h3>
+          <h3>{{ pm101OverviewHeading }}</h3>
           @if (showPm101JourneyQuickLinksToggle) {
             <div class="pm101-journey-mode-toggle" [class.is-quicklinks]="pm101OverviewMode === 'quicklinks'" role="tablist" aria-label="Project overview mode">
               <button
@@ -3882,6 +3893,55 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
             </button>
           </article>
         }
+      </div>
+    </ng-template>
+
+    <ng-template #pm101Flow>
+      <div class="pm101-flow" aria-label="PM 101 project delivery flow" [@pm101OverviewContentMotion]="pm101OverviewMode">
+        <ol class="pm101-step-list">
+          @for (step of pm101Steps; track step.title; let index = $index) {
+            <li class="pm101-step">
+              <article class="pm101-card">
+                <span class="pm101-card-icon">
+                  <span [pmConsoleIcon]="iconName(step.icon)" aria-hidden="true"></span>
+                </span>
+                <strong>{{ step.title }}</strong>
+                <p>{{ step.body }}</p>
+                <span [class]="'pm101-decor pm101-decor-' + step.decor" aria-hidden="true">
+                  @for (asset of step.decorAssets; track asset; let assetIndex = $index) {
+                    <img class="pm101-decor-asset pm101-decor-asset-{{ assetIndex + 1 }}" [src]="asset" alt="" />
+                  }
+                </span>
+                @if (onboardingPm101Locked) {
+                  <span class="pm101-card-step-number" aria-hidden="true">{{ index + 1 }}</span>
+                } @else if (shouldShowCompletedPm101Step(step) && step.completedLabel && step.completedValue) {
+                  <div class="pm101-card-footer pm101-card-footer-meta">
+                    <span>{{ step.completedLabel }}</span>
+                    <strong>{{ step.completedValue }}</strong>
+                  </div>
+                } @else if (step.footerLabel && step.footerValue) {
+                  <div class="pm101-card-footer pm101-card-footer-meta">
+                    <span>{{ step.footerLabel }}</span>
+                    <strong>{{ step.footerValue }}</strong>
+                  </div>
+                } @else if (step.footerAction && step.footerStandalone) {
+                  <button class="pm101-card-footer pm101-card-footer-link pm101-card-footer-text-only" type="button" (click)="handlePm101StepAction(step)">
+                    <span>{{ step.footerAction }}</span>
+                  </button>
+                } @else if (step.footerAction) {
+                  <button class="pm101-card-footer pm101-card-footer-link" type="button" (click)="handlePm101StepAction(step)">
+                    <span>{{ step.footerAction }}</span>
+                    <span class="pm101-card-footer-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
+                  </button>
+                } @else if (step.footerIconOnly) {
+                  <button class="pm101-card-footer pm101-card-footer-icon-only" type="button" (click)="handlePm101StepAction(step)" [attr.aria-label]="pm101StepActionLabel(step)">
+                    <span class="pm101-card-footer-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
+                  </button>
+                }
+              </article>
+            </li>
+          }
+        </ol>
       </div>
     </ng-template>
 
@@ -8533,18 +8593,23 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                           <h3>Your project management journey</h3>
                           <p>From assignment to regular reporting, these are the steps you will work through in TASAMA.</p>
                         </div>
-                      } @else if (isPm101OnboardingWorkspaceFlow && !showSelectedProjectOverviewQuickLinks) {
-                        <ng-container [ngTemplateOutlet]="pm101AssignedProjectHero"></ng-container>
-                        <ng-container [ngTemplateOutlet]="pm101JourneyHead" [ngTemplateOutletContext]="{ eyebrow: 'What happens next?' }"></ng-container>
+                      } @else if (isFirstAssignedProjectOverviewContext) {
+                        <section class="selected-project-operational-workspace pm101-onboarding-overview-stack" [attr.aria-label]="pm101QuickLinksProjectName + ' operational workspace'">
+                          <ng-container [ngTemplateOutlet]="pm101AssignedProjectHero"></ng-container>
+                          <ng-container [ngTemplateOutlet]="pm101JourneyHead" [ngTemplateOutletContext]="{ eyebrow: 'What happens next?' }"></ng-container>
+                          @if (showSelectedProjectOverviewQuickLinks) {
+                            <section class="selected-project-quick-links" aria-label="Project Quick links" [@pm101OverviewContentMotion]="pm101OverviewMode">
+                              <ng-container [ngTemplateOutlet]="selectedProjectQuickLinksGrid"></ng-container>
+                            </section>
+                          } @else {
+                            <ng-container [ngTemplateOutlet]="pm101Flow"></ng-container>
+                          }
+                        </section>
                       } @else if (showSelectedProjectOverviewQuickLinks && !isNormalPm101Workspace) {
                         <section class="selected-project-operational-workspace" [attr.aria-label]="pm101QuickLinksProjectName + ' operational workspace'">
-                        @if (isFirstAssignedProjectOverviewContext) {
-                          <ng-container [ngTemplateOutlet]="pm101AssignedProjectHero"></ng-container>
-                        } @else {
                           <ng-container [ngTemplateOutlet]="pm101SelectedProjectHero"></ng-container>
-                        }
                         <ng-container [ngTemplateOutlet]="pm101JourneyHead" [ngTemplateOutletContext]="{ eyebrow: pm101QuickLinksProjectName + ' PM101 path' }"></ng-container>
-                        <section class="selected-project-quick-links" aria-label="Project Quick links">
+                        <section class="selected-project-quick-links" aria-label="Project Quick links" [@pm101OverviewContentMotion]="pm101OverviewMode">
                           <ng-container [ngTemplateOutlet]="selectedProjectQuickLinksGrid"></ng-container>
                         </section>
                         </section>
@@ -8597,57 +8662,12 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                         <ng-container [ngTemplateOutlet]="pm101JourneyHead" [ngTemplateOutletContext]="{ eyebrow: activePm101Project.title + ' PM101 path' }"></ng-container>
                       }
                       @if (showSelectedProjectOverviewQuickLinks && isNormalPm101Workspace) {
-                        <section class="selected-project-quick-links pm101-active-project-quick-links" aria-label="Project Quick links">
+                        <section class="selected-project-quick-links pm101-active-project-quick-links" aria-label="Project Quick links" [@pm101OverviewContentMotion]="pm101OverviewMode">
                           <ng-container [ngTemplateOutlet]="selectedProjectQuickLinksGrid"></ng-container>
                         </section>
                       }
-                      @if (!showSelectedProjectOverviewQuickLinks) {
-                      <div class="pm101-flow" aria-label="PM 101 project delivery flow">
-                        <ol class="pm101-step-list">
-                          @for (step of pm101Steps; track step.title; let index = $index) {
-                            <li class="pm101-step">
-                              <article class="pm101-card">
-                                <span class="pm101-card-icon">
-                                  <span [pmConsoleIcon]="iconName(step.icon)" aria-hidden="true"></span>
-                                </span>
-                                <strong>{{ step.title }}</strong>
-                                <p>{{ step.body }}</p>
-                                <span [class]="'pm101-decor pm101-decor-' + step.decor" aria-hidden="true">
-                                  @for (asset of step.decorAssets; track asset; let assetIndex = $index) {
-                                    <img class="pm101-decor-asset pm101-decor-asset-{{ assetIndex + 1 }}" [src]="asset" alt="" />
-                                  }
-                                </span>
-                                @if (onboardingPm101Locked) {
-                                  <span class="pm101-card-step-number" aria-hidden="true">{{ index + 1 }}</span>
-                                } @else if (shouldShowCompletedPm101Step(step) && step.completedLabel && step.completedValue) {
-                                  <div class="pm101-card-footer pm101-card-footer-meta">
-                                    <span>{{ step.completedLabel }}</span>
-                                    <strong>{{ step.completedValue }}</strong>
-                                  </div>
-                                } @else if (step.footerLabel && step.footerValue) {
-                                  <div class="pm101-card-footer pm101-card-footer-meta">
-                                    <span>{{ step.footerLabel }}</span>
-                                    <strong>{{ step.footerValue }}</strong>
-                                  </div>
-                                } @else if (step.footerAction && step.footerStandalone) {
-                                  <button class="pm101-card-footer pm101-card-footer-link pm101-card-footer-text-only" type="button" (click)="handlePm101StepAction(step)">
-                                    <span>{{ step.footerAction }}</span>
-                                  </button>
-                                } @else if (step.footerAction) {
-                                  <button class="pm101-card-footer pm101-card-footer-link" type="button" (click)="handlePm101StepAction(step)">
-                                    <span>{{ step.footerAction }}</span>
-                                    <span class="pm101-card-footer-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
-                                  </button>
-                                } @else if (step.footerIconOnly) {
-                                  <button class="pm101-card-footer pm101-card-footer-icon-only" type="button" (click)="handlePm101StepAction(step)" [attr.aria-label]="pm101StepActionLabel(step)">
-                                    <span class="pm101-card-footer-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
-                                  </button>
-                                }
-                              </article>
-                            </li>
-                          }
-                        </ol>
-                      </div>
+                      @if (!showSelectedProjectOverviewQuickLinks && !isFirstAssignedProjectOverviewContext) {
+                        <ng-container [ngTemplateOutlet]="pm101Flow"></ng-container>
                       }
                     </div>
                     }
@@ -11402,8 +11422,13 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get pm101OverviewIntro(): string {
-    if (this.showSelectedProjectOverviewQuickLinks) return 'Access key project areas for planning, delivery, and control.';
+    if (this.showSelectedProjectOverviewQuickLinks) return 'Access Important areas for managing project seamlessly';
     return 'From assignment to regular reporting, these are the steps you will work through in TASAMA.';
+  }
+
+  get pm101OverviewHeading(): string {
+    if (this.showSelectedProjectOverviewQuickLinks) return 'Project Quick links';
+    return 'Your project management journey';
   }
 
   get showSelectedProjectOverviewQuickLinks(): boolean {
@@ -17150,7 +17175,6 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   operationalQuickLinkTitle(action: QuickAction): string {
-    if (action.id === 'change-request' || action.id === 'project-closure') return 'Project plan';
     return action.title;
   }
 

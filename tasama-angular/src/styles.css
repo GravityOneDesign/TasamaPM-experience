@@ -6944,18 +6944,25 @@ b {
 }
 
 .selected-project-operational-hero {
-  flex-basis: 132px;
-  min-height: 132px;
+  flex-basis: 144px;
+  min-height: 144px;
   width: 100%;
 }
 
+.pm101-operational-view .selected-project-operational-hero + .pm101-journey-head {
+  margin-top: 0;
+}
+
 .selected-project-quick-links {
+  animation: pm101-overview-content-in 280ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
   gap: 14px;
   min-height: 0;
+  transform-origin: top center;
   width: 100%;
+  will-change: opacity, transform;
 }
 
 .pm101-active-project-quick-links {
@@ -7625,12 +7632,34 @@ b {
 
 .pm101-flow {
   align-items: flex-start;
+  animation: pm101-overview-content-in 280ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   display: flex;
   min-height: 192px;
   min-width: 0;
   padding: 0;
   position: relative;
+  transform-origin: top center;
   width: 100%;
+  will-change: opacity, transform;
+}
+
+@keyframes pm101-overview-content-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.992);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .selected-project-quick-links,
+  .pm101-flow {
+    animation: none;
+  }
 }
 
 .pm101-step-list {
@@ -8040,6 +8069,20 @@ b {
 
 .pm101-operational-view .pm101-ready-hero-grid + .pm101-journey-head {
   margin-top: 32px;
+}
+
+.pm101-operational-view .pm101-onboarding-overview-stack {
+  gap: 16px;
+}
+
+.pm101-operational-view .pm101-onboarding-overview-stack .pm101-journey-head,
+.pm101-operational-view .pm101-onboarding-overview-stack .pm101-ready-hero-grid + .pm101-journey-head {
+  margin-top: 0;
+}
+
+.pm101-operational-view .pm101-onboarding-overview-stack .pm101-flow,
+.pm101-operational-view .pm101-onboarding-overview-stack .pm101-ready-hero-grid ~ .pm101-flow {
+  margin-top: 0;
 }
 
 .pm101-operational-view .pm101-journey-head span {
