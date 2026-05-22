@@ -4,8 +4,8 @@ import { PmConsoleIconService } from './pm-console-icon.service';
 import { PmConsoleMountOptions, ProjectOption } from './pm-console.types';
 import { PmConsoleNotificationsComponent } from './pm-console-notifications.component';
 import { PmConsoleAgentDockComponent } from './shared/pm-console-agent-dock.component';
-import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 import { PmConsoleSideNavComponent, type PmConsoleSideNavItem } from './shared/pm-console-side-nav.component';
+import { PmConsoleTopBarComponent } from './shared/pm-console-top-bar.component';
 
 interface RailItem extends PmConsoleSideNavItem {
   page?: ConsolePage;
@@ -21,54 +21,18 @@ const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
 @Component({
   selector: 'app-pm-console-shell',
   standalone: true,
-  imports: [PmConsoleAgentDockComponent, PmConsoleContentComponent, PmConsoleIconComponent, PmConsoleNotificationsComponent, PmConsoleSideNavComponent],
+  imports: [PmConsoleAgentDockComponent, PmConsoleContentComponent, PmConsoleNotificationsComponent, PmConsoleSideNavComponent, PmConsoleTopBarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="modern-shell" [class.side-nav-expanded]="sideNavExpanded" [class.playground-mode]="selectedPage === 'playground'" [class.wbs-mode]="selectedPage === 'wbs'" [class.project-plan-mode]="selectedPage === 'project-plan'" [class.unassigned-mode]="frontDoorMode === 'unassigned'">
-      <header class="app-header" [class.unassigned-header]="frontDoorMode === 'unassigned'" [class.workspaces-header]="usesConsoleHeader">
-        <div class="brand-block">
-          <button
-            class="brand-logo-button"
-            type="button"
-            aria-label="Go to home"
-            (click)="goHome()"
-          >
-            <img class="brand-logo" src="./assets/tasama-small.svg" alt="Tasama" />
-          </button>
-
-          @if (usesConsoleHeader) {
-            <span class="brand-divider" aria-hidden="true"></span>
-            <span class="brand-title">PM Console</span>
-          }
-
-          @if (frontDoorMode === 'unassigned') {
-            <div class="project-switch no-project-switch" [class.is-ready]="pmoAssignmentReady" [attr.aria-label]="pmoAssignmentReady ? 'Project assigned' : 'No assigned projects'">
-              <span class="project-switch-label">Status</span>
-              <span class="no-project-switch-value">
-                <span [pmConsoleIcon]="pmoAssignmentReady ? 'circle-check' : 'bell'" aria-hidden="true"></span>
-                {{ pmoAssignmentReady ? 'Project assigned' : 'No assigned projects' }}
-              </span>
-            </div>
-          }
-        </div>
-
-        <div class="header-actions">
-          @if (usesConsoleHeader) {
-            <label class="search-box global-console-search">
-              <span pmConsoleIcon="search" aria-hidden="true"></span>
-              <input type="search" aria-label="Search documents, people, or departments" placeholder="Search documents, people, or departments..." />
-            </label>
-          }
-          <button class="round-button notification-button" [class.active]="notificationPanelOpen" type="button" aria-label="Notifications" [attr.aria-expanded]="notificationPanelOpen" (click)="toggleNotifications()">
-            <span pmConsoleIcon="bell" aria-hidden="true"></span>
-            <span class="notification-badge" aria-hidden="true"></span>
-          </button>
-          <button class="profile-chip" type="button">
-            <span class="avatar-xl">MH<i></i></span>
-            <span><strong>Muna Hassan</strong><small>Senior Analyst</small></span>
-          </button>
-        </div>
-      </header>
+      <app-pm-console-top-bar
+        [showConsoleHeader]="usesConsoleHeader"
+        [unassigned]="frontDoorMode === 'unassigned'"
+        [pmoAssignmentReady]="pmoAssignmentReady"
+        [notificationPanelOpen]="notificationPanelOpen"
+        (homeSelected)="goHome()"
+        (notificationsToggled)="toggleNotifications()"
+      />
 
       <app-pm-console-side-nav
         [primaryItems]="primaryRailItems"
@@ -155,7 +119,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   }
 
   get usesConsoleHeader(): boolean {
-    return this.frontDoorMode !== 'unassigned' && (this.selectedPage === 'workspace' || this.selectedPage === 'workspaces');
+    return this.frontDoorMode !== 'unassigned';
   }
 
   get primaryRailItems(): readonly RailItem[] {

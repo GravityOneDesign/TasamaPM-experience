@@ -63,6 +63,7 @@ import {
 type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground';
 type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
 type ActionWorkspaceView = 'board' | 'calendar' | 'stages';
+type Pm101OverviewMode = 'journey' | 'quicklinks';
 type WorkspaceRegister = 'projects' | 'benefits' | 'risks';
 type ProjectPlanEntry = 'quick' | 'reports' | 'stages' | 'change-request' | 'closure';
 type ProjectPlanDetailMode = 'simple' | 'detailed';
@@ -3661,7 +3662,7 @@ const pm101Steps: Pm101Step[] = [
     icon: 'stageGate',
     decor: 'plus',
     decorAssets: ['./assets/pm101/decor-3-group-1.svg', './assets/pm101/decor-3-group-2.svg', './assets/pm101/decor-3-group-3.svg', './assets/pm101/decor-3-group-4.svg'],
-    footerAction: 'Learn more',
+    footerAction: 'Manage stages',
     footerActionId: 'learning-hub',
   },
 ];
@@ -3796,6 +3797,94 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
     ]),
   ],
   template: `
+    <ng-template #pm101JourneyHead let-eyebrow="eyebrow">
+      <div class="pm101-journey-head" [class.pm101-journey-head-with-toggle]="showPm101JourneyQuickLinksToggle">
+        <span>{{ eyebrow }}</span>
+        <div class="pm101-journey-title-row">
+          <h3>Your project management journey</h3>
+          @if (showPm101JourneyQuickLinksToggle) {
+            <div class="pm101-journey-mode-toggle" [class.is-quicklinks]="pm101OverviewMode === 'quicklinks'" role="tablist" aria-label="Project overview mode">
+              <button
+                [class.active]="pm101OverviewMode === 'journey'"
+                type="button"
+                role="tab"
+                [attr.aria-selected]="pm101OverviewMode === 'journey'"
+                (click)="setPm101OverviewMode('journey')"
+              >
+                Journey
+              </button>
+              <button
+                [class.active]="pm101OverviewMode === 'quicklinks'"
+                type="button"
+                role="tab"
+                [attr.aria-selected]="pm101OverviewMode === 'quicklinks'"
+                (click)="setPm101OverviewMode('quicklinks')"
+              >
+                Quick links
+              </button>
+            </div>
+          }
+        </div>
+        <p>{{ pm101OverviewIntro }}</p>
+      </div>
+    </ng-template>
+
+    <ng-template #pm101AssignedProjectHero>
+      <div class="pm101-ready-hero-grid" aria-label="First assigned project overview">
+        <article class="pm101-ready-banner">
+          <img class="pm101-ready-banner-art" src="./assets/pm101-first-project-banner-bg.png" alt="" aria-hidden="true" />
+          <div class="pm101-ready-banner-copy">
+            <strong>Your first project is ready to plan!</strong>
+            <p>PMO assigned {{ firstAssignedProject.name }} to your workspace. Start with building the baseline project plan, then get it endorsed and start tracking progress!</p>
+          </div>
+        </article>
+        <article class="pm101-ready-project-card">
+          <img class="pm101-ready-project-card-art" src="./assets/pm101-first-project-card-bg.png" alt="" aria-hidden="true" />
+          <span class="pm101-ready-project-chip">New project assigned by PMO</span>
+          <strong class="pm101-ready-project-title">{{ firstAssignedProject.name }}</strong>
+          <button class="pm101-ready-project-cta" type="button" (click)="openAssignedProjectPlan()" [attr.aria-label]="'Create project plan for ' + firstAssignedProject.name">
+            <span>Create project plan</span>
+            <span class="pm101-ready-project-cta-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
+          </button>
+          <span class="pm101-ready-project-icon" aria-hidden="true">
+            <img src="./assets/workspace-card-box-dark.svg" alt="" />
+          </span>
+        </article>
+      </div>
+    </ng-template>
+
+    <ng-template #pm101SelectedProjectHero>
+      <article class="pm101-selected-project-hero" [class.selected-project-operational-hero]="showSelectedProjectOverviewQuickLinks" aria-label="Selected project overview">
+        <img class="pm101-selected-project-art" [src]="selectedPm101ProjectArt" alt="" aria-hidden="true" />
+        <span class="pm101-selected-project-chip">{{ selectedPm101ProjectChip }}</span>
+        <strong class="pm101-selected-project-title">{{ selectedPm101ProjectTitle }}</strong>
+        <button class="pm101-selected-project-cta" type="button" (click)="openProject(selectedProject)" [attr.aria-label]="'Go to ' + selectedPm101ProjectTitle + ' project'">
+          <span>Go to Project</span>
+          <span class="pm101-selected-project-cta-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
+        </button>
+      </article>
+    </ng-template>
+
+    <ng-template #selectedProjectQuickLinksGrid>
+      <div class="selected-project-quick-link-grid">
+        @for (action of selectedProjectOperationalQuickLinks; track action.id) {
+          <article class="selected-project-quick-link-card" [class.is-pinned]="pinnedIds.includes(action.id)" [attr.data-quick-link-id]="action.id">
+            <button class="selected-project-quick-link-main" type="button" [attr.aria-label]="operationalQuickLinkTitle(action) + ' for ' + pm101QuickLinksProjectName" (click)="openQuickAction(action)">
+              <span class="selected-project-quick-link-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(action.icon)"></i></span></span>
+              <span class="selected-project-quick-link-copy">
+                <strong>{{ operationalQuickLinkTitle(action) }}</strong>
+                <small>{{ operationalQuickLinkDescription(action) }}</small>
+              </span>
+            </button>
+            <button class="selected-project-quick-link-pin" type="button" (click)="togglePinned(action.id)" [attr.aria-label]="(pinnedIds.includes(action.id) ? 'Unpin ' : 'Pin ') + action.title" [title]="pinnedIds.includes(action.id) ? 'Unpin' : 'Pin'">
+              <span class="icon selected-project-pin-default" aria-hidden="true"><i data-lucide="pin"></i></span>
+              <span class="icon selected-project-pin-unpin" aria-hidden="true"><i data-lucide="pin-off"></i></span>
+            </button>
+          </article>
+        }
+      </div>
+    </ng-template>
+
     <main class="app-canvas" [class.workspaces-canvas]="selectedPage === 'workspaces'" [class.wbs-canvas]="selectedPage === 'wbs'" [class.project-plan-canvas]="selectedPage === 'project-plan'" [class.playground-canvas]="selectedPage === 'playground'" [class.unassigned-canvas]="frontDoorMode === 'unassigned'" [class.pm101-locked-canvas]="usesPm101DesignShell" [class.pm101-operational-canvas]="usesPm101OperationalLayout" [class.risk-profile-focus-canvas]="riskProfileFocusMode" [class.benefit-profile-focus-canvas]="benefitProfileFocusMode">
       <div class="page-motion-host" [@pageMotion]="pageMotionKey" [@.disabled]="prefersReducedMotion">
       @switch (selectedPage) {
@@ -8444,107 +8533,28 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                           <h3>Your project management journey</h3>
                           <p>From assignment to regular reporting, these are the steps you will work through in TASAMA.</p>
                         </div>
-                      } @else if (isPm101OnboardingWorkspaceFlow) {
-                        <div class="pm101-ready-hero-grid" aria-label="First assigned project overview">
-                          <article class="pm101-ready-banner">
-                            <img class="pm101-ready-banner-art" src="./assets/pm101-first-project-banner-bg.png" alt="" aria-hidden="true" />
-                            <div class="pm101-ready-banner-copy">
-                              <strong>Your first project is ready to plan!</strong>
-                              <p>PMO assigned {{ firstAssignedProject.name }} to your workspace. Start with building the baseline project plan, then get it endorsed and start tracking progress!</p>
-                            </div>
-                          </article>
-                          <article class="pm101-ready-project-card">
-                            <img class="pm101-ready-project-card-art" src="./assets/pm101-first-project-card-bg.png" alt="" aria-hidden="true" />
-                            <span class="pm101-ready-project-chip">New project assigned by PMO</span>
-                            <strong class="pm101-ready-project-title">{{ firstAssignedProject.name }}</strong>
-                            <button class="pm101-ready-project-cta" type="button" (click)="openAssignedProjectPlan()" [attr.aria-label]="'Create project plan for ' + firstAssignedProject.name">
-                              <span>Create project plan</span>
-                              <span class="pm101-ready-project-cta-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
-                            </button>
-                            <span class="pm101-ready-project-icon" aria-hidden="true">
-                              <img src="./assets/workspace-card-box-dark.svg" alt="" />
-                            </span>
-                          </article>
-                        </div>
-                        <div class="pm101-journey-head">
-                          <span>What happens next?</span>
-                          <h3>Your project management journey</h3>
-                          <p>From assignment to regular reporting, these are the steps you will work through in TASAMA.</p>
-                        </div>
-                      } @else if (showSelectedProjectOverviewQuickLinks) {
-                        <section class="selected-project-operational-workspace" [attr.aria-label]="scopedProjectName + ' operational workspace'">
-                        @if (isOnboardingAssignedProjectWorkspace) {
-                          <div class="pm101-ready-hero-grid" aria-label="First assigned project overview">
-                            <article class="pm101-ready-banner">
-                              <img class="pm101-ready-banner-art" src="./assets/pm101-first-project-banner-bg.png" alt="" aria-hidden="true" />
-                              <div class="pm101-ready-banner-copy">
-                                <strong>Your first project is ready to plan!</strong>
-                                <p>PMO assigned {{ firstAssignedProject.name }} to your workspace. Start with building the baseline project plan, then get it endorsed and start tracking progress!</p>
-                              </div>
-                            </article>
-                            <article class="pm101-ready-project-card">
-                              <img class="pm101-ready-project-card-art" src="./assets/pm101-first-project-card-bg.png" alt="" aria-hidden="true" />
-                              <span class="pm101-ready-project-chip">New project assigned by PMO</span>
-                              <strong class="pm101-ready-project-title">{{ firstAssignedProject.name }}</strong>
-                              <button class="pm101-ready-project-cta" type="button" (click)="openAssignedProjectPlan()" [attr.aria-label]="'Create project plan for ' + firstAssignedProject.name">
-                                <span>Create project plan</span>
-                                <span class="pm101-ready-project-cta-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
-                              </button>
-                              <span class="pm101-ready-project-icon" aria-hidden="true">
-                                <img src="./assets/workspace-card-box-dark.svg" alt="" />
-                              </span>
-                            </article>
-                          </div>
+                      } @else if (isPm101OnboardingWorkspaceFlow && !showSelectedProjectOverviewQuickLinks) {
+                        <ng-container [ngTemplateOutlet]="pm101AssignedProjectHero"></ng-container>
+                        <ng-container [ngTemplateOutlet]="pm101JourneyHead" [ngTemplateOutletContext]="{ eyebrow: 'What happens next?' }"></ng-container>
+                      } @else if (showSelectedProjectOverviewQuickLinks && !isNormalPm101Workspace) {
+                        <section class="selected-project-operational-workspace" [attr.aria-label]="pm101QuickLinksProjectName + ' operational workspace'">
+                        @if (isFirstAssignedProjectOverviewContext) {
+                          <ng-container [ngTemplateOutlet]="pm101AssignedProjectHero"></ng-container>
                         } @else {
-                          <article class="pm101-selected-project-hero selected-project-operational-hero" aria-label="Selected project overview">
-                            <img class="pm101-selected-project-art" [src]="selectedPm101ProjectArt" alt="" aria-hidden="true" />
-                            <span class="pm101-selected-project-chip">{{ selectedPm101ProjectChip }}</span>
-                            <strong class="pm101-selected-project-title">{{ selectedPm101ProjectTitle }}</strong>
-                            <button class="pm101-selected-project-cta" type="button" (click)="openProject(selectedProject)" [attr.aria-label]="'Go to ' + selectedPm101ProjectTitle + ' project'">
-                              <span>Go to Project</span>
-                              <span class="pm101-selected-project-cta-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
-                            </button>
-                          </article>
+                          <ng-container [ngTemplateOutlet]="pm101SelectedProjectHero"></ng-container>
                         }
+                        <ng-container [ngTemplateOutlet]="pm101JourneyHead" [ngTemplateOutletContext]="{ eyebrow: pm101QuickLinksProjectName + ' PM101 path' }"></ng-container>
                         <section class="selected-project-quick-links" aria-label="Project Quick links">
-                          <div class="selected-project-quick-links-head">
-                            <h3>Project Quick links</h3>
-                            <p>Access key project areas for planning, delivery, and control.</p>
-                          </div>
-                          <div class="selected-project-quick-link-grid">
-                            @for (action of selectedProjectOperationalQuickLinks; track action.id) {
-                              <article class="selected-project-quick-link-card" [class.is-pinned]="pinnedIds.includes(action.id)" [attr.data-quick-link-id]="action.id">
-                                <button class="selected-project-quick-link-main" type="button" [attr.aria-label]="operationalQuickLinkTitle(action) + ' for ' + scopedProjectName" (click)="openQuickAction(action)">
-                                  <span class="selected-project-quick-link-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(action.icon)"></i></span></span>
-                                  <span class="selected-project-quick-link-copy">
-                                    <strong>{{ operationalQuickLinkTitle(action) }}</strong>
-                                    <small>{{ operationalQuickLinkDescription(action) }}</small>
-                                  </span>
-                                </button>
-                                <button class="selected-project-quick-link-pin" type="button" (click)="togglePinned(action.id)" [attr.aria-label]="(pinnedIds.includes(action.id) ? 'Unpin ' : 'Pin ') + action.title" [title]="pinnedIds.includes(action.id) ? 'Unpin' : 'Pin'">
-                                  <span class="icon selected-project-pin-default" aria-hidden="true"><i data-lucide="pin"></i></span>
-                                  <span class="icon selected-project-pin-unpin" aria-hidden="true"><i data-lucide="pin-off"></i></span>
-                                </button>
-                              </article>
-                            }
-                          </div>
+                          <ng-container [ngTemplateOutlet]="selectedProjectQuickLinksGrid"></ng-container>
                         </section>
                         </section>
                       } @else if (isSelectedProjectPm101Workspace) {
-                        <article class="pm101-selected-project-hero" aria-label="Selected project PM101 overview">
-                          <img class="pm101-selected-project-art" [src]="selectedPm101ProjectArt" alt="" aria-hidden="true" />
-                          <span class="pm101-selected-project-chip">{{ selectedPm101ProjectChip }}</span>
-                          <strong class="pm101-selected-project-title">{{ selectedPm101ProjectTitle }}</strong>
-                          <button class="pm101-selected-project-cta" type="button" (click)="openProject(selectedProject)" [attr.aria-label]="'Go to ' + selectedPm101ProjectTitle + ' project'">
-                            <span>Go to Project</span>
-                            <span class="pm101-selected-project-cta-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
-                          </button>
-                        </article>
-                        <div class="pm101-journey-head">
-                          <span>What happens next?</span>
-                          <h3>Your project management journey</h3>
-                          <p>From assignment to regular reporting, these are the steps you will work through in TASAMA.</p>
-                        </div>
+                        @if (isFirstAssignedProjectOverviewContext) {
+                          <ng-container [ngTemplateOutlet]="pm101AssignedProjectHero"></ng-container>
+                        } @else {
+                          <ng-container [ngTemplateOutlet]="pm101SelectedProjectHero"></ng-container>
+                        }
+                        <ng-container [ngTemplateOutlet]="pm101JourneyHead" [ngTemplateOutletContext]="{ eyebrow: 'What happens next?' }"></ng-container>
                       } @else if (isNormalPm101Workspace) {
                         <section
                           class="pm101-selection-panel"
@@ -8584,11 +8594,12 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                             }
                           </div>
                         </section>
-                        <div class="pm101-journey-head">
-                          <span>{{ activePm101Project.title }} PM101 path</span>
-                          <h3>Your project management journey</h3>
-                          <p>From assignment to regular reporting, these are the steps you will work through in TASAMA.</p>
-                        </div>
+                        <ng-container [ngTemplateOutlet]="pm101JourneyHead" [ngTemplateOutletContext]="{ eyebrow: activePm101Project.title + ' PM101 path' }"></ng-container>
+                      }
+                      @if (showSelectedProjectOverviewQuickLinks && isNormalPm101Workspace) {
+                        <section class="selected-project-quick-links pm101-active-project-quick-links" aria-label="Project Quick links">
+                          <ng-container [ngTemplateOutlet]="selectedProjectQuickLinksGrid"></ng-container>
+                        </section>
                       }
                       @if (!showSelectedProjectOverviewQuickLinks) {
                       <div class="pm101-flow" aria-label="PM 101 project delivery flow">
@@ -10486,6 +10497,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   quickLinksToast: string | null = null;
   selectedBoardFilter = 'all';
   activePm101ProjectId = pm101ProjectPreviews[0].id;
+  pm101OverviewMode: Pm101OverviewMode = 'journey';
   activeReportProject: string | null = null;
   activeReportRow: PmConsoleRegisterTableRow | null = null;
   activeReportDrawerMode: ReportDrawerPresentationMode = 'compose';
@@ -11377,16 +11389,37 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return this.frontDoorMode === 'assigned' && !this.onboardingPm101Locked && this.selectedPage === 'workspace' && !this.isAllProjects && !this.onboardingAssignmentFlow && !this.onboardingProjectSetup;
   }
 
-  get isSelectedProjectOperationalWorkspace(): boolean {
-    return this.isNormalSelectedProjectWorkspace && this.selectedView === 'pm101';
-  }
-
   get isOnboardingAssignedProjectWorkspace(): boolean {
     return (this.isOnboardingAssignedProjectWorkspaceShell || this.isOnboardingProjectSetupHomeWorkspaceShell) && this.selectedView === 'pm101';
   }
 
+  get isFirstAssignedProjectOverviewContext(): boolean {
+    return this.isPm101OnboardingWorkspaceFlow || this.isOnboardingAssignedProjectWorkspace;
+  }
+
+  get showPm101JourneyQuickLinksToggle(): boolean {
+    return !this.onboardingPm101Locked && (this.isPm101OnboardingWorkspaceFlow || this.isSelectedProjectPm101Workspace || this.isNormalPm101Workspace);
+  }
+
+  get pm101OverviewIntro(): string {
+    if (this.showSelectedProjectOverviewQuickLinks) return 'Access key project areas for planning, delivery, and control.';
+    return 'From assignment to regular reporting, these are the steps you will work through in TASAMA.';
+  }
+
   get showSelectedProjectOverviewQuickLinks(): boolean {
-    return this.isSelectedProjectOperationalWorkspace || this.isOnboardingAssignedProjectWorkspace;
+    return this.showPm101JourneyQuickLinksToggle && this.pm101OverviewMode === 'quicklinks';
+  }
+
+  get pm101QuickLinksProjectName(): string {
+    if (this.isFirstAssignedProjectOverviewContext) return firstAssignedProject.name;
+    if (this.isNormalPm101Workspace) return this.activePm101Project.title;
+    return this.scopedProjectName;
+  }
+
+  get pm101QuickLinksProjectId(): string {
+    if (this.isFirstAssignedProjectOverviewContext) return firstAssignedProject.id;
+    if (this.isNormalPm101Workspace) return this.activePm101Project.routeProjectId || this.activePm101Project.id;
+    return this.selectedProject;
   }
 
   get showOnboardingAssignedRightRail(): boolean {
@@ -13897,6 +13930,12 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.emitState();
   }
 
+  setPm101OverviewMode(mode: Pm101OverviewMode): void {
+    if (this.pm101OverviewMode === mode) return;
+    this.pm101OverviewMode = mode;
+    this.iconsHydrated = false;
+  }
+
   navigate(page: ConsolePage, projectPlanEntry: ProjectPlanEntry = 'quick'): void {
     if (this.onboardingPm101Locked && page === 'workspaces') return;
     if (this.onboardingAssignmentFlow && this.pmoAssignmentReady && !this.onboardingProjectSetup && page === 'workspaces') {
@@ -14030,6 +14069,9 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.closeReport();
     this.closeStageGate();
     this.closeStageRevoke();
+    if ((action.page || action.view) && this.showPm101JourneyQuickLinksToggle) {
+      this.selectedProject = this.pm101QuickLinksProjectId;
+    }
     if (action.view && !this.isOnboardingPm101BlockedView(action.view)) this.selectedView = action.view;
     if (this.onboardingPm101Locked && action.page === 'workspaces') return;
     if (action.page) this.navigate(action.page, this.projectPlanEntryFromAction(action.entry));
