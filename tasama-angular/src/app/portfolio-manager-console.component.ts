@@ -30,12 +30,10 @@ type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
       }
       @case ('framework') {
         <div class="portfolio-workspace-page-container">
-          <div class="pm-projects-shell" style="flex: 1; min-height: 0;">
-            <div class="pm-projects-board">
-              <main class="pm-projects-board-body portfolio-workspace-body">
-                <app-portfolio-workspace-framework />
-              </main>
-            </div>
+          <div class="project-plan-card-frame" style="flex: 1; min-height: 0;">
+            <app-portfolio-workspace-framework
+              (back)="consoleStateChange.emit({ selectedPage: 'workspace' })"
+            />
           </div>
         </div>
       }

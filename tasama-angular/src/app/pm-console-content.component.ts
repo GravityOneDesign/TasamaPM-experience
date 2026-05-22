@@ -8231,7 +8231,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
           </section>
         }
         @case ('portfolio-workspace') {
-          <app-portfolio-workspace [activeTab]="$any(portfolioWorkspaceTab)" (activeTabChange)="consoleStateChange.emit({ portfolioWorkspaceTab: $event })" />
+          <app-portfolio-workspace [activeTab]="$any(portfolioWorkspaceTab)" (activeTabChange)="consoleStateChange.emit({ portfolioWorkspaceTab: $event })" (back)="consoleStateChange.emit({ selectedPage: 'workspace' })" />
         }
         @default {
           @if (frontDoorMode === 'unassigned') {

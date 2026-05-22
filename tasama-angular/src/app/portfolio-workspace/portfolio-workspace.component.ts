@@ -26,11 +26,11 @@ type WorkspaceTab = 'overview' | 'registers' | 'reports';
           <img class="project-plan-hero-art" src="./assets/workspace-line-art.svg" alt="" aria-hidden="true" />
           <div class="project-plan-hero-inner">
             <div class="project-plan-summary">
-              <div class="project-plan-title plan-builder-title">
-                <button class="project-plan-back" type="button" aria-label="Go back" (click)="goBack()">
-                  <span class="icon" aria-hidden="true"><span pmConsoleIcon="arrow-left"></span></span>
+              <div class="project-plan-title plan-builder-title" style="display: flex; align-items: center; gap: 8px;">
+                <button class="project-plan-back" type="button" aria-label="Go back" (click)="goBack()" style="background: transparent; border: none; padding: 0; margin: 0; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: #0b0b0b;">
+                  <span class="icon" aria-hidden="true" style="display: inline-flex; align-items: center; justify-content: center;"><span pmConsoleIcon="arrow-left"></span></span>
                 </button>
-                <h1>{{ portfolioName }}</h1>
+                <h1 style="margin: 0; line-height: 24px; display: inline-flex; align-items: center;">{{ portfolioName }}</h1>
               </div>
             </div>
             
@@ -103,7 +103,7 @@ type WorkspaceTab = 'overview' | 'registers' | 'reports';
   `]
 })
 export class PortfolioWorkspaceComponent {
-  portfolioName = portfolioSummary.name;
+  portfolioName = 'Safe Security Portfolio Workspace';
   owner = portfolioSummary.owner;
   sponsor = portfolioSummary.sponsor;
 

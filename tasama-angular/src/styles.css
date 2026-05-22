@@ -2,7 +2,7 @@
   --brand: #10069f;
   --brand-2: #2f5bea;
   --brand-soft: rgba(16, 6, 159, 0.08);
-  --bg: #f8f9fc;
+  --bg: #F1F7FA;
   --panel: #ffffff;
   --text: #252a34;
   --muted: #687182;
@@ -1043,9 +1043,7 @@ b {
 }
 
 .modern-shell {
-  background:
-    radial-gradient(circle at 26% 0%, rgba(16, 6, 159, 0.055), transparent 28%),
-    linear-gradient(180deg, #fbfbff 0%, var(--bg) 42%);
+  background: #F1F7FA;
   display: grid;
   grid-template-columns: 60px minmax(0, 1fr);
   grid-template-rows: 64px minmax(0, 1fr);

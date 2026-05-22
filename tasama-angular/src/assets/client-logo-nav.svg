@@ -5,10 +5,12 @@
     <polygon points="10,3 22,8 22,18 10,23 3,18 3,8" fill="#ffffff" opacity="0.3"/>
     <path d="M10,6 L20,10 L10,14 L10,6" fill="url(#clientGrad2)"/>
   </g>
-  
-  <!-- Modern Text "Client Logo" or "CLIENT CO." -->
-  <text x="36" y="21" font-family="'Outfit', 'Inter', sans-serif" font-size="15" font-weight="800" fill="#0EA5E9" letter-spacing="0.5">CLIENT</text>
-  <text x="96" y="21" font-family="'Outfit', 'Inter', sans-serif" font-size="15" font-weight="400" fill="#475569" letter-spacing="0.5">CO.</text>
+  <!-- Modern Text "Safe Security" -->
+  <text x="36" y="22" font-family="'Outfit', 'Inter', sans-serif" font-size="15" letter-spacing="0.5">
+    <tspan font-weight="800" fill="#0EA5E9">SAFE</tspan>
+    <tspan font-weight="400" fill="#475569"> SECURITY</tspan>
+  </text>
+
 
   <defs>
     <linearGradient id="clientGrad" x1="0" y1="0" x2="26" y2="26" gradientUnits="userSpaceOnUse">

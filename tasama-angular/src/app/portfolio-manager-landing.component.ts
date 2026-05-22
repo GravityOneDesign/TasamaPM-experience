@@ -30,14 +30,6 @@ const reportStatusHistory = [
             <section class="workspace-panel pm101-locked-workspace pm101-operational-workspace">
               <div class="workspace-shell-head pm101-locked-shell-head pm101-operational-shell-head">
                 <img class="workspace-line-art" src="./assets/workspace-line-art.svg" alt="" aria-hidden="true" />
-                <div class="workspace-shell-actions" aria-label="Workspace utilities">
-                  <button class="workspace-filter-button" type="button" aria-label="Refresh workspace">
-                    <span class="icon" aria-hidden="true"><i data-lucide="refresh-cw"></i></span>
-                  </button>
-                  <button class="workspace-filter-button" type="button" aria-label="Expand workspace">
-                    <span class="icon" aria-hidden="true"><i data-lucide="expand"></i></span>
-                  </button>
-                </div>
                 <div class="workspace-locked-title-row">
                   <span class="workspace-pane-icon" aria-hidden="true">
                     <img src="./assets/client-logo-icon.svg" alt="" />
@@ -233,6 +225,9 @@ const reportStatusHistory = [
     </main>
   `,
   styles: [`
+    .workspace-shell-head {
+      background: #DDEFFB !important;
+    }
     .report-section-divider {
       color: #0b0b0b;
       font-size: 13px;

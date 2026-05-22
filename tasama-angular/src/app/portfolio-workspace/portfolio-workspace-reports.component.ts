@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PmConsoleIconComponent } from '../shared/pm-console-icon.component';
 import { PmConsoleStatusPillComponent } from '../shared/pm-console-status-pill.component';
@@ -13,53 +13,52 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="workspace-reports-tab">
-      
-      <!-- Sub-tabs header -->
-      <div class="reports-header-row">
-        <div class="sub-tabs">
-          <div class="pm-register-tab is-active" style="cursor: default;">
-            <span>Past Portfolio Reports</span>
-          </div>
-        </div>
-
-        <button class="create-report-btn" type="button">
-          <span [pmConsoleIcon]="'plus'"></span>
-          <span>Create Report</span>
-        </button>
-      </div>
 
       <!-- Content Outlets -->
       <div class="reports-outlet-content animation-slide">
         <!-- Stats row -->
-        <div class="dashboard-stats-grid">
-          <article class="dashboard-stat-card flex-row-card">
-            <span [pmConsoleIcon]="'folder-check'" class="s-card-icon text-success"></span>
-            <div class="stat-copy">
-              <span class="stat-label">Total Past Reports</span>
-              <strong class="stat-value">{{ past.length }} Submitted</strong>
+        <div class="pm-project-table-stats" style="grid-template-columns: repeat(2, 280px); gap: 12px; margin-bottom: 8px;">
+          <article class="pm-project-table-stat green">
+            <span><span [pmConsoleIcon]="'folder-check'"></span></span>
+            <div class="stat-body">
+              <small class="stat-label">Total Past Reports</small>
+              <strong class="stat-value text-success">{{ submittedCount }} Submitted</strong>
             </div>
           </article>
 
-          <article class="dashboard-stat-card flex-row-card">
-            <span [pmConsoleIcon]="'calendar'" class="s-card-icon text-primary"></span>
-            <div class="stat-copy">
-              <span class="stat-label">Last Submitted Report</span>
-              <strong class="stat-value">May 02, 2026</strong>
-            </div>
-          </article>
-
-          <article class="dashboard-stat-card flex-row-card">
-            <span [pmConsoleIcon]="'award'" class="s-card-icon text-warning"></span>
-            <div class="stat-copy">
-              <span class="stat-label">Average Submission Score</span>
-              <strong class="stat-value">94.8%</strong>
+          <article class="pm-project-table-stat blue">
+            <span><span [pmConsoleIcon]="'calendar'"></span></span>
+            <div class="stat-body">
+              <small class="stat-label">Last Submitted Report</small>
+              <strong class="stat-value text-primary">May 02, 2026</strong>
             </div>
           </article>
         </div>
 
-        <!-- Toolbar -->
-        <div class="reports-toolbar">
-          <span class="items-count">{{ past.length }} archival summaries found</span>
+        <!-- Table filter toolbar (styled like register-toolbar) -->
+        <div class="register-toolbar">
+          <div class="toolbar-left">
+            <button class="tb-btn primary-tb" type="button" style="display: inline-flex; align-items: center; gap: 6px;">
+              <span [pmConsoleIcon]="'plus'"></span>
+              <span>Create Report</span>
+            </button>
+          </div>
+          <div class="toolbar-right">
+            <div class="filter-dropdown-container">
+              <button class="tb-btn" type="button" (click)="toggleFilterDropdown($event)">
+                <span [pmConsoleIcon]="'filter'"></span>
+                <span>Filter</span>
+                <span [pmConsoleIcon]="'chevron-down'" style="font-size: 10px; margin-left: 4px; opacity: 0.7;"></span>
+              </button>
+              @if (showFilterDropdown) {
+                <div class="filter-menu-popover">
+                  <button class="filter-option" [class.is-active]="selectedStatusFilter === 'all'" type="button" (click)="setFilterStatus('all')">All</button>
+                  <button class="filter-option" [class.is-active]="selectedStatusFilter === 'Submitted'" type="button" (click)="setFilterStatus('Submitted')">Submitted</button>
+                  <button class="filter-option" [class.is-active]="selectedStatusFilter === 'Draft'" type="button" (click)="setFilterStatus('Draft')">Draft</button>
+                </div>
+              }
+            </div>
+          </div>
         </div>
 
         <!-- Table -->
@@ -76,7 +75,7 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
               </tr>
             </thead>
             <tbody>
-              @for (row of past; track row.name) {
+              @for (row of filteredPastReports; track row.name) {
                 <tr>
                   <td><strong>{{ row.name }}</strong></td>
                   <td class="period-text">{{ row.period }}</td>
@@ -90,11 +89,29 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
                     </div>
                   </td>
                   <td class="date-cell">{{ formatDate(row.createdAt) }}</td>
-                  <td style="text-align: right">
-                    <button class="report-action-btn report-row-preview" type="button">
-                      <span [pmConsoleIcon]="'eye'" class="preview-eye"></span>
-                      <span>Preview</span>
+                  <td style="text-align: right; position: relative;">
+                    <button class="action-menu-trigger" type="button" (click)="toggleRowMenu(row.name, $event)">
+                      <span [pmConsoleIcon]="'more-horizontal'"></span>
                     </button>
+                    @if (activeMenuRowName === row.name) {
+                      <div class="row-menu-popover">
+                        @if (row.status === 'Submitted') {
+                          <button class="menu-item" type="button" (click)="onMenuOption(row.name, 'preview')">
+                            <span [pmConsoleIcon]="'eye'" class="menu-item-icon text-primary"></span>
+                            <span>Preview</span>
+                          </button>
+                        } @else if (row.status === 'Draft') {
+                          <button class="menu-item" type="button" (click)="onMenuOption(row.name, 'edit')">
+                            <span [pmConsoleIcon]="'pencil'" class="menu-item-icon text-warning"></span>
+                            <span>Edit</span>
+                          </button>
+                          <button class="menu-item text-danger" type="button" (click)="onMenuOption(row.name, 'delete')">
+                            <span [pmConsoleIcon]="'trash-2'" class="menu-item-icon"></span>
+                            <span>Delete</span>
+                          </button>
+                        }
+                      </div>
+                    }
                   </td>
                 </tr>
               }
@@ -114,164 +131,26 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
       animation: fadeIn 0.3s ease-out;
     }
 
-    .reports-header-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid #edf0f6;
-    }
-
-    /* Sub-tabs styling */
-    .sub-tabs {
-      border-bottom: none;
-      padding-bottom: 0px;
-      display: flex;
-      gap: 24px;
-      background: transparent;
-    }
-
-    .sub-tabs .pm-register-tab {
-      background: transparent;
-      border: none;
-      padding: 12px 4px;
-      font-size: 13.5px;
-      font-weight: 500;
-      color: #707788;
-      cursor: pointer;
-      position: relative;
-      transition: color 0.2s ease;
-    }
-
-    .sub-tabs .pm-register-tab::after {
-      content: '';
-      position: absolute;
-      bottom: -1px;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: transparent;
-      transition: background-color 0.2s ease;
-    }
-
-    .sub-tabs .pm-register-tab.is-active {
-      color: var(--brand, #007aff);
-      font-weight: 600;
-    }
-
-    .sub-tabs .pm-register-tab.is-active::after {
-      background: var(--brand, #007aff);
-    }
-
-    .create-report-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--brand, #007aff);
-      border: 1px solid var(--brand, #007aff);
-      border-radius: 8px;
-      padding: 8px 14px;
-      color: #ffffff;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 1px 2px rgba(0, 122, 255, 0.15);
-      transition: background-color 0.15s ease;
-    }
-
-    .create-report-btn:hover {
-      background: #0062cc;
-    }
-
     .reports-outlet-content {
       display: flex;
       flex-direction: column;
       gap: 20px;
     }
 
-    /* Premium Stats Dashboard */
-    .dashboard-stats-grid {
+    /* Stats row */
+    .pm-project-table-stats {
+      background: #ffffff;
+      padding: 8px 0;
+      margin: 0;
       display: grid;
-      grid-template-columns: 280px 280px 1fr;
       gap: 12px;
     }
 
-    .dashboard-stat-card {
-      background: #ffffff;
-      border: 1px solid #e3e5e9;
-      border-radius: 12px;
-      padding: 16px 20px;
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .flex-row-card {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 20px;
-    }
-
-    .s-card-icon {
-      font-size: 20px;
-    }
-
-    .text-primary { color: var(--brand, #007aff) !important; }
-    .text-warning { color: #b27b00 !important; }
-    .text-emerald { color: #16a15f !important; }
-    .text-success { color: #16a15f !important; }
-
-    .donut-indicator-wrapper {
-      position: relative;
-      width: 52px;
-      height: 52px;
-    }
-
-    .donut-ring {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      background: #f8fafc;
-      border: 3.5px solid rgba(0, 122, 255, 0.1);
-      border-top-color: var(--brand, #007aff);
-      border-right-color: var(--brand, #007aff);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .donut-value {
-      font-size: 11.5px;
-      font-weight: 700;
-      color: #252a34;
-    }
-
-    .compliance-circle {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      background: #e8f7ee;
-      border: 3.5px solid rgba(22, 161, 95, 0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #16a15f;
-    }
-
-    .comp-val {
-      font-size: 13.5px;
-      font-weight: 700;
-    }
-
-    .stat-copy {
+    .stat-body {
       display: flex;
       flex-direction: column;
-      gap: 4px;
-    }
-
-    .w-full {
-      width: 100%;
+      flex-grow: 1;
+      min-width: 0;
     }
 
     .stat-label {
@@ -279,13 +158,7 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
       font-weight: 600;
       color: #707788;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .stat-highlight {
-      font-size: 14px;
-      font-weight: 600;
-      color: #252a34;
+      letter-spacing: 0.02em;
     }
 
     .stat-value {
@@ -294,104 +167,36 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
       color: #252a34;
     }
 
-    /* Horizontal Segmented Bar */
-    .health-segmented-bar {
-      display: flex;
-      height: 10px;
-      border-radius: 5px;
-      overflow: hidden;
-      background: rgba(15, 23, 42, 0.04);
-      margin: 8px 0 10px 0;
-    }
-
-    .segment {
-      height: 100%;
-    }
-
-    .segment.off-track { background: #de350b; }
-    .segment.delayed { background: #b27b00; }
-    .segment.on-track { background: #16a15f; }
-
-    .bar-legend {
-      display: flex;
-      gap: 16px;
-    }
-
-    .bar-legend span {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11.5px;
-      color: #555555;
-      font-weight: 500;
-    }
-
-    .dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      display: inline-block;
-    }
-
-    .bg-red { background: #de350b; }
-    .bg-amber { background: #b27b00; }
-    .bg-emerald { background: #16a15f; }
-
-    /* Reports Toolbar */
-    .reports-toolbar {
+    /* Toolbar */
+    .register-toolbar {
+      background: #ffffff;
+      padding: 12px 20px;
+      margin-bottom: 4px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: #ffffff;
       border: 1px solid #e3e5e9;
       border-radius: 12px;
-      padding: 12px 20px;
       box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
     }
 
-    .items-count {
-      font-size: 13px;
-      font-weight: 600;
-      color: #707788;
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
     }
 
-    .toolbar-actions {
+    .toolbar-right {
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
-    .search-box {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: #f4f5f7;
-      border: 1px solid #e3e5e9;
-      border-radius: 8px;
-      padding: 6px 12px;
-      width: 200px;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .search-box:focus-within {
-      border-color: var(--brand, #007aff);
-      background: #ffffff;
-      box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
-    }
-
-    .search-box span {
-      color: #707788;
-      font-size: 13px;
-    }
-
-    .search-box input {
-      background: transparent;
-      border: none;
-      outline: none;
-      color: #252a34;
-      font-size: 13px;
-      width: 100%;
-    }
+    .text-primary { color: var(--brand, #007aff) !important; }
+    .text-warning { color: #b27b00 !important; }
+    .text-emerald { color: #16a15f !important; }
+    .text-success { color: #16a15f !important; }
+    .text-danger { color: #de350b !important; }
 
     .tb-btn {
       display: inline-flex;
@@ -411,6 +216,18 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
     .tb-btn:hover {
       background: #f8fafc;
       border-color: #cbd5e1;
+    }
+
+    .primary-tb {
+      background: var(--brand, #007aff);
+      border-color: var(--brand, #007aff);
+      color: #ffffff;
+      box-shadow: 0 1px 2px rgba(0, 122, 255, 0.15);
+    }
+
+    .primary-tb:hover {
+      background: #0062cc;
+      border-color: #0062cc;
     }
 
     .date-cell, .period-text {
@@ -451,47 +268,6 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
     .owner-name {
       font-size: 13px;
       color: #252a34;
-    }
-
-    /* Action Buttons */
-    .report-action-btn {
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      padding: 6px 14px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .report-row-create {
-      background: var(--brand, #007aff);
-      color: #ffffff;
-      border: 1px solid var(--brand, #007aff);
-    }
-
-    .report-row-create:hover {
-      background: #0062cc;
-      border-color: #0062cc;
-    }
-
-    .report-row-preview {
-      background: #ffffff;
-      color: #252a34;
-      border: 1px solid #e3e5e9;
-    }
-
-    .report-row-preview:hover {
-      background: #f8fafc;
-      border-color: #cbd5e1;
-    }
-
-    .preview-eye {
-      font-size: 12px;
-      color: var(--brand, #007aff);
     }
 
     /* Status Pill Tones */
@@ -545,6 +321,122 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
       from { opacity: 0; transform: translateX(8px); }
       to { opacity: 1; transform: translateX(0); }
     }
+
+    .filter-dropdown-container {
+      position: relative;
+    }
+
+    .filter-menu-popover {
+      position: absolute;
+      right: 0;
+      top: 100%;
+      margin-top: 6px;
+      background: #ffffff;
+      border: 1px solid #edf0f6;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(25, 33, 61, 0.12);
+      width: 160px;
+      z-index: 100;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .filter-option {
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 12px;
+      text-align: left;
+      font-size: 13px;
+      font-weight: 500;
+      color: #5e6c84;
+      cursor: pointer;
+      transition: background-color 0.15s ease, color 0.15s ease;
+      width: 100%;
+    }
+
+    .filter-option:hover {
+      background: #f4f5f7;
+      color: #252a34;
+    }
+
+    .filter-option.is-active {
+      background: rgba(0, 122, 255, 0.08);
+      color: var(--brand, #007aff);
+      font-weight: 600;
+    }
+
+    /* Actions context menu styles */
+    .action-menu-trigger {
+      background: transparent;
+      border: none;
+      color: #707788;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .action-menu-trigger:hover {
+      background: #f4f5f7;
+      color: #252a34;
+    }
+
+    .row-menu-popover {
+      position: absolute;
+      right: 12px;
+      top: 80%;
+      background: #ffffff;
+      border: 1px solid #edf0f6;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(25, 33, 61, 0.12);
+      width: 140px;
+      z-index: 101;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      text-align: left;
+    }
+
+    .menu-item {
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #5e6c84;
+      cursor: pointer;
+      width: 100%;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .menu-item:hover {
+      background: #f4f5f7;
+      color: #252a34;
+    }
+
+    .menu-item-icon {
+      font-size: 14px;
+    }
+
+    .menu-item.text-danger {
+      color: #de350b;
+    }
+
+    .menu-item.text-danger:hover {
+      background: rgba(222, 53, 11, 0.08);
+      color: #de350b;
+    }
   `]
 })
 export class PortfolioWorkspaceReportsComponent {
@@ -553,6 +445,49 @@ export class PortfolioWorkspaceReportsComponent {
   awaitingReview = portfolioReports.awaitingReview;
   scheduled = portfolioReports.scheduled;
   past = portfolioReports.past;
+
+  showFilterDropdown = false;
+  selectedStatusFilter: 'all' | 'Submitted' | 'Draft' = 'all';
+  activeMenuRowName: string | null = null;
+
+  get filteredPastReports() {
+    if (this.selectedStatusFilter === 'all') {
+      return this.past;
+    }
+    return this.past.filter(r => r.status === this.selectedStatusFilter);
+  }
+
+  get submittedCount(): number {
+    return this.past.filter(r => r.status === 'Submitted').length;
+  }
+
+  toggleFilterDropdown(event: MouseEvent): void {
+    event.stopPropagation();
+    this.showFilterDropdown = !this.showFilterDropdown;
+    this.activeMenuRowName = null;
+  }
+
+  setFilterStatus(status: 'all' | 'Submitted' | 'Draft'): void {
+    this.selectedStatusFilter = status;
+    this.showFilterDropdown = false;
+  }
+
+  toggleRowMenu(rowName: string, event: MouseEvent): void {
+    event.stopPropagation();
+    this.showFilterDropdown = false;
+    this.activeMenuRowName = this.activeMenuRowName === rowName ? null : rowName;
+  }
+
+  onMenuOption(rowName: string, option: string): void {
+    console.log(`Menu action '${option}' selected for report: ${rowName}`);
+    this.activeMenuRowName = null;
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.showFilterDropdown = false;
+    this.activeMenuRowName = null;
+  }
 
   setTab(tab: ReportsTab): void {
     this.activeTab = tab;
@@ -597,4 +532,3 @@ export class PortfolioWorkspaceReportsComponent {
     }
   }
 }
-
