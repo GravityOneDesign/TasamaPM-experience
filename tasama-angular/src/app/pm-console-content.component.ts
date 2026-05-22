@@ -20,8 +20,9 @@ import { PmConsolePlanEmptyStateComponent } from './pm-console-plan-empty-state.
 import { PmConsolePlanTableComponent } from './pm-console-plan-table.component';
 import { PmConsoleReportDrawerComponent } from './pm-console-report-drawer.component';
 import { PortfolioWorkspaceComponent } from './portfolio-workspace/portfolio-workspace.component';
-import { PortfolioManagerLandingCardsComponent } from './shared/portfolio-manager-landing-cards.component';
 import { PmConsoleMountOptions, ProjectOption } from './pm-console.types';
+import { iconMap, iconName } from './pm-console-icon.utils';
+import { pm101Steps, Pm101Step, portfolioManagerSteps } from './pm-console-pm101-steps';
 import { PmConsoleAiGuideChipComponent, pmConsoleAiGuideFor, type PmConsoleAiGuideCopy } from './shared/pm-console-ai-guide-chip.component';
 import { PmConsoleAgentBannerComponent } from './shared/pm-console-agent-banner.component';
 import {
@@ -1331,90 +1332,7 @@ interface GuidedTourStep {
   daily: string;
 }
 
-const iconMap: Record<string, string> = {
-  ai: 'sparkles',
-  alert: 'triangle-alert',
-  arrow: 'chevron-right',
-  arrowDown: 'arrow-down',
-  arrowUp: 'arrow-up',
-  benefit: 'circle-check',
-  benefitGraph: 'chart-pie',
-  bell: 'bell',
-  book: 'book-open',
-  building: 'building-2',
-  calendar: 'calendar-days',
-  calendarMinimal: 'calendar',
-  chart: 'chart-column',
-  check: 'circle-check',
-  checklist: 'check-square',
-  checkMark: 'check',
-  changeRequest: 'git-pull-request',
-  close: 'x',
-  closure: 'file-x',
-  columns: 'columns-3',
-  database: 'database',
-  dependencies: 'network',
-  down: 'chevron-down',
-  dollar: 'circle-dollar-sign',
-  download: 'download',
-  driver: 'rocket',
-  endProduct: 'package',
-  eye: 'eye',
-  eyeOff: 'eye-off',
-  fileCheck: 'file-check-2',
-  filter: 'filter',
-  folderOpen: 'folder-open',
-  grid: 'layout-grid',
-  history: 'history',
-  info: 'info',
-  issues: 'circle-x',
-  lessons: 'lightbulb',
-  link: 'link-2',
-  list: 'list',
-  lock: 'lock',
-  management: 'file-text',
-  milestone: 'flag',
-  moreVertical: 'ellipsis-vertical',
-  minusCircle: 'circle-minus',
-  outcomes: 'circle-check',
-  planned: 'calendar-clock',
-  pauseCircle: 'circle-pause',
-  pin: 'pin',
-  pinOff: 'pin-off',
-  plan: 'file-text',
-  playground: 'git-branch',
-  prev: 'chevron-left',
-  plus: 'plus',
-  priority: 'chevrons-up',
-  project: 'folder',
-  quickGrid: 'layout-grid',
-  registerRisk: 'panels-top-left',
-  resources: 'users',
-  riskCritical: 'octagon-alert',
-  riskEscalated: 'siren',
-  riskHigh: 'shield-alert',
-  riskMedium: 'gauge',
-  risks: 'triangle-alert',
-  rocket: 'rocket',
-  route: 'route',
-  search: 'search',
-  save: 'save',
-  settings: 'settings',
-  send: 'send',
-  sliders: 'sliders-horizontal',
-  stageGate: 'clipboard-check',
-  status: 'circle',
-  store: 'store',
-  widget: 'layout-grid',
-  table: 'table-2',
-  target: 'target',
-  telescope: 'telescope',
-  timeline: 'list-tree',
-  todo: 'circle-dot',
-  trendUp: 'trending-up',
-  wand: 'wand-sparkles',
-  wbs: 'git-branch',
-};
+
 
 const projectQuickActions: QuickAction[] = [
   { id: 'project-plan', title: 'Project plan', icon: 'plan', page: 'project-plan', entry: 'quick' },
@@ -3461,24 +3379,7 @@ interface ProjectPlanStageRow {
   canRevoke: boolean;
 }
 
-type Pm101StepAction = 'project-plan' | 'project-workspace' | 'reports' | 'learning-hub' | 'framework' | 'registers';
 
-interface Pm101Step {
-  title: string;
-  body: string;
-  icon: string;
-  decor: string;
-  decorAssets: string[];
-  footerLabel?: string;
-  footerValue?: string;
-  footerAction?: string;
-  footerActionId?: Pm101StepAction;
-  completedLabel?: string;
-  completedValue?: string;
-  footerStandalone?: boolean;
-  footerIconOnly?: boolean;
-  comingSoon?: boolean;
-}
 
 interface Pm101ProjectPreview {
   id: string;
@@ -3636,53 +3537,7 @@ const projectReportRegisterRows: PmConsoleRegisterTableRow[] = [
   },
 ];
 
-const pm101Steps: Pm101Step[] = [
-  {
-    title: 'Framework and configuration',
-    body: 'Set up governance controls, onboard users, and define your portfolio standards.',
-    icon: 'rocket',
-    decor: 'burst',
-    decorAssets: ['./assets/pm101/decor-1.svg'],
-    footerAction: 'Configure Portfolio',
-    footerActionId: 'project-plan',
-  },
-  {
-    title: 'Portfolio design',
-    body: 'Define objectives, add programs and projects, and structure your portfolio.',
-    icon: 'plan',
-    decor: 'rings',
-    decorAssets: ['./assets/pm101/decor-2.svg'],
-    footerAction: 'Add Programs & Projects',
-    footerActionId: 'project-plan',
-  },
-  {
-    title: 'Manage portfolio',
-    body: 'Review program and project statuses, approve plans, and action flagged risks and benefits.',
-    icon: 'playground',
-    decor: 'loops',
-    decorAssets: ['./assets/pm101/decor-4.svg'],
-    footerAction: 'View Programs & Projects',
-    footerActionId: 'project-workspace',
-  },
-  {
-    title: 'Report and review',
-    body: 'Draft and submit portfolio status reports and review reports from your programs and projects.',
-    icon: 'chart',
-    decor: 'hex',
-    decorAssets: ['./assets/pm101/decor-5.svg'],
-    footerAction: 'View Reports',
-    footerActionId: 'reports',
-  },
-  {
-    title: 'Portfolio performance',
-    body: 'Track delivery health and view insights across your portfolio in one place.',
-    icon: 'stageGate',
-    decor: 'plus',
-    decorAssets: ['./assets/pm101/decor-3-group-1.svg', './assets/pm101/decor-3-group-2.svg', './assets/pm101/decor-3-group-3.svg', './assets/pm101/decor-3-group-4.svg'],
-    footerAction: 'View Performance',
-    footerActionId: 'learning-hub',
-  },
-];
+
 
 const QUICK_LINK_PIN_LIMIT = 10;
 const QUICK_LINK_PAGE_SIZE = 10;
@@ -3781,7 +3636,6 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
     PmConsoleToolbarComponent,
     PmConsoleWorkCalendarComponent,
     PortfolioWorkspaceComponent,
-    PortfolioManagerLandingCardsComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
@@ -8716,62 +8570,53 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                           <p>Configure your portfolio, manage delivery and report progress, all in one place.</p>
                         </div>
                       } @else if (isNormalPm101Workspace) {
-                        @if (pmMode === 'fatima') {
-                          <app-portfolio-manager-landing-cards (onOverviewClick)="openAssignedProjectWorkspace()" />
-                          <div class="pm101-journey-head">
-                            <span>Portfolio Overview PM101 path</span>
-                            <h3>Your portfolio management journey</h3>
-                            <p>Configure your portfolio, manage delivery and report progress, all in one place.</p>
-                          </div>
-                        } @else {
-                          <section
-                            class="pm101-selection-panel"
-                            [class.pm101-active-project-0]="activePm101ProjectIndex === 0"
-                            [class.pm101-active-project-1]="activePm101ProjectIndex === 1"
-                            [class.pm101-active-project-2]="activePm101ProjectIndex === 2"
-                            [attr.aria-label]="activePm101Project.title + ' PM101 path selected'"
-                          >
-                            <div class="pm101-project-strip" aria-label="PM101 project overview">
-                              @for (project of pm101ProjectPreviews; track project.id) {
-                                <div class="pm101-project-card-slot" [class.is-selected]="project.id === activePm101ProjectId">
-                                  <button
-                                    class="pm101-project-card"
-                                    [class.pm101-project-card-assigned]="project.tone === 'assigned'"
-                                    [class.pm101-project-card-active]="project.tone === 'active'"
-                                    [class.is-selected]="project.id === activePm101ProjectId"
-                                    [attr.aria-pressed]="project.id === activePm101ProjectId"
-                                    [attr.aria-label]="project.id === activePm101ProjectId && project.routeProjectId ? 'Go to ' + project.title + ' project' : 'Show ' + project.title + ' PM101 journey'"
-                                    type="button"
-                                    (click)="handlePm101ProjectPreview(project)"
-                                  >
-                                    <img class="pm101-project-card-art" [src]="project.art" alt="" aria-hidden="true" />
-                                    <span class="pm101-project-chip">{{ project.chip }}</span>
-                                    <strong>{{ project.title }}</strong>
-                                    @if (project.id === activePm101ProjectId) {
-                                      @if (project.routeProjectId) {
-                                        <span class="pm101-project-cta">
-                                          <span>Go to Project</span>
-                                          <span class="pm101-project-cta-arrow" aria-hidden="true"></span>
-                                        </span>
-                                      }
-                                    } @else {
-                                      <span class="pm101-project-ghost-arrow" aria-hidden="true"></span>
+                        <section
+                          class="pm101-selection-panel"
+                          [class.pm101-active-project-0]="activePm101ProjectIndex === 0"
+                          [class.pm101-active-project-1]="activePm101ProjectIndex === 1"
+                          [class.pm101-active-project-2]="activePm101ProjectIndex === 2"
+                          [attr.aria-label]="activePm101Project.title + ' PM101 path selected'"
+                        >
+                          <div class="pm101-project-strip" aria-label="PM101 project overview">
+                            @for (project of pm101ProjectPreviews; track project.id) {
+                              <div class="pm101-project-card-slot" [class.is-selected]="project.id === activePm101ProjectId">
+                                <button
+                                  class="pm101-project-card"
+                                  [class.pm101-project-card-assigned]="project.tone === 'assigned'"
+                                  [class.pm101-project-card-active]="project.tone === 'active'"
+                                  [class.is-selected]="project.id === activePm101ProjectId"
+                                  [attr.aria-pressed]="project.id === activePm101ProjectId"
+                                  [attr.aria-label]="project.id === activePm101ProjectId && project.routeProjectId ? 'Go to ' + project.title + ' project' : 'Show ' + project.title + ' PM101 journey'"
+                                  type="button"
+                                  (click)="handlePm101ProjectPreview(project)"
+                                >
+                                  <img class="pm101-project-card-art" [src]="project.art" alt="" aria-hidden="true" />
+                                  <span class="pm101-project-chip">{{ project.chip }}</span>
+                                  <strong>{{ project.title }}</strong>
+                                  @if (project.id === activePm101ProjectId) {
+                                    @if (project.routeProjectId) {
+                                      <span class="pm101-project-cta">
+                                        <span>Go to Project</span>
+                                        <span class="pm101-project-cta-arrow" aria-hidden="true"></span>
+                                      </span>
                                     }
-                                  </button>
-                                </div>
-                              }
-                            </div>
-                          </section>
-                          <div class="pm101-journey-head">
-                            <span>{{ activePm101Project.title }} PM101 path</span>
-                            <h3>Your portfolio management journey</h3>
-                            <p>Configure your portfolio, manage delivery and report progress, all in one place.</p>
+                                  } @else {
+                                    <span class="pm101-project-ghost-arrow" aria-hidden="true"></span>
+                                  }
+                                </button>
+                              </div>
+                            }
                           </div>
-                        }
+                        </section>
+                        <div class="pm101-journey-head">
+                          <span>{{ activePm101Project.title }} PM101 path</span>
+                          <h3>Your portfolio management journey</h3>
+                          <p>Configure your portfolio, manage delivery and report progress, all in one place.</p>
+                        </div>
                       }
                       @if (!showSelectedProjectOverviewQuickLinks) {
                       <div class="pm101-flow" aria-label="PM 101 project delivery flow">
-                        <ol class="pm101-step-list">
+                        <ol class="pm101-step-list" [style.--pm101-cols]="stepsToRender.length">
                           @for (step of stepsToRender; track step.title; let index = $index) {
                             <li class="pm101-step">
                               <article class="pm101-card" [class.pm101-card-coming-soon]="step.comingSoon">
@@ -9627,47 +9472,9 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   get stepsToRender(): Pm101Step[] {
     if (this.pmMode === 'fatima') {
-      return [
-        {
-          title: 'Framework and configuration',
-          body: 'Set up governance controls, onboard users, and define your portfolio standards.',
-          icon: 'rocket',
-          decor: 'burst',
-          decorAssets: ['./assets/pm101/decor-1.svg'],
-          footerAction: 'Configure Portfolio',
-          footerActionId: 'framework',
-        },
-        {
-          title: 'Manage portfolio',
-          body: 'Review program and project statuses, approve plans, and action flagged risks and benefits.',
-          icon: 'playground',
-          decor: 'loops',
-          decorAssets: ['./assets/pm101/decor-4.svg'],
-          footerAction: 'View Programs & Projects',
-          footerActionId: 'registers',
-        },
-        {
-          title: 'Report and review',
-          body: 'Draft and submit portfolio status reports and review reports from your programs and projects.',
-          icon: 'chart',
-          decor: 'hex',
-          decorAssets: ['./assets/pm101/decor-5.svg'],
-          footerAction: 'View Reports',
-          footerActionId: 'reports',
-        },
-        {
-          title: 'Portfolio performance',
-          body: 'Track delivery health and view insights across your portfolio in one place.',
-          icon: 'stageGate',
-          decor: 'plus',
-          decorAssets: ['./assets/pm101/decor-3-group-1.svg', './assets/pm101/decor-3-group-2.svg', './assets/pm101/decor-3-group-3.svg', './assets/pm101/decor-3-group-4.svg'],
-          footerAction: 'View Performance',
-          footerActionId: 'learning-hub',
-          comingSoon: true,
-        },
-      ];
+      return portfolioManagerSteps;
     }
-    return this.pm101Steps;
+    return pm101Steps;
   }
 
   get contextTitle(): string {

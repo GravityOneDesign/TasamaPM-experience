@@ -13,13 +13,13 @@ import { CommonModule } from '@angular/common';
         class="pm101-static-card card-overview" 
         type="button" 
         (click)="onOverviewClick.emit()"
-        aria-label="View Portfolio Overview"
+        aria-label="View Portfolio Name"
       >
         <img class="pm101-project-card-art" src="./assets/pm101-first-project-card-bg.png" alt="" aria-hidden="true" />
         <div class="pm101-static-card-content">
-          <strong>Portfolio Overview</strong>
+          <strong>Portfolio Name</strong>
           <span class="pm101-project-cta">
-            <span>View Portfolio</span>
+            <span>Go to portfolio</span>
             <span class="pm101-project-cta-arrow" aria-hidden="true"></span>
           </span>
         </div>

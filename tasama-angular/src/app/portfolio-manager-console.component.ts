@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PmConsoleContentComponent } from './pm-console-content.component';
 import { PortfolioWorkspaceComponent } from './portfolio-workspace/portfolio-workspace.component';
+import { PortfolioManagerLandingComponent } from './portfolio-manager-landing.component';
 import { PmConsoleMountOptions, ProjectOption } from './pm-console.types';
 
 type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground' | 'portfolio-workspace';
@@ -10,7 +10,7 @@ type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
 @Component({
   selector: 'app-portfolio-manager-console',
   standalone: true,
-  imports: [CommonModule, PmConsoleContentComponent, PortfolioWorkspaceComponent],
+  imports: [CommonModule, PortfolioWorkspaceComponent, PortfolioManagerLandingComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @switch (selectedPage) {
@@ -18,19 +18,7 @@ type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
         <app-portfolio-workspace [activeTab]="$any(portfolioWorkspaceTab)" (activeTabChange)="consoleStateChange.emit({ portfolioWorkspaceTab: $event })" />
       }
       @default {
-        <app-pm-console-content
-          pmMode="fatima"
-          [projectOptions]="projectOptions"
-          [selectedProject]="selectedProject"
-          [selectedPage]="$any(selectedPage)"
-          [selectedView]="selectedView"
-          [frontDoorMode]="frontDoorMode"
-          [pmoAssignmentReady]="pmoAssignmentReady"
-          [guidedTourActive]="guidedTourActive"
-          [guidedTourExitMode]="guidedTourExitMode"
-          [onboardingAssignmentFlow]="onboardingAssignmentFlow"
-          [onboardingPm101Locked]="onboardingPm101Locked"
-          [onboardingProjectSetup]="onboardingProjectSetup"
+        <app-portfolio-manager-landing
           (consoleStateChange)="consoleStateChange.emit($event)"
         />
       }
