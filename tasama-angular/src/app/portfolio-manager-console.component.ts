@@ -22,7 +22,11 @@ type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
   template: `
     @switch (selectedPage) {
       @case ('portfolio-workspace') {
-        <app-portfolio-workspace [activeTab]="$any(portfolioWorkspaceTab)" (activeTabChange)="consoleStateChange.emit({ portfolioWorkspaceTab: $event })" />
+        <app-portfolio-workspace
+          [activeTab]="$any(portfolioWorkspaceTab)"
+          (activeTabChange)="consoleStateChange.emit({ portfolioWorkspaceTab: $event })"
+          (back)="consoleStateChange.emit({ selectedPage: 'workspace' })"
+        />
       }
       @case ('framework') {
         <div class="portfolio-workspace-page-container">

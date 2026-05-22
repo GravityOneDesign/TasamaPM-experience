@@ -21,54 +21,64 @@ type WorkspaceTab = 'overview' | 'registers' | 'reports';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="portfolio-workspace-page-container">
-      
-      <!-- Standard Folder-Tabs Layout Canvas -->
-      <div class="pm-projects-shell" style="flex: 1; min-height: 0;">
-        <!-- Horizontal Sliding Tab Navigation Bar -->
-        <div 
-          class="pm-register-tabs" 
-          role="tablist" 
-          aria-label="Portfolio workspace tabs"
-          [style.--register-tab-left]="portfolioTabIndicatorLeft" 
-          [style.--register-tab-width]="portfolioTabIndicatorWidth"
-        >
-          <span class="pm-register-tab-indicator" aria-hidden="true"></span>
-          @for (tab of tabs; track tab.id) {
-            <button
-              class="pm-register-tab"
-              [class.active]="activeTab === tab.id"
-              type="button"
-              role="tab"
-              [attr.aria-selected]="activeTab === tab.id"
-              [style.width]="portfolioTabWidth(tab.id)"
-              (click)="setActiveTab(tab.id)"
+      <div class="project-plan-card-frame" style="flex: 1; min-height: 0;">
+        <header class="project-plan-hero plan-builder-hero project-scope-hero project-plan-card-hero">
+          <img class="project-plan-hero-art" src="./assets/workspace-line-art.svg" alt="" aria-hidden="true" />
+          <div class="project-plan-hero-inner">
+            <div class="project-plan-summary">
+              <div class="project-plan-title plan-builder-title">
+                <button class="project-plan-back" type="button" aria-label="Go back" (click)="goBack()">
+                  <span class="icon" aria-hidden="true"><span pmConsoleIcon="arrow-left"></span></span>
+                </button>
+                <h1>{{ portfolioName }}</h1>
+              </div>
+            </div>
+            
+            <!-- Horizontal Sliding Tab Navigation Bar -->
+            <div 
+              class="pm-register-tabs" 
+              role="tablist" 
+              aria-label="Portfolio workspace tabs"
+              [style.--register-tab-left]="portfolioTabIndicatorLeft" 
+              [style.--register-tab-width]="portfolioTabIndicatorWidth"
+              style="position: absolute; bottom: 0; left: 16px; margin: 0; z-index: 4;"
             >
-              <span class="pm-register-tab-icon">
-                <span [pmConsoleIcon]="tab.icon"></span>
-              </span>
-              <span class="pm-register-tab-copy"><strong>{{ tab.label }}</strong></span>
-            </button>
-          }
-        </div>
+              <span class="pm-register-tab-indicator" aria-hidden="true"></span>
+              @for (tab of tabs; track tab.id) {
+                <button
+                  class="pm-register-tab"
+                  [class.active]="activeTab === tab.id"
+                  type="button"
+                  role="tab"
+                  [attr.aria-selected]="activeTab === tab.id"
+                  [style.width]="portfolioTabWidth(tab.id)"
+                  (click)="setActiveTab(tab.id)"
+                >
+                  <span class="pm-register-tab-icon">
+                    <span [pmConsoleIcon]="tab.icon"></span>
+                  </span>
+                  <span class="pm-register-tab-copy"><strong>{{ tab.label }}</strong></span>
+                </button>
+              }
+            </div>
+          </div>
+        </header>
 
         <!-- Scrollable Tab Content Outlet inside white Board Container -->
-        <div class="pm-projects-board">
-          <main class="pm-projects-board-body portfolio-workspace-body">
-            @switch (activeTab) {
-              @case ('overview') {
-                <app-portfolio-workspace-overview></app-portfolio-workspace-overview>
-              }
-              @case ('registers') {
-                <app-portfolio-workspace-registers></app-portfolio-workspace-registers>
-              }
-              @case ('reports') {
-                <app-portfolio-workspace-reports></app-portfolio-workspace-reports>
-              }
+        <main class="portfolio-workspace-body" style="grid-row: 2; overflow-y: auto; background: #ffffff; padding: 20px 24px;">
+          @switch (activeTab) {
+            @case ('overview') {
+              <app-portfolio-workspace-overview></app-portfolio-workspace-overview>
             }
-          </main>
-        </div>
+            @case ('registers') {
+              <app-portfolio-workspace-registers></app-portfolio-workspace-registers>
+            }
+            @case ('reports') {
+              <app-portfolio-workspace-reports></app-portfolio-workspace-reports>
+            }
+          }
+        </main>
       </div>
-
     </div>
   `,
   styles: [`
@@ -76,7 +86,9 @@ type WorkspaceTab = 'overview' | 'registers' | 'reports';
       display: flex;
       flex-direction: column;
       height: 100%;
-      background: transparent;
+      background:
+        radial-gradient(circle at 29% 0%, rgba(16, 6, 159, 0.055) 0, rgba(16, 6, 159, 0) 220px),
+        linear-gradient(180deg, #fbfbff 0%, #f8f9fc 42%);
       color: #202633;
       padding: 16px 24px 24px 24px;
     }
@@ -97,6 +109,12 @@ export class PortfolioWorkspaceComponent {
 
   @Input() activeTab: WorkspaceTab = 'overview';
   @Output() readonly activeTabChange = new EventEmitter<WorkspaceTab>();
+  @Output() readonly back = new EventEmitter<void>();
+
+  goBack(): void {
+    this.back.emit();
+  }
+
 
   tabs = [
     { id: 'overview', label: 'Overview', icon: 'grid' },
