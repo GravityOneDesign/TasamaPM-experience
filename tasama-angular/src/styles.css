@@ -2588,9 +2588,9 @@ b {
   width: 48px;
 }
 
+.framework-command .action-icon,
 .learning-command .action-icon {
-  background: rgba(16, 6, 159, 0.1);
-  color: var(--brand);
+  background: #DDEFFB;
 }
 
 .action-icon .icon {
@@ -5264,12 +5264,13 @@ b {
 .workspace-line-art {
   display: block;
   height: 170px;
-  left: 410px;
   max-width: none;
   object-fit: fill;
   opacity: 1;
   pointer-events: none;
   position: absolute;
+  right: 0;
+  left: auto;
   top: 0;
   width: 603px;
 }
@@ -7830,7 +7831,8 @@ b {
 }
 
 .pm101-operational-shell-head .workspace-line-art {
-  left: 421px;
+  left: auto;
+  right: 0;
 }
 
 .pm101-operational-shell-head .workspace-shell-actions {
