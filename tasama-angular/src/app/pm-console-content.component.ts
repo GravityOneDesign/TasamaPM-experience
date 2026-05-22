@@ -35,6 +35,7 @@ import {
 } from './shared/pm-console-benefit-profile.component';
 import { PmConsoleFieldComponent, type PmConsoleFieldType } from './shared/pm-console-field.component';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
+import { PmConsoleModeTabsComponent, type PmConsoleModeTabItem } from './shared/pm-console-mode-tabs.component';
 import { PmConsoleOverviewCardsComponent, type PmConsoleOverviewCard } from './shared/pm-console-overview-cards.component';
 import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-dropdown.component';
 import { PmConsoleProjectProfileCardComponent } from './shared/pm-console-project-profile-card.component';
@@ -79,13 +80,15 @@ const workspaceRegisterTabWidths: Record<WorkspaceRegister, number> = {
 };
 const projectPlanEntryOrder: ProjectPlanEntry[] = ['quick', 'reports', 'stages', 'change-request', 'closure'];
 const onboardingProjectPlanEntryOrder: ProjectPlanEntry[] = ['quick', 'stages'];
-const projectPlanEntryTabWidths: Record<ProjectPlanEntry, number> = {
-  quick: 156,
-  reports: 122,
-  stages: 122,
-  'change-request': 206,
-  closure: 128,
+const projectPlanEntryTabItems: Record<ProjectPlanEntry, PmConsoleModeTabItem> = {
+  quick: { id: 'quick', label: 'Project Plan', icon: 'folder', widthPx: 156 },
+  reports: { id: 'reports', label: 'Reports', icon: 'panels-top-left', widthPx: 122 },
+  stages: { id: 'stages', label: 'Stages', icon: 'route', widthPx: 122 },
+  'change-request': { id: 'change-request', label: 'Change requests', icon: 'chart-pie', widthPx: 206 },
+  closure: { id: 'closure', label: 'Closure', icon: 'chart-pie', widthPx: 128 },
 };
+const projectPlanEntryTabList: readonly PmConsoleModeTabItem[] = projectPlanEntryOrder.map((entry) => projectPlanEntryTabItems[entry]);
+const onboardingProjectPlanEntryTabList: readonly PmConsoleModeTabItem[] = onboardingProjectPlanEntryOrder.map((entry) => projectPlanEntryTabItems[entry]);
 
 interface ProjectPlanReturnState {
   selectedProject: string;
@@ -3620,6 +3623,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
     PmConsoleBenefitProfileComponent,
     PmConsoleFieldComponent,
     PmConsoleIconComponent,
+    PmConsoleModeTabsComponent,
     PmConsoleOverviewCardsComponent,
     PmConsolePlanDrawerComponent,
     PmConsolePlanEmptyStateComponent,
@@ -3983,20 +3987,12 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     </div>
                     <div class="project-plan-meta"><span>Stage: <b class="blue">{{ projectPlanStage }}</b></span><span>State: <b class="green">Active</b></span><span>Plan: <b [class.purple]="!onboardingProjectSetup" [class.draft]="onboardingProjectSetup">{{ onboardingProjectSetup ? 'Draft' : 'Endorsed' }}</b></span></div>
                   </div>
-                  <div class="plan-builder-modebar project-modebar project-modebar-inline" aria-label="Project workspace mode">
-                    <div class="plan-builder-mode-toggle project-mode-toggle" [style.--project-entry-tab-left]="projectPlanEntryIndicatorLeft" [style.--project-entry-tab-width]="projectPlanEntryIndicatorWidth">
-                      <span class="project-mode-tab-indicator" aria-hidden="true"></span>
-                      <button [class.active]="projectPlanEntry === 'quick'" [style.width]="projectPlanEntryTabWidth('quick')" type="button" (click)="setProjectPlanEntry('quick')"><span class="icon" aria-hidden="true"><i data-lucide="folder"></i></span>Project Plan</button>
-                      @if (!onboardingProjectSetup) {
-                        <button [class.active]="projectPlanEntry === 'reports'" [style.width]="projectPlanEntryTabWidth('reports')" type="button" (click)="setProjectPlanEntry('reports')"><span class="icon" aria-hidden="true"><i data-lucide="panels-top-left"></i></span>Reports</button>
-                      }
-                      <button [class.active]="projectPlanEntry === 'stages'" [style.width]="projectPlanEntryTabWidth('stages')" type="button" (click)="setProjectPlanEntry('stages')"><span class="icon" aria-hidden="true"><i data-lucide="route"></i></span>Stages</button>
-                      @if (!onboardingProjectSetup) {
-                        <button [class.active]="projectPlanEntry === 'change-request'" [style.width]="projectPlanEntryTabWidth('change-request')" type="button" (click)="setProjectPlanEntry('change-request')"><span class="icon" aria-hidden="true"><i data-lucide="chart-pie"></i></span>Change requests</button>
-                        <button [class.active]="projectPlanEntry === 'closure'" [style.width]="projectPlanEntryTabWidth('closure')" type="button" (click)="setProjectPlanEntry('closure')"><span class="icon" aria-hidden="true"><i data-lucide="chart-pie"></i></span>Closure</button>
-                      }
-                    </div>
-                  </div>
+                  <app-pm-console-mode-tabs
+                    ariaLabel="Project workspace mode"
+                    [tabs]="projectPlanEntryTabs"
+                    [activeId]="projectPlanEntry"
+                    (tabSelected)="setProjectPlanEntryFromTab($event)"
+                  ></app-pm-console-mode-tabs>
                 </div>
               </header>
               @if (projectPlanEntry === 'quick') {
@@ -10651,21 +10647,8 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
-  get projectPlanEntryIndex(): number {
-    return Math.max(0, this.visibleProjectPlanEntryOrder.indexOf(this.projectPlanEntry));
-  }
-
-  get projectPlanEntryIndicatorLeft(): string {
-    const left = this.visibleProjectPlanEntryOrder.slice(0, this.projectPlanEntryIndex).reduce((total, entry) => total + projectPlanEntryTabWidths[entry], 0);
-    return `${left}px`;
-  }
-
-  get projectPlanEntryIndicatorWidth(): string {
-    return `${projectPlanEntryTabWidths[this.normalizedProjectPlanEntry]}px`;
-  }
-
-  projectPlanEntryTabWidth(entry: ProjectPlanEntry): string {
-    return `${projectPlanEntryTabWidths[entry]}px`;
+  get projectPlanEntryTabs(): readonly PmConsoleModeTabItem[] {
+    return this.onboardingProjectSetup ? onboardingProjectPlanEntryTabList : projectPlanEntryTabList;
   }
 
   get workspaceTableProjects(): ProjectRow[] {
@@ -13150,6 +13133,11 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.projectPlanExpandedFieldSections = {};
     if (nextEntry === 'closure') this.activeClosureSection = 'overview';
     this.iconsHydrated = false;
+  }
+
+  setProjectPlanEntryFromTab(entry: string): void {
+    if (!this.isProjectPlanEntry(entry)) return;
+    this.setProjectPlanEntry(entry);
   }
 
   setProjectPlanDetailMode(mode: ProjectPlanDetailMode): void {
@@ -17696,6 +17684,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   private normalizeProjectPlanEntry(entry: ProjectPlanEntry): ProjectPlanEntry {
     return this.visibleProjectPlanEntryOrder.includes(entry) ? entry : 'quick';
+  }
+
+  private isProjectPlanEntry(entry: string): entry is ProjectPlanEntry {
+    return projectPlanEntryOrder.includes(entry as ProjectPlanEntry);
   }
 
   projectPlanFieldOptions(field: ProjectPlanField): string[] {
