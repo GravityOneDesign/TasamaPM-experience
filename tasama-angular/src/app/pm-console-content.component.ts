@@ -11,6 +11,7 @@ import {
   OnDestroy,
   Output,
   SimpleChanges,
+  ViewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { animate, style, transition, trigger } from '@angular/animations';
@@ -33,6 +34,10 @@ import {
 import { PmConsoleFieldComponent, type PmConsoleFieldType } from './shared/pm-console-field.component';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 import { PmConsoleOverviewCardsComponent, type PmConsoleOverviewCard } from './shared/pm-console-overview-cards.component';
+import {
+  PmConsoleProjectCoverCropperComponent,
+  type PmConsoleProjectCoverChange,
+} from './shared/pm-console-project-cover-cropper.component';
 import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-dropdown.component';
 import { PmConsoleProjectProfileCardComponent } from './shared/pm-console-project-profile-card.component';
 import { PmConsoleReportingEmptyIllustrationComponent } from './shared/pm-console-reporting-empty-illustration.component';
@@ -95,6 +100,7 @@ const workspaceRegisterTabWidths: Record<WorkspaceRegister, number> = {
   risks: 165,
   benefits: 194,
 };
+const LEGACY_PROJECT_COVER_STORAGE_KEY = 'tasama.pmConsole.projectCoverImages';
 const projectPlanEntryOrder: ProjectPlanEntry[] = ['quick', 'reports', 'stages', 'change-request', 'closure'];
 const onboardingProjectPlanEntryOrder: ProjectPlanEntry[] = ['quick', 'stages'];
 const projectPlanEntryTabWidths: Record<ProjectPlanEntry, number> = {
@@ -3754,6 +3760,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
     PmConsolePlanDrawerComponent,
     PmConsolePlanEmptyStateComponent,
     PmConsolePlanTableComponent,
+    PmConsoleProjectCoverCropperComponent,
     PmConsoleProjectDropdownComponent,
     PmConsoleProjectProfileCardComponent,
     PmConsoleReportingEmptyIllustrationComponent,
@@ -3806,6 +3813,24 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
     ]),
   ],
   template: `
+    <app-pm-console-project-cover-cropper
+      #projectCoverCropper
+      [aspectRatio]="projectCoverAspectRatio"
+      (coverChange)="applyProjectCover($event)"
+    ></app-pm-console-project-cover-cropper>
+
+    <ng-template #projectCoverUploadButton let-projectId="projectId" let-projectName="projectName">
+      <button
+        class="pm101-project-cover-upload"
+        type="button"
+        [attr.aria-label]="'Change cover image for ' + projectName"
+        [title]="'Change cover image for ' + projectName"
+        (click)="openProjectCoverPicker(projectId, projectName, $event)"
+      >
+        <span [pmConsoleIcon]="'image-plus'" aria-hidden="true"></span>
+      </button>
+    </ng-template>
+
     <ng-template #pm101JourneyHead let-eyebrow="eyebrow">
       <div class="pm101-journey-head" [class.pm101-journey-head-with-toggle]="showPm101JourneyQuickLinksToggle">
         @if (eyebrow && !showPm101JourneyQuickLinksToggle) {
@@ -3850,16 +3875,14 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
           </div>
         </article>
         <article class="pm101-ready-project-card">
-          <img class="pm101-ready-project-card-art" src="./assets/pm101-first-project-card-bg.png" alt="" aria-hidden="true" />
+          <img class="pm101-ready-project-card-art" [src]="assignedProjectCoverArt" alt="" aria-hidden="true" />
           <span class="pm101-ready-project-chip">New project assigned by PMO</span>
           <strong class="pm101-ready-project-title">{{ firstAssignedProject.name }}</strong>
           <button class="pm101-ready-project-cta" type="button" (click)="openAssignedProjectPlan()" [attr.aria-label]="'Create project plan for ' + firstAssignedProject.name">
             <span>Create project plan</span>
             <span class="pm101-ready-project-cta-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
           </button>
-          <span class="pm101-ready-project-icon" aria-hidden="true">
-            <img src="./assets/workspace-card-box-dark.svg" alt="" />
-          </span>
+          <ng-container [ngTemplateOutlet]="projectCoverUploadButton" [ngTemplateOutletContext]="{ projectId: firstAssignedProject.id, projectName: firstAssignedProject.name }"></ng-container>
         </article>
       </div>
     </ng-template>
@@ -3873,6 +3896,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
           <span>Go to Project</span>
           <span class="pm101-selected-project-cta-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
         </button>
+        <ng-container [ngTemplateOutlet]="projectCoverUploadButton" [ngTemplateOutletContext]="{ projectId: selectedProject, projectName: selectedPm101ProjectTitle }"></ng-container>
       </article>
     </ng-template>
 
@@ -8641,7 +8665,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                   type="button"
                                   (click)="handlePm101ProjectPreview(project)"
                                 >
-                                  <img class="pm101-project-card-art" [src]="project.art" alt="" aria-hidden="true" />
+                                  <img class="pm101-project-card-art" [src]="projectCoverArt(project.id, project.art)" alt="" aria-hidden="true" />
                                   <span class="pm101-project-chip">{{ project.chip }}</span>
                                   <strong>{{ project.title }}</strong>
                                   @if (project.id === activePm101ProjectId) {
@@ -8655,6 +8679,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                     <span class="pm101-project-ghost-arrow" aria-hidden="true"></span>
                                   }
                                 </button>
+                                <ng-container [ngTemplateOutlet]="projectCoverUploadButton" [ngTemplateOutletContext]="{ projectId: project.id, projectName: project.title }"></ng-container>
                               </div>
                             }
                           </div>
@@ -9578,6 +9603,11 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   @Input() onboardingPm101Locked = false;
   @Input() onboardingProjectSetup = false;
   @Output() readonly consoleStateChange = new EventEmitter<Partial<PmConsoleMountOptions>>();
+
+  @ViewChild('projectCoverCropper') private projectCoverCropper?: PmConsoleProjectCoverCropperComponent;
+
+  readonly projectCoverAspectRatio = 16 / 5;
+  projectCoverImages: Record<string, string> = {};
 
   readonly benefitRegisterRows = benefitRegisterRows;
   readonly riskRegisterRows = riskRegisterRows;
@@ -10690,7 +10720,19 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     private readonly iconsService: PmConsoleIconService,
     private readonly changeDetector: ChangeDetectorRef,
     private readonly elementRef: ElementRef<HTMLElement>,
-  ) {}
+  ) {
+    this.clearStoredProjectCovers();
+  }
+
+  private clearStoredProjectCovers(): void {
+    if (typeof window === 'undefined') return;
+
+    try {
+      window.localStorage.removeItem(LEGACY_PROJECT_COVER_STORAGE_KEY);
+    } catch {
+      return;
+    }
+  }
 
   get pageMotionKey(): string {
     return [
@@ -11513,9 +11555,32 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return pm101ProjectPreviews.find((project) => project.id === this.selectedProject || project.routeProjectId === this.selectedProject) || null;
   }
 
+  get assignedProjectCoverArt(): string {
+    return this.projectCoverArt(firstAssignedProject.id, './assets/pm101-first-project-card-bg.png');
+  }
+
   get selectedPm101ProjectArt(): string {
-    if (this.selectedProject === firstAssignedProject.id) return './assets/pm101-first-project-card-bg.png';
-    return this.selectedPm101ProjectPreview?.art || './assets/pm101-active-card-bg.jpg';
+    const fallbackArt = this.selectedProject === firstAssignedProject.id ? './assets/pm101-first-project-card-bg.png' : this.selectedPm101ProjectPreview?.art || './assets/pm101-active-card-bg.jpg';
+    return this.projectCoverArt(this.selectedProject, fallbackArt);
+  }
+
+  projectCoverArt(projectId: string, fallbackArt: string): string {
+    return this.projectCoverImages[projectId] || fallbackArt;
+  }
+
+  openProjectCoverPicker(projectId: string, projectName: string, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    this.projectCoverCropper?.open({ projectId, projectName });
+  }
+
+  applyProjectCover(change: PmConsoleProjectCoverChange): void {
+    this.projectCoverImages = {
+      ...this.projectCoverImages,
+      [change.projectId]: change.dataUrl,
+    };
+    this.iconsHydrated = false;
+    this.changeDetector.markForCheck();
   }
 
   get selectedPm101ProjectChip(): string {

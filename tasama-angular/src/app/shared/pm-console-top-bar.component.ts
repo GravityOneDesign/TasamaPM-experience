@@ -54,7 +54,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
         </button>
         <button class="profile-chip" type="button">
           <span class="avatar-xl">MH<i></i></span>
-          <span><strong>Muna Hassan</strong><small>Senior Analyst</small></span>
+          <span><strong>Muna Hassan</strong><small>Project Manager</small></span>
         </button>
       </div>
     </header>

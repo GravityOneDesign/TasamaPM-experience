@@ -232,7 +232,7 @@ b {
 .login-copy h1 {
   color: #1d252d;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 22px;
   text-transform: capitalize;
 }
@@ -254,7 +254,8 @@ b {
   line-height: 18px;
 }
 
-.login-field input {
+.login-field input,
+.login-field select {
   background: #fff;
   border: 1px solid #a6a6a6;
   border-radius: 8px;
@@ -266,11 +267,33 @@ b {
   width: 100%;
 }
 
+.login-select-wrap {
+  display: block;
+  position: relative;
+}
+
+.login-field select {
+  appearance: none;
+  padding-right: 40px;
+}
+
+.login-select-icon {
+  color: #1d252d;
+  height: 16px;
+  pointer-events: none;
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+}
+
 .login-field input::placeholder {
   color: #595959;
 }
 
-.login-field input:focus {
+.login-field input:focus,
+.login-field select:focus {
   border-color: var(--brand);
   box-shadow: 0 0 0 3px rgba(16, 6, 159, 0.08);
 }
@@ -327,7 +350,7 @@ b {
   color: #fff;
   display: inline-flex;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   height: 40px;
   justify-content: center;
   letter-spacing: 0.1px;
@@ -6824,6 +6847,66 @@ b {
   width: 24px;
 }
 
+.pm101-project-cover-upload {
+  align-items: center;
+  appearance: none;
+  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 10px;
+  box-shadow: 0 8px 18px rgba(1, 10, 15, 0.14);
+  color: #ffffff;
+  cursor: pointer;
+  display: inline-flex;
+  height: 34px;
+  justify-content: center;
+  padding: 0;
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    opacity 180ms ease,
+    transform 180ms ease;
+  width: 34px;
+  z-index: 6;
+}
+
+.pm101-ready-project-card > .pm101-project-cover-upload,
+.pm101-selected-project-hero > .pm101-project-cover-upload {
+  right: 16px;
+  top: 16px;
+}
+
+.pm101-project-card-slot:not(.is-selected) .pm101-project-cover-upload {
+  border-radius: 9px;
+  height: 30px;
+  opacity: 0.88;
+  right: 10px;
+  top: 10px;
+  width: 30px;
+}
+
+.pm101-project-cover-upload:hover,
+.pm101-project-cover-upload:focus-visible {
+  background: rgba(255, 255, 255, 0.24);
+  border-color: rgba(255, 255, 255, 0.58);
+  outline: 3px solid rgba(173, 220, 145, 0.62);
+  outline-offset: 2px;
+  transform: translateY(-1px);
+}
+
+.pm101-project-cover-upload .icon {
+  height: 17px;
+  width: 17px;
+}
+
+.pm101-project-card-slot:not(.is-selected) .pm101-project-cover-upload .icon {
+  height: 15px;
+  width: 15px;
+}
+
 .pm101-selected-project-hero {
   align-items: flex-start;
   background: #183733;
@@ -7360,6 +7443,10 @@ b {
   transition: transform 360ms var(--motion-ease), filter 260ms ease;
   width: 100%;
   z-index: 1;
+}
+
+.pm101-project-card-assigned .pm101-project-card-art {
+  object-position: center 58%;
 }
 
 .pm101-project-card.is-selected .pm101-project-card-art {
