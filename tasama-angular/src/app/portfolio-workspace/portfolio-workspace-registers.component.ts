@@ -98,10 +98,8 @@ type SubTab = 'projects' | 'risks' | 'benefits';
               </article>
             </div>
 
-            <!-- Toolbar -->
             <div class="register-toolbar">
               <div class="toolbar-left" style="display: flex; align-items: center; gap: 16px;">
-                <span class="items-count">{{ totalRowsCount }} items found</span>
                 <!-- Create Dropdown Container -->
                 <div class="create-dropdown-container" style="position: relative; display: inline-block;">
                   <button class="tb-btn primary-tb" type="button" (click)="toggleCreateDropdown($event)" style="display: inline-flex; align-items: center; gap: 6px;">
@@ -124,6 +122,14 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                 </div>
               </div>
               <div class="toolbar-right">
+                <!-- Legend for Items Needing Review -->
+                <div class="review-legend" title="First two items in this register have components requiring active PM review">
+                  <span class="review-legend-icon">
+                    <span [pmConsoleIcon]="'alert-circle'"></span>
+                  </span>
+                  <span class="review-legend-text">Needs Review</span>
+                </div>
+
                 <!-- Toggleable Search -->
                 <div class="search-toggle-container" [class.is-expanded]="showSearch">
                   <button class="tb-btn search-toggle-btn" type="button" (click)="showSearch = !showSearch" aria-label="Toggle search">
@@ -157,13 +163,12 @@ type SubTab = 'projects' | 'risks' | 'benefits';
               <table class="pm-project-table">
                 <thead>
                   <tr>
-                    <th style="width: 30%">Program / Project Name</th>
-                    <th style="width: 10%">Stage</th>
-                    <th style="width: 13%">Status Trend</th>
-                    <th style="width: 15%">Manager</th>
+                    <th style="width: 36%">Program / Project Name</th>
+                    <th style="width: 12%">Stage</th>
+                    <th style="width: 15%">Status Trend</th>
+                    <th style="width: 17%">Manager</th>
                     <th style="width: 10%">Start Date</th>
-                    <th style="width: 14%">Status</th>
-                    <th style="width: 8%">Budget Utilised</th>
+                    <th style="width: 10%">Budget Utilised</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -185,6 +190,11 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                             <div class="title-meta">
                               <strong class="program-name-blue">{{ prog.name }}</strong>
                               <span class="badge-tag program-tag">Program</span>
+                              @if (prog.id === 'prog-1' || prog.id === 'prog-2') {
+                                <span class="review-needed-indicator" title="Needs review">
+                                  <span [pmConsoleIcon]="'alert-circle'"></span>
+                                </span>
+                              }
                             </div>
                           </div>
                         </div>
@@ -212,11 +222,6 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                         </div>
                       </td>
                       <td class="date-col">{{ formatDate(prog.startDate) }}</td>
-                      <td>
-                        <span class="status-pill {{ getRowStatusClass(prog.id, prog.status) }}">
-                          {{ getRowStatusLabel(prog.id, prog.status) }}
-                        </span>
-                      </td>
                       <td class="budget-col">{{ prog.budgetUtilised }}</td>
                     </tr>
 
@@ -259,11 +264,6 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                             </div>
                           </td>
                           <td class="date-col">{{ formatDate(proj.startDate) }}</td>
-                          <td>
-                            <span class="status-pill {{ getRowStatusClass(proj.id, proj.status) }}">
-                              {{ getRowStatusLabel(proj.id, proj.status) }}
-                            </span>
-                          </td>
                           <td class="budget-col">{{ proj.budgetUtilised }}</td>
                         </tr>
                       }
@@ -307,11 +307,6 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                         </div>
                       </td>
                       <td class="date-col">{{ formatDate(sa.startDate) }}</td>
-                      <td>
-                        <span class="status-pill {{ getRowStatusClass(sa.id, sa.status) }}">
-                          {{ getRowStatusLabel(sa.id, sa.status) }}
-                        </span>
-                      </td>
                       <td class="budget-col">{{ sa.budgetUtilised }}</td>
                     </tr>
                   }
@@ -1113,6 +1108,62 @@ type SubTab = 'projects' | 'risks' | 'benefits';
       width: 32px;
       height: 32px;
       padding: 0 !important;
+    }
+
+    /* Needs Review indicator & legend styles */
+    .review-legend {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #eef2ff;
+      border: 1px solid rgba(16, 6, 159, 0.15);
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #10069f;
+      margin-right: 6px;
+    }
+
+    .review-legend-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .review-legend-icon ::ng-deep .icon {
+      width: 14px !important;
+      height: 14px !important;
+      stroke-width: 2.5px !important;
+      color: #10069f !important;
+    }
+
+    .review-needed-indicator {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #10069f;
+      background: #eef2ff;
+      border: 1px solid rgba(16, 6, 159, 0.15);
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      margin-left: 6px;
+      transition: all 0.2s ease;
+      cursor: help;
+    }
+    
+    .review-needed-indicator:hover {
+      transform: scale(1.1);
+      background: #e0e7ff;
+      border-color: rgba(16, 6, 159, 0.3);
+    }
+
+    .review-needed-indicator ::ng-deep .icon {
+      width: 12px !important;
+      height: 12px !important;
+      stroke-width: 2.5px !important;
+      color: #10069f !important;
     }
   `]
 })

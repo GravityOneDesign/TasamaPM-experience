@@ -114,7 +114,7 @@ export class PortfolioWorkspaceComponent {
     { id: 'overview', label: 'Overview', icon: 'grid' },
     { id: 'plan', label: 'Portfolio Plan', icon: 'calendar' },
     { id: 'framework', label: 'Framework & Configuration', icon: 'settings' },
-    { id: 'registers', label: 'Program & Project Register', icon: 'clipboard-list' },
+    { id: 'registers', label: 'Registers', icon: 'clipboard-list' },
     { id: 'reports', label: 'Reports', icon: 'file-text' },
     { id: 'performance', label: 'Portfolio Performance', icon: 'activity' },
   ] as const;
@@ -129,7 +129,7 @@ export class PortfolioWorkspaceComponent {
       overview: 135,
       plan: 165,
       framework: 260,
-      registers: 260,
+      registers: 140,
       reports: 130,
       performance: 220,
     };
@@ -142,7 +142,7 @@ export class PortfolioWorkspaceComponent {
       overview: 135,
       plan: 165,
       framework: 260,
-      registers: 260,
+      registers: 140,
       reports: 130,
       performance: 220,
     };
@@ -154,7 +154,7 @@ export class PortfolioWorkspaceComponent {
       overview: 135,
       plan: 165,
       framework: 260,
-      registers: 260,
+      registers: 140,
       reports: 130,
       performance: 220,
     };

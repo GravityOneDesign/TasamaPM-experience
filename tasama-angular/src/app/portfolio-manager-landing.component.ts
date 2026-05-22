@@ -156,13 +156,17 @@ const reportStatusHistory = [
                   <div class="report-trend-row-foot" style="margin-top: 4px;">
                     <span class="report-row-due">
                       <span class="icon" aria-hidden="true"><i data-lucide="history"></i></span>
-                      <span>Your portfolio status has been stable</span>
+                      <span style="white-space: normal; line-height: 1.3;">Your portfolio status<br>has been stable</span>
                     </span>
+                    <button class="report-trend-create-btn" type="button" aria-label="Create report" (click)="openReport('Portfolio')">
+                      <span class="icon" aria-hidden="true"><i data-lucide="file-text"></i></span>
+                      <span>Create</span>
+                    </button>
                   </div>
                 </article>
 
                 <!-- Section Subheading -->
-                <div class="report-section-divider">Program & Portfolio Reporting Trends</div>
+                <div class="report-section-divider">Program & Project Reporting Compliance</div>
 
                 <!-- Card 2: Report completion rate -->
                 <article class="report-trend-row green">
@@ -371,6 +375,32 @@ const reportStatusHistory = [
     }
     .pm101-card-coming-soon:hover .coming-soon-badge {
       transform: translateY(0);
+    }
+    .report-trend-create-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      color: #10069f;
+      font-size: 13px;
+      font-weight: 600;
+      background: transparent;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s ease-in-out;
+    }
+    .report-trend-create-btn:hover {
+      background-color: rgba(16, 6, 159, 0.05);
+      color: #1b10bd;
+    }
+    .report-trend-create-btn .icon,
+    .report-trend-create-btn svg {
+      height: 16px;
+      width: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
   `],
 })
