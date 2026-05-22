@@ -18,3 +18,5 @@ export interface ProjectOption {
   id: string;
   name: string;
 }
+
+export type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground' | 'portfolio-workspace' | 'framework' | 'performance';

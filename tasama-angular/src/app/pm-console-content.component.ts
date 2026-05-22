@@ -20,7 +20,7 @@ import { PmConsolePlanEmptyStateComponent } from './pm-console-plan-empty-state.
 import { PmConsolePlanTableComponent } from './pm-console-plan-table.component';
 import { PmConsoleReportDrawerComponent } from './pm-console-report-drawer.component';
 import { PortfolioWorkspaceComponent } from './portfolio-workspace/portfolio-workspace.component';
-import { PmConsoleMountOptions, ProjectOption } from './pm-console.types';
+import { ConsolePage, PmConsoleMountOptions, ProjectOption } from './pm-console.types';
 import { iconMap, iconName } from './pm-console-icon.utils';
 import { pm101Steps, Pm101Step, portfolioManagerSteps } from './pm-console-pm101-steps';
 import { PmConsoleAiGuideChipComponent, pmConsoleAiGuideFor, type PmConsoleAiGuideCopy } from './shared/pm-console-ai-guide-chip.component';
@@ -59,7 +59,6 @@ import {
   type PmConsoleCalendarItem,
 } from './shared/pm-console-work-calendar.component';
 
-type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground' | 'portfolio-workspace';
 type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
 type ActionWorkspaceView = 'board' | 'calendar';
 type WorkspaceRegister = 'projects' | 'benefits' | 'risks';
@@ -12468,7 +12467,13 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   handlePm101StepAction(step: Pm101Step): void {
     if (this.pmMode === 'fatima') {
       const tabId = step.footerActionId;
-      if (tabId === 'framework' || tabId === 'registers' || tabId === 'reports') {
+      if (tabId === 'framework') {
+        this.consoleStateChange.emit({
+          selectedPage: 'framework'
+        });
+        return;
+      }
+      if (tabId === 'registers' || tabId === 'reports') {
         this.consoleStateChange.emit({
           selectedPage: 'portfolio-workspace',
           portfolioWorkspaceTab: tabId

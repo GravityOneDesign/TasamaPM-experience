@@ -114,6 +114,11 @@ const reportStatusHistory = [
                 <span class="action-copy"><strong>Workspaces</strong><small>Open project rooms</small></span>
                 <span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span>
               </button>
+              <button class="action-card framework-command" type="button" (click)="openFrameworkPage()">
+                <span class="action-icon"><img src="./assets/workspace-card-settings.svg" alt="" aria-hidden="true" /></span>
+                <span class="action-copy"><strong>Framework & Configuration</strong><small>Settings and structures</small></span>
+                <span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span>
+              </button>
               <button class="action-card learning-command is-unavailable" type="button" disabled aria-disabled="true" title="Learning Hub coming soon">
                 <span class="action-icon"><img src="./assets/workspace-card-notebook.svg" alt="" aria-hidden="true" /></span>
                 <span class="action-copy"><strong>Learning Hub</strong><small>Guides and playbooks</small></span>
@@ -445,9 +450,19 @@ export class PortfolioManagerLandingComponent implements AfterViewChecked {
     });
   }
 
+  openFrameworkPage(): void {
+    this.consoleStateChange.emit({
+      selectedPage: 'framework',
+    });
+  }
+
   handlePm101StepAction(step: Pm101Step): void {
     const tabId = step.footerActionId;
-    if (tabId === 'framework' || tabId === 'registers' || tabId === 'reports') {
+    if (tabId === 'framework') {
+      this.consoleStateChange.emit({
+        selectedPage: 'framework',
+      });
+    } else if (tabId === 'registers' || tabId === 'reports') {
       this.consoleStateChange.emit({
         selectedPage: 'portfolio-workspace',
         portfolioWorkspaceTab: tabId,

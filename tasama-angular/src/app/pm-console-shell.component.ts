@@ -2,7 +2,7 @@ import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component
 import { PmConsoleContentComponent } from './pm-console-content.component';
 import { PortfolioManagerConsoleComponent } from './portfolio-manager-console.component';
 import { PmConsoleIconService } from './pm-console-icon.service';
-import { PmConsoleMountOptions, ProjectOption } from './pm-console.types';
+import { ConsolePage, PmConsoleMountOptions, ProjectOption } from './pm-console.types';
 import { PmConsoleNotificationsComponent } from './pm-console-notifications.component';
 import { PmConsoleAgentDockComponent } from './shared/pm-console-agent-dock.component';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
@@ -14,7 +14,6 @@ interface RailItem extends PmConsoleSideNavItem {
   home?: boolean;
 }
 
-type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground' | 'portfolio-workspace';
 type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
 const ONBOARDING_PM101_PROJECT_ID = 'all';
 const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
@@ -220,11 +219,20 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   }
 
   get usesConsoleHeader(): boolean {
-    return this.frontDoorMode !== 'unassigned' && (this.selectedPage === 'workspace' || this.selectedPage === 'workspaces');
+    return this.frontDoorMode !== 'unassigned' && (this.selectedPage === 'workspace' || this.selectedPage === 'workspaces' || this.selectedPage === 'portfolio-workspace' || this.selectedPage === 'framework' || this.selectedPage === 'performance');
   }
 
   get primaryRailItems(): readonly RailItem[] {
-    return this.topRailItems.map((item) => ({
+    const baseItems = [...this.topRailItems];
+    if (this.currentUser === 'fatima') {
+      baseItems.push({
+        id: 'performance',
+        icon: 'activity',
+        label: 'Portfolio Performance',
+        page: 'performance'
+      });
+    }
+    return baseItems.map((item) => ({
       ...item,
       label: item.id === 'register' && this.currentUser === 'fatima' ? 'Portfolio Workspace' : item.label,
       disabled: this.isRailItemDisabled(item),
@@ -304,7 +312,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   }
 
   onRailItemClick(item: PmConsoleSideNavItem): void {
-    const railItem = [...this.topRailItems, ...this.bottomRailItems].find((candidate) => candidate.id === item.id);
+    const railItem = [...this.primaryRailItems, ...this.utilityRailItems].find((candidate) => candidate.id === item.id);
     if (!railItem) return;
 
     if (railItem.home) {
@@ -405,6 +413,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   }
 
   private get currentRailItemId(): string {
+    if (this.selectedPage === 'performance') return 'performance';
     if (this.selectedPage === 'workspaces' || this.selectedPage === 'portfolio-workspace' || ['wbs', 'project-plan', 'playground'].includes(this.selectedPage)) return 'register';
     if (this.selectedPage === 'workspace' && this.selectedView === 'pm101') return 'home';
     if (this.selectedPage === 'workspace') return 'dashboards';
@@ -412,7 +421,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   }
 
   private isRailItemUnavailable(itemId: string): boolean {
-    const railItem = [...this.topRailItems, ...this.bottomRailItems].find((candidate) => candidate.id === itemId);
-    return railItem ? this.isRailItemDisabled(railItem) : false;
+    const railItem = [...this.primaryRailItems, ...this.utilityRailItems].find((candidate) => candidate.id === itemId);
+    return railItem ? !!railItem.disabled : false;
   }
 }
