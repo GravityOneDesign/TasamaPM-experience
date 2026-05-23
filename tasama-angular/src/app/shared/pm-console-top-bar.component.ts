@@ -27,7 +27,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
 
         @if (showConsoleHeader) {
           <span class="brand-divider" aria-hidden="true"></span>
-          <span class="brand-title">PM Console</span>
+          <span class="brand-title">Project Manager Console</span>
         }
 
         @if (unassigned) {

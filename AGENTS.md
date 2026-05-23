@@ -6,6 +6,18 @@ These instructions apply to the whole repository. Read them before making any ch
 
 Tasama should be a structured, optimized, production-ready Angular codebase that matches supplied Figma designs closely while staying easy to extend. Prefer reusable component systems over one-off page markup.
 
+## Persona Entry And Ownership
+
+Each persona should have a clear app entry point and ownership boundary. Do not hide one persona inside another persona's front door, dashboard switch, or page mode unless the product design explicitly calls for that shared experience.
+
+- Login/persona selection should route or mount the selected persona's root shell directly.
+- Project Manager, Portfolio Manager, Program Manager, PMO, and Executive should each have a clear root component or shell when their experience is being built.
+- Do not add Portfolio Manager, Program Manager, PMO, or Executive route-level screens into `pm-console-content.component.ts` or PM-only front-door switches as a shortcut.
+- Share code through `tasama-angular/src/app/shared`, typed services, fixtures, utilities, and generalized components, not by mixing persona-specific state machines inside one large component.
+- If a persona needs a layout similar to PM, extract or reuse shared shell, card, table, toolbar, navigation, and form components instead of placing that persona inside the PM console flow.
+- Persona-specific branches should wire their persona from the login/persona entry configuration and keep feature code in a persona-owned folder unless it is intentionally shared.
+- A component, service, or data fixture used by more than one persona should be promoted to a shared location with neutral naming.
+
 ## Component-First Workflow
 
 Before implementing UI:
@@ -15,6 +27,19 @@ Before implementing UI:
 3. If a similar component exists but is too narrow, generalize it with typed inputs, outputs, and content projection instead of duplicating markup.
 4. Create a new component only when no existing component can reasonably support the design.
 5. When creating a new component, decide whether it is an atom, molecule, organism, or page-level shell before coding.
+
+## Component System Consistency
+
+Rapid prototyping must not create a new component family for every screen. A page made from one-off components can still be effectively hardcoded if those components are only useful for that page.
+
+- Treat tables, overview/metric cards, status pills, toolbars, buttons, drawers, tabs, filters, forms, and empty states as shared product patterns first.
+- Before creating a new component for one of these patterns, inspect existing shared and nearby feature components and decide whether the need is a reuse, variant, or generalization.
+- Prefer typed inputs, variants, content projection, and tokenized styling over creating another component with slightly different spacing, color, or layout.
+- If a Figma design differs slightly from an existing pattern, preserve the design intent through component variants unless the difference represents a genuinely new product pattern.
+- A new feature-scoped component should be designed for reuse within that feature or persona, not only to make one screenshot easier to code.
+- If a new component is expected to be reused across personas or workflows, place it in `tasama-angular/src/app/shared` or extract a shared base before duplicating it elsewhere.
+- Do not create a second table, overview card, status pill, toolbar, button, drawer, tab, or form-row implementation without documenting why the existing component family cannot support the design.
+- When a second similar use case appears, consolidate into the existing component or promote the feature component to a shared/base component before continuing.
 
 ## Atomic Design Structure
 
