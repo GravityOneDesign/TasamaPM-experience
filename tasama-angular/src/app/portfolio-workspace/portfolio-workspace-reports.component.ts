@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, HostListener } from '@angular/core'
 import { CommonModule } from '@angular/common';
 import { PmConsoleIconComponent } from '../shared/pm-console-icon.component';
 import { PmConsoleStatusPillComponent } from '../shared/pm-console-status-pill.component';
-import { portfolioReports } from './portfolio-workspace.data';
+import { portfolioReports, reportsStats } from './portfolio-workspace.data';
 
 type ReportsTab = 'awaiting' | 'scheduled' | 'past';
 
@@ -16,21 +16,62 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
 
       <!-- Content Outlets -->
       <div class="reports-outlet-content animation-slide">
-        <!-- Stats row -->
-        <div class="pm-project-table-stats" style="grid-template-columns: repeat(2, 280px); gap: 12px; margin-bottom: 8px;">
-          <article class="pm-project-table-stat green">
-            <span><span [pmConsoleIcon]="'folder-check'"></span></span>
-            <div class="stat-body">
-              <small class="stat-label">Total Past Reports</small>
-              <strong class="stat-value text-success">{{ submittedCount }} Submitted</strong>
+        <!-- Stats row (Image 3 Treatment) -->
+        <div class="custom-stats-row">
+          <!-- Card 1: Submitted Reports -->
+          <article class="custom-stat-card">
+            <span class="custom-stat-icon indigo-bg">
+              <span [pmConsoleIcon]="'file-text'"></span>
+            </span>
+            <div class="custom-stat-info">
+              <small class="custom-stat-label">Submitted Reports</small>
+              <strong class="custom-stat-value">{{ reportsStats.submittedReports }}</strong>
             </div>
           </article>
 
-          <article class="pm-project-table-stat blue">
-            <span><span [pmConsoleIcon]="'calendar'"></span></span>
-            <div class="stat-body">
-              <small class="stat-label">Last Submitted Report</small>
-              <strong class="stat-value text-primary">May 02, 2026</strong>
+          <!-- Card 2: Drafts -->
+          <article class="custom-stat-card">
+            <span class="custom-stat-icon indigo-bg">
+              <span [pmConsoleIcon]="'pencil'"></span>
+            </span>
+            <div class="custom-stat-info">
+              <small class="custom-stat-label">Drafts</small>
+              <strong class="custom-stat-value">{{ reportsStats.drafts }}</strong>
+            </div>
+          </article>
+
+          <!-- Card 3: Last Submitted -->
+          <article class="custom-stat-card">
+            <span class="custom-stat-icon indigo-bg">
+              <span [pmConsoleIcon]="'calendar'"></span>
+            </span>
+            <div class="custom-stat-info">
+              <small class="custom-stat-label">Last Submitted</small>
+              <strong class="custom-stat-value">{{ reportsStats.lastSubmitted }}</strong>
+            </div>
+          </article>
+
+          <!-- Card 4: Portfolio Health -->
+          <article class="custom-stat-card health-card">
+            <span class="custom-stat-icon orange-bg">
+              <span [pmConsoleIcon]="'bar-chart-3'"></span>
+            </span>
+            <div class="custom-stat-info">
+              <small class="custom-stat-label">Portfolio health</small>
+              <strong class="custom-stat-value health-poor">{{ reportsStats.portfolioHealth }}</strong>
+            </div>
+            
+            <div class="health-progress-section">
+              <div class="segmented-progress-bar">
+                <span class="progress-segment green" [style.width.%]="reportsStats.healthBreakdown.onTrack"></span>
+                <span class="progress-segment orange" [style.width.%]="reportsStats.healthBreakdown.alert"></span>
+                <span class="progress-segment red" [style.width.%]="reportsStats.healthBreakdown.offTrack"></span>
+              </div>
+              <div class="health-labels-row">
+                <span class="health-label-item">On track <strong>{{ reportsStats.healthBreakdown.onTrack }}%</strong></span>
+                <span class="health-label-item">Alert <strong>{{ reportsStats.healthBreakdown.alert }}%</strong></span>
+                <span class="health-label-item">Off track <strong>{{ reportsStats.healthBreakdown.offTrack }}%</strong></span>
+              </div>
             </div>
           </article>
         </div>
@@ -38,17 +79,13 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
         <!-- Table filter toolbar (styled like register-toolbar) -->
         <div class="register-toolbar">
           <div class="toolbar-left">
-            <button class="tb-btn primary-tb" type="button" style="display: inline-flex; align-items: center; gap: 6px;">
-              <span [pmConsoleIcon]="'plus'"></span>
-              <span>Create Report</span>
-            </button>
+            <span class="items-count">Items: {{ filteredPastReports.length }}</span>
           </div>
           <div class="toolbar-right">
             <div class="filter-dropdown-container">
-              <button class="tb-btn" type="button" (click)="toggleFilterDropdown($event)">
+              <button class="tb-btn" type="button" (click)="toggleFilterDropdown($event)" aria-label="Filter options">
                 <span [pmConsoleIcon]="'filter'"></span>
                 <span>Filter</span>
-                <span [pmConsoleIcon]="'chevron-down'" style="font-size: 10px; margin-left: 4px; opacity: 0.7;"></span>
               </button>
               @if (showFilterDropdown) {
                 <div class="filter-menu-popover">
@@ -58,6 +95,16 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
                 </div>
               }
             </div>
+
+            <button class="tb-btn" type="button" aria-label="Export">
+              <span [pmConsoleIcon]="'download'"></span>
+              <span>Export</span>
+            </button>
+
+            <button class="tb-btn primary-tb" type="button" style="display: inline-flex; align-items: center; gap: 6px;">
+              <span [pmConsoleIcon]="'plus'"></span>
+              <span>Create Report</span>
+            </button>
           </div>
         </div>
 
@@ -66,25 +113,31 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
           <table class="pm-project-table">
             <thead>
               <tr>
-                <th style="width: 30%">Report Name</th>
-                <th style="width: 20%">Reporting Period</th>
-                <th style="width: 15%">Status</th>
-                <th style="width: 20%">Created By</th>
-                <th style="width: 15%">Created At</th>
-                <th style="width: 10%; text-align: right">Actions</th>
+                <th style="width: 22%">Report Name</th>
+                <th style="width: 16%">Reporting Period</th>
+                <th style="width: 13%">Reporting Status</th>
+                <th style="width: 13%">Portfolio Status</th>
+                <th style="width: 16%">Created By</th>
+                <th style="width: 12%">Created At</th>
+                <th style="width: 8%; text-align: right">Actions</th>
               </tr>
             </thead>
             <tbody>
               @for (row of filteredPastReports; track row.name) {
                 <tr>
-                  <td><strong>{{ row.name }}</strong></td>
+                  <td><strong class="report-name-title">{{ row.name }}</strong></td>
                   <td class="period-text">{{ row.period }}</td>
                   <td>
-                    <span [pmConsoleStatusPill]="row.status" baseClass="dependency-register-pill" [tone]="row.status === 'Submitted' ? 'emerald' : 'amber'"></span>
+                    <span [pmConsoleStatusPill]="row.status" baseClass="pm-table-row-status" [tone]="row.status === 'Submitted' ? 'green' : 'blue'"></span>
+                  </td>
+                  <td>
+                    <span [pmConsoleStatusPill]="row.portfolioStatus" baseClass="pm-table-row-status" [tone]="row.portfolioStatus === 'On-Track' ? 'green' : (row.portfolioStatus === 'Off-Track' ? 'red' : 'amber')"></span>
                   </td>
                   <td>
                     <div class="avatar-cell">
-                      <div class="avatar-circle">{{ getInitials(row.createdBy) }}</div>
+                      <div class="avatar-circle" [ngStyle]="getCreatorAvatarStyles(row.createdBy)">
+                        {{ getInitials(row.createdBy) }}
+                      </div>
                       <span class="owner-name">{{ row.createdBy }}</span>
                     </div>
                   </td>
@@ -134,16 +187,136 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
     .reports-outlet-content {
       display: flex;
       flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Custom premium stats widgets (Image 3 Treatment) */
+    .custom-stats-row {
+      display: grid;
+      grid-template-columns: 200px 200px 220px 1fr;
+      gap: 16px;
+      margin-bottom: 0;
+    }
+
+    .custom-stat-card {
+      background: #ffffff;
+      border: 1px solid #edf0f6;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(25, 33, 61, 0.04);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      height: 84px;
+      box-sizing: border-box;
+    }
+
+    .custom-stat-card.health-card {
       gap: 20px;
     }
 
-    /* Stats row */
-    .pm-project-table-stats {
-      background: #ffffff;
-      padding: 8px 0;
-      margin: 0;
-      display: grid;
-      gap: 12px;
+    .custom-stat-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 18px;
+    }
+
+    .custom-stat-icon.indigo-bg {
+      background: #f0f0ff;
+      color: #3b3bc4;
+    }
+
+    .custom-stat-icon.orange-bg {
+      background: #FFF5E6;
+      color: #E87722;
+    }
+
+    .custom-stat-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    .custom-stat-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: #707788;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .custom-stat-value {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.2;
+    }
+
+    .custom-stat-value.health-poor {
+      color: #E87722;
+    }
+
+    .health-progress-section {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      gap: 8px;
+      justify-content: center;
+      min-width: 250px;
+    }
+
+    .segmented-progress-bar {
+      display: flex;
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+      background: #f1f5f9;
+      width: 100%;
+    }
+
+    .progress-segment {
+      height: 100%;
+    }
+
+    .progress-segment.green {
+      background: rgba(34, 160, 107, 0.5); /* #22A06B with 50% opacity */
+    }
+
+    .progress-segment.orange {
+      background: rgba(232, 119, 34, 0.5); /* #E87722 with 50% opacity */
+    }
+
+    .progress-segment.red {
+      background: rgba(185, 28, 28, 0.5); /* #B91C1C with 50% opacity */
+    }
+
+    .health-labels-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13px;
+      color: #64748b;
+      white-space: nowrap;
+    }
+
+    .health-label-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .health-label-item strong {
+      color: #0f172a;
+      font-weight: 700;
     }
 
     .stat-body {
@@ -170,14 +343,20 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
     /* Toolbar */
     .register-toolbar {
       background: #ffffff;
-      padding: 12px 20px;
-      margin-bottom: 4px;
+      padding: 10px 16px;
+      margin-bottom: 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
       border: 1px solid #e3e5e9;
       border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
+    }
+
+    .items-count {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: #64748b;
     }
 
     .toolbar-left {
@@ -255,14 +434,12 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
       width: 24px;
       height: 24px;
       border-radius: 50%;
-      background: rgba(0, 122, 255, 0.08);
-      color: #007aff;
       font-size: 9.5px;
       font-weight: 600;
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 1.5px solid rgba(0, 122, 255, 0.2);
+      border: none;
     }
 
     .owner-name {
@@ -389,7 +566,7 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
 
     .row-menu-popover {
       position: absolute;
-      right: 12px;
+      right: 64px;
       top: 80%;
       background: #ffffff;
       border: 1px solid #edf0f6;
@@ -437,6 +614,56 @@ type ReportsTab = 'awaiting' | 'scheduled' | 'past';
       background: rgba(222, 53, 11, 0.08);
       color: #de350b;
     }
+
+    /* Equal gaps, full width, and Register tab aligned typography */
+    .pm-project-table {
+      width: 100% !important;
+      min-width: 100% !important;
+      table-layout: fixed;
+    }
+
+    .pm-project-table th {
+      background: #f8fafc;
+      color: #555555;
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 13px 14px;
+      border-bottom: 1px solid #eceef3;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .pm-project-table td {
+      border-bottom: 1px solid #eceef3;
+      padding: 13px 14px;
+      vertical-align: middle;
+    }
+
+    .pm-project-table th:last-child,
+    .pm-project-table td:last-child {
+      padding-right: 64px !important; /* Prevent overlap with chatbot bubble icon */
+    }
+
+    .report-name-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #252a34;
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .period-text, .date-cell {
+      font-size: 13px;
+      color: #555555;
+    }
+
+    .owner-name {
+      font-size: 13px;
+      color: #252a34;
+    }
   `]
 })
 export class PortfolioWorkspaceReportsComponent {
@@ -445,6 +672,7 @@ export class PortfolioWorkspaceReportsComponent {
   awaitingReview = portfolioReports.awaitingReview;
   scheduled = portfolioReports.scheduled;
   past = portfolioReports.past;
+  reportsStats = reportsStats;
 
   showFilterDropdown = false;
   selectedStatusFilter: 'all' | 'Submitted' | 'Draft' = 'all';
@@ -510,6 +738,13 @@ export class PortfolioWorkspaceReportsComponent {
       return (parts[0][0] + parts[1][0]).toUpperCase();
     }
     return parts[0].slice(0, 2).toUpperCase();
+  }
+
+  getCreatorAvatarStyles(name: string): { [key: string]: string } {
+    if (name && name.includes('Khalid')) {
+      return { background: '#DFDFEE', color: '#4F46E5' };
+    }
+    return { background: '#E6ECF8', color: '#244980' };
   }
 
   statusTone(status: string): string {

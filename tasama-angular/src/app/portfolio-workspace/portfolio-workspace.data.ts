@@ -74,6 +74,7 @@ export interface PastReportRow {
   status: 'Submitted' | 'Draft';
   createdBy: string;
   createdAt: string;
+  portfolioStatus: 'On-Track' | 'Off-Track' | 'Alert';
 }
 
 export const portfolioSummary = {
@@ -317,13 +318,25 @@ export const portfolioReports = {
     { name: 'Annual Security Governance Audit', scope: 'Portfolio', frequency: 'Annually', nextDue: '2027-01-15', assignee: 'Fatima Qahtani', status: 'Paused' }
   ] as ScheduledReportRow[],
   past: [
-    { name: 'April 2026 Monthly Summary', period: '2026-04-01 - 2026-04-30', status: 'Submitted', createdBy: 'Fatima Qahtani', createdAt: '2026-05-02' },
-    { name: 'Q1 2026 Performance Review', period: '2026-01-01 - 2026-03-31', status: 'Submitted', createdBy: 'Fatima Qahtani', createdAt: '2026-04-12' },
-    { name: 'Central SOC Rollout Assessment', period: 'Ad-hoc', status: 'Submitted', createdBy: 'Dr. Khalid Al-Mansoori', createdAt: '2026-03-10' },
-    { name: 'March 2026 Monthly Summary', period: '2026-03-01 - 2026-03-31', status: 'Draft', createdBy: 'Fatima Qahtani', createdAt: '2026-04-02' },
-    { name: 'February 2026 Monthly Summary', period: '2026-02-01 - 2026-02-28', status: 'Draft', createdBy: 'Fatima Qahtani', createdAt: '2026-03-02' },
-    { name: 'Safe Security Baseline Proposal', period: 'Initiation', status: 'Submitted', createdBy: 'Dr. Khalid Al-Mansoori', createdAt: '2026-01-20' }
+    { name: 'April 2026 Monthly Summary', period: '2026-04-01 - 2026-04-30', status: 'Submitted', createdBy: 'Fatima Qahtani', createdAt: '2026-05-02', portfolioStatus: 'On-Track' },
+    { name: 'Q1 2026 Performance Review', period: '2026-01-01 - 2026-03-31', status: 'Submitted', createdBy: 'Fatima Qahtani', createdAt: '2026-04-12', portfolioStatus: 'On-Track' },
+    { name: 'Central SOC Rollout Assessment', period: 'Ad-hoc', status: 'Submitted', createdBy: 'Dr. Khalid Al-Mansoori', createdAt: '2026-03-10', portfolioStatus: 'Off-Track' },
+    { name: 'March 2026 Monthly Summary', period: '2026-03-01 - 2026-03-31', status: 'Draft', createdBy: 'Fatima Qahtani', createdAt: '2026-04-02', portfolioStatus: 'Alert' },
+    { name: 'February 2026 Monthly Summary', period: '2026-02-01 - 2026-02-28', status: 'Draft', createdBy: 'Fatima Qahtani', createdAt: '2026-03-02', portfolioStatus: 'On-Track' },
+    { name: 'Safe Security Baseline Proposal', period: 'Initiation', status: 'Submitted', createdBy: 'Dr. Khalid Al-Mansoori', createdAt: '2026-01-20', portfolioStatus: 'Alert' }
   ] as PastReportRow[]
+};
+
+export const reportsStats = {
+  submittedReports: 4,
+  drafts: 2,
+  lastSubmitted: '2026-04-01',
+  portfolioHealth: 'Poor',
+  healthBreakdown: {
+    onTrack: 15,
+    alert: 25,
+    offTrack: 60
+  }
 };
 
 export const riskRegisterData = [

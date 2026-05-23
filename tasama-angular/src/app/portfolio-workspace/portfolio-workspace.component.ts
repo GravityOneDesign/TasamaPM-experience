@@ -65,7 +65,7 @@ type WorkspaceTab = 'overview' | 'registers' | 'reports';
         </header>
 
         <!-- Contained Tab Content Outlet inside white Board Container -->
-        <main class="portfolio-workspace-body" style="grid-row: 2; display: flex; flex-direction: column; overflow: hidden; background: #ffffff; padding: 10px 24px 18px 24px;">
+        <main class="portfolio-workspace-body" style="grid-row: 2; display: flex; flex-direction: column; overflow-y: auto; background: #ffffff; padding: 10px 24px 18px 24px;">
           @switch (activeTab) {
             @case ('overview') {
               <app-portfolio-workspace-overview></app-portfolio-workspace-overview>
@@ -98,7 +98,7 @@ type WorkspaceTab = 'overview' | 'registers' | 'reports';
       flex-grow: 1;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      overflow-y: auto;
       background: #ffffff;
       padding: 10px 24px 18px;
     }

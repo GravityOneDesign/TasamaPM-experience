@@ -67,13 +67,13 @@ type SubTab = 'projects' | 'risks' | 'benefits';
               <div class="toolbar-left" style="display: flex; align-items: center; gap: 12px;">
                 <!-- Programs summary container -->
                 <div class="summary-pill active">
-                  <span class="pill-label">programs</span>
-                  <span class="pill-badge">{{ allProgramsCount }}</span>
+                  <span class="pill-label">Programs</span>
+                  <span class="pill-badge-circle">{{ allProgramsCount }}</span>
                 </div>
                 <!-- Standalone Projects summary container -->
                 <div class="summary-pill inactive">
-                  <span class="pill-label">standalone projects</span>
-                  <span class="pill-badge">{{ standaloneList.length }}</span>
+                  <span class="pill-label">Standalone Projects</span>
+                  <span class="pill-badge-circle">{{ standaloneList.length }}</span>
                 </div>
               </div>
               
@@ -135,12 +135,12 @@ type SubTab = 'projects' | 'risks' | 'benefits';
               <table class="pm-project-table">
                 <thead>
                   <tr>
-                    <th style="width: 36%">Program / Project Name</th>
+                    <th style="width: 30%">Program / Project Name</th>
                     <th style="width: 18%">Manager</th>
                     <th style="width: 14%">Status Trend</th>
-                    <th style="width: 11%">Start Date</th>
-                    <th style="width: 11%">End Date</th>
-                    <th style="width: 10%">Budget Utilised</th>
+                    <th style="width: 12%">Start Date</th>
+                    <th style="width: 12%">End Date</th>
+                    <th style="width: 14%">Budget Utilised</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -161,8 +161,8 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                             <div class="program-id-alert-wrapper" style="display: flex; align-items: center; gap: 6px;">
                               <span class="program-display-id">{{ getProgramDisplayId(prog.id) }}</span>
                               @if (prog.id === 'prog-1' || prog.id === 'prog-2') {
-                                <span class="review-needed-alert" title="Needs Attention">
-                                  <span [pmConsoleIcon]="'alert'"></span>
+                                <span class="review-needed-alert" title="Needs attention">
+                                  <span [pmConsoleIcon]="'triangle-alert'"></span>
                                 </span>
                               }
                             </div>
@@ -454,6 +454,14 @@ type SubTab = 'projects' | 'risks' | 'benefits';
     </div>
   `,
   styles: [`
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
     .workspace-registers-tab {
       display: flex;
       flex-direction: column;
@@ -550,12 +558,19 @@ type SubTab = 'projects' | 'risks' | 'benefits';
       border: none;
     }
 
-    .summary-pill .pill-badge {
-      font-size: 13.5px;
-      font-weight: 400; /* Light font weight */
-      color: #707788;
-      background: transparent !important;
-      padding: 0;
+    .summary-pill .pill-badge-circle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #DFDFEE;
+      opacity: 0.75;
+      color: #4f46e5;
+      font-size: 11px;
+      font-weight: 400; /* light font weight */
+      line-height: 1;
     }
 
     .pm-project-table-scroll {
@@ -850,6 +865,11 @@ type SubTab = 'projects' | 'risks' | 'benefits';
 
     .date-col, .budget-col {
       color: #555555;
+    }
+
+    .pm-project-table th:last-child,
+    .pm-project-table td:last-child {
+      padding-right: 64px !important; /* Prevent overlap with chatbot bubble icon */
     }
 
     /* Child rows styling */

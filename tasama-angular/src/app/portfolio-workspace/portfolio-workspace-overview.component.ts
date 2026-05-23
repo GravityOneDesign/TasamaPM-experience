@@ -21,186 +21,231 @@ import { portfolioSummary, KPICard, ObjectiveRow } from './portfolio-workspace.d
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="workspace-overview-tab">
-      <!-- 1. Top Section Grid (Description & Key Roles) -->
-      <div class="overview-top-grid">
-        <div class="overview-header-card description-card">
-          <h3>Description</h3>
-          <p class="description-text">{{ description }}</p>
-        </div>
-
-        <div class="overview-header-card roles-card">
-          <h3>Portfolio Roles</h3>
-          <div class="roles-list">
-            <div class="role-item">
-              <span class="role-label">Portfolio Owner</span>
-              <div class="role-content">
-                <div class="avatar-circle font-owner">{{ getInitials(owner) }}</div>
-                <strong class="role-name">{{ owner }}</strong>
-              </div>
+      
+      <!-- 1. Portfolio Profile Card (Image 2 style) -->
+      <article class="portfolio-profile-card">
+        <section class="portfolio-profile-intro" aria-label="Portfolio profile summary">
+          <span class="portfolio-profile-icon" aria-hidden="true">
+            <span pmConsoleIcon="briefcase"></span>
+          </span>
+          <div class="portfolio-profile-copy">
+            <div class="portfolio-profile-title-line">
+              <h3>Portfolio Profile</h3>
+              <span pmConsoleIcon="ai" class="ai-sparkle-icon"></span>
             </div>
-            <div class="role-divider"></div>
-            <div class="role-item">
-              <span class="role-label">Portfolio Sponsor</span>
-              <div class="role-content">
-                <div class="avatar-circle font-sponsor">{{ getInitials(sponsor) }}</div>
-                <strong class="role-name">{{ sponsor }}</strong>
-              </div>
-            </div>
+            <p>Browse your portfolio setup</p>
           </div>
-        </div>
-      </div>
+        </section>
 
-      <!-- 2. KPI Summary Stat Cards Grid (Only 2 columns now) -->
-      <div class="pm-project-table-stats">
-        @for (kpi of kpis; track kpi.label) {
-          <article class="pm-project-table-stat {{ kpiTone(kpi.label) }}">
-            <span><span [pmConsoleIcon]="kpi.icon"></span></span>
-            <div class="stat-body">
-              <small>{{ kpi.label }}</small>
-              <div class="stat-value-row">
-                <strong class="stat-value">{{ kpi.value }}</strong>
-                <span class="stat-trend" [class.trend-up]="kpi.trend.startsWith('+')" [class.trend-stable]="kpi.trend === 'Stable'">
-                  {{ kpi.trend }}
-                </span>
+        <dl class="portfolio-profile-fields">
+          <!-- Description Row spans full width (all 3 columns) -->
+          <div class="portfolio-profile-field wide-span">
+            <dt>Description</dt>
+            <dd class="description-val">{{ description }}</dd>
+          </div>
+
+          <!-- Row 2 -->
+          <div class="portfolio-profile-field">
+            <dt>Portfolio Owner</dt>
+            <dd class="has-avatar">
+              <span class="portfolio-profile-avatar owner-avatar" aria-hidden="true">{{ getInitials(owner) }}</span>
+              <strong>{{ owner }}</strong>
+            </dd>
+          </div>
+
+          <div class="portfolio-profile-field">
+            <dt>Portfolio Sponsor</dt>
+            <dd class="has-avatar">
+              <span class="portfolio-profile-avatar sponsor-avatar" aria-hidden="true">{{ getInitials(sponsor) }}</span>
+              <strong>{{ sponsor }}</strong>
+            </dd>
+          </div>
+
+          <div class="portfolio-profile-field">
+            <dt>Budget Utilisation</dt>
+            <dd>
+              <strong>42%</strong>
+              <span class="budget-trend-pill">+2.4%</span>
+            </dd>
+          </div>
+
+          <!-- Row 3 -->
+          <div class="portfolio-profile-field">
+            <dt>No. of Programs</dt>
+            <dd><strong>5</strong></dd>
+          </div>
+
+          <div class="portfolio-profile-field">
+            <dt>No. of Standalone Projects</dt>
+            <dd><strong>4</strong></dd>
+          </div>
+        </dl>
+      </article>
+
+      <!-- 2. Strategic Objectives Card (Image 3 style) -->
+      <article class="overview-section-card">
+        <section class="overview-section-intro">
+          <span class="overview-section-icon">
+            <span pmConsoleIcon="target"></span>
+          </span>
+          <div class="overview-section-copy">
+            <div class="overview-section-title-line">
+              <h3>Objectives</h3>
+              <span pmConsoleIcon="ai" class="ai-sparkle-icon"></span>
+            </div>
+            <p>Expected results and measures that define what success should look like for this portfolio.</p>
+          </div>
+        </section>
+
+        <div class="overview-section-table-wrapper">
+          <app-pm-console-plan-table
+            title="Strategic Objectives"
+            description="Expected results and measures that define what success should look like for this portfolio."
+            [countLabel]="objectives.length + ' objectives'"
+            actionLabel="Add objective"
+            actionAriaLabel="Add objective"
+            [iconName]="'target'"
+            panelClass="overview-register-card"
+            (action)="openAddObjectiveModal()"
+          >
+            @if (objectives.length) {
+              <div class="dependency-register-table-shell">
+                <table class="dependency-register-table" aria-label="Strategic Objectives">
+                  <thead>
+                    <tr>
+                      <th style="width: 35%">Objective</th>
+                      <th style="width: 35%">Target Measure</th>
+                      <th style="width: 18%">Owner</th>
+                      <th style="width: 12%">Status</th>
+                      <th aria-label="Actions" style="width: 5%"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (obj of objectives; track obj.title; let i = $index) {
+                      <tr>
+                        <td class="dependency-register-primary">
+                          <strong>{{ obj.title }}</strong>
+                        </td>
+                        <td class="objective-measure">{{ obj.measure }}</td>
+                        <td>
+                          <div class="avatar-cell">
+                            <div class="avatar-circle font-owner">{{ getInitials(obj.owner) }}</div>
+                            <span class="owner-name">{{ obj.owner }}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <span [pmConsoleStatusPill]="obj.status" baseClass="dependency-register-pill" [tone]="statusTone(obj.status)"></span>
+                        </td>
+                        <td class="schedule-table-actions">
+                          <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + obj.title">
+                            <button type="button" role="menuitem" (click)="openEditObjectiveModal(i)">
+                              <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                              Edit
+                            </button>
+                            <button class="danger" type="button" role="menuitem" (click)="deleteObjective(i)">
+                              <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                              Delete
+                            </button>
+                          </app-pm-console-row-action-menu>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
               </div>
-            </div>
-          </article>
-        }
-      </div>
+            } @else {
+              <div class="empty-state-card">
+                <span [pmConsoleIcon]="'target'" class="empty-icon"></span>
+                <p class="empty-title">No objectives added yet</p>
+                <p class="empty-subtitle">Click the button above to add the first strategic objective.</p>
+              </div>
+            }
+          </app-pm-console-plan-table>
+        </div>
+      </article>
 
-      <!-- 3. Strategic Objectives Table Section wrapped in app-pm-console-plan-table -->
-      <div class="objectives-wrapper">
-        <app-pm-console-plan-table
-          title="Strategic Objectives"
-          description="Expected results and measures that define what success should look like for this portfolio."
-          [countLabel]="objectives.length + ' objectives'"
-          actionLabel="Add objective"
-          actionAriaLabel="Add objective"
-          [iconName]="'target'"
-          panelClass="overview-register-card"
-          (action)="openAddObjectiveModal()"
-        >
-          @if (objectives.length) {
-            <div class="dependency-register-table-shell">
-              <table class="dependency-register-table" aria-label="Strategic Objectives">
-                <thead>
-                  <tr>
-                    <th style="width: 35%">Objective</th>
-                    <th style="width: 35%">Target Measure</th>
-                    <th style="width: 18%">Owner</th>
-                    <th style="width: 12%">Status</th>
-                    <th aria-label="Actions" style="width: 5%"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (obj of objectives; track obj.title; let i = $index) {
-                    <tr>
-                      <td class="dependency-register-primary">
-                        <strong>{{ obj.title }}</strong>
-                      </td>
-                      <td class="objective-measure">{{ obj.measure }}</td>
-                      <td>
-                        <div class="avatar-cell">
-                          <div class="avatar-circle font-owner">{{ getInitials(obj.owner) }}</div>
-                          <span class="owner-name">{{ obj.owner }}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <span [pmConsoleStatusPill]="obj.status" baseClass="dependency-register-pill" [tone]="statusTone(obj.status)"></span>
-                      </td>
-                      <td class="schedule-table-actions">
-                        <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + obj.title">
-                          <button type="button" role="menuitem" (click)="openEditObjectiveModal(i)">
-                            <span pmConsoleIcon="pencil" aria-hidden="true"></span>
-                            Edit
-                          </button>
-                          <button class="danger" type="button" role="menuitem" (click)="deleteObjective(i)">
-                            <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
-                            Delete
-                          </button>
-                        </app-pm-console-row-action-menu>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
+      <!-- 3. KPIs Card (Image 3 style) -->
+      <article class="overview-section-card">
+        <section class="overview-section-intro">
+          <span class="overview-section-icon">
+            <span pmConsoleIcon="activity"></span>
+          </span>
+          <div class="overview-section-copy">
+            <div class="overview-section-title-line">
+              <h3>KPIs</h3>
+              <span pmConsoleIcon="ai" class="ai-sparkle-icon"></span>
             </div>
-          } @else {
-            <div class="empty-state-card">
-              <span [pmConsoleIcon]="'target'" class="empty-icon"></span>
-              <p class="empty-title">No objectives added yet</p>
-              <p class="empty-subtitle">Click the button above to add the first strategic objective.</p>
-            </div>
-          }
-        </app-pm-console-plan-table>
-      </div>
+            <p>Key performance indicators tracked across the active programs and workspaces.</p>
+          </div>
+        </section>
 
-      <!-- 4. KPIs Table Section wrapped in app-pm-console-plan-table -->
-      <div class="kpi-section-wrapper">
-        <app-pm-console-plan-table
-          title="KPIs"
-          description="Key performance indicators tracked across the active programs and workspaces."
-          [countLabel]="kpiRows.length + ' KPIs'"
-          actionLabel="Add KPI"
-          actionAriaLabel="Add KPI"
-          [iconName]="'activity'"
-          panelClass="overview-register-card"
-          (action)="openAddKpiModal()"
-        >
-          @if (kpiRows.length) {
-            <div class="dependency-register-table-shell">
-              <table class="dependency-register-table" aria-label="KPIs">
-                <thead>
-                  <tr>
-                    <th style="width: 35%">KPI</th>
-                    <th style="width: 35%">Target Measure</th>
-                    <th style="width: 18%">Owner</th>
-                    <th style="width: 12%">Status</th>
-                    <th aria-label="Actions" style="width: 5%"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (kpi of kpiRows; track kpi.title; let i = $index) {
+        <div class="overview-section-table-wrapper">
+          <app-pm-console-plan-table
+            title="KPIs"
+            description="Key performance indicators tracked across the active programs and workspaces."
+            [countLabel]="kpiRows.length + ' KPIs'"
+            actionLabel="Add KPI"
+            actionAriaLabel="Add KPI"
+            [iconName]="'activity'"
+            panelClass="overview-register-card"
+            (action)="openAddKpiModal()"
+          >
+            @if (kpiRows.length) {
+              <div class="dependency-register-table-shell">
+                <table class="dependency-register-table" aria-label="KPIs">
+                  <thead>
                     <tr>
-                      <td class="dependency-register-primary">
-                        <strong>{{ kpi.title }}</strong>
-                      </td>
-                      <td class="objective-measure">{{ kpi.measure }}</td>
-                      <td>
-                        <div class="avatar-cell">
-                          <div class="avatar-circle font-owner">{{ getInitials(kpi.owner) }}</div>
-                          <span class="owner-name">{{ kpi.owner }}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <span [pmConsoleStatusPill]="kpi.status" baseClass="dependency-register-pill" [tone]="statusTone(kpi.status)"></span>
-                      </td>
-                      <td class="schedule-table-actions">
-                        <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + kpi.title">
-                          <button type="button" role="menuitem" (click)="openEditKpiModal(i)">
-                            <span pmConsoleIcon="pencil" aria-hidden="true"></span>
-                            Edit
-                          </button>
-                          <button class="danger" type="button" role="menuitem" (click)="deleteKpi(i)">
-                            <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
-                            Delete
-                          </button>
-                        </app-pm-console-row-action-menu>
-                      </td>
+                      <th style="width: 35%">KPI</th>
+                      <th style="width: 35%">Target Measure</th>
+                      <th style="width: 18%">Owner</th>
+                      <th style="width: 12%">Status</th>
+                      <th aria-label="Actions" style="width: 5%"></th>
                     </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          } @else {
-            <div class="empty-state-card">
-              <span [pmConsoleIcon]="'activity'" class="empty-icon"></span>
-              <p class="empty-title">No KPIs added yet</p>
-              <p class="empty-subtitle">Click the button above to add the first Key Performance Indicator.</p>
-            </div>
-          }
-        </app-pm-console-plan-table>
-      </div>
+                  </thead>
+                  <tbody>
+                    @for (kpi of kpiRows; track kpi.title; let i = $index) {
+                      <tr>
+                        <td class="dependency-register-primary">
+                          <strong>{{ kpi.title }}</strong>
+                        </td>
+                        <td class="objective-measure">{{ kpi.measure }}</td>
+                        <td>
+                          <div class="avatar-cell">
+                            <div class="avatar-circle font-owner">{{ getInitials(kpi.owner) }}</div>
+                            <span class="owner-name">{{ kpi.owner }}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <span [pmConsoleStatusPill]="kpi.status" baseClass="dependency-register-pill" [tone]="statusTone(kpi.status)"></span>
+                        </td>
+                        <td class="schedule-table-actions">
+                          <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + kpi.title">
+                            <button type="button" role="menuitem" (click)="openEditKpiModal(i)">
+                              <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                              Edit
+                            </button>
+                            <button class="danger" type="button" role="menuitem" (click)="deleteKpi(i)">
+                              <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                              Delete
+                            </button>
+                          </app-pm-console-row-action-menu>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <div class="empty-state-card">
+                <span [pmConsoleIcon]="'activity'" class="empty-icon"></span>
+                <p class="empty-title">No KPIs added yet</p>
+                <p class="empty-subtitle">Click the button above to add the first Key Performance Indicator.</p>
+              </div>
+            }
+          </app-pm-console-plan-table>
+        </div>
+      </article>
+
     </div>
 
     <!-- 5. Interactive Form Dialog Overlay -->
@@ -292,117 +337,225 @@ import { portfolioSummary, KPICard, ObjectiveRow } from './portfolio-workspace.d
       animation: fadeIn 0.3s ease-out;
     }
 
-    .overview-top-grid {
-      display: grid;
-      grid-template-columns: 1fr 340px;
-      gap: 16px;
-      align-items: stretch;
-    }
-
-    .overview-header-card {
+    /* Portfolio Profile Card */
+    .portfolio-profile-card {
+      align-items: start;
       background: #ffffff;
-      border: 1px solid #e3e5e9;
+      border: 1px solid #e8e8e8;
+      border-left: 4px solid #10069f;
       border-radius: 12px;
-      padding: 20px 24px;
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-      display: flex;
-      flex-direction: column;
-    }
-
-    .overview-header-card h3 {
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #707788;
-      margin: 0 0 10px 0;
-    }
-
-    .description-text {
-      font-size: 15px;
-      line-height: 1.6;
-      color: #252a34;
-      margin: 0;
-    }
-
-    .roles-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-top: 4px;
-      justify-content: center;
-      flex-grow: 1;
-    }
-
-    .role-item {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .role-label {
-      font-size: 9.5px;
-      font-weight: 600;
-      color: #707788;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .role-content {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .role-name {
-      font-size: 13.5px;
-      font-weight: 600;
-      color: #202633;
-    }
-
-    .role-divider {
-      height: 1px;
-      background: #e3e5e9;
-    }
-
-    .pm-project-table-stats {
+      box-shadow: 0 2px 6px rgba(1, 10, 15, 0.08);
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin: 4px 0;
+      gap: 32px;
+      grid-template-columns: 264px minmax(0, 1fr);
+      min-height: 152px;
+      overflow: clip;
+      padding: 20px 20px 20px 16px;
     }
 
-    .stat-body {
-      display: flex;
-      flex-direction: column;
-      flex-grow: 1;
+    .portfolio-profile-intro {
+      display: grid;
+      gap: 12px;
       min-width: 0;
     }
 
-    .stat-value-row {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      width: 100%;
+    .portfolio-profile-icon {
+      align-items: center;
+      background: rgba(16, 6, 159, 0.03);
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(1, 10, 15, 0.1);
+      color: #10069f;
+      display: inline-flex;
+      height: 40px;
+      justify-content: center;
+      width: 40px;
     }
 
-    .stat-trend {
+    .portfolio-profile-icon span {
+      font-size: 24px;
+    }
+
+    .portfolio-profile-copy {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .portfolio-profile-title-line {
+      align-items: center;
+      display: flex;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .portfolio-profile-copy h3 {
+      color: #111111;
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .portfolio-profile-copy p {
+      color: #767676;
+      font-size: 12px;
+      font-weight: 400;
+      margin: 0;
+    }
+
+    .portfolio-profile-fields {
+      display: grid;
+      gap: 20px 24px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin: 0;
+      padding: 0;
+      min-width: 0;
+    }
+
+    .portfolio-profile-field {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .portfolio-profile-field.wide-span {
+      grid-column: span 3;
+    }
+
+    .portfolio-profile-field dt {
+      color: #767676;
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 16px;
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .portfolio-profile-field dd {
+      align-items: center;
+      color: #111111;
+      display: flex;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 24px;
+      margin: 0;
+      min-width: 0;
+    }
+
+    .portfolio-profile-field dd.description-val {
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #252a34;
+      display: block;
+    }
+
+    .portfolio-profile-avatar {
+      align-items: center;
+      border-radius: 999px;
+      display: inline-flex;
+      font-size: 10px;
+      font-weight: 600;
+      height: 24px;
+      width: 24px;
+      justify-content: center;
+      flex: 0 0 24px;
+    }
+
+    .portfolio-profile-avatar.owner-avatar {
+      background: rgba(0, 122, 255, 0.08);
+      color: #007aff;
+      border: 1.5px solid rgba(0, 122, 255, 0.2);
+    }
+
+    .portfolio-profile-avatar.sponsor-avatar {
+      background: rgba(255, 159, 10, 0.08);
+      color: #ff9f0a;
+      border: 1.5px solid rgba(255, 159, 10, 0.2);
+    }
+
+    .budget-trend-pill {
       font-size: 11px;
       font-weight: 600;
       padding: 2px 6px;
       border-radius: 4px;
-      background: rgba(15, 23, 42, 0.04);
-      color: #555555;
-    }
-
-    .stat-trend.trend-up {
       color: #16a15f;
       background: #e8f7ee;
+      display: inline-flex;
+      align-items: center;
     }
 
-    .stat-trend.trend-stable {
-      color: var(--brand, #007aff);
-      background: rgba(0, 122, 255, 0.08);
+    .ai-sparkle-icon {
+      color: #6366f1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Image 3 Style Overview Section Card */
+    .overview-section-card {
+      background: #ffffff;
+      border: 1px solid #e8e8e8;
+      border-left: 4px solid #10069f;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(1, 10, 15, 0.08);
+      display: grid;
+      gap: 32px;
+      grid-template-columns: 264px minmax(0, 1fr);
+      padding: 24px 20px 24px 16px;
+    }
+
+    .overview-section-intro {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .overview-section-icon {
+      align-items: center;
+      background: rgba(16, 6, 159, 0.03);
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(1, 10, 15, 0.1);
+      color: #10069f;
+      display: inline-flex;
+      height: 40px;
+      justify-content: center;
+      width: 40px;
+    }
+
+    .overview-section-icon span {
+      font-size: 24px;
+    }
+
+    .overview-section-copy {
+      display: grid;
+      gap: 8px;
+    }
+
+    .overview-section-title-line {
+      align-items: center;
+      display: flex;
+      gap: 8px;
+    }
+
+    .overview-section-copy h3 {
+      color: #111111;
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .overview-section-copy p {
+      color: #767676;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 16px;
+      margin: 0;
+    }
+
+    .overview-section-table-wrapper {
+      min-width: 0;
     }
 
     .objective-measure {
