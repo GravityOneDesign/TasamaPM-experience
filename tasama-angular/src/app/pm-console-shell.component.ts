@@ -78,7 +78,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
 
   readonly topRailItems: RailItem[] = [
     { id: 'home', icon: 'house', label: 'Home', page: 'workspace', home: true },
-    { id: 'register', icon: 'layout-grid', label: 'Register', page: 'workspaces' },
+    { id: 'register', icon: 'layout-grid', label: 'Workspaces', page: 'workspaces' },
     {
       id: 'dashboards',
       icon: 'chart-column',

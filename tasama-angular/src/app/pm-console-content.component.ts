@@ -82,7 +82,8 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
 type RiskProfileTab = 'identification' | 'analysis' | 'treatment';
 type WorkspaceTableColumnId = 'project' | 'stage' | 'trend' | 'manager' | 'baselineStart' | 'baselineEnd' | 'budget' | 'status';
 type WorkspaceTableColumnMotionState = 'visible' | 'entering' | 'exiting';
-type WorkspaceProjectFilterField = 'status' | 'stage' | 'manager';
+type WorkspaceProjectFilterField = 'project' | 'status' | 'stage';
+type WorkspaceRegisterQuickFilterField = 'status' | 'realization' | 'exposure';
 type CompactMenuPlacement = 'below' | 'above';
 
 interface CompactMenuPosition {
@@ -174,10 +175,31 @@ interface WorkspaceRegisterTab {
 }
 
 interface WorkspaceRegisterStat {
+  id: string;
   label: string;
   value: number;
   icon: string;
   tone: string;
+  quickFilter?: WorkspaceRegisterQuickFilter;
+}
+
+interface WorkspaceProjectAppliedFilter {
+  id: string;
+  field: WorkspaceProjectFilterField;
+  label: string;
+  value: string;
+}
+
+interface WorkspaceRegisterQuickFilter {
+  field: WorkspaceRegisterQuickFilterField;
+  label: string;
+  value: string;
+}
+
+interface WorkspaceRegisterAppliedFilter {
+  id: string;
+  label: string;
+  value: string;
 }
 
 interface BenefitRegisterRow {
@@ -3769,6 +3791,18 @@ const workspaceTableColumns: WorkspaceTableColumn[] = [
   { id: 'budget', label: 'Budget Utilised' },
   { id: 'status', label: 'Status' },
 ];
+const workspaceTableTrendMonths = ['Mar', 'Apr', 'May'] as const;
+const workspaceTableDataColumnMinWidth = 204;
+const workspaceTableColumnWidths: Record<WorkspaceTableColumnId, number> = {
+  project: 288,
+  stage: 136,
+  trend: 286,
+  manager: 230,
+  baselineStart: 186,
+  baselineEnd: 186,
+  budget: 188,
+  status: 160,
+};
 const defaultWorkspaceTableColumnIds: WorkspaceTableColumnId[] = ['project', 'stage', 'trend', 'manager', 'baselineStart', 'budget'];
 const benefitRegisterTableColumns: PmConsoleRegisterTableColumn[] = [
   { id: 'id', label: 'Benefit ID', minWidth: 112, maxWidth: 140 },
@@ -3867,6 +3901,12 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
       transition('* => *', [
         style({ opacity: 0, transform: 'translateY(6px)' }),
         animate('200ms cubic-bezier(0.2, 0.8, 0.2, 1)', style({ opacity: 1, transform: 'translateY(0)' })),
+      ]),
+    ]),
+    trigger('workspaceProjectFilterMotion', [
+      transition('* => *', [
+        style({ opacity: 0, transform: 'translateY(10px) scale(0.996)' }),
+        animate('240ms cubic-bezier(0.2, 0.8, 0.2, 1)', style({ opacity: 1, transform: 'translateY(0) scale(1)' })),
       ]),
     ]),
   ],
@@ -4067,64 +4107,77 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                 <div class="pm-projects-board-body" [@registerPanelMotion]="workspaceRegisterIndex">
                 @if (workspaceRegister === 'projects') {
                   <div class="pm-project-table-view">
-                    <div class="pm-project-table-stats" aria-label="Project status summary">
-                      @for (stat of workspaceStats; track stat.label) {
-                        <article class="pm-project-table-stat {{ stat.tone }}">
+                    <div class="pm-project-table-stats" [class.has-active-quick-filter]="hasWorkspaceProjectStatusQuickFilter" aria-label="Project status summary">
+                      @for (stat of workspaceStats; track stat.id) {
+                        <button class="pm-project-table-stat {{ stat.tone }}" [class.is-selected]="isWorkspaceProjectStatSelected(stat)" type="button" [attr.aria-pressed]="isWorkspaceProjectStatSelected(stat)" (click)="toggleWorkspaceProjectStatFilter(stat)">
                           <span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(stat.icon)"></i></span></span>
                           <div><small>{{ stat.label }}</small><strong>{{ stat.value }}</strong></div>
-                        </article>
+                        </button>
                       }
                     </div>
-                    <app-pm-console-toolbar [itemLabel]="workspaceProjectTableItemLabel" toolbarClass="pm-workspace-register-toolbar">
-                        <button class="pm-table-tool square" type="button" aria-label="Search projects" aria-controls="workspace-project-search-table" [attr.aria-expanded]="workspaceProjectSearchOpen" (click)="toggleWorkspaceProjectSearch()"><span pmConsoleIcon="search" aria-hidden="true"></span></button>
-                        @if (workspaceProjectSearchOpen) {
-                          <label class="pm-table-search-field" for="workspace-project-search-table">
-                            <span pmConsoleIcon="search" aria-hidden="true"></span>
-                            <input id="workspace-project-search-table" data-workspace-project-search type="search" [value]="workspaceProjectSearch" [placeholder]="workspaceRegisterSearchPlaceholder" (input)="setWorkspaceProjectSearch($event)" />
-                            @if (workspaceProjectSearch) {
-                              <button class="pm-table-search-clear" type="button" aria-label="Clear project search" (click)="clearWorkspaceProjectSearch()"><span pmConsoleIcon="x" aria-hidden="true"></span></button>
-                            }
-                          </label>
-                        }
+                    <div class="pm-project-register-options">
+                    <app-pm-console-toolbar [itemLabel]="workspaceProjectTableItemLabel" toolbarClass="pm-workspace-register-toolbar workspace-project-register-toolbar">
+                        <label class="workspace-search pm-register-search-field pm-workspace-project-search-field" for="workspace-project-search-table">
+                          <span pmConsoleIcon="search" aria-hidden="true"></span>
+                          <input id="workspace-project-search-table" data-workspace-project-search type="search" [value]="workspaceProjectSearch" [attr.aria-label]="workspaceSearchAriaLabel" [placeholder]="workspaceRegisterSearchPlaceholder" (input)="setWorkspaceProjectSearch($event)" />
+                        </label>
                         <div class="pm-table-settings-menu" data-workspace-project-filter-menu>
                           <button class="pm-table-tool" type="button" aria-haspopup="dialog" aria-controls="workspace-project-filter-picker" [attr.aria-expanded]="workspaceProjectFilterMenuOpen" (click)="toggleWorkspaceProjectFilterMenu()"><span pmConsoleIcon="filter" aria-hidden="true"></span><span>Filter</span>@if (workspaceProjectActiveFilterCount) { <strong class="pm-table-filter-count">{{ workspaceProjectActiveFilterCount }}</strong> }</button>
                           @if (workspaceProjectFilterMenuOpen) {
                             <section class="pm-table-column-popover pm-table-filter-popover" id="workspace-project-filter-picker" role="dialog" aria-label="Filter project register">
                               <div class="pm-table-column-popover-head">
                                 <div>
-                                  <strong>Project filters</strong>
+                                  <strong>Filters</strong>
                                   <small>{{ workspaceProjectFilterSummary }}</small>
                                 </div>
                                 <button class="pm-table-column-reset" type="button" [disabled]="!hasWorkspaceProjectFilters" (click)="resetWorkspaceProjectFilters()">Reset</button>
                               </div>
                               <div class="pm-table-filter-grid">
-                                <label class="pm-table-filter-field">
-                                  <span>Status</span>
-                                  <select [value]="workspaceProjectStatusFilter" (change)="setWorkspaceProjectFilter('status', $event)">
-                                    <option value="all">All statuses</option>
+                                <details class="pm-table-filter-field pm-table-filter-section" open>
+                                  <summary>
+                                    <span>Project</span>
+                                    <small>{{ workspaceProjectProjectFilters.length || workspaceProjectProjectOptions.length }}</small>
+                                    <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
+                                  </summary>
+                                  <div class="pm-table-filter-checklist" role="group" aria-label="Project">
+                                    @for (project of workspaceProjectProjectOptions; track project.id) {
+                                      <label class="pm-table-filter-check-option">
+                                        <input type="checkbox" [checked]="isWorkspaceProjectFilterSelected('project', project.id)" (change)="toggleWorkspaceProjectFilter('project', project.id, $event)" />
+                                        <span>{{ project.name }}</span>
+                                      </label>
+                                    }
+                                  </div>
+                                </details>
+                                <details class="pm-table-filter-field pm-table-filter-section">
+                                  <summary>
+                                    <span>Status</span>
+                                    <small>{{ workspaceProjectStatusFilters.length || workspaceProjectStatusOptions.length }}</small>
+                                    <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
+                                  </summary>
+                                  <div class="pm-table-filter-checklist" role="group" aria-label="Status">
                                     @for (status of workspaceProjectStatusOptions; track status) {
-                                      <option [value]="status">{{ status }}</option>
+                                      <label class="pm-table-filter-check-option">
+                                        <input type="checkbox" [checked]="isWorkspaceProjectFilterSelected('status', status)" (change)="toggleWorkspaceProjectFilter('status', status, $event)" />
+                                        <span>{{ status }}</span>
+                                      </label>
                                     }
-                                  </select>
-                                </label>
-                                <label class="pm-table-filter-field">
-                                  <span>Stage</span>
-                                  <select [value]="workspaceProjectStageFilter" (change)="setWorkspaceProjectFilter('stage', $event)">
-                                    <option value="all">All stages</option>
+                                  </div>
+                                </details>
+                                <details class="pm-table-filter-field pm-table-filter-section">
+                                  <summary>
+                                    <span>Stage</span>
+                                    <small>{{ workspaceProjectStageFilters.length || workspaceProjectStageOptions.length }}</small>
+                                    <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
+                                  </summary>
+                                  <div class="pm-table-filter-checklist" role="group" aria-label="Stage">
                                     @for (stage of workspaceProjectStageOptions; track stage) {
-                                      <option [value]="stage">{{ stage }}</option>
+                                      <label class="pm-table-filter-check-option">
+                                        <input type="checkbox" [checked]="isWorkspaceProjectFilterSelected('stage', stage)" (change)="toggleWorkspaceProjectFilter('stage', stage, $event)" />
+                                        <span>{{ stage }}</span>
+                                      </label>
                                     }
-                                  </select>
-                                </label>
-                                <label class="pm-table-filter-field">
-                                  <span>Manager</span>
-                                  <select [value]="workspaceProjectManagerFilter" (change)="setWorkspaceProjectFilter('manager', $event)">
-                                    <option value="all">All managers</option>
-                                    @for (manager of workspaceProjectManagerOptions; track manager) {
-                                      <option [value]="manager">{{ manager }}</option>
-                                    }
-                                  </select>
-                                </label>
+                                  </div>
+                                </details>
                               </div>
                             </section>
                           }
@@ -4154,13 +4207,27 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                           }
                         </div>
                     </app-pm-console-toolbar>
-                    <div class="pm-project-table-scroll" tabindex="0">
+                    @if (workspaceProjectAppliedFilters.length) {
+                      <div class="pm-applied-filter-row" aria-label="Applied project filters">
+                        <span>Filters Applied</span>
+                        <div class="pm-applied-filter-list">
+                          @for (filter of workspaceProjectAppliedFilters; track filter.id) {
+                            <button class="pm-applied-filter-chip" type="button" (click)="clearWorkspaceProjectFilter(filter.field, filter.value)" [attr.aria-label]="'Remove ' + filter.label + ' filter: ' + filter.value">
+                              <span>{{ filter.value }}</span>
+                              <span pmConsoleIcon="circle-x" aria-hidden="true"></span>
+                            </button>
+                          }
+                        </div>
+                      </div>
+                    }
+                    </div>
+                    <div class="pm-project-table-scroll" tabindex="0" [@workspaceProjectFilterMotion]="workspaceProjectFilterMotionKey">
                       <table class="pm-project-table pm-workspace-project-table" [style.--workspace-table-min-width.px]="workspaceTableMinWidth()">
                         <thead>
                           <tr>
                             <th class="pm-table-check-cell"><input type="checkbox" aria-label="Select all projects" /></th>
                             @for (column of renderedWorkspaceTableColumns; track column.id) {
-                              <th class="pm-table-column-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)">
+                              <th class="pm-table-column-cell" [class.pm-table-stage-cell]="column.id === 'stage'" [class.pm-table-trend-cell]="column.id === 'trend'" [class.pm-table-manager-cell]="column.id === 'manager'" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)">
                                 <div class="pm-table-column-frame">
                                   <span class="pm-table-column-header">{{ column.label }}</span>
                                 </div>
@@ -4178,13 +4245,13 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                     <td class="pm-table-column-cell pm-table-project-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)"><div class="pm-table-column-frame"><button type="button" (click)="openProject(project.id)"><span>{{ project.code }}</span><strong>{{ project.title }}</strong></button></div></td>
                                   }
                                   @case ('stage') {
-                                    <td class="pm-table-column-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)"><div class="pm-table-column-frame"><span class="pm-table-stage">{{ project.stage }}</span></div></td>
+                                    <td class="pm-table-column-cell pm-table-stage-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)"><div class="pm-table-column-frame"><span class="pm-table-stage">{{ project.stage }}</span></div></td>
                                   }
                                   @case ('trend') {
-                                    <td class="pm-table-column-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)"><div class="pm-table-column-frame"><div class="pm-table-trend" [attr.aria-label]="project.title + ' report status trend'">@for (tone of project.trend; track $index) { <span class="pm-table-trend-dot {{ tone }}" role="img" [attr.aria-label]="trendLabel(tone)" [attr.title]="trendLabel(tone)"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="trendIcon(tone)"></i></span></span> }</div></div></td>
+                                    <td class="pm-table-column-cell pm-table-trend-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)"><div class="pm-table-column-frame"><div class="pm-table-trend" [attr.aria-label]="project.title + ' report status trend'">@for (tone of project.trend; track $index) { <span class="pm-table-trend-item {{ tone }}" role="img" [attr.aria-label]="trendPointLabel(tone, $index)" [attr.title]="trendPointLabel(tone, $index)"><span class="pm-table-trend-dot {{ tone }}" aria-hidden="true"><span [pmConsoleIcon]="trendIcon(tone)"></span></span><small>{{ trendMonthLabel($index) }}</small></span> }</div></div></td>
                                   }
                                   @case ('manager') {
-                                    <td class="pm-table-column-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)"><div class="pm-table-column-frame"><span class="pm-table-manager"><i>{{ project.managerInitials }}</i>{{ project.manager }}</span></div></td>
+                                    <td class="pm-table-column-cell pm-table-manager-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)"><div class="pm-table-column-frame"><span class="pm-table-manager"><i>{{ project.managerInitials }}</i>{{ project.manager }}</span></div></td>
                                   }
                                   @case ('baselineStart') {
                                     <td class="pm-table-column-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)"><div class="pm-table-column-frame"><span class="pm-table-column-text">{{ project.baselineStart }}</span></div></td>
@@ -4207,56 +4274,82 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     </div>
                   </div>
                 } @else if (workspaceRegister === 'benefits') {
-                  <div class="pm-project-table-view">
-                    <div class="pm-project-table-stats pm-register-overview-stats" aria-label="Benefit register summary">
-                      @for (stat of benefitRegisterStats; track stat.label) {
-                        <article class="pm-project-table-stat {{ stat.tone }}">
+                  <div class="pm-project-table-view pm-register-backed-table-view">
+                    <div class="pm-project-table-stats pm-register-overview-stats" [class.has-active-quick-filter]="hasBenefitRegisterQuickFilter" aria-label="Benefit register summary">
+                      @for (stat of benefitRegisterStats; track stat.id) {
+                        <button class="pm-project-table-stat {{ stat.tone }}" [class.is-selected]="isBenefitRegisterStatSelected(stat)" type="button" [attr.aria-pressed]="isBenefitRegisterStatSelected(stat)" (click)="toggleBenefitRegisterStatFilter(stat)">
                           <span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(stat.icon)"></i></span></span>
                           <div><small>{{ stat.label }}</small><strong>{{ stat.value }}</strong></div>
-                        </article>
+                        </button>
                       }
                     </div>
-                    <app-pm-console-register-table
-                      [columns]="benefitRegisterTableColumns"
-                      [rows]="benefitRegisterTableRows"
-                      storageKey="tasama.workspaceBenefits.visibleColumns.v2"
-                      ariaLabel="Benefit register"
-                      itemName="benefits"
-                      [itemLabel]="'Items: ' + visibleBenefitRegisterRows.length"
-                      selectAllLabel="Select all benefits"
-                      toolbarClass="pm-workspace-register-toolbar"
-                      addButtonLabel="Add Benefit"
-                      addButtonAriaLabel="Add benefit"
-                      (addItem)="openBenefitDrawer()"
-                      (rowOpen)="openBenefitRegisterTableRow($event)"
-                      (cellAction)="handleBenefitRegisterTableAction($event)"
-                    ></app-pm-console-register-table>
+                    <div class="pm-register-table-stack">
+                      @if (benefitRegisterAppliedFilter; as filter) {
+                        <div class="pm-applied-filter-row" aria-label="Applied benefit filters">
+                          <span>Filters Applied</span>
+                          <div class="pm-applied-filter-list">
+                            <button class="pm-applied-filter-chip" type="button" (click)="clearBenefitRegisterQuickFilter()" [attr.aria-label]="'Remove ' + filter.label + ' filter: ' + filter.value">
+                              <span>{{ filter.value }}</span>
+                              <span pmConsoleIcon="circle-x" aria-hidden="true"></span>
+                            </button>
+                          </div>
+                        </div>
+                      }
+                      <app-pm-console-register-table
+                        [columns]="benefitRegisterTableColumns"
+                        [rows]="benefitRegisterTableRows"
+                        storageKey="tasama.workspaceBenefits.visibleColumns.v2"
+                        ariaLabel="Benefit register"
+                        itemName="benefits"
+                        [itemLabel]="'Items: ' + visibleBenefitRegisterRows.length"
+                        selectAllLabel="Select all benefits"
+                        toolbarClass="pm-workspace-register-toolbar"
+                        addButtonLabel="Add Benefit"
+                        addButtonAriaLabel="Add benefit"
+                        (addItem)="openBenefitDrawer()"
+                        (rowOpen)="openBenefitRegisterTableRow($event)"
+                        (cellAction)="handleBenefitRegisterTableAction($event)"
+                      ></app-pm-console-register-table>
+                    </div>
                   </div>
                 } @else {
-                  <div class="pm-project-table-view">
-                    <div class="pm-project-table-stats pm-register-overview-stats" aria-label="Risk register summary">
-                      @for (stat of riskRegisterStats; track stat.label) {
-                        <article class="pm-project-table-stat {{ stat.tone }}">
+                  <div class="pm-project-table-view pm-register-backed-table-view">
+                    <div class="pm-project-table-stats pm-register-overview-stats" [class.has-active-quick-filter]="hasRiskRegisterQuickFilter" aria-label="Risk register summary">
+                      @for (stat of riskRegisterStats; track stat.id) {
+                        <button class="pm-project-table-stat {{ stat.tone }}" [class.is-selected]="isRiskRegisterStatSelected(stat)" type="button" [attr.aria-pressed]="isRiskRegisterStatSelected(stat)" (click)="toggleRiskRegisterStatFilter(stat)">
                           <span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(stat.icon)"></i></span></span>
                           <div><small>{{ stat.label }}</small><strong>{{ stat.value }}</strong></div>
-                        </article>
+                        </button>
                       }
                     </div>
-                    <app-pm-console-register-table
-                      [columns]="riskRegisterTableColumns"
-                      [rows]="riskRegisterTableRows"
-                      storageKey="tasama.workspaceRisks.visibleColumns.v2"
-                      ariaLabel="Risk register"
-                      itemName="risks"
-                      [itemLabel]="'Items: ' + visibleRiskRegisterRows.length"
-                      selectAllLabel="Select all risks"
-                      toolbarClass="pm-workspace-register-toolbar"
-                      addButtonLabel="Add Risk"
-                      addButtonAriaLabel="Add risk"
-                      (addItem)="openRiskDrawer()"
-                      (rowOpen)="openRiskRegisterTableRow($event)"
-                      (cellAction)="handleRiskRegisterTableAction($event)"
-                    ></app-pm-console-register-table>
+                    <div class="pm-register-table-stack">
+                      @if (riskRegisterAppliedFilter; as filter) {
+                        <div class="pm-applied-filter-row" aria-label="Applied risk filters">
+                          <span>Filters Applied</span>
+                          <div class="pm-applied-filter-list">
+                            <button class="pm-applied-filter-chip" type="button" (click)="clearRiskRegisterQuickFilter()" [attr.aria-label]="'Remove ' + filter.label + ' filter: ' + filter.value">
+                              <span>{{ filter.value }}</span>
+                              <span pmConsoleIcon="circle-x" aria-hidden="true"></span>
+                            </button>
+                          </div>
+                        </div>
+                      }
+                      <app-pm-console-register-table
+                        [columns]="riskRegisterTableColumns"
+                        [rows]="riskRegisterTableRows"
+                        storageKey="tasama.workspaceRisks.visibleColumns.v2"
+                        ariaLabel="Risk register"
+                        itemName="risks"
+                        [itemLabel]="'Items: ' + visibleRiskRegisterRows.length"
+                        selectAllLabel="Select all risks"
+                        toolbarClass="pm-workspace-register-toolbar"
+                        addButtonLabel="Add Risk"
+                        addButtonAriaLabel="Add risk"
+                        (addItem)="openRiskDrawer()"
+                        (rowOpen)="openRiskRegisterTableRow($event)"
+                        (cellAction)="handleRiskRegisterTableAction($event)"
+                      ></app-pm-console-register-table>
+                    </div>
                   </div>
                 }
                 </div>
@@ -7798,9 +7891,11 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                         storageKey="tasama.projectReports.visibleColumns"
                         [ariaLabel]="scopedProjectName + ' report register'"
                         itemName="reports"
-                        [itemLabel]="'Items: ' + projectReportRegisterRows.length"
-                        toolbarClass="pm-workspace-register-toolbar"
+                        toolbarClass="pm-workspace-register-toolbar project-report-register-toolbar"
                         [selectable]="false"
+                        searchVariant="workspace"
+                        searchPlaceholder="Search reports"
+                        searchAriaLabel="Search reports"
                         [showGroupBy]="true"
                         (rowOpen)="openProjectReportRow($event, scopedProjectName)"
                         (cellAction)="handleProjectReportAction($event, scopedProjectName)"
@@ -10595,9 +10690,11 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   workspaceProjectSearchOpen = false;
   workspaceProjectFilterMenuOpen = false;
   workspaceProjectSearch = '';
-  workspaceProjectStatusFilter = 'all';
-  workspaceProjectStageFilter = 'all';
-  workspaceProjectManagerFilter = 'all';
+  workspaceProjectProjectFilters: string[] = [];
+  workspaceProjectStatusFilters: string[] = [];
+  workspaceProjectStageFilters: string[] = [];
+  benefitRegisterQuickFilter: WorkspaceRegisterQuickFilter | null = null;
+  riskRegisterQuickFilter: WorkspaceRegisterQuickFilter | null = null;
   quickLinksPage = 0;
   quickLinksPageSize = QUICK_LINK_PAGE_SIZE;
   quickLinksToast: string | null = null;
@@ -10842,8 +10939,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   private get workspaceProjectSourceRows(): ProjectRow[] {
-    const rows = this.onboardingProjectSetup ? onboardingWorkspaceTableProjects : workspaceTableProjects;
-    return this.isAllProjects ? rows : rows.filter((project) => this.matchesSelectedProject(project.id || project.title));
+    return this.onboardingProjectSetup ? onboardingWorkspaceTableProjects : workspaceTableProjects;
   }
 
   get isAllProjects(): boolean {
@@ -11684,11 +11780,24 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   get workspaceRegisterFilterLabel(): string {
     if (this.workspaceRegister === 'benefits') return 'All benefits';
     if (this.workspaceRegister === 'risks') return 'All risks';
-    return this.isAllProjects ? 'All projects' : this.scopedProjectName;
+    if (!this.workspaceProjectProjectFilters.length) return 'All projects';
+    if (this.workspaceProjectProjectFilters.length === 1) return this.workspaceProjectProjectLabel(this.workspaceProjectProjectFilters[0]);
+    return `${this.workspaceProjectProjectFilters.length} projects`;
   }
 
   get workspaceProjectTableItemLabel(): string {
     return this.workspaceProjectItemLabel(this.workspaceTableProjects.length, this.workspaceProjectSourceRows.length);
+  }
+
+  get workspaceProjectProjectOptions(): ProjectOption[] {
+    const seen = new Set<string>();
+    return this.workspaceProjectSourceRows.reduce<ProjectOption[]>((options, project) => {
+      const id = project.id || project.title;
+      if (!id || seen.has(id)) return options;
+      seen.add(id);
+      options.push({ id, name: project.title || id });
+      return options;
+    }, []);
   }
 
   get workspaceProjectStatusOptions(): string[] {
@@ -11699,21 +11808,53 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return this.uniqueWorkspaceProjectOptions(this.workspaceProjectSourceRows.map((project) => this.normalizeWorkspaceProjectStage(project.stage)));
   }
 
-  get workspaceProjectManagerOptions(): string[] {
-    return this.uniqueWorkspaceProjectOptions(this.workspaceProjectSourceRows.map((project) => project.manager));
-  }
-
   get hasWorkspaceProjectFilters(): boolean {
-    return this.workspaceProjectStatusFilter !== 'all' || this.workspaceProjectStageFilter !== 'all' || this.workspaceProjectManagerFilter !== 'all';
+    return Boolean(this.workspaceProjectProjectFilters.length || this.workspaceProjectStatusFilters.length || this.workspaceProjectStageFilters.length);
   }
 
   get workspaceProjectActiveFilterCount(): number {
-    return [this.workspaceProjectStatusFilter, this.workspaceProjectStageFilter, this.workspaceProjectManagerFilter].filter((value) => value !== 'all').length;
+    return this.workspaceProjectProjectFilters.length + this.workspaceProjectStatusFilters.length + this.workspaceProjectStageFilters.length;
+  }
+
+  get workspaceProjectFilterMotionKey(): string {
+    return [
+      this.workspaceProjectProjectFilters.join(','),
+      this.workspaceProjectStatusFilters.join(','),
+      this.workspaceProjectStageFilters.join(','),
+    ].join('|');
+  }
+
+  get workspaceProjectAppliedFilters(): WorkspaceProjectAppliedFilter[] {
+    return [
+      ...this.workspaceProjectProjectFilters.map((project) => ({ id: `project:${project}`, field: 'project' as const, label: 'Project', value: this.workspaceProjectProjectLabel(project) })),
+      ...this.workspaceProjectStatusFilters.map((status) => ({ id: `status:${status}`, field: 'status' as const, label: 'Status', value: status })),
+      ...this.workspaceProjectStageFilters.map((stage) => ({ id: `stage:${stage}`, field: 'stage' as const, label: 'Stage', value: stage })),
+    ];
   }
 
   get workspaceProjectFilterSummary(): string {
     if (!this.hasWorkspaceProjectFilters) return 'All project records';
     return this.workspaceProjectActiveFilterCount === 1 ? '1 active filter' : `${this.workspaceProjectActiveFilterCount} active filters`;
+  }
+
+  get hasWorkspaceProjectStatusQuickFilter(): boolean {
+    return Boolean(this.workspaceProjectStatusFilters.length);
+  }
+
+  get hasBenefitRegisterQuickFilter(): boolean {
+    return Boolean(this.benefitRegisterQuickFilter);
+  }
+
+  get benefitRegisterAppliedFilter(): WorkspaceRegisterAppliedFilter | null {
+    return this.workspaceRegisterAppliedFilter(this.benefitRegisterQuickFilter, 'Benefit');
+  }
+
+  get hasRiskRegisterQuickFilter(): boolean {
+    return Boolean(this.riskRegisterQuickFilter);
+  }
+
+  get riskRegisterAppliedFilter(): WorkspaceRegisterAppliedFilter | null {
+    return this.workspaceRegisterAppliedFilter(this.riskRegisterQuickFilter, 'Risk');
   }
 
   get noAssignmentMessage(): string {
@@ -11741,6 +11882,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.selectedPage = this.selectedPage === 'project-plan' ? 'project-plan' : 'workspaces';
     this.selectedView = 'pm101';
     this.workspaceRegister = 'projects';
+    this.applyWorkspaceProjectEntryFilter();
     this.projectPlanEntry = 'quick';
     this.projectPlanDetailMode = 'simple';
     this.projectPlanActiveSection = 'Overview';
@@ -11788,55 +11930,51 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.iconsHydrated = false;
   }
 
-  get workspaceStats(): Array<{ label: string; value: number; icon: string; tone: string }> {
-    const rows = this.workspaceTableProjects;
+  get workspaceStats(): WorkspaceRegisterStat[] {
+    const rows = this.workspaceProjectQuickFilterRows;
     const count = (status: string) => rows.filter((project) => project.status === status).length;
     return [
-      { label: 'All Projects', value: rows.length, icon: 'folderOpen', tone: 'brand' },
-      { label: 'On-Track', value: count('On-Track'), icon: 'check', tone: 'green' },
-      { label: 'Off-Track', value: count('Off-Track'), icon: 'alert', tone: 'red' },
-      { label: 'Alert', value: count('Alert'), icon: 'alert', tone: 'amber' },
-      { label: 'Not tracked', value: count('Not tracked'), icon: 'eyeOff', tone: 'neutral' },
-      { label: 'Not Started', value: count('Not Started'), icon: 'todo', tone: 'blue' },
+      { id: 'projects-all', label: 'All Projects', value: rows.length, icon: 'folderOpen', tone: 'brand' },
+      { id: 'projects-on-track', label: 'On-Track', value: count('On-Track'), icon: 'check', tone: 'green', quickFilter: { field: 'status', label: 'On-Track', value: 'On-Track' } },
+      { id: 'projects-off-track', label: 'Off-Track', value: count('Off-Track'), icon: 'alert', tone: 'red', quickFilter: { field: 'status', label: 'Off-Track', value: 'Off-Track' } },
+      { id: 'projects-alert', label: 'Alert', value: count('Alert'), icon: 'alert', tone: 'amber', quickFilter: { field: 'status', label: 'Alert', value: 'Alert' } },
+      { id: 'projects-not-tracked', label: 'Not tracked', value: count('Not tracked'), icon: 'eyeOff', tone: 'neutral', quickFilter: { field: 'status', label: 'Not tracked', value: 'Not tracked' } },
+      { id: 'projects-not-started', label: 'Not Started', value: count('Not Started'), icon: 'todo', tone: 'blue', quickFilter: { field: 'status', label: 'Not Started', value: 'Not Started' } },
     ];
   }
 
   get benefitRegisterStats(): WorkspaceRegisterStat[] {
-    const rows = this.visibleBenefitRegisterRows;
+    const rows = this.benefitRegisterBaseRows;
     const countRealization = (realization: string) => rows.filter((row) => row.realization === realization).length;
     const countStatus = (status: string) => rows.filter((row) => row.status === status).length;
     return [
-      { label: 'All Benefits', value: rows.length, icon: 'benefitGraph', tone: 'brand' },
-      { label: 'Realized', value: countRealization('Realized'), icon: 'check', tone: 'green' },
-      { label: 'In Realization', value: countRealization('In realization'), icon: 'trendUp', tone: 'blue' },
-      { label: 'Planned', value: countRealization('Planned'), icon: 'planned', tone: 'neutral' },
-      { label: 'Attention', value: countStatus('Attention'), icon: 'alert', tone: 'amber' },
+      { id: 'benefits-all', label: 'All Benefits', value: rows.length, icon: 'benefitGraph', tone: 'brand' },
+      { id: 'benefits-realized', label: 'Realized', value: countRealization('Realized'), icon: 'check', tone: 'green', quickFilter: { field: 'realization', label: 'Realized', value: 'Realized' } },
+      { id: 'benefits-in-realization', label: 'In Realization', value: countRealization('In realization'), icon: 'trendUp', tone: 'blue', quickFilter: { field: 'realization', label: 'In Realization', value: 'In realization' } },
+      { id: 'benefits-planned', label: 'Planned', value: countRealization('Planned'), icon: 'planned', tone: 'neutral', quickFilter: { field: 'realization', label: 'Planned', value: 'Planned' } },
+      { id: 'benefits-attention', label: 'Attention', value: countStatus('Attention'), icon: 'alert', tone: 'amber', quickFilter: { field: 'status', label: 'Attention', value: 'Attention' } },
     ];
   }
 
   get riskRegisterStats(): WorkspaceRegisterStat[] {
-    const rows = this.visibleRiskRegisterRows;
+    const rows = this.riskRegisterBaseRows;
     const countExposure = (exposure: string) => rows.filter((row) => row.exposure === exposure).length;
     const countStatus = (status: string) => rows.filter((row) => row.status === status).length;
     return [
-      { label: 'All Risks', value: rows.length, icon: 'risks', tone: 'brand' },
-      { label: 'Critical', value: countExposure('Critical'), icon: 'riskCritical', tone: 'red' },
-      { label: 'High', value: countExposure('High'), icon: 'riskHigh', tone: 'amber' },
-      { label: 'Medium', value: countExposure('Medium'), icon: 'riskMedium', tone: 'neutral' },
-      { label: 'Escalated', value: countStatus('Escalated'), icon: 'riskEscalated', tone: 'red' },
+      { id: 'risks-all', label: 'All Risks', value: rows.length, icon: 'risks', tone: 'brand' },
+      { id: 'risks-critical', label: 'Critical', value: countExposure('Critical'), icon: 'riskCritical', tone: 'red', quickFilter: { field: 'exposure', label: 'Critical', value: 'Critical' } },
+      { id: 'risks-high', label: 'High', value: countExposure('High'), icon: 'riskHigh', tone: 'amber', quickFilter: { field: 'exposure', label: 'High', value: 'High' } },
+      { id: 'risks-medium', label: 'Medium', value: countExposure('Medium'), icon: 'riskMedium', tone: 'neutral', quickFilter: { field: 'exposure', label: 'Medium', value: 'Medium' } },
+      { id: 'risks-escalated', label: 'Escalated', value: countStatus('Escalated'), icon: 'riskEscalated', tone: 'red', quickFilter: { field: 'status', label: 'Escalated', value: 'Escalated' } },
     ];
   }
 
   get visibleBenefitRegisterRows(): BenefitRegisterRow[] {
-    if (this.onboardingProjectSetup) return [];
-    const rows = this.workspaceBenefitRegisterRows;
-    return this.isAllProjects ? rows : rows.filter((row) => row.project === this.selectedProject);
+    return this.filterWorkspaceRegisterRows(this.benefitRegisterBaseRows, this.benefitRegisterQuickFilter);
   }
 
   get visibleRiskRegisterRows(): RiskRegisterRow[] {
-    if (this.onboardingProjectSetup) return [];
-    const rows = this.workspaceRiskRegisterRows;
-    return this.isAllProjects ? rows : rows.filter((row) => row.project === this.selectedProject);
+    return this.filterWorkspaceRegisterRows(this.riskRegisterBaseRows, this.riskRegisterQuickFilter);
   }
 
   get benefitRegisterTableRows(): PmConsoleRegisterTableRow[] {
@@ -11893,6 +12031,25 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
         cells,
       };
     });
+  }
+
+  private get benefitRegisterBaseRows(): BenefitRegisterRow[] {
+    if (this.onboardingProjectSetup) return [];
+    const rows = this.workspaceBenefitRegisterRows;
+    return this.isAllProjects ? rows : rows.filter((row) => row.project === this.selectedProject);
+  }
+
+  private get riskRegisterBaseRows(): RiskRegisterRow[] {
+    if (this.onboardingProjectSetup) return [];
+    const rows = this.workspaceRiskRegisterRows;
+    return this.isAllProjects ? rows : rows.filter((row) => row.project === this.selectedProject);
+  }
+
+  private get workspaceProjectQuickFilterRows(): ProjectRow[] {
+    const query = this.normalizedWorkspaceProjectSearch();
+    return this.workspaceProjectSourceRows
+      .filter((project) => this.matchesWorkspaceProjectBaseFilters(project))
+      .filter((project) => this.matchesWorkspaceProjectSearch(project, query));
   }
 
   private get activeBenefitPlanRows(): BenefitPlanRow[] {
@@ -12233,6 +12390,9 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     }
     if ('selectedView' in changes) {
       this.syncLastActionWorkspaceView(this.selectedView);
+    }
+    if ('selectedPage' in changes && this.selectedPage === 'workspaces') {
+      this.applyWorkspaceProjectEntryFilter();
     }
     if (
       'selectedProject' in changes ||
@@ -12721,6 +12881,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.selectedPage = 'workspaces';
     this.selectedView = 'pm101';
     this.workspaceRegister = 'projects';
+    this.applyWorkspaceProjectEntryFilter();
     this.selectedBoardFilter = 'all';
     this.projectPlanReturnState = null;
     this.activeReportProject = null;
@@ -12754,11 +12915,11 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   trendIcon(tone: string): string {
     const icons: Record<string, string> = {
-      green: 'check',
-      amber: 'bell',
-      red: 'x',
+      green: 'circle-check',
+      amber: 'triangle-alert',
+      red: 'circle-x',
       blue: 'circle-dot',
-      neutral: 'minus',
+      neutral: 'circle-minus',
     };
     return icons[tone] || 'circle';
   }
@@ -12772,6 +12933,14 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       neutral: 'No report',
     };
     return labels[tone] || 'No report';
+  }
+
+  trendMonthLabel(index: number): string {
+    return workspaceTableTrendMonths[index] || `M${index + 1}`;
+  }
+
+  trendPointLabel(tone: string, index: number): string {
+    return `${this.trendMonthLabel(index)}: ${this.trendLabel(tone)}`;
   }
 
   updateAiInlineRewritePrompt(value: string): void {
@@ -13236,17 +13405,62 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.changeDetector.markForCheck();
   }
 
-  setWorkspaceProjectFilter(field: WorkspaceProjectFilterField, event: Event): void {
-    const value = (event.target as HTMLSelectElement | null)?.value || 'all';
-    if (field === 'status') this.workspaceProjectStatusFilter = value;
-    if (field === 'stage') this.workspaceProjectStageFilter = value;
-    if (field === 'manager') this.workspaceProjectManagerFilter = value;
+  isWorkspaceProjectFilterSelected(field: WorkspaceProjectFilterField, value: string): boolean {
+    return this.workspaceProjectFilterValues(field).includes(value);
+  }
+
+  toggleWorkspaceProjectFilter(field: WorkspaceProjectFilterField, value: string, event: Event): void {
+    const checked = Boolean((event.target as HTMLInputElement | null)?.checked);
+    this.setWorkspaceProjectFilterValues(field, this.nextWorkspaceProjectFilterValues(this.workspaceProjectFilterValues(field), value, checked));
+  }
+
+  clearWorkspaceProjectFilter(field: WorkspaceProjectFilterField, value: string): void {
+    this.setWorkspaceProjectFilterValues(field, this.workspaceProjectFilterValues(field).filter((item) => item !== value));
   }
 
   resetWorkspaceProjectFilters(): void {
-    this.workspaceProjectStatusFilter = 'all';
-    this.workspaceProjectStageFilter = 'all';
-    this.workspaceProjectManagerFilter = 'all';
+    this.workspaceProjectProjectFilters = [];
+    this.workspaceProjectStatusFilters = [];
+    this.workspaceProjectStageFilters = [];
+  }
+
+  isWorkspaceProjectStatSelected(stat: WorkspaceRegisterStat): boolean {
+    const filter = stat.quickFilter;
+    if (!filter || filter.field !== 'status') return false;
+    return this.workspaceProjectStatusFilters.length === 1 && this.projectFilterKey(this.workspaceProjectStatusFilters[0]) === this.projectFilterKey(filter.value);
+  }
+
+  toggleWorkspaceProjectStatFilter(stat: WorkspaceRegisterStat): void {
+    if (!stat.quickFilter || stat.quickFilter.field !== 'status') {
+      this.workspaceProjectStatusFilters = [];
+      return;
+    }
+
+    this.workspaceProjectStatusFilters = this.isWorkspaceProjectStatSelected(stat) ? [] : [stat.quickFilter.value];
+  }
+
+  isBenefitRegisterStatSelected(stat: WorkspaceRegisterStat): boolean {
+    return this.workspaceRegisterQuickFilterSelected(stat, this.benefitRegisterQuickFilter);
+  }
+
+  toggleBenefitRegisterStatFilter(stat: WorkspaceRegisterStat): void {
+    this.benefitRegisterQuickFilter = this.nextWorkspaceRegisterQuickFilter(stat, this.benefitRegisterQuickFilter);
+  }
+
+  clearBenefitRegisterQuickFilter(): void {
+    this.benefitRegisterQuickFilter = null;
+  }
+
+  isRiskRegisterStatSelected(stat: WorkspaceRegisterStat): boolean {
+    return this.workspaceRegisterQuickFilterSelected(stat, this.riskRegisterQuickFilter);
+  }
+
+  toggleRiskRegisterStatFilter(stat: WorkspaceRegisterStat): void {
+    this.riskRegisterQuickFilter = this.nextWorkspaceRegisterQuickFilter(stat, this.riskRegisterQuickFilter);
+  }
+
+  clearRiskRegisterQuickFilter(): void {
+    this.riskRegisterQuickFilter = null;
   }
 
   exportWorkspaceProjectsToPdf(): void {
@@ -14101,6 +14315,9 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     }
     if ((page === 'project-plan' || page === 'wbs' || page === 'playground') && this.isAllProjects) {
       this.selectedProject = firstAssignedProject.id;
+    }
+    if (page === 'workspaces') {
+      this.applyWorkspaceProjectEntryFilter();
     }
     this.emitState();
   }
@@ -17337,43 +17554,18 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   workspaceTableColumnWidth(id: WorkspaceTableColumnId): string {
-    const maxWidths: Record<WorkspaceTableColumnId, number> = {
-      project: 361.82,
-      stage: 129.758,
-      trend: 224.789,
-      manager: 248.102,
-      baselineStart: 216.883,
-      baselineEnd: 216.883,
-      budget: 194.648,
-      status: 122,
-    };
-    const minWidths: Record<WorkspaceTableColumnId, number> = {
-      project: 220,
-      stage: 96,
-      trend: 148,
-      manager: 180,
-      baselineStart: 140,
-      baselineEnd: 140,
-      budget: 150,
-      status: 108,
-    };
-    const totalVisibleWidth = this.visibleWorkspaceTableColumnIds.reduce((sum, columnId) => sum + maxWidths[columnId], 0) || 1;
-    const widthShare = (maxWidths[id] / totalVisibleWidth) * 100;
-    return `clamp(${minWidths[id]}px, ${widthShare.toFixed(3)}%, ${maxWidths[id].toFixed(3)}px)`;
+    const columnWidth = workspaceTableColumnWidths[id] || workspaceTableDataColumnMinWidth;
+    const visibleColumnWidthTotal = this.workspaceVisibleColumnWidthTotal();
+    return `max(${columnWidth}px, calc((100% - 48px) * ${columnWidth} / ${visibleColumnWidthTotal}))`;
   }
 
   workspaceTableMinWidth(): number {
-    const minWidths: Record<WorkspaceTableColumnId, number> = {
-      project: 220,
-      stage: 96,
-      trend: 148,
-      manager: 180,
-      baselineStart: 140,
-      baselineEnd: 140,
-      budget: 150,
-      status: 108,
-    };
-    return 48 + this.visibleWorkspaceTableColumnIds.reduce((sum, columnId) => sum + minWidths[columnId], 0);
+    return 48 + this.workspaceVisibleColumnWidthTotal();
+  }
+
+  private workspaceVisibleColumnWidthTotal(): number {
+    const visibleColumnIds = this.visibleWorkspaceTableColumnIds.length ? this.visibleWorkspaceTableColumnIds : defaultWorkspaceTableColumnIds;
+    return visibleColumnIds.reduce((total, id) => total + (workspaceTableColumnWidths[id] || workspaceTableDataColumnMinWidth), 0);
   }
 
   toggleWorkspaceTableColumn(id: WorkspaceTableColumnId, event: Event): void {
@@ -18527,8 +18719,9 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return view === 'board' || view === 'calendar' || view === 'stages';
   }
 
-  private matchesSelectedProject(projectId: string | undefined): boolean {
-    return Boolean(projectId && projectId === this.selectedProject);
+  private applyWorkspaceProjectEntryFilter(): void {
+    const project = this.selectedProject === 'all' ? null : this.normalizeWorkspaceProjectFilter(this.selectedProject);
+    this.workspaceProjectProjectFilters = project ? [project] : [];
   }
 
   private syncLastActionWorkspaceView(view: WorkspaceView): void {
@@ -18578,27 +18771,96 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     const query = this.normalizedWorkspaceProjectSearch();
     return rows
       .filter((project) => this.matchesWorkspaceProjectFilters(project))
-      .filter((project) => {
-        if (!query) return true;
-        return [
-          project.code,
-          project.title,
-          project.stage,
-          project.status,
-          project.manager,
-          project.baselineStart,
-          project.baselineEnd,
-          project.budgetUsed,
-          project.budgetTotal,
-        ].some((value) => this.searchableWorkspaceProjectValue(value).includes(query));
-      });
+      .filter((project) => this.matchesWorkspaceProjectSearch(project, query));
   }
 
   private matchesWorkspaceProjectFilters(project: ProjectRow): boolean {
-    if (this.workspaceProjectStatusFilter !== 'all' && this.projectFilterKey(project.status) !== this.projectFilterKey(this.workspaceProjectStatusFilter)) return false;
-    if (this.workspaceProjectStageFilter !== 'all' && this.projectFilterKey(this.normalizeWorkspaceProjectStage(project.stage)) !== this.projectFilterKey(this.workspaceProjectStageFilter)) return false;
-    if (this.workspaceProjectManagerFilter !== 'all' && project.manager !== this.workspaceProjectManagerFilter) return false;
+    if (!this.matchesWorkspaceProjectBaseFilters(project)) return false;
+    if (this.workspaceProjectStatusFilters.length && !this.workspaceProjectStatusFilters.some((status) => this.projectFilterKey(project.status) === this.projectFilterKey(status))) return false;
     return true;
+  }
+
+  private matchesWorkspaceProjectBaseFilters(project: ProjectRow): boolean {
+    if (this.workspaceProjectProjectFilters.length && !this.workspaceProjectProjectFilters.some((projectId) => this.matchesWorkspaceProjectId(project, projectId))) return false;
+    if (this.workspaceProjectStageFilters.length && !this.workspaceProjectStageFilters.some((stage) => this.projectFilterKey(this.normalizeWorkspaceProjectStage(project.stage)) === this.projectFilterKey(stage))) return false;
+    return true;
+  }
+
+  private normalizeWorkspaceProjectFilter(projectId: string): string | null {
+    return this.workspaceProjectSourceRows.some((project) => this.matchesWorkspaceProjectId(project, projectId)) ? projectId : null;
+  }
+
+  private matchesWorkspaceProjectId(project: ProjectRow, projectId: string): boolean {
+    return project.id === projectId || project.title === projectId;
+  }
+
+  private workspaceProjectProjectLabel(projectId: string): string {
+    const option = this.workspaceProjectProjectOptions.find((project) => project.id === projectId);
+    return option?.name || projectId;
+  }
+
+  private workspaceProjectFilterValues(field: WorkspaceProjectFilterField): string[] {
+    if (field === 'project') return this.workspaceProjectProjectFilters;
+    if (field === 'status') return this.workspaceProjectStatusFilters;
+    return this.workspaceProjectStageFilters;
+  }
+
+  private setWorkspaceProjectFilterValues(field: WorkspaceProjectFilterField, values: string[]): void {
+    if (field === 'project') this.workspaceProjectProjectFilters = values;
+    if (field === 'status') this.workspaceProjectStatusFilters = values;
+    if (field === 'stage') this.workspaceProjectStageFilters = values;
+  }
+
+  private nextWorkspaceProjectFilterValues(values: string[], value: string, checked: boolean): string[] {
+    if (!value) return values;
+    if (checked) return values.includes(value) ? values : [...values, value];
+    return values.filter((item) => item !== value);
+  }
+
+  private matchesWorkspaceProjectSearch(project: ProjectRow, query: string): boolean {
+    if (!query) return true;
+    return [
+      project.code,
+      project.title,
+      project.stage,
+      project.status,
+      project.manager,
+      project.baselineStart,
+      project.baselineEnd,
+      project.budgetUsed,
+      project.budgetTotal,
+    ].some((value) => this.searchableWorkspaceProjectValue(value).includes(query));
+  }
+
+  private filterWorkspaceRegisterRows<T extends object>(rows: T[], filter: WorkspaceRegisterQuickFilter | null): T[] {
+    if (!filter) return rows;
+    return rows.filter((row) => {
+      const value = (row as Record<string, string>)[filter.field] || '';
+      return this.projectFilterKey(value) === this.projectFilterKey(filter.value);
+    });
+  }
+
+  private workspaceRegisterAppliedFilter(filter: WorkspaceRegisterQuickFilter | null, label: string): WorkspaceRegisterAppliedFilter | null {
+    if (!filter) return null;
+    return {
+      id: `${filter.field}:${filter.value}`,
+      label,
+      value: filter.label || filter.value,
+    };
+  }
+
+  private workspaceRegisterQuickFilterSelected(stat: WorkspaceRegisterStat, current: WorkspaceRegisterQuickFilter | null): boolean {
+    return Boolean(
+      stat.quickFilter &&
+        current &&
+        stat.quickFilter.field === current.field &&
+        this.projectFilterKey(stat.quickFilter.value) === this.projectFilterKey(current.value),
+    );
+  }
+
+  private nextWorkspaceRegisterQuickFilter(stat: WorkspaceRegisterStat, current: WorkspaceRegisterQuickFilter | null): WorkspaceRegisterQuickFilter | null {
+    if (!stat.quickFilter) return null;
+    return this.workspaceRegisterQuickFilterSelected(stat, current) ? null : stat.quickFilter;
   }
 
   private normalizedWorkspaceProjectSearch(): string {
@@ -18625,9 +18887,9 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     const columns = this.visibleWorkspaceTableColumns.length ? this.visibleWorkspaceTableColumns : workspaceTableColumns;
     const filterParts = [
       this.workspaceProjectSearch.trim() ? `Search: ${this.workspaceProjectSearch.trim()}` : '',
-      this.workspaceProjectStatusFilter !== 'all' ? `Status: ${this.workspaceProjectStatusFilter}` : '',
-      this.workspaceProjectStageFilter !== 'all' ? `Stage: ${this.workspaceProjectStageFilter}` : '',
-      this.workspaceProjectManagerFilter !== 'all' ? `Manager: ${this.workspaceProjectManagerFilter}` : '',
+      this.workspaceProjectProjectFilters.length ? `Project: ${this.workspaceProjectProjectFilters.map((project) => this.workspaceProjectProjectLabel(project)).join(', ')}` : '',
+      this.workspaceProjectStatusFilters.length ? `Status: ${this.workspaceProjectStatusFilters.join(', ')}` : '',
+      this.workspaceProjectStageFilters.length ? `Stage: ${this.workspaceProjectStageFilters.join(', ')}` : '',
     ].filter(Boolean);
     const filters = filterParts.length ? filterParts.join(' | ') : 'No filters applied';
     const generatedAt = new Date().toLocaleString();
@@ -18673,7 +18935,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     const values: Record<WorkspaceTableColumnId, string> = {
       project: `${project.code} - ${project.title}`,
       stage: project.stage,
-      trend: project.trend.map((tone) => this.trendLabel(tone)).join(', '),
+      trend: project.trend.map((tone, index) => this.trendPointLabel(tone, index)).join(', '),
       manager: project.manager,
       baselineStart: project.baselineStart,
       baselineEnd: project.baselineEnd,
