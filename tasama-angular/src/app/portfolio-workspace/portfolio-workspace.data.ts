@@ -33,6 +33,7 @@ export interface ProjectRow {
   trend: 'stable' | 'up' | 'down';
   manager: string;
   startDate: string;
+  endDate: string;
   budgetUtilised: string;
   status: 'on-track' | 'off-track' | 'alert' | 'not-tracked' | 'not-started' | 'delayed' | 'completed' | 'under-review';
 }
@@ -44,6 +45,7 @@ export interface ProgramRow {
   trend: 'stable' | 'up' | 'down';
   manager: string;
   startDate: string;
+  endDate: string;
   budgetUtilised: string;
   status: 'on-track' | 'off-track' | 'alert' | 'not-tracked' | 'not-started' | 'delayed' | 'completed' | 'under-review';
   isProgram: boolean;
@@ -125,12 +127,13 @@ export const portfolioProgramRows: ProgramRow[] = [
     trend: 'up',
     manager: 'Sarah Jenkins',
     startDate: '2026-01-15',
-    budgetUtilised: '45%',
+    endDate: '2027-06-30',
+    budgetUtilised: '$2.5M / $4.3M',
     status: 'on-track',
     isProgram: true,
     projects: [
-      { id: 'proj-1-1', name: 'Ministerial SOC Hub Integration', stage: 'Execution', trend: 'stable', manager: 'Fatima Qahtani', startDate: '2026-02-01', budgetUtilised: '50%', status: 'on-track' },
-      { id: 'proj-1-2', name: 'Cross-Agency Endpoint Protection Rollout', stage: 'Closeout', trend: 'up', manager: 'Ali Al-Hashimi', startDate: '2026-01-20', budgetUtilised: '98%', status: 'completed' }
+      { id: 'proj-1-1', name: 'Ministerial SOC Hub Integration', stage: 'Execution', trend: 'stable', manager: 'Fatima Qahtani', startDate: '2026-02-01', endDate: '2026-08-30', budgetUtilised: '$125K / $320K', status: 'on-track' },
+      { id: 'proj-1-2', name: 'Cross-Agency Endpoint Protection Rollout', stage: 'Closeout', trend: 'up', manager: 'Ali Al-Hashimi', startDate: '2026-01-20', endDate: '2026-05-15', budgetUtilised: '$125K / $320K', status: 'completed' }
     ]
   },
   {
@@ -140,12 +143,13 @@ export const portfolioProgramRows: ProgramRow[] = [
     trend: 'stable',
     manager: 'Saeed Al-Mansoori',
     startDate: '2026-03-01',
-    budgetUtilised: '12%',
+    endDate: '2026-11-30',
+    budgetUtilised: '$125K / $320K',
     status: 'alert',
     isProgram: true,
     projects: [
-      { id: 'proj-2-1', name: 'Multi-Factor Authentication Rollout', stage: 'Planning', trend: 'down', manager: 'Saeed Al-Mansoori', startDate: '2026-03-10', budgetUtilised: '15%', status: 'alert' },
-      { id: 'proj-2-2', name: 'Centralised Directory Integration Services', stage: 'Initiation', trend: 'stable', manager: 'Mona Al-Mansoori', startDate: '2026-05-01', budgetUtilised: '2%', status: 'not-started' }
+      { id: 'proj-2-1', name: 'Multi-Factor Authentication Rollout', stage: 'Planning', trend: 'down', manager: 'Saeed Al-Mansoori', startDate: '2026-03-10', endDate: '2026-07-20', budgetUtilised: '$125K / $320K', status: 'alert' },
+      { id: 'proj-2-2', name: 'Centralised Directory Integration Services', stage: 'Initiation', trend: 'stable', manager: 'Mona Al-Mansoori', startDate: '2026-05-01', endDate: '2026-10-15', budgetUtilised: '$125K / $320K', status: 'not-started' }
     ]
   },
   {
@@ -155,12 +159,13 @@ export const portfolioProgramRows: ProgramRow[] = [
     trend: 'up',
     manager: 'Robert Chen',
     startDate: '2026-02-10',
-    budgetUtilised: '38%',
+    endDate: '2026-12-15',
+    budgetUtilised: '$2.5M / $4.3M',
     status: 'on-track',
     isProgram: true,
     projects: [
-      { id: 'proj-3-1', name: 'Shared Threat Intelligence Repository', stage: 'Execution', trend: 'up', manager: 'Amna Al-Hammadi', startDate: '2026-02-15', budgetUtilised: '40%', status: 'on-track' },
-      { id: 'proj-3-2', name: 'Proactive Threat Hunting Operations', stage: 'Planning', trend: 'stable', manager: 'Robert Chen', startDate: '2026-04-01', budgetUtilised: '20%', status: 'under-review' }
+      { id: 'proj-3-1', name: 'Shared Threat Intelligence Repository', stage: 'Execution', trend: 'up', manager: 'Amna Al-Hammadi', startDate: '2026-02-15', endDate: '2026-09-30', budgetUtilised: '$2.5M / $4.3M', status: 'on-track' },
+      { id: 'proj-3-2', name: 'Proactive Threat Hunting Operations', stage: 'Planning', trend: 'stable', manager: 'Robert Chen', startDate: '2026-04-01', endDate: '2026-10-31', budgetUtilised: '$0 / $1.2M', status: 'under-review' }
     ]
   },
   {
@@ -170,12 +175,13 @@ export const portfolioProgramRows: ProgramRow[] = [
     trend: 'down',
     manager: 'Dr. Khalid Al-Mansoori',
     startDate: '2026-01-05',
-    budgetUtilised: '60%',
+    endDate: '2026-09-30',
+    budgetUtilised: '$3.1M / $3.1M',
     status: 'off-track',
     isProgram: true,
     projects: [
-      { id: 'proj-4-1', name: 'Regulatory Framework Alignment Audits', stage: 'Execution', trend: 'down', manager: 'Fatima Qahtani', startDate: '2026-01-10', budgetUtilised: '75%', status: 'off-track' },
-      { id: 'proj-4-2', name: 'Security Audit & Gaps Remediation Plan', stage: 'Execution', trend: 'stable', manager: 'Zainab Al-Baloushi', startDate: '2026-02-25', budgetUtilised: '45%', status: 'delayed' }
+      { id: 'proj-4-1', name: 'Regulatory Framework Alignment Audits', stage: 'Execution', trend: 'down', manager: 'Fatima Qahtani', startDate: '2026-01-10', endDate: '2026-05-20', budgetUtilised: '$3.1M / $3.1M', status: 'off-track' },
+      { id: 'proj-4-2', name: 'Security Audit & Gaps Remediation Plan', stage: 'Execution', trend: 'stable', manager: 'Zainab Al-Baloushi', startDate: '2026-02-25', endDate: '2026-08-15', budgetUtilised: '$380K / $1.7M', status: 'delayed' }
     ]
   },
   {
@@ -185,11 +191,59 @@ export const portfolioProgramRows: ProgramRow[] = [
     trend: 'stable',
     manager: 'Yousef Al-Mulla',
     startDate: '2026-05-15',
-    budgetUtilised: '0%',
+    endDate: '2026-12-31',
+    budgetUtilised: '$0 / $1.2M',
     status: 'not-tracked',
     isProgram: true,
     projects: [
-      { id: 'proj-5-1', name: 'Rapid Response Team Mobilization', stage: 'Initiation', trend: 'stable', manager: 'Yousef Al-Mulla', startDate: '2026-05-20', budgetUtilised: '0%', status: 'not-tracked' }
+      { id: 'proj-5-1', name: 'Rapid Response Team Mobilization', stage: 'Initiation', trend: 'stable', manager: 'Yousef Al-Mulla', startDate: '2026-05-20', endDate: '2026-09-15', budgetUtilised: '$0 / $1.2M', status: 'not-tracked' }
+    ]
+  },
+  {
+    id: 'prog-6',
+    name: 'National Data Sovereign Center',
+    stage: 'Execution',
+    trend: 'up',
+    manager: 'Mariam Al-Ali',
+    startDate: '2026-04-01',
+    endDate: '2027-08-30',
+    budgetUtilised: '$4.2M / $8.5M',
+    status: 'on-track',
+    isProgram: true,
+    projects: [
+      { id: 'proj-6-1', name: 'Encrypted Data Lake Foundation', stage: 'Execution', trend: 'stable', manager: 'Hamad Al-Subaie', startDate: '2026-04-10', endDate: '2026-12-15', budgetUtilised: '$2.1M / $4.0M', status: 'on-track' },
+      { id: 'proj-6-2', name: 'Sovereign Cloud Gateway Infrastructure', stage: 'Planning', trend: 'up', manager: 'Sarah Jenkins', startDate: '2026-05-01', endDate: '2027-02-28', budgetUtilised: '$0 / $1.5M', status: 'under-review' }
+    ]
+  },
+  {
+    id: 'prog-7',
+    name: 'Unified Command Operations',
+    stage: 'Planning',
+    trend: 'stable',
+    manager: 'Zainab Al-Baloushi',
+    startDate: '2026-06-15',
+    endDate: '2027-05-10',
+    budgetUtilised: '$125K / $320K',
+    status: 'alert',
+    isProgram: true,
+    projects: [
+      { id: 'proj-7-1', name: 'Real-time Threat Monitoring Console', stage: 'Planning', trend: 'down', manager: 'Ali Al-Hashimi', startDate: '2026-07-01', endDate: '2026-12-30', budgetUtilised: '$125K / $320K', status: 'alert' }
+    ]
+  },
+  {
+    id: 'prog-8',
+    name: 'Zero Trust Network Access',
+    stage: 'Execution',
+    trend: 'up',
+    manager: 'Ali Al-Hashimi',
+    startDate: '2026-03-15',
+    endDate: '2027-12-31',
+    budgetUtilised: '$3.5M / $6.0M',
+    status: 'on-track',
+    isProgram: true,
+    projects: [
+      { id: 'proj-8-1', name: 'Micro-segmentation Firewall Deployments', stage: 'Execution', trend: 'stable', manager: 'Robert Chen', startDate: '2026-04-01', endDate: '2026-11-30', budgetUtilised: '$1.5M / $3.0M', status: 'on-track' },
+      { id: 'proj-8-2', name: 'Edge Security Access Verification', stage: 'Closeout', trend: 'up', manager: 'Mona Al-Mansoori', startDate: '2026-03-20', endDate: '2026-08-15', budgetUtilised: '$2.0M / $3.0M', status: 'completed' }
     ]
   }
 ];
@@ -202,7 +256,8 @@ export const standaloneProjects: ProgramRow[] = [
     trend: 'stable',
     manager: 'Mariam Al-Ali',
     startDate: '2026-02-18',
-    budgetUtilised: '30%',
+    endDate: '2026-06-30',
+    budgetUtilised: '$380K / $1.7M',
     status: 'on-track',
     isProgram: false
   },
@@ -213,8 +268,33 @@ export const standaloneProjects: ProgramRow[] = [
     trend: 'stable',
     manager: 'Hamad Al-Subaie',
     startDate: '2026-06-01',
-    budgetUtilised: '0%',
+    endDate: '2027-02-28',
+    budgetUtilised: '$0 / $1.2M',
     status: 'not-started',
+    isProgram: false
+  },
+  {
+    id: 'sa-proj-3',
+    name: 'Standalone National Cryptographic Policy Update',
+    stage: 'Planning',
+    trend: 'stable',
+    manager: 'Saeed Al-Mansoori',
+    startDate: '2026-08-01',
+    endDate: '2027-01-31',
+    budgetUtilised: '$0 / $350K',
+    status: 'under-review',
+    isProgram: false
+  },
+  {
+    id: 'sa-proj-4',
+    name: 'Standalone Inter-ministerial Red Team Drills',
+    stage: 'Execution',
+    trend: 'up',
+    manager: 'Fatima Qahtani',
+    startDate: '2026-05-10',
+    endDate: '2026-09-30',
+    budgetUtilised: '$450K / $800K',
+    status: 'on-track',
     isProgram: false
   }
 ];

@@ -24,6 +24,7 @@ export const iconMap: Record<string, string> = {
   down: 'chevron-down',
   dollar: 'circle-dollar-sign',
   download: 'download',
+  flag: 'flag',
   driver: 'rocket',
   endProduct: 'package',
   eye: 'eye',

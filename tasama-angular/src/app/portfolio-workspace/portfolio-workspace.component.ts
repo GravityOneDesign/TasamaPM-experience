@@ -64,8 +64,8 @@ type WorkspaceTab = 'overview' | 'registers' | 'reports';
           </div>
         </header>
 
-        <!-- Scrollable Tab Content Outlet inside white Board Container -->
-        <main class="portfolio-workspace-body" style="grid-row: 2; overflow-y: auto; background: #ffffff; padding: 20px 24px;">
+        <!-- Contained Tab Content Outlet inside white Board Container -->
+        <main class="portfolio-workspace-body" style="grid-row: 2; display: flex; flex-direction: column; overflow: hidden; background: #ffffff; padding: 10px 24px 18px 24px;">
           @switch (activeTab) {
             @case ('overview') {
               <app-portfolio-workspace-overview></app-portfolio-workspace-overview>
@@ -93,12 +93,14 @@ type WorkspaceTab = 'overview' | 'registers' | 'reports';
       padding: 16px 24px 24px 24px;
     }
 
-    /* Scrollable Outlet Body */
+    /* Contained Outlet Body */
     .portfolio-workspace-body {
       flex-grow: 1;
-      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
       background: #ffffff;
-      padding: 20px 10px 10px;
+      padding: 10px 24px 18px;
     }
   `]
 })
@@ -117,7 +119,7 @@ export class PortfolioWorkspaceComponent {
 
 
   tabs = [
-    { id: 'overview', label: 'Overview', icon: 'grid' },
+    { id: 'overview', label: 'Portfolio Profile', icon: 'grid' },
     { id: 'registers', label: 'Registers', icon: 'clipboard-list' },
     { id: 'reports', label: 'Reports', icon: 'file-text' },
   ] as const;
@@ -129,7 +131,7 @@ export class PortfolioWorkspaceComponent {
   get portfolioTabIndicatorLeft(): string {
     const order: WorkspaceTab[] = ['overview', 'registers', 'reports'];
     const widths: Record<WorkspaceTab, number> = {
-      overview: 135,
+      overview: 185,
       registers: 140,
       reports: 130,
     };
@@ -139,7 +141,7 @@ export class PortfolioWorkspaceComponent {
 
   get portfolioTabIndicatorWidth(): string {
     const widths: Record<WorkspaceTab, number> = {
-      overview: 135,
+      overview: 185,
       registers: 140,
       reports: 130,
     };
@@ -148,7 +150,7 @@ export class PortfolioWorkspaceComponent {
 
   portfolioTabWidth(id: WorkspaceTab): string {
     const widths: Record<WorkspaceTab, number> = {
-      overview: 135,
+      overview: 185,
       registers: 140,
       reports: 130,
     };

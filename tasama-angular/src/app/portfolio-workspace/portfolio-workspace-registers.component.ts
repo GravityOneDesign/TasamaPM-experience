@@ -62,81 +62,22 @@ type SubTab = 'projects' | 'risks' | 'benefits';
         <!-- PROJECT REGISTER -->
         @case ('projects') {
           <div class="tab-content-container animation-slide">
-            <!-- Stats row -->
-            <div class="pm-project-table-stats">
-              <article class="pm-project-table-stat blue cursor-pointer" [class.active-filter]="statusFilter === null" (click)="filterStatus(null)">
-                <span><span [pmConsoleIcon]="'layers'"></span></span>
-                <div class="stat-body">
-                  <small class="stat-label">All Programs</small>
-                  <strong class="stat-value">{{ allProgramsCount }}</strong>
-                </div>
-              </article>
-
-              <article class="pm-project-table-stat green cursor-pointer" [class.active-filter]="statusFilter === 'on-track'" (click)="filterStatus('on-track')">
-                <span><span [pmConsoleIcon]="'check-circle'"></span></span>
-                <div class="stat-body">
-                  <small class="stat-label">On-Track</small>
-                  <strong class="stat-value text-success">{{ onTrackCount }}</strong>
-                </div>
-              </article>
-
-              <article class="pm-project-table-stat red cursor-pointer" [class.active-filter]="statusFilter === 'off-track'" (click)="filterStatus('off-track')">
-                <span><span [pmConsoleIcon]="'alert-triangle'"></span></span>
-                <div class="stat-body">
-                  <small class="stat-label">Off-Track</small>
-                  <strong class="stat-value text-danger">{{ offTrackCount }}</strong>
-                </div>
-              </article>
-
-              <article class="pm-project-table-stat amber cursor-pointer" [class.active-filter]="statusFilter === 'alert'" (click)="filterStatus('alert')">
-                <span><span [pmConsoleIcon]="'shield-alert'"></span></span>
-                <div class="stat-body">
-                  <small class="stat-label">Alert</small>
-                  <strong class="stat-value text-warning">{{ alertCount }}</strong>
-                </div>
-              </article>
-
-              <article class="pm-project-table-stat neutral cursor-pointer" [class.active-filter]="statusFilter === 'not-started'" (click)="filterStatus('not-started')">
-                <span><span [pmConsoleIcon]="'clock'"></span></span>
-                <div class="stat-body">
-                  <small class="stat-label">Not Started</small>
-                  <strong class="stat-value text-muted">{{ notStartedCount }}</strong>
-                </div>
-              </article>
-            </div>
 
             <div class="register-toolbar">
-              <div class="toolbar-left" style="display: flex; align-items: center; gap: 16px;">
-                <!-- Create Dropdown Container -->
-                <div class="create-dropdown-container" style="position: relative; display: inline-block;">
-                  <button class="tb-btn primary-tb" type="button" (click)="toggleCreateDropdown($event)" style="display: inline-flex; align-items: center; gap: 6px;">
-                    <span [pmConsoleIcon]="'plus'"></span>
-                    <span>Create</span>
-                    <span [pmConsoleIcon]="'chevron-down'" style="margin-left: 2px; font-size: 10px; opacity: 0.85;"></span>
-                  </button>
-                  @if (showCreateDropdown) {
-                    <div class="create-dropdown-menu" style="position: absolute; left: 0; top: 100%; margin-top: 6px; background: white; border: 1px solid #edf0f6; border-radius: 10px; box-shadow: 0 10px 25px rgba(25, 33, 61, 0.12); width: 150px; z-index: 100; padding: 6px; display: flex; flex-direction: column; gap: 4px;">
-                      <button class="dropdown-item" type="button" (click)="onCreateOption('New Project')" style="background: transparent; border: none; padding: 8px 12px; font-size: 13px; font-weight: 500; color: #252a34; text-align: left; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; width: 100%; transition: background-color 0.15s ease;">
-                        <span [pmConsoleIcon]="'folder'" style="font-size: 14px; color: #707788;"></span>
-                        <span>New Project</span>
-                      </button>
-                      <button class="dropdown-item" type="button" (click)="onCreateOption('New Program')" style="background: transparent; border: none; padding: 8px 12px; font-size: 13px; font-weight: 500; color: #252a34; text-align: left; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; width: 100%; transition: background-color 0.15s ease;">
-                        <span [pmConsoleIcon]="'layers'" style="font-size: 14px; color: #707788;"></span>
-                        <span>New Program</span>
-                      </button>
-                    </div>
-                  }
+              <div class="toolbar-left" style="display: flex; align-items: center; gap: 12px;">
+                <!-- Programs summary container -->
+                <div class="summary-pill active">
+                  <span class="pill-label">programs</span>
+                  <span class="pill-badge">{{ allProgramsCount }}</span>
+                </div>
+                <!-- Standalone Projects summary container -->
+                <div class="summary-pill inactive">
+                  <span class="pill-label">standalone projects</span>
+                  <span class="pill-badge">{{ standaloneList.length }}</span>
                 </div>
               </div>
-              <div class="toolbar-right">
-                <!-- Legend for Items Needing Review -->
-                <div class="review-legend" title="First two items in this register have components requiring active PM review">
-                  <span class="review-legend-icon">
-                    <span [pmConsoleIcon]="'alert-circle'"></span>
-                  </span>
-                  <span class="review-legend-text">Needs Review</span>
-                </div>
-
+              
+              <div class="toolbar-right" style="display: flex; align-items: center; gap: 10px; margin-left: auto;">
                 <!-- Toggleable Search -->
                 <div class="search-toggle-container" [class.is-expanded]="showSearch">
                   <button class="tb-btn search-toggle-btn" type="button" (click)="showSearch = !showSearch" aria-label="Toggle search">
@@ -158,9 +99,33 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                   <span [pmConsoleIcon]="'filter'"></span>
                   <span>Filter</span>
                 </button>
-                <button class="tb-btn" type="button" aria-label="Export PDF">
-                  <span [pmConsoleIcon]="'download-cloud'"></span>
-                  <span>Export PDF</span>
+                <button class="tb-btn" type="button" aria-label="Export">
+                  <span [pmConsoleIcon]="'download'"></span>
+                  <span>Export</span>
+                </button>
+
+                <!-- Create Dropdown Container -->
+                <div class="create-dropdown-container" style="position: relative; display: inline-block;">
+                  <button class="tb-btn primary-tb" type="button" (click)="toggleCreateDropdown($event)" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <span [pmConsoleIcon]="'plus'"></span>
+                    <span>Add new</span>
+                  </button>
+                  @if (showCreateDropdown) {
+                    <div class="create-dropdown-menu" style="position: absolute; right: 0; top: 100%; margin-top: 6px; background: white; border: 1px solid #edf0f6; border-radius: 10px; box-shadow: 0 10px 25px rgba(25, 33, 61, 0.12); width: 150px; z-index: 100; padding: 6px; display: flex; flex-direction: column; gap: 4px;">
+                      <button class="dropdown-item" type="button" (click)="onCreateOption('New Project')" style="background: transparent; border: none; padding: 8px 12px; font-size: 13px; font-weight: 500; color: #252a34; text-align: left; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; width: 100%; transition: background-color 0.15s ease;">
+                        <span [pmConsoleIcon]="'folder'" style="font-size: 14px; color: #707788;"></span>
+                        <span>New Project</span>
+                      </button>
+                      <button class="dropdown-item" type="button" (click)="onCreateOption('New Program')" style="background: transparent; border: none; padding: 8px 12px; font-size: 13px; font-weight: 500; color: #252a34; text-align: left; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; width: 100%; transition: background-color 0.15s ease;">
+                        <span [pmConsoleIcon]="'layers'" style="font-size: 14px; color: #707788;"></span>
+                        <span>New Program</span>
+                      </button>
+                    </div>
+                  }
+                </div>
+
+                <button class="tb-btn settings-btn" type="button" aria-label="Settings" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0;">
+                  <span [pmConsoleIcon]="'settings'"></span>
                 </button>
               </div>
             </div>
@@ -171,10 +136,10 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                 <thead>
                   <tr>
                     <th style="width: 36%">Program / Project Name</th>
-                    <th style="width: 12%">Stage</th>
-                    <th style="width: 15%">Status Trend</th>
-                    <th style="width: 17%">Manager</th>
-                    <th style="width: 10%">Start Date</th>
+                    <th style="width: 18%">Manager</th>
+                    <th style="width: 14%">Status Trend</th>
+                    <th style="width: 11%">Start Date</th>
+                    <th style="width: 11%">End Date</th>
                     <th style="width: 10%">Budget Utilised</th>
                   </tr>
                 </thead>
@@ -192,21 +157,28 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                           >
                             <span [pmConsoleIcon]="isExpanded(prog.id) ? 'chevron-down' : 'chevron-right'" class="chevron-icon"></span>
                           </button>
-                          <div class="program-title-column">
-                            <span class="program-display-id">{{ getProgramDisplayId(prog.id) }}</span>
-                            <div class="title-meta">
-                              <strong class="program-name-blue">{{ prog.name }}</strong>
-                              <span class="badge-tag program-tag">Program</span>
+                          <div class="program-title-column" title="{{ prog.name }}">
+                            <div class="program-id-alert-wrapper" style="display: flex; align-items: center; gap: 6px;">
+                              <span class="program-display-id">{{ getProgramDisplayId(prog.id) }}</span>
                               @if (prog.id === 'prog-1' || prog.id === 'prog-2') {
-                                <span class="review-needed-indicator" title="Needs review">
-                                  <span [pmConsoleIcon]="'alert-circle'"></span>
+                                <span class="review-needed-alert" title="Needs Attention">
+                                  <span [pmConsoleIcon]="'alert'"></span>
                                 </span>
                               }
+                            </div>
+                            <div class="title-meta">
+                              <strong class="program-name-blue" title="{{ prog.name }}">{{ truncateName(prog.name, 30) }}</strong>
+                              <span class="badge-tag program-tag">Program</span>
                             </div>
                           </div>
                         </div>
                       </td>
-                      <td><span class="stage-span">{{ prog.stage }}</span></td>
+                      <td>
+                        <div class="avatar-cell">
+                          <div class="avatar-circle" [ngStyle]="getManagerAvatarStyles(prog.manager)">{{ getInitials(prog.manager) }}</div>
+                          <span class="manager-name">{{ prog.manager }}</span>
+                        </div>
+                      </td>
                       <td>
                         <div class="trend-circle-wrapper">
                           @for (trendItem of getThreePeriodTrend(prog.id); track $index) {
@@ -222,14 +194,13 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                           }
                         </div>
                       </td>
-                      <td>
-                        <div class="avatar-cell">
-                          <div class="avatar-circle">{{ getInitials(prog.manager) }}</div>
-                          <span class="manager-name">{{ prog.manager }}</span>
-                        </div>
-                      </td>
                       <td class="date-col">{{ formatDate(prog.startDate) }}</td>
-                      <td class="budget-col">{{ prog.budgetUtilised }}</td>
+                      <td class="date-col">{{ formatDate(prog.endDate) }}</td>
+                      <td class="budget-col">
+                        <span class="pm-table-budget">
+                          <strong>{{ getBudgetParts(prog.budgetUtilised).bold }}</strong><small>{{ getBudgetParts(prog.budgetUtilised).normal }}</small>
+                        </span>
+                      </td>
                     </tr>
 
                     <!-- Child Project Rows -->
@@ -239,16 +210,21 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                           <td class="primary-col indented-col">
                             <div class="name-cell-wrapper">
                               <span [pmConsoleIcon]="'corner-down-right'" class="corner-arrow"></span>
-                              <div class="program-title-column">
+                              <div class="program-title-column" title="{{ proj.name }}">
                                 <span class="program-display-id">{{ getProgramDisplayId(proj.id) }}</span>
                                 <div class="title-meta">
-                                  <strong class="program-name-blue">{{ proj.name }}</strong>
+                                  <strong class="program-name-blue" title="{{ proj.name }}">{{ truncateName(proj.name, 30) }}</strong>
                                   <span class="badge-tag project-tag">Project</span>
                                 </div>
                               </div>
                             </div>
                           </td>
-                          <td><span class="stage-span">{{ proj.stage }}</span></td>
+                          <td>
+                            <div class="avatar-cell">
+                              <div class="avatar-circle" [ngStyle]="getManagerAvatarStyles(proj.manager)">{{ getInitials(proj.manager) }}</div>
+                              <span class="manager-name">{{ proj.manager }}</span>
+                            </div>
+                          </td>
                           <td>
                             <div class="trend-circle-wrapper">
                               @for (trendItem of getThreePeriodTrend(proj.id); track $index) {
@@ -264,14 +240,13 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                               }
                             </div>
                           </td>
-                          <td>
-                            <div class="avatar-cell">
-                              <div class="avatar-circle secondary-circle">{{ getInitials(proj.manager) }}</div>
-                              <span class="manager-name">{{ proj.manager }}</span>
-                            </div>
-                          </td>
                           <td class="date-col">{{ formatDate(proj.startDate) }}</td>
-                          <td class="budget-col">{{ proj.budgetUtilised }}</td>
+                          <td class="date-col">{{ formatDate(proj.endDate) }}</td>
+                          <td class="budget-col">
+                            <span class="pm-table-budget">
+                              <strong>{{ getBudgetParts(proj.budgetUtilised).bold }}</strong><small>{{ getBudgetParts(proj.budgetUtilised).normal }}</small>
+                            </span>
+                          </td>
                         </tr>
                       }
                     }
@@ -282,16 +257,21 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                     <tr class="program-row standalone-row">
                       <td class="primary-col">
                         <div class="name-cell-wrapper no-chevron">
-                          <div class="program-title-column">
+                          <div class="program-title-column" title="{{ sa.name }}">
                             <span class="program-display-id">{{ getProgramDisplayId(sa.id) }}</span>
                             <div class="title-meta">
-                              <strong class="program-name-blue">{{ sa.name }}</strong>
-                              <span class="badge-tag standalone-tag">Standalone</span>
+                              <strong class="program-name-blue" title="{{ sa.name }}">{{ truncateName(sa.name, 30) }}</strong>
+                              <span class="badge-tag project-tag">Project</span>
                             </div>
                           </div>
                         </div>
                       </td>
-                      <td><span class="stage-span">{{ sa.stage }}</span></td>
+                      <td>
+                        <div class="avatar-cell">
+                          <div class="avatar-circle" [ngStyle]="getManagerAvatarStyles(sa.manager)">{{ getInitials(sa.manager) }}</div>
+                          <span class="manager-name">{{ sa.manager }}</span>
+                        </div>
+                      </td>
                       <td>
                         <div class="trend-circle-wrapper">
                           @for (trendItem of getThreePeriodTrend(sa.id); track $index) {
@@ -307,14 +287,13 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                           }
                         </div>
                       </td>
-                      <td>
-                        <div class="avatar-cell">
-                          <div class="avatar-circle">{{ getInitials(sa.manager) }}</div>
-                          <span class="manager-name">{{ sa.manager }}</span>
-                        </div>
-                      </td>
                       <td class="date-col">{{ formatDate(sa.startDate) }}</td>
-                      <td class="budget-col">{{ sa.budgetUtilised }}</td>
+                      <td class="date-col">{{ formatDate(sa.endDate) }}</td>
+                      <td class="budget-col">
+                        <span class="pm-table-budget">
+                          <strong>{{ getBudgetParts(sa.budgetUtilised).bold }}</strong><small>{{ getBudgetParts(sa.budgetUtilised).normal }}</small>
+                        </span>
+                      </td>
                     </tr>
                   }
                 </tbody>
@@ -478,8 +457,10 @@ type SubTab = 'projects' | 'risks' | 'benefits';
     .workspace-registers-tab {
       display: flex;
       flex-direction: column;
-      gap: 24px;
-      padding: 10px 0;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      padding: 4px 0 0;
       animation: fadeIn 0.3s ease-out;
     }
 
@@ -490,8 +471,7 @@ type SubTab = 'projects' | 'risks' | 'benefits';
       z-index: 12;
       background: #ffffff;
       border-bottom: 1px solid #edf0f6;
-      padding-bottom: 4px;
-      margin-bottom: 18px;
+      margin-bottom: 4px;
       display: flex;
       gap: 24px;
     }
@@ -499,7 +479,7 @@ type SubTab = 'projects' | 'risks' | 'benefits';
     .sub-tabs .pm-register-tab {
       background: transparent;
       border: none;
-      padding: 10px 4px;
+      padding: 10px 4px 8px 4px;
       font-size: 13.5px;
       font-weight: 500;
       color: #707788;
@@ -536,71 +516,63 @@ type SubTab = 'projects' | 'risks' | 'benefits';
     .tab-content-container {
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 8px;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
     }
-
-    /* Stats row */
-    .pm-project-table-stats {
-      position: sticky;
-      top: 38px;
-      z-index: 11;
-      background: #ffffff;
-      padding: 8px 0;
-      margin: 0;
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 12px;
-    }
-
-    .cursor-pointer {
-      cursor: pointer;
-    }
-
-    .active-filter {
-      border-color: var(--brand, #007aff) !important;
-      box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1) !important;
-    }
-
-    .stat-body {
-      display: flex;
-      flex-direction: column;
-      flex-grow: 1;
-      min-width: 0;
-    }
-
-    .stat-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: #707788;
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
-    }
-
-    .stat-value {
-      font-size: 20px;
-      font-weight: 700;
-      color: #252a34;
-    }
-
-    .text-success { color: #16a15f !important; }
-    .text-danger { color: #de350b !important; }
-    .text-warning { color: #b27b00 !important; }
-    .text-muted { color: #5e6c84 !important; }
 
     /* Toolbar */
     .register-toolbar {
       position: sticky;
-      top: 126px;
+      top: 0px;
       z-index: 11;
-      background: #ffffff;
-      padding: 12px 20px;
+      background: transparent;
+      padding: 6px 0;
       margin-bottom: 4px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      border: none;
+      box-shadow: none;
+    }
+
+    /* Summary pills styled simple, clean, light weight, slate grey as requested */
+    .summary-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 0;
+      font-size: 13.5px;
+      font-weight: 400; /* Light font weight */
+      color: #707788;   /* Same shade of grey as other body text */
+      background: transparent !important;
+      border: none;
+    }
+
+    .summary-pill .pill-badge {
+      font-size: 13.5px;
+      font-weight: 400; /* Light font weight */
+      color: #707788;
+      background: transparent !important;
+      padding: 0;
+    }
+
+    .pm-project-table-scroll {
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
       border: 1px solid #e3e5e9;
-      border-radius: 12px;
+      border-radius: 16px;
+      background: #ffffff;
       box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    }
+
+    .pm-project-table th {
+      background: #f8fafc;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
     .toolbar-left {
@@ -762,30 +734,25 @@ type SubTab = 'projects' | 'risks' | 'benefits';
     }
 
     .badge-tag {
-      font-size: 9px;
-      font-weight: 700;
-      text-transform: uppercase;
-      padding: 2px 6px;
-      border-radius: 4px;
-      letter-spacing: 0.04em;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: none; /* normal capitalized, not uppercase */
+      padding: 4px 12px;
+      border-radius: 999px; /* rounded pill shape */
+      letter-spacing: normal;
+      border: none;
+      display: inline-flex;
+      align-items: center;
     }
 
     .program-tag {
-      background: rgba(0, 122, 255, 0.08);
-      color: #007aff;
-      border: 1px solid rgba(0, 122, 255, 0.2);
+      background: #eef2ff; /* solid light lavender background from image 2 */
+      color: #10069f;      /* deep indigo text from image 2 */
     }
 
     .project-tag {
-      background: rgba(255, 159, 10, 0.08);
-      color: #ff9f0a;
-      border: 1px solid rgba(255, 159, 10, 0.2);
-    }
-
-    .standalone-tag {
-      background: #f4f5f7;
-      color: #5e6c84;
-      border: 1px solid rgba(94, 108, 132, 0.2);
+      background: #E6ECF8; /* solid very light gray-blue background */
+      color: #244980;      /* blue text */
     }
 
     .stage-span {
@@ -868,20 +835,12 @@ type SubTab = 'projects' | 'risks' | 'benefits';
       width: 24px;
       height: 24px;
       border-radius: 50%;
-      background: rgba(0, 122, 255, 0.08);
-      color: #007aff;
       font-size: 9.5px;
       font-weight: 600;
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 1.5px solid rgba(0, 122, 255, 0.2);
-    }
-
-    .avatar-circle.secondary-circle {
-      background: rgba(255, 159, 10, 0.08);
-      color: #ff9f0a;
-      border-color: rgba(255, 159, 10, 0.2);
+      border: none; /* remove outline from profile icon of Manager */
     }
 
     .manager-name, .owner-name {
@@ -1150,32 +1109,19 @@ type SubTab = 'projects' | 'risks' | 'benefits';
       color: #10069f !important;
     }
 
-    .review-needed-indicator {
+    .review-needed-alert {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      color: #10069f;
-      background: #eef2ff;
-      border: 1px solid rgba(16, 6, 159, 0.15);
-      border-radius: 50%;
-      width: 18px;
-      height: 18px;
-      margin-left: 6px;
-      transition: all 0.2s ease;
+      color: #de350b;
       cursor: help;
     }
     
-    .review-needed-indicator:hover {
-      transform: scale(1.1);
-      background: #e0e7ff;
-      border-color: rgba(16, 6, 159, 0.3);
-    }
-
-    .review-needed-indicator ::ng-deep .icon {
+    .review-needed-alert ::ng-deep .icon {
       width: 12px !important;
       height: 12px !important;
       stroke-width: 2.5px !important;
-      color: #10069f !important;
+      color: #de350b !important;
     }
   `]
 })
@@ -1329,8 +1275,21 @@ export class PortfolioWorkspaceRegistersComponent {
       'prog-5': ['bell', 'cross', 'check'],
       'proj-5-1': ['bell', 'cross', 'check'],
       
+      'prog-6': ['check', 'check', 'bell'],
+      'proj-6-1': ['check', 'check', 'check'],
+      'proj-6-2': ['check', 'bell', 'bell'],
+      
+      'prog-7': ['check', 'bell', 'cross'],
+      'proj-7-1': ['check', 'bell', 'bell'],
+      
+      'prog-8': ['check', 'check', 'check'],
+      'proj-8-1': ['check', 'check', 'check'],
+      'proj-8-2': ['check', 'check', 'bell'],
+      
       'sa-proj-1': ['check', 'check', 'check'],
-      'sa-proj-2': ['bell', 'bell', 'check']
+      'sa-proj-2': ['bell', 'bell', 'check'],
+      'sa-proj-3': ['check', 'check', 'check'],
+      'sa-proj-4': ['bell', 'bell', 'check']
     };
     return trendMap[id] || ['check', 'check', 'check'];
   }
@@ -1415,6 +1374,38 @@ export class PortfolioWorkspaceRegistersComponent {
       default:
         return 'neutral';
     }
+  }
+
+  getManagerAvatarStyles(name: string): { [key: string]: string } {
+    const palettes = [
+      { bg: '#FFF8EA', color: '#b45309' },      // Cream / Orange-Brown text
+      { bg: '#E6ECF8', color: '#244980' },      // Gray-Blue / Deep Blue text
+      { bg: '#DFDFEE', color: '#4f46e5' }       // Purple-Gray / Indigo text
+    ];
+    if (!name) return { background: palettes[0].bg, color: palettes[0].color };
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % palettes.length;
+    return {
+      background: palettes[index].bg,
+      color: palettes[index].color
+    };
+  }
+
+  getBudgetParts(budgetStr: string): { bold: string; normal: string } {
+    if (!budgetStr) return { bold: '', normal: '' };
+    const parts = budgetStr.split('/');
+    if (parts.length >= 2) {
+      return { bold: parts[0].trim(), normal: ' / ' + parts[1].trim() };
+    }
+    return { bold: budgetStr, normal: '' };
+  }
+
+  truncateName(name: string, limit: number = 30): string {
+    if (!name) return '';
+    return name.length > limit ? name.substring(0, limit) + '...' : name;
   }
 }
 
