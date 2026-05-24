@@ -39,10 +39,12 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
             <ng-content select="[planDrawerBody]"></ng-content>
           </section>
 
-          <footer class="plan-entry-drawer-footer">
-            <button class="plan-entry-drawer-cancel" type="button" (click)="close.emit()">{{ cancelLabel }}</button>
-            <button class="plan-entry-drawer-submit" type="submit" [disabled]="submitDisabled">{{ submitLabel }}</button>
-          </footer>
+          @if (!hideFooter) {
+            <footer class="plan-entry-drawer-footer">
+              <button class="plan-entry-drawer-cancel" type="button" (click)="close.emit()">{{ cancelLabel }}</button>
+              <button class="plan-entry-drawer-submit" type="submit" [disabled]="submitDisabled">{{ submitLabel }}</button>
+            </footer>
+          }
         </form>
       </aside>
     </div>
@@ -270,6 +272,7 @@ export class PmConsolePlanDrawerComponent {
   @Input() closeAriaLabel = 'Close drawer';
   @Input() ariaLabel = '';
   @Input() panelClass: string | string[] | Set<string> | Record<string, unknown> = '';
+  @Input() hideFooter = false;
 
   @Output() close = new EventEmitter<void>();
   @Output() submitForm = new EventEmitter<Event>();
