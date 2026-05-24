@@ -1,12 +1,13 @@
-import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, Input, OnInit } from '@angular/core';
+import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { PmConsoleContentComponent } from './pm-console-content.component';
 import { PortfolioManagerConsoleComponent } from './portfolio-manager-console.component';
 import { PmConsoleIconService } from './pm-console-icon.service';
-import { ConsolePage, PmConsoleMountOptions, ProjectOption } from './pm-console.types';
+import { ConsolePage, ConsoleUser, PmConsoleMountOptions, ProjectOption } from './pm-console.types';
 import { PmConsoleNotificationsComponent } from './pm-console-notifications.component';
 import { PmConsoleAgentDockComponent } from './shared/pm-console-agent-dock.component';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 import { PmConsoleSideNavComponent, type PmConsoleSideNavItem } from './shared/pm-console-side-nav.component';
+import { PmConsoleTopBarComponent } from './shared/pm-console-top-bar.component';
 
 interface RailItem extends PmConsoleSideNavItem {
   page?: ConsolePage;
@@ -14,18 +15,28 @@ interface RailItem extends PmConsoleSideNavItem {
   home?: boolean;
 }
 
-type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
+type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages' | 'quicklinks';
 const ONBOARDING_PM101_PROJECT_ID = 'all';
 const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
 
 @Component({
   selector: 'app-pm-console-shell',
   standalone: true,
-  imports: [PmConsoleAgentDockComponent, PmConsoleContentComponent, PortfolioManagerConsoleComponent, PmConsoleIconComponent, PmConsoleNotificationsComponent, PmConsoleSideNavComponent],
+  imports: [PmConsoleAgentDockComponent, PmConsoleContentComponent, PortfolioManagerConsoleComponent, PmConsoleIconComponent, PmConsoleNotificationsComponent, PmConsoleSideNavComponent, PmConsoleTopBarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="modern-shell" [class.side-nav-expanded]="sideNavExpanded" [class.playground-mode]="selectedPage === 'playground'" [class.wbs-mode]="selectedPage === 'wbs'" [class.project-plan-mode]="selectedPage === 'project-plan'" [class.unassigned-mode]="frontDoorMode === 'unassigned'">
-      <header class="app-header" [class.unassigned-header]="frontDoorMode === 'unassigned'" [class.workspaces-header]="usesConsoleHeader">
+      @if (currentUser === 'muna') {
+        <app-pm-console-top-bar
+          [showConsoleHeader]="usesConsoleHeader"
+          [unassigned]="frontDoorMode === 'unassigned'"
+          [pmoAssignmentReady]="pmoAssignmentReady"
+          [notificationPanelOpen]="notificationPanelOpen"
+          (homeSelected)="goHome()"
+          (notificationsToggled)="toggleNotifications()"
+        />
+      } @else {
+        <header class="app-header" [class.unassigned-header]="frontDoorMode === 'unassigned'" [class.workspaces-header]="usesConsoleHeader">
         <div class="brand-block">
           <button
             class="brand-logo-button"
@@ -65,31 +76,14 @@ const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
           </button>
           
           <div class="profile-chip-container" style="position: relative; display: inline-block;">
-            <button class="profile-chip" type="button" (click)="toggleProfileMenu()">
-              @if (currentUser === 'muna') {
-                <span class="avatar-xl">MH<i></i></span>
-                <span><strong>Muna Hassan</strong><small>Senior Analyst</small></span>
-              } @else {
-                <span class="avatar-xl" style="background: #e0f2fe; color: #0369a1;">FQ<i></i></span>
-                <span><strong>Fatima Qahtani</strong><small>Portfolio Manager</small></span>
-              }
-            </button>
-            
-            @if (isProfileMenuOpen) {
-              <div class="profile-dropdown-menu" style="position: absolute; right: 0; top: 100%; margin-top: 8px; background: white; border: 1px solid #edf0f6; border-radius: 10px; box-shadow: 0 10px 25px rgba(25, 33, 61, 0.12); width: 240px; z-index: 100; padding: 6px; display: flex; flex-direction: column; gap: 4px;">
-                <button type="button" class="profile-menu-item" (click)="switchUser('muna')" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; background: transparent; border: 0; text-align: left; width: 100%; cursor: pointer;" [style.background]="currentUser === 'muna' ? '#f0f4ff' : 'transparent'">
-                  <span class="avatar-xl" style="width: 32px; height: 32px; font-size: 11px; flex-shrink: 0;">MH</span>
-                  <span style="display: flex; flex-direction: column;"><strong style="font-size: 12px; color: #202633; font-weight: 600; line-height: 1.2;">Muna Hassan</strong><small style="font-size: 10px; color: #7a8394;">Senior Analyst</small></span>
-                </button>
-                <button type="button" class="profile-menu-item" (click)="switchUser('fatima')" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; background: transparent; border: 0; text-align: left; width: 100%; cursor: pointer;" [style.background]="currentUser === 'fatima' ? '#f0f4ff' : 'transparent'">
-                  <span class="avatar-xl" style="width: 32px; height: 32px; font-size: 11px; flex-shrink: 0; background: #e0f2fe; color: #0369a1;">FQ</span>
-                  <span style="display: flex; flex-direction: column;"><strong style="font-size: 12px; color: #202633; font-weight: 600; line-height: 1.2;">Fatima Qahtani</strong><small style="font-size: 10px; color: #7a8394;">Portfolio Manager</small></span>
-                </button>
-              </div>
-            }
+            <div class="profile-chip" aria-label="Current user">
+              <span class="avatar-xl" style="background: #e0f2fe; color: #0369a1;">FQ<i></i></span>
+              <span><strong>Fatima Qahtani</strong><small>Portfolio Manager</small></span>
+            </div>
           </div>
         </div>
-      </header>
+        </header>
+      }
 
       <app-pm-console-side-nav
         [primaryItems]="primaryRailItems"
@@ -105,7 +99,7 @@ const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
           [projectOptions]="projects"
           [selectedProject]="selectedProject"
           [selectedPage]="$any(selectedPage)"
-          [selectedView]="selectedView"
+          [selectedView]="$any(selectedView)"
           [frontDoorMode]="frontDoorMode"
           [pmoAssignmentReady]="pmoAssignmentReady"
           [guidedTourActive]="guidedTourActive"
@@ -120,7 +114,7 @@ const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
           [projectOptions]="projects"
           [selectedProject]="selectedProject"
           [selectedPage]="selectedPage"
-          [selectedView]="selectedView"
+          [selectedView]="$any(selectedView)"
           [frontDoorMode]="frontDoorMode"
           [pmoAssignmentReady]="pmoAssignmentReady"
           [guidedTourActive]="guidedTourActive"
@@ -151,9 +145,24 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     { id: 'PMO Capability', name: 'PMO Capability' },
   ];
 
-  readonly topRailItems: RailItem[] = [
+  readonly projectManagerRailItems: RailItem[] = [
+    { id: 'home', icon: 'house', label: 'Home', page: 'workspace', home: true },
+    { id: 'register', icon: 'layout-grid', label: 'My Workspace', page: 'workspaces' },
+    {
+      id: 'dashboards',
+      icon: 'chart-column',
+      label: 'Dashboards',
+      page: 'workspace',
+      view: 'board',
+      disabled: true,
+      disabledTitle: 'Dashboards are not available yet',
+    },
+  ];
+
+  readonly portfolioManagerRailItems: RailItem[] = [
     { id: 'home', icon: 'house', label: 'Home', page: 'workspace', home: true },
     { id: 'register', icon: 'layout-grid', label: 'Register', page: 'workspaces' },
+    { id: 'framework', icon: 'settings', label: 'Framework & Configuration', page: 'framework' },
   ];
 
   readonly bottomRailItems: RailItem[] = [
@@ -174,8 +183,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   onboardingProjectSetup = false;
   portfolioWorkspaceTab = 'overview';
   sideNavExpanded = false;
-  currentUser: 'muna' | 'fatima' = 'muna';
-  isProfileMenuOpen = false;
+  currentUser: ConsoleUser = 'muna';
   private iconsHydrated = false;
 
   constructor(
@@ -183,38 +191,17 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     private readonly iconsService: PmConsoleIconService,
   ) {}
 
-  toggleProfileMenu(): void {
-    this.isProfileMenuOpen = !this.isProfileMenuOpen;
-    this.markShellChanged();
-  }
-
-  switchUser(user: 'muna' | 'fatima'): void {
-    this.currentUser = user;
-    this.isProfileMenuOpen = false;
-    this.markShellChanged();
-  }
-
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent): void {
-    if (this.isProfileMenuOpen) {
-      const target = event.target as HTMLElement;
-      if (!target.closest('.profile-chip-container')) {
-        this.isProfileMenuOpen = false;
-        this.markShellChanged();
-      }
-    }
-  }
-
   get isProjectScopedPage(): boolean {
     return this.selectedPage === 'playground' || this.selectedPage === 'wbs' || this.selectedPage === 'project-plan';
   }
 
   get usesConsoleHeader(): boolean {
+    if (this.currentUser === 'muna') return this.frontDoorMode !== 'unassigned';
     return this.frontDoorMode !== 'unassigned' && (this.selectedPage === 'workspace' || this.selectedPage === 'workspaces' || this.selectedPage === 'portfolio-workspace' || this.selectedPage === 'framework' || this.selectedPage === 'performance');
   }
 
   get primaryRailItems(): readonly RailItem[] {
-    const baseItems = [...this.topRailItems];
+    const baseItems = this.currentUser === 'fatima' ? [...this.portfolioManagerRailItems] : [...this.projectManagerRailItems];
     if (this.currentUser === 'fatima') {
       baseItems.push({
         id: 'performance',
@@ -249,6 +236,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     this.guidedTourActive = Boolean(this.initialState.guidedTourActive);
     this.guidedTourExitMode = this.initialState.guidedTourExitMode ?? null;
     this.pmoAssignmentReady = Boolean(this.initialState.pmoAssignmentReady);
+    this.currentUser = this.initialState.currentUser || 'muna';
     this.onboardingAssignmentFlow = Boolean(this.initialState.onboardingAssignmentFlow);
     this.onboardingPm101Locked = Boolean(this.initialState.onboardingPm101Locked);
     this.onboardingProjectSetup = Boolean(this.initialState.onboardingProjectSetup);
@@ -404,6 +392,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   }
 
   private get currentRailItemId(): string {
+    if (this.selectedPage === 'framework') return 'framework';
     if (this.selectedPage === 'performance') return 'performance';
     if (this.selectedPage === 'workspaces' || this.selectedPage === 'portfolio-workspace' || ['wbs', 'project-plan', 'playground'].includes(this.selectedPage)) return 'register';
     if (this.selectedPage === 'workspace' && this.selectedView === 'pm101') return 'home';

@@ -1,5 +1,8 @@
+export type ConsoleUser = 'muna' | 'fatima';
+
 export interface PmConsoleMountOptions {
   authenticated?: boolean;
+  currentUser?: ConsoleUser;
   projectId?: string;
   selectedPage?: string;
   selectedView?: string;

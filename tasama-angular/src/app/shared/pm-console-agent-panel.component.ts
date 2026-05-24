@@ -178,7 +178,7 @@ interface PmConsoleAgentUploadedFile {
         color: #0b0b0b;
         display: inline-flex;
         font-size: 13px;
-        font-weight: 500;
+        font-weight: 400;
         gap: 8px;
         justify-content: center;
         letter-spacing: 0;
@@ -412,10 +412,10 @@ interface PmConsoleAgentUploadedFile {
 
       .agent-panel-disclaimer {
         color: #727272;
-        font-size: 10.5px;
+        font-size: 9.5px;
         font-weight: 400;
-        line-height: 13px;
-        margin-top: 5px;
+        line-height: 12px;
+        margin-top: 8px;
         text-align: center;
       }
 

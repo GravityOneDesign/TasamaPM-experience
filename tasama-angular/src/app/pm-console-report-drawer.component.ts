@@ -2,6 +2,7 @@ import { AfterViewChecked, ChangeDetectionStrategy, Component, EventEmitter, Inp
 import { CommonModule } from '@angular/common';
 import { PmConsoleIconService } from './pm-console-icon.service';
 import { PmConsoleDateFieldComponent } from './shared/pm-console-date-field.component';
+import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 
 type ReportDetailMode = 'simple' | 'detailed';
 type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
@@ -262,7 +263,7 @@ const reportIconMap: Record<string, string> = {
 @Component({
   selector: 'app-pm-console-report-drawer',
   standalone: true,
-  imports: [CommonModule, PmConsoleDateFieldComponent],
+  imports: [CommonModule, PmConsoleDateFieldComponent, PmConsoleIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (details; as reportDetails) {
@@ -411,10 +412,6 @@ const reportIconMap: Record<string, string> = {
             <div class="report-drawer-body" [class.report-drawer-body-detailed]="activeMode === 'detailed'">
               @if (activeMode === 'simple') {
                 <section class="report-layout-stack report-simple-card-stack" aria-label="Simple project plan report">
-                  @if (overviewCard; as card) {
-                    <ng-container [ngTemplateOutlet]="simpleReportCard" [ngTemplateOutletContext]="{ card: card, index: 'overview', isOverview: true }"></ng-container>
-                  }
-
                   @for (card of simpleCards; track card.id; let cardIndex = $index) {
                     <ng-container [ngTemplateOutlet]="simpleReportCard" [ngTemplateOutletContext]="{ card: card, index: cardIndex, isOverview: false }"></ng-container>
                   }
@@ -498,128 +495,16 @@ const reportIconMap: Record<string, string> = {
                             </section>
                           } @else if (card.title === 'Scope') {
                             <section class="report-detail-record-section report-detail-scope-section" aria-label="Scope end products">
-                              <article class="report-detail-group-card scope-report-group-card">
-                                <div class="report-detail-group-head scope-report-group-head">
-                                  <div class="report-detail-group-title scope-report-group-title"><strong>End Product</strong><span aria-hidden="true">|</span><small>{{ scopeProducts.length }} items</small></div>
-                                  <button class="report-detail-add-toggle scope-report-add-toggle" type="button" aria-pressed="true">
-                                    <span class="scope-report-toggle" aria-hidden="true"><span class="icon"><i data-lucide="x"></i></span></span>
-                                    <span>Add to report</span>
-                                    <span class="icon" aria-hidden="true"><i data-lucide="chevron-up"></i></span>
-                                  </button>
-                                </div>
-                                <div class="scope-product-list">
-                                  @for (product of scopeProducts; track product.title) {
-                                    <article class="scope-product-card">
-                                      <div class="scope-product-checkline">
-                                        <span class="scope-report-checkbox is-checked" aria-hidden="true"><span class="icon"><i data-lucide="check"></i></span></span>
-                                        <strong>{{ product.title }}</strong>
-                                      </div>
-
-                                      <div class="scope-product-grid">
-                                        <span><small>Type</small><strong>{{ product.type }}</strong></span>
-                                        <span><small>Product owner</small><strong class="scope-owner-value"><span class="scope-owner-avatar">{{ ownerInitials(product) }}</span>{{ product.owner }}</strong></span>
-                                        <span><small>Capability</small><strong>{{ product.capability }}</strong></span>
-                                        <span><small>Start - end date</small><strong>{{ product.dates }}</strong></span>
-                                        <span><small>Budget</small><strong>{{ product.budget }}</strong></span>
-                                      </div>
-
-                                      <div class="scope-product-controls">
-                                        <label class="scope-product-field scope-product-field-select">
-                                          <span>Report status</span>
-                                          <span class="scope-field-control scope-field-control-select">
-                                            <select [attr.aria-label]="'Report status for ' + product.title">
-                                              <option>{{ product.status || 'Not started' }}</option>
-                                              <option>On track</option>
-                                              <option>Alert</option>
-                                              <option>Off track</option>
-                                            </select>
-                                            <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                                          </span>
-                                        </label>
-                                        <label class="scope-product-field">
-                                          <span>Actual start</span>
-                                          <app-pm-console-date-field
-                                            [value]="product.actualStart"
-                                            [ariaLabel]="'Actual start for ' + product.title"
-                                            (valueChange)="scopeProductDateChange.emit({ productTitle: product.title, field: 'actualStart', value: $event })"
-                                          />
-                                        </label>
-                                        <label class="scope-product-field">
-                                          <span>Actual end</span>
-                                          <app-pm-console-date-field
-                                            [value]="product.actualEnd"
-                                            [ariaLabel]="'Actual end for ' + product.title"
-                                            (valueChange)="scopeProductDateChange.emit({ productTitle: product.title, field: 'actualEnd', value: $event })"
-                                          />
-                                        </label>
-                                        <label class="scope-product-field scope-product-field-completed">
-                                          <span>Completed</span>
-                                          <span class="scope-percent-input"><input type="text" [value]="product.completed" /><span>%</span></span>
-                                        </label>
-                                      </div>
-                                    </article>
-                                  }
-                                </div>
-                              </article>
+                              <ng-container [ngTemplateOutlet]="scopeProductsBlock"></ng-container>
                             </section>
                           } @else if (sectionDetail(card.title); as detail) {
                             @if (hasSectionDetailContent(detail)) {
                               <section class="report-detail-record-section" [attr.aria-label]="card.title + ' detail content'">
                                 @if (detail.metrics?.length) {
-                                  <article class="report-detail-metric-strip">
-                                    @if (detail.icon) {
-                                      <span class="report-detail-metric-icon" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="iconName(detail.icon)"></i></span></span>
-                                    }
-                                    <div class="report-detail-metric-grid">
-                                      @for (metric of detail.metrics; track metric.label) {
-                                        <span class="report-detail-metric">
-                                          <small>{{ metric.label }}</small>
-                                          <strong>{{ metric.value }}</strong>
-                                        </span>
-                                      }
-                                    </div>
-                                  </article>
+                                  <ng-container [ngTemplateOutlet]="reportMetricStrip" [ngTemplateOutletContext]="{ detail: detail }"></ng-container>
                                 }
 
-                                @for (group of detail.summaryGroups || []; track group.title) {
-                                  <article class="report-detail-group-card report-summary-group-card">
-                                    <div class="report-detail-group-head">
-                                      <div class="report-detail-group-title">
-                                        <strong>{{ group.title }}</strong>
-                                        <span class="icon report-table-title-info" aria-hidden="true"><i data-lucide="info"></i></span>
-                                      </div>
-                                      <button class="report-table-collapse" type="button" [attr.aria-label]="'Collapse ' + group.title">
-                                        <span class="icon" aria-hidden="true"><i data-lucide="chevron-up"></i></span>
-                                      </button>
-                                    </div>
-
-                                    <div class="report-summary-card-grid">
-                                      @for (summary of group.cards; track summary.title) {
-                                        <article class="report-summary-card" [class.wide]="summary.wide">
-                                          <div class="report-summary-card-title">{{ summary.title }}</div>
-                                          <div class="report-summary-card-body">
-                                            @for (row of summary.rows; track row.label + $index) {
-                                              <div class="report-summary-row" [class.divider-before]="row.dividerBefore" [class.is-chip]="row.chip">
-                                                @if (row.chip) {
-                                                  <span class="report-summary-chip {{ row.tone || 'indigo' }}">{{ row.label }}</span>
-                                                } @else {
-                                                  <span>{{ row.label }}</span>
-                                                  <strong class="{{ row.tone || 'neutral' }}">{{ row.value || '-' }}</strong>
-                                                }
-                                              </div>
-                                            }
-                                            @if (summary.notice) {
-                                              <div class="report-summary-notice {{ summary.notice.tone || 'amber' }}">
-                                                <span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(summary.notice.icon || 'info')"></i></span>
-                                                <span>{{ summary.notice.text }}</span>
-                                              </div>
-                                            }
-                                          </div>
-                                        </article>
-                                      }
-                                    </div>
-                                  </article>
-                                }
+                                <ng-container [ngTemplateOutlet]="reportSummaryGroups" [ngTemplateOutletContext]="{ groups: detail.summaryGroups || [] }"></ng-container>
 
                                 @for (block of detail.recordBlocks || []; track block.id) {
                                   <article class="report-detail-group-card report-record-list-card">
@@ -685,153 +570,7 @@ const reportIconMap: Record<string, string> = {
                                 }
 
                                 @for (block of detail.tables || []; track block.id) {
-                                  <article class="report-detail-group-card report-detail-table-card" [class.headerless]="block.hideHeader">
-                                    @if (!block.hideHeader) {
-                                      <div class="report-detail-group-head report-table-card-head">
-                                        <div class="report-detail-group-title">
-                                          <strong>{{ block.title }}</strong>
-                                          <span class="icon report-table-title-info" aria-hidden="true"><i data-lucide="info"></i></span>
-                                        </div>
-                                        <button class="report-table-collapse" type="button" [attr.aria-label]="'Collapse ' + block.title">
-                                          <span class="icon" aria-hidden="true"><i data-lucide="chevron-up"></i></span>
-                                        </button>
-                                      </div>
-                                    }
-
-                                    @if (block.selectorLabel) {
-                                      <button class="report-table-filter-chip" type="button">
-                                        <span>{{ block.selectorLabel }}</span>
-                                        <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                                      </button>
-                                    }
-
-                                    @if (block.selectFilters?.length || block.radioFilter) {
-                                      <div class="report-table-filter-panel">
-                                        @if (block.selectFilters?.length) {
-                                          <div class="report-table-select-grid">
-                                            @for (filter of block.selectFilters || []; track filter.label) {
-                                              <label class="report-table-select-field">
-                                                <span>{{ filter.label }}</span>
-                                                <span class="report-table-input report-table-select">
-                                                  <select [attr.aria-label]="filter.label">
-                                                    <option>{{ filter.value }}</option>
-                                                    @for (option of filter.options || []; track option) {
-                                                      @if (option !== filter.value) { <option>{{ option }}</option> }
-                                                    }
-                                                  </select>
-                                                  <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                                                </span>
-                                              </label>
-                                            }
-                                          </div>
-                                        }
-                                        @if (block.radioFilter) {
-                                          <fieldset class="report-table-radio-filter">
-                                            <legend>{{ block.radioFilter.label }}</legend>
-                                            <div class="report-table-radio-options">
-                                              @for (option of block.radioFilter.options; track option.value) {
-                                                <label>
-                                                  <input type="radio" [name]="block.id + '-filter'" [value]="option.value" [checked]="option.checked" />
-                                                  <span>{{ option.label }}</span>
-                                                </label>
-                                              }
-                                            </div>
-                                          </fieldset>
-                                        }
-                                      </div>
-                                    }
-
-                                    <div class="dependency-register-table-shell report-detail-table-scroll">
-                                      <table class="dependency-register-table report-detail-table" [style.min-width.px]="reportTableMinWidth(block)">
-                                        <colgroup>
-                                          @for (column of block.columns; track column.key) {
-                                            <col [style.width.px]="column.width" />
-                                          }
-                                        </colgroup>
-                                        <thead>
-                                          <tr>
-                                            @for (column of block.columns; track column.key) {
-                                              <th [class.center]="column.align === 'center'">
-                                                @if (column.key === 'selected') {
-                                                  <span class="report-table-checkbox is-checked" aria-hidden="true"><span class="icon"><i data-lucide="check"></i></span></span>
-                                                } @else {
-                                                  {{ column.label }}
-                                                }
-                                              </th>
-                                            }
-                                          </tr>
-                                        </thead>
-                                        <tbody>
-                                          @for (row of block.rows; track row.id) {
-                                            <tr>
-                                              @for (column of block.columns; track column.key) {
-                                                @let cell = tableCell(row, column.key);
-                                                <td [class.center]="column.align === 'center'" [class.report-table-cell-input]="cell.type === 'dateInput' || cell.type === 'select'">
-                                                  @switch (cell.type) {
-                                                    @case ('checkbox') {
-                                                      <span class="report-table-checkbox" [class.is-checked]="cell.checked" aria-hidden="true"><span class="icon"><i data-lucide="check"></i></span></span>
-                                                    }
-                                                    @case ('person') {
-                                                      <span class="report-table-person">
-                                                        @if (cell.initials) { <span class="report-table-avatar">{{ cell.initials }}</span> }
-                                                        <span>{{ cell.value || '-' }}</span>
-                                                      </span>
-                                                    }
-                                                    @case ('chip') {
-                                                      <span class="dependency-register-pill report-table-pill {{ cell.tone || 'neutral' }}">{{ cell.value }}</span>
-                                                    }
-                                                    @case ('dateInput') {
-                                                      <app-pm-console-date-field
-                                                        [value]="cell.value"
-                                                        [ariaLabel]="column.label"
-                                                        (valueChange)="tableDateChange.emit({ section: card.title, tableId: block.id, rowId: row.id, columnKey: column.key, value: $event })"
-                                                      />
-                                                    }
-                                                    @case ('select') {
-                                                      <span class="report-table-input report-table-select">
-                                                        <select [attr.aria-label]="column.label">
-                                                          <option>{{ cell.value }}</option>
-                                                          @for (option of cell.options || []; track option) {
-                                                            @if (option !== cell.value) { <option>{{ option }}</option> }
-                                                          }
-                                                        </select>
-                                                        <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-                                                      </span>
-                                                    }
-                                                    @case ('iconBadge') {
-                                                      <span class="report-table-icon-badge {{ cell.tone || 'neutral' }}">
-                                                        <span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(cell.icon || 'info')"></i></span>
-                                                      </span>
-                                                    }
-                                                    @default {
-                                                      <span
-                                                        class="report-table-text {{ cell.tone || 'neutral' }}"
-                                                        [class.is-clamped]="cell.clampLines"
-                                                        [style.--report-table-line-clamp]="cell.clampLines || null"
-                                                      >
-                                                        {{ cell.value || '-' }}
-                                                      </span>
-                                                    }
-                                                  }
-                                                </td>
-                                              }
-                                            </tr>
-                                          }
-                                        </tbody>
-                                      </table>
-                                    </div>
-
-                                    @if (block.actions?.length) {
-                                      <div class="report-table-actions">
-                                        @for (action of block.actions; track action.label) {
-                                          <button type="button">
-                                            @if (action.icon) { <span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(action.icon)"></i></span> }
-                                            <span>{{ action.label }}</span>
-                                          </button>
-                                        }
-                                      </div>
-                                    }
-                                  </article>
+                                  <ng-container [ngTemplateOutlet]="reportTableBlock" [ngTemplateOutletContext]="{ block: block, sectionTitle: card.title }"></ng-container>
                                 }
                               </section>
                             }
@@ -910,49 +649,412 @@ const reportIconMap: Record<string, string> = {
       </div>
 
       <ng-template #simpleReportCard let-card="card" let-index="index" let-isOverview="isOverview">
-        <article class="report-layout-card report-simple-card report-layout-card-section {{ card.tone }}" [class.report-simple-overall-card]="isOverview">
+        <article
+          class="report-layout-card report-simple-card report-layout-card-section {{ card.tone }}"
+          [class.is-collapsible]="true"
+          [class.is-collapsed]="!isSimpleReportCardExpanded(card, index)"
+          [class.report-simple-overall-card]="isOverview || isSimpleReportOverviewCard(card)"
+          [class.report-simple-schedule-scope-card]="isSimpleScheduleScopeCard(card)"
+          [class.report-simple-watchlist-card]="isSimpleMandatoryWatchlistCard(card)"
+          [class.report-simple-budget-card]="isSimpleReportBudgetCard(card)"
+        >
           <div class="report-simple-card-head">
             <div class="report-simple-title-area">
               <span class="report-simple-card-icon" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="iconName(card.icon)"></i></span></span>
               <div class="report-simple-section-title">
-                <h3>{{ isOverview ? card.title : simpleReportSectionTitle(card.title) }}</h3>
+                <h3 [id]="simpleReportCardTitleId(card, index)">{{ isOverview ? card.title : simpleReportSectionTitle(card.title) }}</h3>
                 <span class="icon" aria-hidden="true"><i data-lucide="info"></i></span>
               </div>
             </div>
-            <div class="report-simple-history" [attr.aria-label]="card.title + ' past statuses'">
-              @for (point of card.timeline; track point.date + point.tone + $index) {
-                <span class="{{ point.tone }}" [title]="point.label"><span class="report-simple-history-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="trendIcon(point.tone)"></i></span></span><small>{{ point.date }}</small></span>
-              }
+            <div class="report-simple-card-head-actions">
+              <div class="report-simple-history" [attr.aria-label]="card.title + ' past statuses'">
+                @for (point of card.timeline; track point.date + point.tone + $index) {
+                  <span class="{{ point.tone }}" [title]="point.label"><span class="report-simple-history-icon"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="trendIcon(point.tone)"></i></span></span><small>{{ point.date }}</small></span>
+                }
+              </div>
+              <button
+                class="report-simple-card-toggle"
+                type="button"
+                [attr.aria-label]="(isSimpleReportCardExpanded(card, index) ? 'Collapse ' : 'Expand ') + (isOverview ? card.title : simpleReportSectionTitle(card.title))"
+                [attr.aria-expanded]="isSimpleReportCardExpanded(card, index)"
+                [attr.aria-controls]="simpleReportCardPanelId(card, index)"
+                (click)="toggleSimpleReportCard(card, index)"
+              >
+                <span [pmConsoleIcon]="isSimpleReportCardExpanded(card, index) ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></span>
+              </button>
             </div>
           </div>
 
-          <div class="report-simple-control-row">
-            <div class="report-simple-field">
-              <span class="report-simple-field-label">Status<small>*</small></span>
-              <div class="report-simple-status-control" role="radiogroup" [attr.aria-label]="card.title + ' status'">
-                @for (option of statusOptions; track option.label) {
-                  <label class="{{ option.tone }}"><input type="radio" [attr.name]="'simple-card-status-' + index" [checked]="isReportStatusSelected(option.value, card.status)" /><span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(option.icon)"></i></span>{{ option.simpleLabel || option.label }}</span></label>
+          <section
+            class="report-simple-card-body"
+            [id]="simpleReportCardPanelId(card, index)"
+            [attr.aria-labelledby]="simpleReportCardTitleId(card, index)"
+            [hidden]="!isSimpleReportCardExpanded(card, index)"
+          >
+            <div class="report-simple-control-row">
+              <div class="report-simple-field">
+                <span class="report-simple-field-label">Status<small>*</small></span>
+                <div class="report-simple-status-control" role="radiogroup" [attr.aria-label]="card.title + ' status'">
+                  @for (option of statusOptions; track option.label) {
+                    <label class="{{ option.tone }}"><input type="radio" [attr.name]="'simple-card-status-' + index" [checked]="isReportStatusSelected(option.value, card.status)" /><span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(option.icon)"></i></span>{{ option.simpleLabel || option.label }}</span></label>
+                  }
+                </div>
+              </div>
+              <div class="report-simple-field">
+                <span class="report-simple-field-label">Overall Status Trend</span>
+                @if (isOverview) {
+                  <strong class="report-simple-trend-chip {{ simpleReportTrendTone(card.trend, card.tone) }}"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="simpleReportTrendIcon(card.trend, card.tone)"></i></span>{{ simpleReportTrendLabel(card.trend, card.tone) }}</strong>
+                } @else {
+                  <div class="report-simple-trend-control" role="radiogroup" [attr.aria-label]="card.title + ' trend'">
+                    @for (option of trendOptions; track option.value) {
+                      <label class="{{ option.tone }}"><input type="radio" [attr.name]="'simple-card-trend-' + index" [checked]="isReportTrendSelected(option.value, card.trend)" /><span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="option.icon"></i></span>{{ option.label }}</span></label>
+                    }
+                  </div>
                 }
               </div>
             </div>
-            <div class="report-simple-field">
-              <span class="report-simple-field-label">Overall Status Trend</span>
-              @if (isOverview) {
-                <strong class="report-simple-trend-chip {{ simpleReportTrendTone(card.trend, card.tone) }}"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="simpleReportTrendIcon(card.trend, card.tone)"></i></span>{{ simpleReportTrendLabel(card.trend, card.tone) }}</strong>
-              } @else {
-                <div class="report-simple-trend-control" role="radiogroup" [attr.aria-label]="card.title + ' trend'">
-                  @for (option of trendOptions; track option.value) {
-                    <label class="{{ option.tone }}"><input type="radio" [attr.name]="'simple-card-trend-' + index" [checked]="isReportTrendSelected(option.value, card.trend)" /><span><span class="icon" aria-hidden="true"><i [attr.data-lucide]="option.icon"></i></span>{{ option.label }}</span></label>
+
+            <label class="report-layout-comment">
+              <span>Comments</span>
+              <textarea rows="3" maxlength="3000" placeholder="Add the comments here..." [value]="card.comments"></textarea>
+            </label>
+
+            @if (isSimpleReportBudgetCard(card) && budgetSummaryGroups.length) {
+              <section class="report-simple-linked-details report-simple-budget-overview-section" aria-label="Budget overview">
+                <ng-container [ngTemplateOutlet]="reportSummaryGroups" [ngTemplateOutletContext]="{ groups: budgetSummaryGroups }"></ng-container>
+              </section>
+            }
+
+            @if (isSimpleReportOverviewCard(card) && overviewFields.length) {
+              <section class="report-simple-narrative-section" aria-label="Overview narrative updates">
+                <div class="report-detail-section-head">
+                  <div><strong>Narrative updates</strong><span>Capture the longer report text for this period.</span></div>
+                </div>
+                <div class="report-detail-narrative-grid report-simple-narrative-grid">
+                  @for (field of overviewFields; track field.label) {
+                    <label class="report-layout-field">
+                      <span>{{ field.label }} @if (field.hint) { <small>{{ field.hint }}</small> }</span>
+                      <textarea [rows]="field.rows" maxlength="3000" [value]="field.value"></textarea>
+                    </label>
+                  }
+                </div>
+              </section>
+            }
+
+            @if (isSimpleScheduleScopeCard(card)) {
+              <section class="report-simple-linked-details" aria-label="Schedule and scope report details">
+                @if (sectionDetail('Schedule'); as scheduleDetail) {
+                  <section class="report-detail-record-section report-simple-embedded-section report-simple-schedule-section" aria-label="Schedule milestones">
+                    @if (scheduleDetail.metrics?.length) {
+                      <ng-container [ngTemplateOutlet]="reportMetricStrip" [ngTemplateOutletContext]="{ detail: scheduleDetail }"></ng-container>
+                    }
+
+                    @for (block of scheduleDetail.tables || []; track block.id) {
+                      <ng-container [ngTemplateOutlet]="reportTableBlock" [ngTemplateOutletContext]="{ block: block, sectionTitle: 'Schedule' }"></ng-container>
+                    }
+                  </section>
+                }
+
+                <section class="report-detail-record-section report-detail-scope-section report-simple-embedded-section" aria-label="Scope end products">
+                  <ng-container [ngTemplateOutlet]="scopeProductsBlock"></ng-container>
+                </section>
+              </section>
+            }
+
+            @if (isSimpleMandatoryWatchlistCard(card)) {
+              <section class="report-simple-linked-details report-simple-watchlist-details" aria-label="Mandatory watchlist report details">
+                @if (sectionDetail('Risks'); as riskDetail) {
+                  <section class="report-detail-record-section report-simple-embedded-section" aria-label="Mandatory watchlist risks">
+                    @for (block of riskDetail.tables || []; track block.id) {
+                      <ng-container [ngTemplateOutlet]="reportTableBlock" [ngTemplateOutletContext]="{ block: block, sectionTitle: 'Risks' }"></ng-container>
+                    }
+                  </section>
+                }
+
+                @if (sectionDetail('Benefits'); as benefitDetail) {
+                  <section class="report-detail-record-section report-simple-embedded-section" aria-label="Mandatory watchlist benefits">
+                    @for (block of benefitDetail.tables || []; track block.id) {
+                      <ng-container [ngTemplateOutlet]="reportTableBlock" [ngTemplateOutletContext]="{ block: block, sectionTitle: 'Benefits' }"></ng-container>
+                    }
+                  </section>
+                }
+              </section>
+            }
+          </section>
+        </article>
+      </ng-template>
+
+      <ng-template #reportMetricStrip let-detail="detail">
+        <article class="report-detail-metric-strip">
+          @if (detail.icon) {
+            <span class="report-detail-metric-icon" aria-hidden="true"><span class="icon"><i [attr.data-lucide]="iconName(detail.icon)"></i></span></span>
+          }
+          <div class="report-detail-metric-grid">
+            @for (metric of detail.metrics; track metric.label) {
+              <span class="report-detail-metric">
+                <small>{{ metric.label }}</small>
+                <strong>{{ metric.value }}</strong>
+              </span>
+            }
+          </div>
+        </article>
+      </ng-template>
+
+      <ng-template #reportSummaryGroups let-groups="groups">
+        @for (group of groups; track group.title) {
+          <article class="report-detail-group-card report-summary-group-card">
+            <div class="report-detail-group-head">
+              <div class="report-detail-group-title">
+                <strong>{{ group.title }}</strong>
+                <span class="icon report-table-title-info" aria-hidden="true"><i data-lucide="info"></i></span>
+              </div>
+              <button class="report-table-collapse" type="button" [attr.aria-label]="'Collapse ' + group.title">
+                <span class="icon" aria-hidden="true"><i data-lucide="chevron-up"></i></span>
+              </button>
+            </div>
+
+            <div class="report-summary-card-grid">
+              @for (summary of group.cards; track summary.title) {
+                <article class="report-summary-card" [class.wide]="summary.wide">
+                  <div class="report-summary-card-title">{{ summary.title }}</div>
+                  <div class="report-summary-card-body">
+                    @for (row of summary.rows; track row.label + $index) {
+                      <div class="report-summary-row" [class.divider-before]="row.dividerBefore" [class.is-chip]="row.chip">
+                        @if (row.chip) {
+                          <span class="report-summary-chip {{ row.tone || 'indigo' }}">{{ row.label }}</span>
+                        } @else {
+                          <span>{{ row.label }}</span>
+                          <strong class="{{ row.tone || 'neutral' }}">{{ row.value || '-' }}</strong>
+                        }
+                      </div>
+                    }
+                    @if (summary.notice) {
+                      <div class="report-summary-notice {{ summary.notice.tone || 'amber' }}">
+                        <span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(summary.notice.icon || 'info')"></i></span>
+                        <span>{{ summary.notice.text }}</span>
+                      </div>
+                    }
+                  </div>
+                </article>
+              }
+            </div>
+          </article>
+        }
+      </ng-template>
+
+      <ng-template #scopeProductsBlock>
+        <article class="report-detail-group-card scope-report-group-card">
+          <div class="report-detail-group-head scope-report-group-head">
+            <div class="report-detail-group-title scope-report-group-title"><strong>End Product</strong><span aria-hidden="true">|</span><small>{{ scopeProducts.length }} items</small></div>
+            <button class="report-detail-add-toggle scope-report-add-toggle" type="button" aria-pressed="true">
+              <span class="scope-report-toggle" aria-hidden="true"><span class="icon"><i data-lucide="x"></i></span></span>
+              <span>Add to report</span>
+              <span class="icon" aria-hidden="true"><i data-lucide="chevron-up"></i></span>
+            </button>
+          </div>
+          <div class="scope-product-list">
+            @for (product of scopeProducts; track product.title) {
+              <article class="scope-product-card">
+                <div class="scope-product-checkline">
+                  <span class="scope-report-checkbox is-checked" aria-hidden="true"><span class="icon"><i data-lucide="check"></i></span></span>
+                  <strong>{{ product.title }}</strong>
+                </div>
+
+                <div class="scope-product-grid">
+                  <span><small>Type</small><strong>{{ product.type }}</strong></span>
+                  <span><small>Product owner</small><strong class="scope-owner-value"><span class="scope-owner-avatar">{{ ownerInitials(product) }}</span>{{ product.owner }}</strong></span>
+                  <span><small>Capability</small><strong>{{ product.capability }}</strong></span>
+                  <span><small>Start - end date</small><strong>{{ product.dates }}</strong></span>
+                  <span><small>Budget</small><strong>{{ product.budget }}</strong></span>
+                </div>
+
+                <div class="scope-product-controls">
+                  <label class="scope-product-field scope-product-field-select">
+                    <span>Report status</span>
+                    <span class="scope-field-control scope-field-control-select">
+                      <select [attr.aria-label]="'Report status for ' + product.title">
+                        <option>{{ product.status || 'Not started' }}</option>
+                        <option>On track</option>
+                        <option>Alert</option>
+                        <option>Off track</option>
+                      </select>
+                      <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                    </span>
+                  </label>
+                  <label class="scope-product-field">
+                    <span>Actual start</span>
+                    <app-pm-console-date-field
+                      [value]="product.actualStart"
+                      [ariaLabel]="'Actual start for ' + product.title"
+                      (valueChange)="scopeProductDateChange.emit({ productTitle: product.title, field: 'actualStart', value: $event })"
+                    />
+                  </label>
+                  <label class="scope-product-field">
+                    <span>Actual end</span>
+                    <app-pm-console-date-field
+                      [value]="product.actualEnd"
+                      [ariaLabel]="'Actual end for ' + product.title"
+                      (valueChange)="scopeProductDateChange.emit({ productTitle: product.title, field: 'actualEnd', value: $event })"
+                    />
+                  </label>
+                  <label class="scope-product-field scope-product-field-completed">
+                    <span>Completed</span>
+                    <span class="scope-percent-input"><input type="text" [value]="product.completed" /><span>%</span></span>
+                  </label>
+                </div>
+              </article>
+            }
+          </div>
+        </article>
+      </ng-template>
+
+      <ng-template #reportTableBlock let-block="block" let-sectionTitle="sectionTitle">
+        <article class="report-detail-group-card report-detail-table-card" [class.headerless]="block.hideHeader">
+          @if (!block.hideHeader) {
+            <div class="report-detail-group-head report-table-card-head">
+              <div class="report-detail-group-title">
+                <strong>{{ block.title }}</strong>
+                <span class="icon report-table-title-info" aria-hidden="true"><i data-lucide="info"></i></span>
+              </div>
+              <button class="report-table-collapse" type="button" [attr.aria-label]="'Collapse ' + block.title">
+                <span class="icon" aria-hidden="true"><i data-lucide="chevron-up"></i></span>
+              </button>
+            </div>
+          }
+
+          @if (block.selectorLabel) {
+            <button class="report-table-filter-chip" type="button">
+              <span>{{ block.selectorLabel }}</span>
+              <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+            </button>
+          }
+
+          @if (block.selectFilters?.length || block.radioFilter) {
+            <div class="report-table-filter-panel">
+              @if (block.selectFilters?.length) {
+                <div class="report-table-select-grid">
+                  @for (filter of block.selectFilters || []; track filter.label) {
+                    <label class="report-table-select-field">
+                      <span>{{ filter.label }}</span>
+                      <span class="report-table-input report-table-select">
+                        <select [attr.aria-label]="filter.label">
+                          <option>{{ filter.value }}</option>
+                          @for (option of filter.options || []; track option) {
+                            @if (option !== filter.value) { <option>{{ option }}</option> }
+                          }
+                        </select>
+                        <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                      </span>
+                    </label>
                   }
                 </div>
               }
+              @if (block.radioFilter) {
+                <fieldset class="report-table-radio-filter">
+                  <legend>{{ block.radioFilter.label }}</legend>
+                  <div class="report-table-radio-options">
+                    @for (option of block.radioFilter.options; track option.value) {
+                      <label>
+                        <input type="radio" [name]="block.id + '-filter'" [value]="option.value" [checked]="option.checked" />
+                        <span>{{ option.label }}</span>
+                      </label>
+                    }
+                  </div>
+                </fieldset>
+              }
             </div>
+          }
+
+          <div class="dependency-register-table-shell report-detail-table-scroll">
+            <table class="dependency-register-table report-detail-table" [style.min-width.px]="reportTableMinWidth(block)">
+              <colgroup>
+                @for (column of block.columns; track column.key) {
+                  <col [style.width.px]="column.width" />
+                }
+              </colgroup>
+              <thead>
+                <tr>
+                  @for (column of block.columns; track column.key) {
+                    <th [class.center]="column.align === 'center'">
+                      @if (column.key === 'selected') {
+                        <span class="report-table-checkbox is-checked" aria-hidden="true"><span class="icon"><i data-lucide="check"></i></span></span>
+                      } @else {
+                        {{ column.label }}
+                      }
+                    </th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of block.rows; track row.id) {
+                  <tr>
+                    @for (column of block.columns; track column.key) {
+                      @let cell = tableCell(row, column.key);
+                      <td [class.center]="column.align === 'center'" [class.report-table-cell-input]="cell.type === 'dateInput' || cell.type === 'select'">
+                        @switch (cell.type) {
+                          @case ('checkbox') {
+                            <span class="report-table-checkbox" [class.is-checked]="cell.checked" aria-hidden="true"><span class="icon"><i data-lucide="check"></i></span></span>
+                          }
+                          @case ('person') {
+                            <span class="report-table-person">
+                              @if (cell.initials) { <span class="report-table-avatar">{{ cell.initials }}</span> }
+                              <span>{{ cell.value || '-' }}</span>
+                            </span>
+                          }
+                          @case ('chip') {
+                            <span class="dependency-register-pill report-table-pill {{ cell.tone || 'neutral' }}">{{ cell.value }}</span>
+                          }
+                          @case ('dateInput') {
+                            <app-pm-console-date-field
+                              [value]="cell.value"
+                              [ariaLabel]="column.label"
+                              (valueChange)="tableDateChange.emit({ section: sectionTitle, tableId: block.id, rowId: row.id, columnKey: column.key, value: $event })"
+                            />
+                          }
+                          @case ('select') {
+                            <span class="report-table-input report-table-select">
+                              <select [attr.aria-label]="column.label">
+                                <option>{{ cell.value }}</option>
+                                @for (option of cell.options || []; track option) {
+                                  @if (option !== cell.value) { <option>{{ option }}</option> }
+                                }
+                              </select>
+                              <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+                            </span>
+                          }
+                          @case ('iconBadge') {
+                            <span class="report-table-icon-badge {{ cell.tone || 'neutral' }}">
+                              <span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(cell.icon || 'info')"></i></span>
+                            </span>
+                          }
+                          @default {
+                            <span
+                              class="report-table-text {{ cell.tone || 'neutral' }}"
+                              [class.is-clamped]="cell.clampLines"
+                              [style.--report-table-line-clamp]="cell.clampLines || null"
+                            >
+                              {{ cell.value || '-' }}
+                            </span>
+                          }
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
           </div>
 
-          <label class="report-layout-comment">
-            <span>Comments</span>
-            <textarea rows="3" maxlength="3000" placeholder="Add the comments here..." [value]="card.comments"></textarea>
-          </label>
+          @if (block.actions?.length) {
+            <div class="report-table-actions">
+              @for (action of block.actions; track action.label) {
+                <button type="button">
+                  @if (action.icon) { <span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(action.icon)"></i></span> }
+                  <span>{{ action.label }}</span>
+                </button>
+              }
+            </div>
+          }
         </article>
       </ng-template>
     }
@@ -986,6 +1088,7 @@ export class PmConsoleReportDrawerComponent implements AfterViewChecked, OnChang
   @Output() tableDateChange = new EventEmitter<ReportTableDateChange>();
 
   private iconsHydrated = false;
+  private simpleReportExpandedCards: Record<string, boolean> = {};
   isExpanded = false;
 
   constructor(private readonly iconsService: PmConsoleIconService) {}
@@ -1007,6 +1110,30 @@ export class PmConsoleReportDrawerComponent implements AfterViewChecked, OnChang
   toggleExpanded(): void {
     this.isExpanded = !this.isExpanded;
     this.iconsHydrated = false;
+  }
+
+  isSimpleReportCardExpanded(card: ReportDrawerCard, index: number): boolean {
+    return this.simpleReportExpandedCards[card.id] ?? index === 0;
+  }
+
+  toggleSimpleReportCard(card: ReportDrawerCard, index: number): void {
+    this.simpleReportExpandedCards = {
+      ...this.simpleReportExpandedCards,
+      [card.id]: !this.isSimpleReportCardExpanded(card, index),
+    };
+    this.iconsHydrated = false;
+  }
+
+  simpleReportCardPanelId(card: ReportDrawerCard, index: number): string {
+    return `report-simple-card-panel-${this.simpleReportCardDomId(card, index)}`;
+  }
+
+  simpleReportCardTitleId(card: ReportDrawerCard, index: number): string {
+    return `report-simple-card-title-${this.simpleReportCardDomId(card, index)}`;
+  }
+
+  private simpleReportCardDomId(card: ReportDrawerCard, index: number): string {
+    return `${card.id || 'card'}-${index}`.replace(/[^a-zA-Z0-9_-]/g, '-');
   }
 
   reportSectionIcon(section: string): string {
@@ -1104,6 +1231,26 @@ export class PmConsoleReportDrawerComponent implements AfterViewChecked, OnChang
       Risks: 'Mandatory watchlist',
     };
     return titles[title] || title;
+  }
+
+  isSimpleReportOverviewCard(card: ReportDrawerCard): boolean {
+    return this.simpleReportSectionTitle(card.title) === 'Overview';
+  }
+
+  isSimpleScheduleScopeCard(card: ReportDrawerCard): boolean {
+    return this.simpleReportSectionTitle(card.title) === 'Schedule and scope';
+  }
+
+  isSimpleReportBudgetCard(card: ReportDrawerCard): boolean {
+    return this.simpleReportSectionTitle(card.title) === 'Budget';
+  }
+
+  isSimpleMandatoryWatchlistCard(card: ReportDrawerCard): boolean {
+    return this.simpleReportSectionTitle(card.title) === 'Mandatory watchlist';
+  }
+
+  get budgetSummaryGroups(): ReportSummaryGroup[] {
+    return this.sectionDetail('Budget')?.summaryGroups || [];
   }
 
   simpleReportTrendLabel(trend: string, tone?: string): string {

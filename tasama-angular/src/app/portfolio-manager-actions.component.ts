@@ -143,6 +143,7 @@ import { portfolioActionItems, portfolioBoardFilters, PortfolioActionItem, Portf
             [cells]="calendarCells"
             [filters]="calendarFilterOptions"
             [selectedFilterId]="selectedFilter"
+            [showFilterBar]="false"
             (monthShift)="shiftMonth($event)"
             (filterChange)="setBoardFilter($event)"
             (itemOpen)="handleCalendarItemOpen($event)"

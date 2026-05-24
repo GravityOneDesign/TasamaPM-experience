@@ -1,409 +1,307 @@
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PortfolioManagerLandingCardsComponent } from './shared/portfolio-manager-landing-cards.component';
-import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 import { PmConsoleIconService } from './pm-console-icon.service';
 import { portfolioManagerSteps, Pm101Step } from './pm-console-pm101-steps';
 import { iconName } from './pm-console-icon.utils';
-import { PmConsoleMountOptions } from './pm-console.types';
+import { PmConsoleMountOptions, ProjectOption } from './pm-console.types';
 import { PortfolioManagerActionsComponent } from './portfolio-manager-actions.component';
+import {
+  PmConsoleDigestPanelComponent,
+  type PmConsoleDigestSection,
+} from './shared/pm-console-digest-panel.component';
+import {
+  PmConsoleFrontdoorOverviewComponent,
+  type PmConsoleFrontdoorAction,
+  type PmConsoleFrontdoorTrendDot,
+} from './shared/pm-console-frontdoor-overview.component';
+import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
+import { PmConsoleModeTabsComponent, type PmConsoleModeTabItem } from './shared/pm-console-mode-tabs.component';
+import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-dropdown.component';
 
-const reportStatusHistory = [
-  { project: 'UAE Research Map', dueLabel: 'On track', dueTone: 'green', trend: [{ label: 'Mar', status: 'submitted' }, { label: 'Apr', status: 'submitted' }, { label: 'May', status: 'submitted' }] },
-  { project: 'Vision 2030', dueLabel: 'Overdue 5 days', dueTone: 'red', trend: [{ label: 'Mar', status: 'attention' }, { label: 'Apr', status: 'submitted' }, { label: 'May', status: 'overdue' }] },
-  { project: 'NEOM Integration', dueLabel: 'Due today', dueTone: 'amber', trend: [{ label: 'Mar', status: 'attention' }, { label: 'Apr', status: 'submitted' }, { label: 'May', status: 'due' }] },
-  { project: 'Smart City Alpha', dueLabel: 'On track', dueTone: 'green', trend: [{ label: 'Mar', status: 'attention' }, { label: 'Apr', status: 'submitted' }, { label: 'May', status: 'submitted' }] },
-  { project: 'PMO Capability', dueLabel: 'Due this week', dueTone: 'amber', trend: [{ label: 'Mar', status: 'submitted' }, { label: 'Apr', status: 'submitted' }, { label: 'May', status: 'draft' }] },
-  { project: 'Counter Terrorism Operations', dueLabel: 'Overdue 2 days', dueTone: 'red', trend: [{ label: 'Mar', status: 'submitted' }, { label: 'Apr', status: 'attention' }, { label: 'May', status: 'overdue' }] },
+type PortfolioLandingTab = 'overview' | 'manage-work' | 'quicklinks';
+type PortfolioQuickLinkId = 'framework' | 'workspace' | 'registers' | 'reports' | 'performance' | 'actions';
+
+interface PortfolioQuickLink {
+  id: PortfolioQuickLinkId;
+  title: string;
+  description: string;
+  icon: string;
+}
+
+const portfolioLandingTabs: readonly PmConsoleModeTabItem[] = [
+  { id: 'overview', label: 'Overview', icon: 'square-chart-gantt', widthPx: 144 },
+  { id: 'manage-work', label: 'Manage My Work', icon: 'network', widthPx: 190 },
+  { id: 'quicklinks', label: 'Quick links', icon: 'folder-symlink', widthPx: 158 },
 ];
+
+const portfolioOptions: readonly ProjectOption[] = [
+  { id: 'portfolio', name: 'Portfolio Name' },
+];
+
+const portfolioTrendDots: readonly PmConsoleFrontdoorTrendDot[] = [
+  { tone: 'green', label: 'On track' },
+  { tone: 'green', label: 'On track' },
+  { tone: 'amber', label: 'Delayed' },
+  { tone: 'green', label: 'On track' },
+  { tone: 'red', label: 'Critical' },
+];
+
+const portfolioDigestSections: readonly PmConsoleDigestSection[] = [
+  {
+    label: 'Birds Eye View',
+    items: [
+      {
+        parts: [
+          { text: '72 portfolio items are currently' },
+          { text: 'on track.', emphasis: true },
+        ],
+      },
+      {
+        parts: [
+          { text: 'AED' },
+          { text: '112.9M', emphasis: true },
+          { text: 'total budget is under portfolio oversight' },
+        ],
+      },
+      {
+        parts: [
+          { text: '63', emphasis: true },
+          { text: 'non-financial resources are tracked' },
+        ],
+      },
+    ],
+  },
+  {
+    label: 'Portfolio Updates',
+    items: [
+      {
+        parts: [
+          { text: '14 delayed and 5 critical items', emphasis: true },
+          { text: 'require follow-up.' },
+        ],
+      },
+      {
+        parts: [
+          { text: 'Portfolio status has been' },
+          { text: 'stable across the last 3 reports.', emphasis: true },
+        ],
+      },
+      {
+        parts: [
+          { text: 'Report completion rate is' },
+          { text: '74% this month.', emphasis: true },
+        ],
+      },
+    ],
+  },
+];
+
+const portfolioFrontdoorActions: readonly PmConsoleFrontdoorAction[] = portfolioManagerSteps.map((step) => portfolioStepToAction(step));
+
+const portfolioQuickLinks: readonly PortfolioQuickLink[] = [
+  {
+    id: 'framework',
+    title: 'Framework & Configuration',
+    description: 'Set governance controls, structures, users, workflows, and portfolio standards.',
+    icon: 'settings',
+  },
+  {
+    id: 'workspace',
+    title: 'Portfolio workspace',
+    description: 'Open the portfolio workspace overview and continue monitoring delivery health.',
+    icon: 'layout-grid',
+  },
+  {
+    id: 'registers',
+    title: 'Programs & Projects',
+    description: 'View portfolio programs and projects with their current delivery status.',
+    icon: 'folder-tree',
+  },
+  {
+    id: 'reports',
+    title: 'Reports',
+    description: 'Create, review, and track portfolio status reports in one place.',
+    icon: 'file-text',
+  },
+  {
+    id: 'performance',
+    title: 'Portfolio performance',
+    description: 'Track portfolio-level delivery, health, and financial performance insights.',
+    icon: 'activity',
+  },
+  {
+    id: 'actions',
+    title: 'Action review',
+    description: 'Review pending approvals, follow-ups, and delivery actions for the portfolio.',
+    icon: 'list-checks',
+  },
+];
+
+function portfolioStepToAction(step: Pm101Step): PmConsoleFrontdoorAction {
+  return {
+    id: step.footerActionId ?? step.title,
+    title: step.title,
+    description: step.body,
+    icon: iconName(step.icon),
+    ctaLabel: step.comingSoon ? undefined : step.footerAction,
+    badgeLabel: step.comingSoon ? 'Coming soon' : undefined,
+    disabled: step.comingSoon,
+    decor: portfolioActionDecor(step.decor),
+  };
+}
+
+function portfolioActionDecor(decor: string): PmConsoleFrontdoorAction['decor'] {
+  if (decor === 'waves' || decor === 'loops' || decor === 'hex' || decor === 'plus' || decor === 'burst') {
+    return decor;
+  }
+  if (decor === 'rings') return 'loops';
+  return 'waves';
+}
 
 @Component({
   selector: 'app-portfolio-manager-landing',
   standalone: true,
-  imports: [CommonModule, PortfolioManagerLandingCardsComponent, PmConsoleIconComponent, PortfolioManagerActionsComponent],
+  imports: [
+    CommonModule,
+    PmConsoleDigestPanelComponent,
+    PmConsoleFrontdoorOverviewComponent,
+    PmConsoleIconComponent,
+    PmConsoleModeTabsComponent,
+    PmConsoleProjectDropdownComponent,
+    PortfolioManagerActionsComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="app-canvas pm101-locked-canvas pm101-operational-canvas">
+    <main class="app-canvas pm101-operational-canvas portfolio-frontdoor-canvas">
       <div class="page-motion-host">
-        <div class="content-grid pm101-locked-grid pm101-operational-grid">
+        <div class="content-grid pm101-operational-grid normal-pm-frontdoor-grid portfolio-frontdoor-grid">
           <div class="left-column">
-            <section class="workspace-panel pm101-locked-workspace pm101-operational-workspace">
-              <div class="workspace-shell-head pm101-locked-shell-head pm101-operational-shell-head">
-                <img class="workspace-line-art" src="./assets/workspace-line-art.svg" alt="" aria-hidden="true" />
-                <div class="workspace-locked-title-row">
-                  <span class="workspace-pane-icon" aria-hidden="true">
-                    <img src="./assets/client-logo-icon.svg" alt="" />
-                  </span>
-                  <div class="workspace-title">
-                    <h2>Welcome!</h2>
-                    <p>Track portfolio health, clear pending approvals, and stay across all programs and projects in one place.</p>
-                  </div>
+            <section class="workspace-panel pm101-operational-workspace normal-pm-frontdoor-workspace portfolio-frontdoor-workspace">
+              <div class="workspace-shell-head pm101-operational-shell-head pm101-frontdoor-assigned-shell-head normal-pm-frontdoor-shell-head portfolio-frontdoor-shell-head">
+                <div class="workspace-shell-actions">
+                  <app-pm-console-project-dropdown
+                    label=""
+                    leadingIcon="folder"
+                    ariaLabel="Select portfolio"
+                    [options]="portfolioOptions"
+                    [value]="selectedPortfolio"
+                    (valueChange)="setSelectedPortfolio($event)"
+                  ></app-pm-console-project-dropdown>
                 </div>
-                <div class="workspace-tabs" role="tablist" aria-label="Workspace view">
-                  <button [class.active]="selectedTab === 'overview'" type="button" [attr.aria-selected]="selectedTab === 'overview' ? 'true' : 'false'" (click)="goToOverview()">
-                    <span class="icon" aria-hidden="true"><i data-lucide="book-open"></i></span>
-                    <span>Overview</span>
-                  </button>
-                  <button [class.active]="selectedTab === 'actions'" type="button" [attr.aria-selected]="selectedTab === 'actions' ? 'true' : 'false'" (click)="goToActions()">
-                    <span class="icon" aria-hidden="true"><i data-lucide="list-checks"></i></span>
-                    <span>Actions</span>
-                  </button>
+                <div class="onboarding-operational-tabs" data-tour-target="workspace-tabs">
+                  <app-pm-console-mode-tabs
+                    ariaLabel="Portfolio manager workspace view"
+                    [tabs]="landingTabs"
+                    [activeId]="selectedTab"
+                    (tabSelected)="setTab($event)"
+                  ></app-pm-console-mode-tabs>
                 </div>
               </div>
 
-              <div class="workspace-body">
+              <div class="workspace-body normal-pm-frontdoor-body portfolio-frontdoor-body">
                 @if (selectedTab === 'overview') {
-                  <div class="pm101-view pm101-operational-view" data-work-view="pm101">
-                    <app-portfolio-manager-landing-cards (onOverviewClick)="openAssignedProjectWorkspace()" />
-                    <div class="pm101-journey-head">
-                      <span>Portfolio Overview PM101 path</span>
-                      <h3>Your portfolio management journey</h3>
-                      <p>Configure your portfolio, manage delivery and report progress, all in one place.</p>
-                    </div>
-                    <div class="pm101-flow" aria-label="PM 101 project delivery flow">
-                      <ol class="pm101-step-list" [style.--pm101-cols]="stepsToRender.length">
-                        @for (step of stepsToRender; track step.title; let index = $index) {
-                          <li class="pm101-step">
-                            <article class="pm101-card" [class.pm101-card-coming-soon]="step.comingSoon">
-                              @if (step.comingSoon) {
-                                <div class="coming-soon-overlay">
-                                  <span class="coming-soon-badge">Coming soon</span>
-                                </div>
-                              }
-                              <span class="pm101-card-icon">
-                                <span [pmConsoleIcon]="iconName(step.icon)" aria-hidden="true"></span>
-                              </span>
-                              <strong>{{ step.title }}</strong>
-                              <p>{{ step.body }}</p>
-                              <span [class]="'pm101-decor pm101-decor-' + step.decor" aria-hidden="true">
-                                @for (asset of step.decorAssets; track asset; let assetIndex = $index) {
-                                  <img class="pm101-decor-asset pm101-decor-asset-{{ assetIndex + 1 }}" [src]="asset" alt="" />
-                                }
-                              </span>
-                              @if (step.footerAction) {
-                                <button class="pm101-card-footer pm101-card-footer-link" type="button" (click)="!step.comingSoon && handlePm101StepAction(step)">
-                                  <span>{{ step.footerAction }}</span>
-                                  <span class="pm101-card-footer-arrow" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
-                                </button>
-                              }
-                            </article>
-                          </li>
-                        }
-                      </ol>
-                    </div>
+                  <div class="pm101-view pm101-operational-view normal-pm-frontdoor-overview" data-work-view="pm101" data-tour-target="frontdoor-overview">
+                    <app-pm-console-frontdoor-overview
+                      projectId="portfolio"
+                      projectName="Portfolio Name"
+                      projectIcon="folder"
+                      heroImageSrc="./assets/pm101-first-project-card-bg.png"
+                      stageLabel="Portfolio overview"
+                      statusLabel="On Track"
+                      statusTone="green"
+                      scheduleLabel="Portfolio Health"
+                      [schedulePercent]="72"
+                      [trendDots]="portfolioTrendDots"
+                      nextPsrLabel="Next portfolio report due: 01 Jun 2026 · 3 days"
+                      ctaLabel="Go to Portfolio Workspace"
+                      [actions]="frontdoorActions"
+                      [actionColumnCount]="4"
+                      (projectOpen)="openAssignedProjectWorkspace()"
+                      (actionSelected)="handleFrontdoorAction($event)"
+                    ></app-pm-console-frontdoor-overview>
                   </div>
-                } @else {
+                } @else if (selectedTab === 'manage-work') {
                   <app-portfolio-manager-actions />
+                } @else {
+                  <div class="quicklinks-view portfolio-quicklinks-view" data-work-view="quicklinks">
+                    <section class="workspace-quick-links-view" aria-label="Portfolio Name Quick links">
+                      <h2>Portfolio Name</h2>
+                      <div class="selected-project-quick-link-grid">
+                        @for (link of quickLinks; track link.id) {
+                          <article class="selected-project-quick-link-card" [attr.data-quick-link-id]="link.id">
+                            <button class="selected-project-quick-link-main" type="button" [attr.aria-label]="link.title + ' for Portfolio Name'" (click)="openQuickLink(link.id)">
+                              <span class="selected-project-quick-link-icon">
+                                <span [pmConsoleIcon]="link.icon" aria-hidden="true"></span>
+                              </span>
+                              <span class="selected-project-quick-link-copy">
+                                <strong>{{ link.title }}</strong>
+                                <small>{{ link.description }}</small>
+                              </span>
+                            </button>
+                          </article>
+                        }
+                      </div>
+                    </section>
+                  </div>
                 }
               </div>
             </section>
           </div>
 
-          <div class="right-column portfolio-frontdoor pm101-locked-right">
-            <section class="top-deck" aria-label="PM front door actions" data-tour-target="frontdoor-actions">
-              <button class="action-card framework-command" type="button" (click)="openFrameworkPage()">
-                <span class="action-icon"><img src="./assets/workspace-card-settings.svg" alt="" aria-hidden="true" /></span>
-                <span class="action-copy"><strong>Framework & Configuration</strong><small>Settings and structures</small></span>
-                <span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span>
-              </button>
-              <button class="action-card learning-command is-unavailable" type="button" disabled aria-disabled="true" title="Learning Hub coming soon">
-                <span class="action-icon"><img src="./assets/workspace-card-notebook.svg" alt="" aria-hidden="true" /></span>
-                <span class="action-copy"><strong>Learning Hub</strong><small>Guides and playbooks</small></span>
-                <span class="action-arrow"><span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span></span>
-              </button>
-            </section>
-            <section class="side-card report-widget portfolio-report-widget" data-tour-target="right-report-widget">
-              <div class="report-widget-head">
-                <div>
-                  <h2>Reporting trends</h2>
-                  <small>Overview of report health at a portfolio, program and project level</small>
-                </div>
-              </div>
-              <div class="report-trend-list">
-                <!-- Card 1: Portfolio report history -->
-                <article class="report-trend-row green">
-                  <div class="report-trend-row-head">
-                    <strong>Portfolio report history</strong>
-                  </div>
-                  <div class="report-trend" style="--report-trend-count:3" aria-label="Status report trend">
-                    <span class="report-trend-point on-track">
-                      <span class="report-status-icon on-track" aria-hidden="true">
-                        <span class="icon"><i data-lucide="circle-check"></i></span>
-                      </span>
-                      <small>Mar</small>
-                    </span>
-                    <span class="report-trend-point alert">
-                      <span class="report-status-icon alert" aria-hidden="true">
-                        <span class="icon"><i data-lucide="triangle-alert"></i></span>
-                      </span>
-                      <small>Apr</small>
-                    </span>
-                    <span class="report-trend-point off-track">
-                      <span class="report-status-icon off-track" aria-hidden="true">
-                        <span class="icon"><i data-lucide="circle-x"></i></span>
-                      </span>
-                      <small>May</small>
-                    </span>
-                  </div>
-                  <div class="report-trend-row-foot" style="margin-top: 4px;">
-                    <span class="report-row-due">
-                      <span class="icon" aria-hidden="true"><i data-lucide="history"></i></span>
-                      <span style="white-space: normal; line-height: 1.3;">Your portfolio status<br>has been stable</span>
-                    </span>
-                    <button class="report-trend-create-btn" type="button" aria-label="Create report" (click)="openReport('Portfolio')">
-                      <span class="icon" aria-hidden="true"><i data-lucide="file-text"></i></span>
-                      <span>Create</span>
-                    </button>
-                  </div>
-                </article>
-
-                <!-- Section Subheading -->
-                <div class="report-section-divider">Program & Project Reporting Compliance</div>
-
-                <!-- Card 2: Report completion rate -->
-                <article class="report-trend-row green">
-                  <div class="report-trend-row-head">
-                    <strong>Report completion rate</strong>
-                  </div>
-                  <div class="report-metrics-grid">
-                    <div class="report-metric-cell">
-                      <small>This month:</small>
-                      <strong>74%</strong>
-                    </div>
-                    <div class="report-metric-cell">
-                      <small>Last month:</small>
-                      <strong>89%</strong>
-                    </div>
-                    <div class="report-metric-cell">
-                      <small>Change:</small>
-                      <strong class="change-down"><span class="arrow">↓</span> 15%</strong>
-                    </div>
-                  </div>
-                </article>
-
-                <!-- Card 3: Status distribution -->
-                <article class="report-trend-row amber">
-                  <div class="report-trend-row-head">
-                    <strong>Status distribution</strong>
-                    <span class="report-date-label">Mar 2026</span>
-                  </div>
-                  <div class="report-status-grid">
-                    <div class="status-cell">
-                      <div class="status-value-row">
-                        <span class="report-status-icon on-track" aria-hidden="true">
-                          <span class="icon"><i data-lucide="circle-check"></i></span>
-                        </span>
-                        <strong>12</strong>
-                      </div>
-                      <small>On track</small>
-                    </div>
-                    <div class="status-cell">
-                      <div class="status-value-row">
-                        <span class="report-status-icon alert" aria-hidden="true">
-                          <span class="icon"><i data-lucide="triangle-alert"></i></span>
-                        </span>
-                        <strong>4</strong>
-                      </div>
-                      <small>Delayed</small>
-                    </div>
-                    <div class="status-cell">
-                      <div class="status-value-row">
-                        <span class="report-status-icon off-track" aria-hidden="true">
-                          <span class="icon"><i data-lucide="circle-x"></i></span>
-                        </span>
-                        <strong>1</strong>
-                      </div>
-                      <small>Critical</small>
-                    </div>
-                  </div>
-                </article>
-              </div>
-            </section>
+          <div class="right-column normal-pm-digest-column">
+            <app-pm-console-digest-panel
+              data-tour-target="frontdoor-digest"
+              title="Welcome!"
+              [subtitleLines]="['Track portfolio health', 'and delivery progress.']"
+              heroIconName="target"
+              heroAssetSrc="./assets/pane-top-icon.svg"
+              digestTitle="Daily Digest"
+              digestIconName="wand-sparkles"
+              [sections]="portfolioDigestSections"
+            ></app-pm-console-digest-panel>
           </div>
         </div>
       </div>
     </main>
   `,
   styles: [`
-    .workspace-shell-head {
-      background: #DDEFFB !important;
+    .portfolio-frontdoor-grid {
+      align-content: stretch;
+      align-items: stretch;
     }
-    .report-section-divider {
-      color: #0b0b0b;
-      font-size: 13px;
-      font-weight: 600;
-      line-height: 20px;
-      margin: 8px 0 0;
+
+    .portfolio-frontdoor-workspace {
+      min-width: 0;
     }
-    .report-metrics-grid,
-    .report-status-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      background: #ffffff;
-      border: 1px solid rgba(223, 228, 238, 0.86);
-      border-radius: 8px;
-      box-shadow: 0 1px 2px rgba(25, 33, 61, 0.045);
-      min-height: 48px;
-      padding: 6px 0;
-      width: 100%;
+
+    .portfolio-frontdoor-body {
+      min-height: 0;
     }
-    .report-metric-cell,
-    .status-cell {
+
+    .portfolio-quicklinks-view {
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      padding: 4px 8px 4px 12px;
-      position: relative;
+      height: 100%;
+      min-height: 0;
+      overflow: auto;
     }
-    .report-metric-cell:not(:last-child)::after,
-    .status-cell:not(:last-child)::after {
-      content: "";
-      background: #e4e4e4;
-      height: 24px;
-      position: absolute;
-      right: 0;
-      top: calc(50% - 12px);
-      width: 1px;
-    }
-    .report-metric-cell small,
-    .status-cell small {
-      color: #687182;
-      font-size: 10.5px;
-      font-weight: 500;
-      line-height: 14px;
-    }
-    .report-metric-cell strong {
-      color: #252a34;
-      font-size: 14px;
-      font-weight: 600;
-      line-height: 18px;
-      margin-top: 2px;
-    }
-    .report-metric-cell strong.change-down {
-      color: #303645;
-    }
-    .report-metric-cell strong.change-down .arrow {
-      color: #e05252;
-      font-weight: bold;
-    }
-    .report-date-label {
-      color: #687182;
-      font-size: 11px;
-      font-weight: 400;
-      line-height: 20px;
-    }
-    .status-value-row {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .status-value-row strong {
-      color: #252a34;
-      font-size: 14px;
-      font-weight: 600;
-      line-height: 18px;
-    }
-    .status-cell small {
-      font-size: 11px;
-      margin-top: 1px;
-      padding-left: 22px;
-    }
-    .status-cell .report-status-icon {
-      background: transparent;
-      height: 16px;
-      width: 16px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .status-cell .report-status-icon.on-track {
-      color: #22a06b;
-    }
-    .status-cell .report-status-icon.alert {
-      color: #e87722;
-    }
-    .status-cell .report-status-icon.off-track {
-      color: #e05252;
-    }
-    .status-cell .report-status-icon .icon,
-    .status-cell .report-status-icon svg {
-      height: 16px;
-      width: 16px;
-    }
-    .pm101-card-coming-soon {
-      position: relative !important;
-      cursor: default !important;
-    }
-    .coming-soon-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(255, 255, 255, 0.45);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transition: opacity 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-      z-index: 10;
-      pointer-events: none;
-    }
-    .pm101-card-coming-soon:hover .coming-soon-overlay {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    .coming-soon-badge {
-      background: rgba(15, 23, 42, 0.9);
-      color: #ffffff;
-      padding: 8px 16px;
-      border-radius: 9999px;
-      font-size: 13px;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      transform: translateY(10px);
-      transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-    }
-    .pm101-card-coming-soon:hover .coming-soon-badge {
-      transform: translateY(0);
-    }
-    .report-trend-create-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      cursor: pointer;
-      color: #10069f;
-      font-size: 13px;
-      font-weight: 600;
-      background: transparent;
-      border: none;
-      padding: 4px 8px;
-      border-radius: 4px;
-      transition: all 0.2s ease-in-out;
-    }
-    .report-trend-create-btn:hover {
-      background-color: rgba(16, 6, 159, 0.05);
-      color: #1b10bd;
-    }
-    .report-trend-create-btn .icon,
-    .report-trend-create-btn svg {
-      height: 16px;
-      width: 16px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+
+    .portfolio-quicklinks-view .workspace-quick-links-view {
+      padding-top: 0;
     }
   `],
 })
 export class PortfolioManagerLandingComponent implements AfterViewChecked {
   @Output() readonly consoleStateChange = new EventEmitter<Partial<PmConsoleMountOptions>>();
 
-  selectedTab: 'overview' | 'actions' = 'overview';
-  readonly stepsToRender = portfolioManagerSteps;
+  selectedTab: PortfolioLandingTab = 'overview';
+  selectedPortfolio = 'portfolio';
+  readonly landingTabs = portfolioLandingTabs;
+  readonly portfolioOptions = portfolioOptions;
+  readonly portfolioTrendDots = portfolioTrendDots;
+  readonly portfolioDigestSections = portfolioDigestSections;
+  readonly frontdoorActions = portfolioFrontdoorActions;
+  readonly quickLinks = portfolioQuickLinks;
   private iconsHydrated = false;
 
   constructor(
@@ -417,20 +315,15 @@ export class PortfolioManagerLandingComponent implements AfterViewChecked {
     this.iconsHydrated = true;
   }
 
-  iconName(name: string): string {
-    return iconName(name);
+  setTab(tabId: string): void {
+    if (tabId !== 'overview' && tabId !== 'manage-work' && tabId !== 'quicklinks') return;
+    this.selectedTab = tabId;
+    this.refreshIcons();
   }
 
-  goToActions(): void {
-    this.selectedTab = 'actions';
-    this.iconsHydrated = false;
-    this.changeDetector.markForCheck();
-  }
-
-  goToOverview(): void {
-    this.selectedTab = 'overview';
-    this.iconsHydrated = false;
-    this.changeDetector.markForCheck();
+  setSelectedPortfolio(portfolioId: string): void {
+    this.selectedPortfolio = portfolioId;
+    this.refreshIcons();
   }
 
   openAssignedProjectWorkspace(): void {
@@ -440,68 +333,47 @@ export class PortfolioManagerLandingComponent implements AfterViewChecked {
     });
   }
 
-  openFrameworkPage(): void {
-    this.consoleStateChange.emit({
-      selectedPage: 'framework',
-    });
-  }
-
-  handlePm101StepAction(step: Pm101Step): void {
-    const tabId = step.footerActionId;
-    if (tabId === 'framework') {
+  handleFrontdoorAction(actionId: string): void {
+    if (actionId === 'framework') {
       this.consoleStateChange.emit({
         selectedPage: 'framework',
       });
-    } else if (tabId === 'registers' || tabId === 'reports') {
+      return;
+    }
+    if (actionId === 'registers' || actionId === 'reports') {
       this.consoleStateChange.emit({
         selectedPage: 'portfolio-workspace',
-        portfolioWorkspaceTab: tabId,
+        portfolioWorkspaceTab: actionId,
       });
     }
   }
 
-  openReport(projectName: string): void {
-    // Navigate to reports tab of portfolio workspace, or just open portfolio workspace reports
-    this.consoleStateChange.emit({
-      selectedPage: 'portfolio-workspace',
-      portfolioWorkspaceTab: 'reports',
-    });
+  openQuickLink(linkId: PortfolioQuickLinkId): void {
+    if (linkId === 'actions') {
+      this.selectedTab = 'manage-work';
+      this.refreshIcons();
+      return;
+    }
+    if (linkId === 'framework') {
+      this.consoleStateChange.emit({ selectedPage: 'framework' });
+      return;
+    }
+    if (linkId === 'performance') {
+      this.consoleStateChange.emit({ selectedPage: 'performance' });
+      return;
+    }
+    if (linkId === 'registers' || linkId === 'reports') {
+      this.consoleStateChange.emit({
+        selectedPage: 'portfolio-workspace',
+        portfolioWorkspaceTab: linkId,
+      });
+      return;
+    }
+    this.openAssignedProjectWorkspace();
   }
 
-  get visibleReportRows() {
-    const rows = reportStatusHistory;
-    const order = ['UAE Research Map', 'Vision 2030', 'NEOM Integration'];
-    return order.map((project) => {
-      const row = rows.find((r) => r.project === project);
-      if (!row) return undefined;
-      if (row.project === 'Vision 2030') {
-        return { ...row, dueLabel: 'Overdue by 5 days', dueTone: 'red' };
-      }
-      if (row.project === 'NEOM Integration') {
-        return { ...row, dueTone: 'green' };
-      }
-      return row;
-    }).filter((row): row is (typeof reportStatusHistory)[number] => Boolean(row));
-  }
-
-  reportDueToneLabel(tone: string): string {
-    if (tone === 'red') return 'Off track';
-    if (tone === 'amber') return 'Alert';
-    if (tone === 'green') return 'On track';
-    return 'Review';
-  }
-
-  reportStatusTone(status: string): string {
-    if (status === 'missed' || status === 'overdue') return 'off-track';
-    if (status === 'due' || status === 'attention' || status === 'draft') return 'alert';
-    return 'on-track';
-  }
-
-  reportStatusIcon(status: string): string {
-    return this.reportStatusTone(status) === 'off-track' ? 'circle-x' : this.reportStatusTone(status) === 'alert' ? 'triangle-alert' : 'circle-check';
-  }
-
-  reportDueText(report: { dueLabel: string }): string {
-    return report.dueLabel === 'Overdue 5 days' ? 'Overdue by 5 days' : report.dueLabel;
+  private refreshIcons(): void {
+    this.iconsHydrated = false;
+    this.changeDetector.markForCheck();
   }
 }

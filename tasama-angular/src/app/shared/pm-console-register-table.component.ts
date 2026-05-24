@@ -71,6 +71,7 @@ export interface PmConsoleRegisterTableActionEvent {
 }
 
 type ColumnMotionState = 'visible' | 'entering' | 'exiting';
+type RegisterTableSearchVariant = 'button' | 'workspace';
 
 const COLUMN_MOTION_MS = 280;
 let registerTableInstance = 0;
@@ -376,7 +377,14 @@ let registerTableInstance = 0;
             <ng-content select="[registerTableToolbarLabel]"></ng-content>
           </span>
           @if (showSearch) {
-            <button class="pm-table-tool square" type="button" [attr.aria-label]="'Search ' + itemName"><span pmConsoleIcon="search" aria-hidden="true"></span></button>
+            @if (searchVariant === 'workspace') {
+              <label class="workspace-search pm-register-search-field">
+                <span pmConsoleIcon="search" aria-hidden="true"></span>
+                <input type="search" [attr.aria-label]="computedSearchAriaLabel" [placeholder]="computedSearchPlaceholder" [value]="searchValue" (input)="setSearchValue($event)" />
+              </label>
+            } @else {
+              <button class="pm-table-tool square" type="button" [attr.aria-label]="'Search ' + itemName"><span pmConsoleIcon="search" aria-hidden="true"></span></button>
+            }
           }
           @if (showFilter) {
             <button class="pm-table-tool" type="button"><span pmConsoleIcon="filter" aria-hidden="true"></span><span>Filter</span></button>
@@ -436,7 +444,7 @@ let registerTableInstance = 0;
             </tr>
           </thead>
           <tbody>
-            @for (row of rows; track row.id) {
+            @for (row of visibleRows; track row.id) {
               <tr class="pm-main-register-table-row" [class.is-clickable]="row.clickable !== false" role="button" tabindex="0" [attr.aria-label]="row.ariaLabel || 'Open row'" (click)="openRow(row)" (keydown.enter)="openRowFromKeyboard($event, row)" (keydown.space)="openRowFromKeyboard($event, row)">
                 @if (selectable) {
                   <td class="pm-table-check-cell"><input type="checkbox" [checked]="row.selected" [attr.aria-label]="'Select ' + (row.ariaLabel || 'row')" (click)="$event.stopPropagation()" /></td>
@@ -552,6 +560,9 @@ export class PmConsoleRegisterTableComponent implements OnChanges, OnDestroy {
   @Input() showToolbar = true;
   @Input() showItemLabel = true;
   @Input() showSearch = true;
+  @Input() searchVariant: RegisterTableSearchVariant = 'button';
+  @Input() searchPlaceholder = '';
+  @Input() searchAriaLabel = '';
   @Input() showFilter = true;
   @Input() showGroupBy = false;
   @Input() showExport = true;
@@ -570,6 +581,7 @@ export class PmConsoleRegisterTableComponent implements OnChanges, OnDestroy {
   renderedColumnIds: string[] = [];
   columnMotionStates: Record<string, ColumnMotionState | undefined> = {};
   columnMenuOpen = false;
+  searchValue = '';
 
   private columnTimers: Record<string, number | undefined> = {};
   private columnFrames: Record<string, number | undefined> = {};
@@ -608,7 +620,21 @@ export class PmConsoleRegisterTableComponent implements OnChanges, OnDestroy {
   }
 
   get computedItemLabel(): string {
-    return this.itemLabel || `Items: ${this.rows.length}`;
+    return this.itemLabel || `Items: ${this.visibleRows.length}`;
+  }
+
+  get computedSearchPlaceholder(): string {
+    return this.searchPlaceholder || `Search ${this.itemName}`;
+  }
+
+  get computedSearchAriaLabel(): string {
+    return this.searchAriaLabel || `Search ${this.itemName}`;
+  }
+
+  get visibleRows(): PmConsoleRegisterTableRow[] {
+    const query = this.normalizedSearchValue();
+    if (!this.showSearch || this.searchVariant !== 'workspace' || !query) return this.rows;
+    return this.rows.filter((row) => this.searchableRowValue(row).includes(query));
   }
 
   get visibleColumns(): PmConsoleRegisterTableColumn[] {
@@ -692,6 +718,10 @@ export class PmConsoleRegisterTableComponent implements OnChanges, OnDestroy {
     this.persistColumns();
   }
 
+  setSearchValue(event: Event): void {
+    this.searchValue = (event.target as HTMLInputElement | null)?.value || '';
+  }
+
   cellFor(row: PmConsoleRegisterTableRow, columnId: string): PmConsoleRegisterTableCell | null {
     return row.cells[columnId] || null;
   }
@@ -767,6 +797,33 @@ export class PmConsoleRegisterTableComponent implements OnChanges, OnDestroy {
     const requested = new Set(ids);
     const normalized = this.columns.filter((column) => requested.has(column.id)).map((column) => column.id);
     return normalized.length ? normalized : this.defaultColumnIds();
+  }
+
+  private normalizedSearchValue(): string {
+    return this.normalizeSearchValue(this.searchValue);
+  }
+
+  private searchableRowValue(row: PmConsoleRegisterTableRow): string {
+    const values = [row.id, row.ariaLabel || ''];
+    for (const cell of Object.values(row.cells)) {
+      values.push(
+        cell.text || '',
+        cell.title || '',
+        cell.subtitle || '',
+        cell.label || '',
+        cell.value || '',
+        cell.suffix || '',
+        cell.initials || '',
+        cell.handle || '',
+        ...(cell.items || []),
+        ...(cell.actions || []).map((action) => action.label),
+      );
+    }
+    return this.normalizeSearchValue(values.join(' '));
+  }
+
+  private normalizeSearchValue(value: string): string {
+    return value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
   }
 
   private normalizeRenderedColumns(ids: string[]): string[] {

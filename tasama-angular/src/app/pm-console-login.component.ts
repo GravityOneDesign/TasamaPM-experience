@@ -1,8 +1,11 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Output } from '@angular/core';
+import { defaultPersonaFlowId, getPersonaFlowOption, PersonaFlowId, personaFlowOptions } from './persona-flow.config';
+import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 
 @Component({
   selector: 'app-pm-console-login',
   standalone: true,
+  imports: [PmConsoleIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="login-screen" aria-label="Tasama sign in">
@@ -20,15 +23,22 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Output } from '@angul
             <form class="login-form" (submit)="handleSubmit($event)">
               <div class="login-copy">
                 <h1>Sign Into Your Account</h1>
-                <p>Please type in your username and password to sign in</p>
+                <p>Please select a persona and type your password to sign in</p>
               </div>
               <label class="login-field">
-                <span>Username</span>
-                <input type="text" autocomplete="username" placeholder="Enter your username" />
+                <span>Persona</span>
+                <span class="login-select-wrap">
+                  <select name="persona" autocomplete="username" [value]="defaultPersonaFlowId" aria-label="Select persona">
+                    @for (persona of personaOptions; track persona.id) {
+                      <option [value]="persona.id">{{ persona.label }}</option>
+                    }
+                  </select>
+                  <span class="login-select-icon" [pmConsoleIcon]="'chevron-down'" aria-hidden="true"></span>
+                </span>
               </label>
               <label class="login-field">
                 <span>Password</span>
-                <input type="password" autocomplete="current-password" placeholder="Enter password" />
+                <input name="password" type="password" autocomplete="current-password" placeholder="Enter password" />
               </label>
               <div class="login-options">
                 <label class="login-remember">
@@ -65,19 +75,25 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Output } from '@angul
   `,
 })
 export class PmConsoleLoginComponent {
-  @Output() readonly signIn = new EventEmitter<void>();
+  @Output() readonly signIn = new EventEmitter<PersonaFlowId>();
   @Output() readonly startOnboarding = new EventEmitter<void>();
+
+  readonly defaultPersonaFlowId = defaultPersonaFlowId;
+  readonly personaOptions = personaFlowOptions;
 
   private readonly appPassword = '123';
 
   handleSubmit(event: SubmitEvent): void {
     event.preventDefault();
     const form = event.currentTarget as HTMLFormElement;
-    const passwordInput = form.querySelector<HTMLInputElement>('input[type="password"]');
-    if (passwordInput?.value !== this.appPassword) {
+    const formData = new FormData(form);
+    const passwordInput = form.elements.namedItem('password') as HTMLInputElement | null;
+    const password = formData.get('password');
+    const persona = getPersonaFlowOption(String(formData.get('persona')));
+    if (password !== this.appPassword) {
       passwordInput?.focus();
       return;
     }
-    this.signIn.emit();
+    this.signIn.emit(persona.id);
   }
 }

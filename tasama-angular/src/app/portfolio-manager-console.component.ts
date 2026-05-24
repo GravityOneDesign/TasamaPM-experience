@@ -6,7 +6,7 @@ import { PortfolioWorkspaceFrameworkComponent } from './portfolio-workspace/port
 import { PortfolioWorkspacePerformanceComponent } from './portfolio-workspace/portfolio-workspace-performance.component';
 import { ConsolePage, PmConsoleMountOptions, ProjectOption } from './pm-console.types';
 
-type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
+type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages' | 'quicklinks';
 
 @Component({
   selector: 'app-portfolio-manager-console',
