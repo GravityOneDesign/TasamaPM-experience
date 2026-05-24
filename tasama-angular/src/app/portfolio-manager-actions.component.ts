@@ -14,6 +14,20 @@ import { portfolioActionItems, portfolioBoardFilters, PortfolioActionItem, Portf
     <div class="actions-workspace">
       <!-- Toolbar row -->
       <div class="workspace-control-row actions-control-row">
+        <!-- Heading -->
+        <h2 class="workspace-action-title">Portfolio Name</h2>
+
+        <!-- Search input -->
+        <label class="workspace-search">
+          <span class="icon" aria-hidden="true"><i data-lucide="search"></i></span>
+          <input
+            type="search"
+            [placeholder]="'Search actions...'"
+            aria-label="Search actions"
+            (input)="onSearchChange($event)"
+          />
+        </label>
+
         <!-- Filter dropdown -->
         <div class="board-filter action-board-filter" aria-label="Action filters">
           <details class="work-filter-dropdown">
@@ -48,23 +62,6 @@ import { portfolioActionItems, portfolioBoardFilters, PortfolioActionItem, Portf
             </div>
           </details>
         </div>
-
-        <!-- Search input -->
-        <label class="workspace-search">
-          <span class="icon" aria-hidden="true"><i data-lucide="search"></i></span>
-          <input
-            type="search"
-            [placeholder]="'Search actions...'"
-            aria-label="Search actions"
-            (input)="onSearchChange($event)"
-          />
-        </label>
-
-        <!-- Add Item Button -->
-        <button class="add-action-item-button" type="button" (click)="handleAddActionItem()">
-          <span class="icon" aria-hidden="true"><i data-lucide="plus"></i></span>
-          <span>Add Item</span>
-        </button>
 
         <!-- Calendar / Board Toggle -->
         <div class="action-view-switch" role="tablist" aria-label="Actions view options">
@@ -166,11 +163,24 @@ import { portfolioActionItems, portfolioBoardFilters, PortfolioActionItem, Portf
       flex: 1 1 auto;
       min-height: 0;
       width: 100%;
+      height: 100%;
     }
     .workspace-body {
       flex: 1 1 auto;
       min-height: 0;
       overflow: auto;
+    }
+    .calendar-view,
+    .board-view {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    app-pm-console-work-calendar {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
     }
   `],
 })

@@ -347,6 +347,32 @@ export interface PmConsoleFrontdoorCoverUploadRequest {
         width: 32px;
       }
 
+      .frontdoor-journey-descriptor-block {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin: 12px 0 0;
+        min-width: 0;
+      }
+
+      .frontdoor-journey-title {
+        color: #0b0b0b;
+        font-family: "Montserrat", system-ui, sans-serif;
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 22px;
+        margin: 0;
+      }
+
+      .frontdoor-journey-descriptor {
+        color: #535353;
+        font-family: "Montserrat", system-ui, sans-serif;
+        font-size: 13px;
+        line-height: 18px;
+        margin: 0;
+        max-width: none;
+      }
+
       @media (max-width: 780px) {
         .frontdoor-project-title h2 {
           font-size: 22px;
@@ -422,23 +448,25 @@ export interface PmConsoleFrontdoorCoverUploadRequest {
 
           <div class="frontdoor-hero-bottom">
             <div class="frontdoor-schedule">
-              <span class="frontdoor-schedule-label">{{ scheduleLabel }}</span>
-              <span class="frontdoor-schedule-value">{{ schedulePercent }}% complete</span>
-              <span class="frontdoor-schedule-track" aria-hidden="true">
-                <span [style.width.%]="schedulePercent"></span>
-              </span>
-              <span class="frontdoor-psr-row">
-                <span class="frontdoor-psr-dots" aria-label="Last PSR statuses">
-                  @for (dot of trendDots; track dot.label) {
-                    <i class="frontdoor-psr-dot {{ dot.tone }}" [attr.title]="dot.label"></i>
-                  }
+              @if (!hideSchedule) {
+                <span class="frontdoor-schedule-label">{{ scheduleLabel }}</span>
+                <span class="frontdoor-schedule-value">{{ schedulePercent }}% complete</span>
+                <span class="frontdoor-schedule-track" aria-hidden="true">
+                  <span [style.width.%]="schedulePercent"></span>
                 </span>
-                <span class="frontdoor-psr-line">last 5 PSRs</span>
-              </span>
-              <span class="frontdoor-psr-line">
-                <span pmConsoleIcon="clock-3" aria-hidden="true"></span>
-                {{ nextPsrLabel }}
-              </span>
+                <span class="frontdoor-psr-row">
+                  <span class="frontdoor-psr-dots" aria-label="Last PSR statuses">
+                    @for (dot of trendDots; track dot.label) {
+                      <i class="frontdoor-psr-dot {{ dot.tone }}" [attr.title]="dot.label"></i>
+                    }
+                  </span>
+                  <span class="frontdoor-psr-line">last 5 PSRs</span>
+                </span>
+                <span class="frontdoor-psr-line">
+                  <span pmConsoleIcon="clock-3" aria-hidden="true"></span>
+                  {{ nextPsrLabel }}
+                </span>
+              }
             </div>
 
             <button class="frontdoor-hero-cta" type="button" (click)="projectOpen.emit()">
@@ -448,6 +476,17 @@ export interface PmConsoleFrontdoorCoverUploadRequest {
           </div>
         </div>
       </article>
+
+      @if (journeyDescriptor || journeyDescriptorTitle) {
+        <div class="frontdoor-journey-descriptor-block">
+          @if (journeyDescriptorTitle) {
+            <h3 class="frontdoor-journey-title">{{ journeyDescriptorTitle }}</h3>
+          }
+          @if (journeyDescriptor) {
+            <p class="frontdoor-journey-descriptor">{{ journeyDescriptor }}</p>
+          }
+        </div>
+      }
 
       <app-pm-console-frontdoor-action-cards
         data-tour-target="frontdoor-actions"
@@ -460,6 +499,9 @@ export interface PmConsoleFrontdoorCoverUploadRequest {
   `,
 })
 export class PmConsoleFrontdoorOverviewComponent {
+  @Input() hideSchedule = false;
+  @Input() journeyDescriptor = '';
+  @Input() journeyDescriptorTitle = '';
   @Input() projectId = '';
   @Input() projectName = 'Project';
   @Input() projectIcon = 'folder';

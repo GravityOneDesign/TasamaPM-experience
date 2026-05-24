@@ -52,21 +52,10 @@ const portfolioDigestSections: readonly PmConsoleDigestSection[] = [
     items: [
       {
         parts: [
-          { text: '72 portfolio items are currently' },
-          { text: 'on track.', emphasis: true },
-        ],
-      },
-      {
-        parts: [
-          { text: 'AED' },
-          { text: '112.9M', emphasis: true },
-          { text: 'total budget is under portfolio oversight' },
-        ],
-      },
-      {
-        parts: [
-          { text: '63', emphasis: true },
-          { text: 'non-financial resources are tracked' },
+          { text: 'Your portfolio is on track. ' },
+          { text: '72 of 91', emphasis: true },
+          { text: ' items are running to schedule, and your overall status has been stable across the last ' },
+          { text: '3 reports.', emphasis: true },
         ],
       },
     ],
@@ -76,20 +65,26 @@ const portfolioDigestSections: readonly PmConsoleDigestSection[] = [
     items: [
       {
         parts: [
-          { text: '14 delayed and 5 critical items', emphasis: true },
-          { text: 'require follow-up.' },
+          { text: '14 items', emphasis: true },
+          { text: ' are delayed and ' },
+          { text: '5', emphasis: true },
+          { text: ' are critical. Visit your portfolio workspace to see which programs and projects need attention.' },
         ],
       },
       {
         parts: [
-          { text: 'Portfolio status has been' },
-          { text: 'stable across the last 3 reports.', emphasis: true },
+          { text: 'Reporting completion is down to ' },
+          { text: '74%', emphasis: true },
+          { text: ' this month from ' },
+          { text: '89%', emphasis: true },
+          { text: ' last month. Follow up with program and project managers who have not yet reported.' },
         ],
       },
       {
         parts: [
-          { text: 'Report completion rate is' },
-          { text: '74% this month.', emphasis: true },
+          { text: 'You have not submitted a portfolio report this month. Head to ' },
+          { text: 'Report Progress', emphasis: true },
+          { text: ' to submit your latest status update.' },
         ],
       },
     ],
@@ -143,8 +138,8 @@ function portfolioStepToAction(step: Pm101Step): PmConsoleFrontdoorAction {
     title: step.title,
     description: step.body,
     icon: iconName(step.icon),
-    ctaLabel: step.comingSoon ? undefined : step.footerAction,
-    badgeLabel: step.comingSoon ? 'Coming soon' : undefined,
+    ctaLabel: step.footerAction,
+    badgeLabel: undefined,
     disabled: step.comingSoon,
     decor: portfolioActionDecor(step.decor),
   };
@@ -205,7 +200,7 @@ function portfolioActionDecor(decor: string): PmConsoleFrontdoorAction['decor'] 
                       projectId="portfolio"
                       projectName="Portfolio Name"
                       projectIcon="folder"
-                      heroImageSrc="./assets/pm101-first-project-card-bg.png"
+                      heroImageSrc="./assets/Card-visual.jpg"
                       stageLabel="Portfolio overview"
                       statusLabel="On Track"
                       statusTone="green"
@@ -215,7 +210,10 @@ function portfolioActionDecor(decor: string): PmConsoleFrontdoorAction['decor'] 
                       nextPsrLabel="Next portfolio report due: 01 Jun 2026 · 3 days"
                       ctaLabel="Go to Portfolio Workspace"
                       [actions]="frontdoorActions"
-                      [actionColumnCount]="4"
+                      [actionColumnCount]="5"
+                      [hideSchedule]="true"
+                      [journeyDescriptorTitle]="journeyDescriptorTitleText"
+                      [journeyDescriptor]="journeyDescriptorText"
                       (projectOpen)="openAssignedProjectWorkspace()"
                       (actionSelected)="handleFrontdoorAction($event)"
                     ></app-pm-console-frontdoor-overview>
@@ -252,9 +250,9 @@ function portfolioActionDecor(decor: string): PmConsoleFrontdoorAction['decor'] 
             <app-pm-console-digest-panel
               data-tour-target="frontdoor-digest"
               title="Welcome!"
-              [subtitleLines]="['Track portfolio health', 'and delivery progress.']"
+              [subtitleLines]="welcomeSubtitle"
               heroIconName="target"
-              heroAssetSrc="./assets/pane-top-icon.svg"
+              [heroAssetSrc]="welcomeIconSrc"
               digestTitle="Daily Digest"
               digestIconName="wand-sparkles"
               [sections]="portfolioDigestSections"
@@ -289,6 +287,48 @@ function portfolioActionDecor(decor: string): PmConsoleFrontdoorAction['decor'] 
     .portfolio-quicklinks-view .workspace-quick-links-view {
       padding-top: 0;
     }
+
+    app-pm-console-digest-panel ::ng-deep .digest-panel-section-label {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    app-pm-console-digest-panel ::ng-deep .digest-panel-hero {
+      align-items: start;
+    }
+
+    app-pm-console-digest-panel ::ng-deep .digest-panel-hero-copy {
+      gap: 4px;
+    }
+
+    app-pm-console-digest-panel ::ng-deep .digest-panel-title span:last-child {
+      font-size: 14px;
+      line-height: 20px;
+    }
+
+    app-pm-console-digest-panel ::ng-deep .digest-panel-title .icon {
+      height: 18px;
+      width: 18px;
+    }
+
+    app-pm-console-digest-panel ::ng-deep .digest-panel-item {
+      font-size: 13px;
+      line-height: 19px;
+      padding: 10px 12px;
+    }
+
+    app-pm-console-digest-panel ::ng-deep .digest-panel-content {
+      margin-top: 20px;
+      gap: 32px;
+    }
+
+    app-pm-console-digest-panel ::ng-deep .digest-panel-section {
+      gap: 14px;
+    }
+
+    app-pm-console-digest-panel ::ng-deep .digest-panel-list {
+      gap: 12px;
+    }
   `],
 })
 export class PortfolioManagerLandingComponent implements AfterViewChecked {
@@ -302,6 +342,12 @@ export class PortfolioManagerLandingComponent implements AfterViewChecked {
   readonly portfolioDigestSections = portfolioDigestSections;
   readonly frontdoorActions = portfolioFrontdoorActions;
   readonly quickLinks = portfolioQuickLinks;
+  readonly journeyDescriptorTitleText = "Manage your portfolio management journey";
+  readonly journeyDescriptorText = "Start with setting up your framework, then work through each step as your portfolio progresses. Return to any card at any time.";
+  readonly welcomeSubtitle = [
+    "Here's what's happening across your portfolio today."
+  ];
+  readonly welcomeIconSrc = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='28' height='28' fill='none' stroke='%2310069f' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M16 8.5C16 6.57 14.21 5 12 5C9.79 5 8 6.57 8 8.5C8 10.43 9.79 12 12 12C14.21 12 16 13.57 16 15.5C16 17.43 14.21 19 12 19C9.79 19 8 17.43 8 15.5'/></svg>";
   private iconsHydrated = false;
 
   constructor(
@@ -343,7 +389,7 @@ export class PortfolioManagerLandingComponent implements AfterViewChecked {
     if (actionId === 'reports') {
       this.consoleStateChange.emit({
         selectedPage: 'portfolio-workspace',
-        portfolioWorkspaceTab: 'overview',
+        portfolioWorkspaceTab: 'reports',
       });
       return;
     }

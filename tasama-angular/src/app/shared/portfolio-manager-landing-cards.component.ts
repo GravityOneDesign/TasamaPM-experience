@@ -15,7 +15,7 @@ import { CommonModule } from '@angular/common';
         (click)="onOverviewClick.emit()"
         aria-label="View Portfolio Name"
       >
-        <img class="pm101-project-card-art" src="./assets/pm101-first-project-card-bg.png" alt="" aria-hidden="true" />
+        <img class="pm101-project-card-art" src="./assets/Card-visual.jpg" alt="" aria-hidden="true" />
         <div class="pm101-static-card-content">
           <strong>Portfolio Name</strong>
           <span class="pm101-project-cta">
