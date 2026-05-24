@@ -1,5 +1,7 @@
 export const environment = {
   production: false,
-  apiBaseUrl: 'http://localhost:3000/api',
+  apiBaseUrl: '/cdapi',
+  sdzBaseUrl: '/root',
+  cdApiBaseUrl: '/cdapi',
   appVersion: '1.0.0',
 };

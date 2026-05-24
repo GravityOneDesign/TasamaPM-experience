@@ -1,8 +1,14 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './features/auth/guards/auth.guard';
 
 export const appRoutes: Routes = [
   {
     path: '',
+    redirectTo: 'pm',
+    pathMatch: 'full',
+  },
+  {
+    path: 'login',
     redirectTo: 'auth/login',
     pathMatch: 'full',
   },
@@ -13,21 +19,24 @@ export const appRoutes: Routes = [
   },
   {
     path: 'pm',
+    canMatch: [authGuard],
     loadChildren: () =>
       import('./features/pm-console/pm-console.routes').then((m) => m.pmConsoleRoutes),
   },
   {
     path: 'executive',
+    canMatch: [authGuard],
     loadChildren: () =>
       import('./features/executive/executive.routes').then((m) => m.executiveRoutes),
   },
   {
     path: 'persona',
+    canMatch: [authGuard],
     loadChildren: () =>
       import('./features/persona/persona.routes').then((m) => m.personaRoutes),
   },
   {
     path: '**',
-    redirectTo: 'auth/login',
+    redirectTo: 'pm',
   },
 ];
