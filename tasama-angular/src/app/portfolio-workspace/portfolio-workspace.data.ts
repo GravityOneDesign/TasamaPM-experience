@@ -339,13 +339,186 @@ export const reportsStats = {
   }
 };
 
-export const riskRegisterData = [
-  { id: 'RSK-01', risk: 'Stakeholder data quality gaps delaying onboarding insights.', linkedInitiative: 'UAE Research Map', initiativeType: 'Project' as const, owner: 'Muna Hassan', mitigation: 'Run a cleansing sprint and enforce schema constraints.', lastReview: '05/08/2026', exposure: 'Medium' as const, status: 'Monitoring' as const },
-  { id: 'RSK-02', risk: 'Commercial overrun on third-party security integration APIs.', linkedInitiative: 'NEOM Integration', initiativeType: 'Program' as const, owner: 'Fatima Ali', mitigation: 'Rebaseline the contract scope with vendors.', lastReview: '05/10/2026', exposure: 'Critical' as const, status: 'Escalated' as const },
-  { id: 'RSK-03', risk: 'Vendor dependency slippage impacts milestone delivery.', linkedInitiative: 'Smart City Alpha', initiativeType: 'Project' as const, owner: 'Khalid Omar', mitigation: 'Add recovery buffer and source secondary contractor.', lastReview: '05/06/2026', exposure: 'High' as const, status: 'Active' as const },
-  { id: 'RSK-04', risk: 'Stage-gate evidence packages delayed by local office compliance.', linkedInitiative: 'Vision 2030', initiativeType: 'Portfolio' as const, owner: 'PMO Desk', mitigation: 'Prepare the evidence package templates early.', lastReview: '05/11/2026', exposure: 'Medium' as const, status: 'Active' as const },
-  { id: 'RSK-05', risk: 'Benefits owner responsiveness limits baseline signoff.', linkedInitiative: 'PMO Capability', initiativeType: 'Program' as const, owner: 'Laila Noor', mitigation: 'Follow up weekly with a dedicated prioritization meeting.', lastReview: '05/09/2026', exposure: 'Low' as const, status: 'Watching' as const }
+export type RiskLevel = 'portfolio' | 'program' | 'project';
+export type RiskExposure = 'critical' | 'high' | 'medium' | 'low';
+export type RiskStatus = 'escalated' | 'active' | 'monitoring' | 'watching';
+
+export interface Risk {
+  id: string;
+  name: string;
+  level: RiskLevel;
+  linkedTo: string;
+  parentProgram?: string;
+  parentPortfolio?: string;
+  owner: { name: string; initials: string };
+  mitigation: string;
+  lastReview: string;
+  exposure: RiskExposure;
+  status: RiskStatus;
+}
+
+export const riskRegisterData: Risk[] = [
+  {
+    id: 'RSK-01',
+    name: 'Compliance evidence delay across local office stage-gates',
+    level: 'portfolio',
+    linkedTo: 'National Security Portfolio',
+    owner: { name: 'PMO Desk', initials: 'PM' },
+    mitigation: 'Prepare templates and pre-approve standardized evidence packs.',
+    lastReview: '05/11/2026',
+    exposure: 'medium',
+    status: 'active'
+  },
+  {
+    id: 'RSK-02',
+    name: 'Commercial overrun on third-party security integration APIs',
+    level: 'program',
+    linkedTo: 'SOC Expansion Program',
+    parentPortfolio: 'National Security Portfolio',
+    owner: { name: 'Fatima Ali', initials: 'FA' },
+    mitigation: 'Rebaseline the contract scope with vendors and audit API calls.',
+    lastReview: '05/10/2026',
+    exposure: 'critical',
+    status: 'escalated'
+  },
+  {
+    id: 'RSK-03',
+    name: 'Vendor delivery slip on Endpoint Agent integration milestones',
+    level: 'project',
+    linkedTo: 'NEOM SOC Integration',
+    parentProgram: 'SOC Expansion Program',
+    parentPortfolio: 'National Security Portfolio',
+    owner: { name: 'Khalid Omar', initials: 'KO' },
+    mitigation: 'Incorporate recovery buffers and evaluate secondary contractor options.',
+    lastReview: '05/06/2026',
+    exposure: 'high',
+    status: 'active'
+  },
+  {
+    id: 'RSK-04',
+    name: 'Database latency spikes during real-time SOC log ingestion',
+    level: 'project',
+    linkedTo: 'Riyadh SOC Baseline',
+    parentProgram: 'SOC Expansion Program',
+    parentPortfolio: 'National Security Portfolio',
+    owner: { name: 'Muna Hassan', initials: 'MH' },
+    mitigation: 'Optimize indexing on database tables and introduce Redis caching.',
+    lastReview: '05/08/2026',
+    exposure: 'medium',
+    status: 'monitoring'
+  },
+  {
+    id: 'RSK-05',
+    name: 'Stakeholder adoption delays due to training resource constraints',
+    level: 'project',
+    linkedTo: 'Smart City Alpha',
+    parentPortfolio: 'National Security Portfolio',
+    owner: { name: 'Muna Hassan', initials: 'MH' },
+    mitigation: 'Deliver self-service learning modules and automate onboarding.',
+    lastReview: '05/08/2026',
+    exposure: 'medium',
+    status: 'monitoring'
+  },
+  {
+    id: 'RSK-06',
+    name: 'Benefits owner responsiveness limiting baseline sign-offs',
+    level: 'program',
+    linkedTo: 'Identity & Access Program',
+    parentPortfolio: 'National Security Portfolio',
+    owner: { name: 'Laila Noor', initials: 'LN' },
+    mitigation: 'Run weekly alignment workshops with key senior stakeholders.',
+    lastReview: '05/09/2026',
+    exposure: 'low',
+    status: 'watching'
+  },
+  {
+    id: 'RSK-07',
+    name: 'Government MFA portal security audit response delays',
+    level: 'project',
+    linkedTo: 'MFA Government Portal',
+    parentProgram: 'Identity & Access Program',
+    parentPortfolio: 'National Security Portfolio',
+    owner: { name: 'Amna Al-Hammadi', initials: 'AA' },
+    mitigation: 'Set up a dedicated audit readiness squad to prepare standard responses.',
+    lastReview: '05/12/2026',
+    exposure: 'high',
+    status: 'active'
+  },
+  {
+    id: 'RSK-08',
+    name: 'Strategic misalignment with updated national compliance regulations',
+    level: 'portfolio',
+    linkedTo: 'Vision 2030 Portfolio',
+    owner: { name: 'Dr. Khalid Al-Mansoori', initials: 'KM' },
+    mitigation: 'Perform a regulation gap analysis and update portfolio bylaws.',
+    lastReview: '05/14/2026',
+    exposure: 'critical',
+    status: 'active'
+  },
+  {
+    id: 'RSK-09',
+    name: 'Integration delays with central citizen database',
+    level: 'project',
+    linkedTo: 'Vision 2030 Portal',
+    parentPortfolio: 'Vision 2030 Portfolio',
+    owner: { name: 'Fatima Qahtani', initials: 'FQ' },
+    mitigation: 'Leverage sandbox APIs and negotiate priority support SLA.',
+    lastReview: '05/15/2026',
+    exposure: 'high',
+    status: 'monitoring'
+  },
+  {
+    id: 'RSK-10',
+    name: 'Core router bandwidth bottlenecks during backup syncs',
+    level: 'program',
+    linkedTo: 'Network Security Upgrade Program',
+    parentPortfolio: 'National Security Portfolio',
+    owner: { name: 'Dr. Khalid Al-Mansoori', initials: 'KM' },
+    mitigation: 'Schedule backups during off-peak hours and provision redundant link bandwidth.',
+    lastReview: '05/18/2026',
+    exposure: 'medium',
+    status: 'active'
+  },
+  {
+    id: 'RSK-11',
+    name: 'Hardware delivery delay on core modular switches',
+    level: 'project',
+    linkedTo: 'Riyadh Core Switch Upgrade',
+    parentProgram: 'Network Security Upgrade Program',
+    parentPortfolio: 'National Security Portfolio',
+    owner: { name: 'Muna Hassan', initials: 'MH' },
+    mitigation: 'Engage secondary logistics provider and utilize pre-staged backup hardware.',
+    lastReview: '05/19/2026',
+    exposure: 'high',
+    status: 'monitoring'
+  },
+  {
+    id: 'RSK-12',
+    name: 'Subnet collision risk during legacy database migrations',
+    level: 'project',
+    linkedTo: 'Jeddah Database Migration',
+    parentProgram: 'Network Security Upgrade Program',
+    parentPortfolio: 'National Security Portfolio',
+    owner: { name: 'Fatima Ali', initials: 'FA' },
+    mitigation: 'Perform subnet configuration dry-runs and deploy dynamic NAT mapping.',
+    lastReview: '05/20/2026',
+    exposure: 'medium',
+    status: 'active'
+  },
+  {
+    id: 'RSK-13',
+    name: 'API authentication handshake timeouts with central registry',
+    level: 'project',
+    linkedTo: 'API Integration Project',
+    parentPortfolio: 'National Security Portfolio',
+    owner: { name: 'Khalid Omar', initials: 'KO' },
+    mitigation: 'Establish a localized token caching layer and increase connection timeouts.',
+    lastReview: '05/21/2026',
+    exposure: 'high',
+    status: 'active'
+  }
 ];
+
 
 export const benefitsRegisterData = [
   { id: 'b-1', benefit: 'Cyber Incident Rate Reduction', metric: 'Reduce monthly government cyber incidents by 45%', baseline: '4.8 incidents/month', target: '2.6 incidents/month', owner: 'Fatima Qahtani', status: 'On-Track' },
