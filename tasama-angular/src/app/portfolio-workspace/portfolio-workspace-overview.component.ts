@@ -22,7 +22,7 @@ import { portfolioSummary, KPICard, ObjectiveRow } from './portfolio-workspace.d
   template: `
     <div class="workspace-overview-tab">
       
-      <!-- 1. Portfolio Profile Card (Image 2 style) -->
+      <!-- 1. Overview Card (Image 2 style) -->
       <article class="portfolio-profile-card">
         <section class="portfolio-profile-intro" aria-label="Portfolio profile summary">
           <span class="portfolio-profile-icon" aria-hidden="true">
@@ -30,7 +30,7 @@ import { portfolioSummary, KPICard, ObjectiveRow } from './portfolio-workspace.d
           </span>
           <div class="portfolio-profile-copy">
             <div class="portfolio-profile-title-line">
-              <h3>Portfolio Profile</h3>
+              <h3>Overview</h3>
               <span pmConsoleIcon="ai" class="ai-sparkle-icon"></span>
             </div>
             <p>Browse your portfolio setup</p>
@@ -38,18 +38,12 @@ import { portfolioSummary, KPICard, ObjectiveRow } from './portfolio-workspace.d
         </section>
 
         <dl class="portfolio-profile-fields">
-          <!-- Description Row spans full width (all 3 columns) -->
-          <div class="portfolio-profile-field wide-span">
-            <dt>Description</dt>
-            <dd class="description-val">{{ description }}</dd>
-          </div>
-
-          <!-- Row 2 -->
+          <!-- Row 1 -->
           <div class="portfolio-profile-field">
             <dt>Portfolio Owner</dt>
             <dd class="has-avatar">
               <span class="portfolio-profile-avatar owner-avatar" aria-hidden="true">{{ getInitials(owner) }}</span>
-              <strong>{{ owner }}</strong>
+              <span>{{ owner }}</span>
             </dd>
           </div>
 
@@ -57,27 +51,33 @@ import { portfolioSummary, KPICard, ObjectiveRow } from './portfolio-workspace.d
             <dt>Portfolio Sponsor</dt>
             <dd class="has-avatar">
               <span class="portfolio-profile-avatar sponsor-avatar" aria-hidden="true">{{ getInitials(sponsor) }}</span>
-              <strong>{{ sponsor }}</strong>
+              <span>{{ sponsor }}</span>
             </dd>
           </div>
 
           <div class="portfolio-profile-field">
             <dt>Budget Utilisation</dt>
             <dd>
-              <strong>42%</strong>
+              <span>42%</span>
               <span class="budget-trend-pill">+2.4%</span>
             </dd>
           </div>
 
-          <!-- Row 3 -->
+          <!-- Row 2 -->
           <div class="portfolio-profile-field">
             <dt>No. of Programs</dt>
-            <dd><strong>5</strong></dd>
+            <dd><span>5</span></dd>
           </div>
 
           <div class="portfolio-profile-field">
             <dt>No. of Standalone Projects</dt>
-            <dd><strong>4</strong></dd>
+            <dd><span>4</span></dd>
+          </div>
+
+          <!-- Description Row spans full width (all 3 columns) placed below programs and projects -->
+          <div class="portfolio-profile-field wide-span">
+            <dt>Description</dt>
+            <dd class="description-val">{{ description }}</dd>
           </div>
         </dl>
       </article>
@@ -90,7 +90,7 @@ import { portfolioSummary, KPICard, ObjectiveRow } from './portfolio-workspace.d
           </span>
           <div class="overview-section-copy">
             <div class="overview-section-title-line">
-              <h3>Objectives</h3>
+              <h3>Strategic Objectives</h3>
               <span pmConsoleIcon="ai" class="ai-sparkle-icon"></span>
             </div>
             <p>Expected results and measures that define what success should look like for this portfolio.</p>
@@ -99,13 +99,10 @@ import { portfolioSummary, KPICard, ObjectiveRow } from './portfolio-workspace.d
 
         <div class="overview-section-table-wrapper">
           <app-pm-console-plan-table
-            title="Strategic Objectives"
-            description="Expected results and measures that define what success should look like for this portfolio."
             [countLabel]="objectives.length + ' objectives'"
             actionLabel="Add objective"
             actionAriaLabel="Add objective"
-            [iconName]="'target'"
-            panelClass="overview-register-card"
+            panelClass="portfolio-overview-register-card overview-register-card"
             (action)="openAddObjectiveModal()"
           >
             @if (objectives.length) {
@@ -113,11 +110,11 @@ import { portfolioSummary, KPICard, ObjectiveRow } from './portfolio-workspace.d
                 <table class="dependency-register-table" aria-label="Strategic Objectives">
                   <thead>
                     <tr>
-                      <th style="width: 35%">Objective</th>
-                      <th style="width: 35%">Target Measure</th>
+                      <th style="width: 32%">Objective</th>
+                      <th style="width: 32%">Target Measure</th>
                       <th style="width: 18%">Owner</th>
-                      <th style="width: 12%">Status</th>
-                      <th aria-label="Actions" style="width: 5%"></th>
+                      <th style="width: 10%">Status</th>
+                      <th aria-label="Actions" style="width: 8%; text-align: center; padding-right: 28px;">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -181,13 +178,10 @@ import { portfolioSummary, KPICard, ObjectiveRow } from './portfolio-workspace.d
 
         <div class="overview-section-table-wrapper">
           <app-pm-console-plan-table
-            title="KPIs"
-            description="Key performance indicators tracked across the active programs and workspaces."
             [countLabel]="kpiRows.length + ' KPIs'"
             actionLabel="Add KPI"
             actionAriaLabel="Add KPI"
-            [iconName]="'activity'"
-            panelClass="overview-register-card"
+            panelClass="portfolio-overview-register-card overview-register-card"
             (action)="openAddKpiModal()"
           >
             @if (kpiRows.length) {
@@ -195,11 +189,11 @@ import { portfolioSummary, KPICard, ObjectiveRow } from './portfolio-workspace.d
                 <table class="dependency-register-table" aria-label="KPIs">
                   <thead>
                     <tr>
-                      <th style="width: 35%">KPI</th>
-                      <th style="width: 35%">Target Measure</th>
+                      <th style="width: 32%">KPI</th>
+                      <th style="width: 32%">Target Measure</th>
                       <th style="width: 18%">Owner</th>
-                      <th style="width: 12%">Status</th>
-                      <th aria-label="Actions" style="width: 5%"></th>
+                      <th style="width: 10%">Status</th>
+                      <th aria-label="Actions" style="width: 8%; text-align: center; padding-right: 28px;">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -422,32 +416,32 @@ import { portfolioSummary, KPICard, ObjectiveRow } from './portfolio-workspace.d
     }
 
     .portfolio-profile-field dt {
-      color: #767676;
-      font-size: 11px;
-      font-weight: 500;
-      line-height: 16px;
+      color: #687182;
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 18px;
       margin: 0;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      text-transform: none;
+      letter-spacing: normal;
     }
 
     .portfolio-profile-field dd {
       align-items: center;
-      color: #111111;
+      color: #202633;
       display: flex;
       gap: 8px;
-      font-size: 15px;
-      font-weight: 600;
+      font-size: 16px;
+      font-weight: 500;
       line-height: 24px;
       margin: 0;
       min-width: 0;
     }
 
     .portfolio-profile-field dd.description-val {
-      font-weight: 400;
+      font-weight: 300;
       font-size: 14px;
       line-height: 1.6;
-      color: #252a34;
+      color: #475467;
       display: block;
     }
 
@@ -455,24 +449,24 @@ import { portfolioSummary, KPICard, ObjectiveRow } from './portfolio-workspace.d
       align-items: center;
       border-radius: 999px;
       display: inline-flex;
-      font-size: 10px;
-      font-weight: 600;
-      height: 24px;
-      width: 24px;
+      font-size: 12px;
+      font-weight: 500;
+      height: 32px;
+      width: 32px;
       justify-content: center;
-      flex: 0 0 24px;
+      flex: 0 0 32px;
     }
 
     .portfolio-profile-avatar.owner-avatar {
-      background: rgba(0, 122, 255, 0.08);
-      color: #007aff;
-      border: 1.5px solid rgba(0, 122, 255, 0.2);
+      background: #eef3fc;
+      color: #3b5a95;
+      border: none;
     }
 
     .portfolio-profile-avatar.sponsor-avatar {
-      background: rgba(255, 159, 10, 0.08);
-      color: #ff9f0a;
-      border: 1.5px solid rgba(255, 159, 10, 0.2);
+      background: #fff9e6;
+      color: #b27b00;
+      border: none;
     }
 
     .budget-trend-pill {
@@ -497,11 +491,10 @@ import { portfolioSummary, KPICard, ObjectiveRow } from './portfolio-workspace.d
     .overview-section-card {
       background: #ffffff;
       border: 1px solid #e8e8e8;
-      border-left: 4px solid #10069f;
       border-radius: 12px;
       box-shadow: 0 2px 6px rgba(1, 10, 15, 0.08);
       display: grid;
-      gap: 32px;
+      gap: 16px;
       grid-template-columns: 264px minmax(0, 1fr);
       padding: 24px 20px 24px 16px;
     }
@@ -569,26 +562,26 @@ import { portfolioSummary, KPICard, ObjectiveRow } from './portfolio-workspace.d
     }
 
     .avatar-circle {
-      width: 24px;
-      height: 24px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
-      font-size: 9.5px;
-      font-weight: 600;
+      font-size: 12px;
+      font-weight: 500;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
     .font-owner {
-      background: rgba(0, 122, 255, 0.08);
-      color: #007aff;
-      border: 1.5px solid rgba(0, 122, 255, 0.2);
+      background: #eef3fc;
+      color: #3b5a95;
+      border: none;
     }
 
     .font-sponsor {
-      background: rgba(255, 159, 10, 0.08);
-      color: #ff9f0a;
-      border: 1.5px solid rgba(255, 159, 10, 0.2);
+      background: #fff9e6;
+      color: #b27b00;
+      border: none;
     }
 
     .owner-name {
@@ -858,6 +851,40 @@ import { portfolioSummary, KPICard, ObjectiveRow } from './portfolio-workspace.d
       background: #f4f5f7;
       color: #5e6c84;
       border: 1px solid rgba(94, 108, 132, 0.2);
+    }
+
+    ::ng-deep .portfolio-overview-register-card {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      padding: 0 !important;
+    }
+
+    ::ng-deep .portfolio-overview-register-card .plan-data-table-head {
+      border-bottom: none !important;
+      padding: 0 0 12px 0 !important;
+      min-height: auto !important;
+      justify-content: flex-end !important;
+    }
+
+    ::ng-deep .portfolio-overview-register-card .plan-data-table-body {
+      padding: 0 !important;
+    }
+
+    ::ng-deep .portfolio-overview-register-card .schedule-table-actions {
+      display: table-cell !important;
+      width: 8% !important;
+      text-align: center !important;
+      vertical-align: middle !important;
+      padding-right: 28px !important;
+    }
+
+    ::ng-deep .portfolio-overview-register-card .schedule-table-actions .pm-row-action-menu {
+      display: inline-flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      width: 100% !important;
     }
 
     @keyframes fadeIn {

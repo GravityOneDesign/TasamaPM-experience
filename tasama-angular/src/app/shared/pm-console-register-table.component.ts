@@ -35,7 +35,7 @@ export interface PmConsoleRegisterTableMenuItem {
 }
 
 export interface PmConsoleRegisterTableCell {
-  kind: 'text' | 'primary' | 'status' | 'budget' | 'person' | 'action' | 'iconAction' | 'menu' | 'checkbox' | 'tags';
+  kind: 'text' | 'primary' | 'status' | 'budget' | 'person' | 'action' | 'iconAction' | 'menu' | 'checkbox' | 'tags' | 'chip-text';
   text?: string;
   title?: string;
   subtitle?: string;
@@ -53,6 +53,8 @@ export interface PmConsoleRegisterTableCell {
   muted?: boolean;
   strong?: boolean;
   ariaLabel?: string;
+  chipLabel?: string;
+  chipTone?: 'portfolio' | 'program' | 'project';
 }
 
 export interface PmConsoleRegisterTableRow {
@@ -180,13 +182,17 @@ let registerTableInstance = 0;
 
       .pm-register-primary-button strong {
         color: #354cb5;
-        display: block;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
         font-size: 13px;
         font-weight: 600;
         line-height: 18px;
+        max-height: 36px;
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: nowrap;
+        white-space: normal;
+        text-align: left;
         width: 100%;
       }
 
@@ -342,6 +348,30 @@ let registerTableInstance = 0;
         white-space: nowrap;
       }
 
+      .pm-table-chip {
+        font-size: 10px;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 12px;
+        text-transform: capitalize;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1.2;
+      }
+      .pm-table-chip.portfolio {
+        background: rgba(16, 6, 159, 0.06);
+        color: #10069f;
+      }
+      .pm-table-chip.program {
+        background: rgba(0, 122, 255, 0.06);
+        color: #007aff;
+      }
+      .pm-table-chip.project {
+        background: rgba(74, 85, 104, 0.06);
+        color: #4a5568;
+      }
+
       .pm-register-empty-state {
         align-items: center;
         display: grid;
@@ -456,7 +486,7 @@ let registerTableInstance = 0;
                       @if (cell) {
                         @switch (cell.kind) {
                           @case ('primary') {
-                            <button class="pm-register-primary-button" type="button" [attr.aria-label]="cell.ariaLabel || cell.title" (click)="openRow(row); $event.stopPropagation()">
+                            <button class="pm-register-primary-button" type="button" [attr.aria-label]="cell.ariaLabel || cell.title" [attr.title]="cell.title || cell.text" (click)="openRow(row); $event.stopPropagation()">
                               @if (cell.subtitle) {
                                 <span>{{ cell.subtitle }}</span>
                               }
@@ -519,6 +549,14 @@ let registerTableInstance = 0;
                                 <span class="pm-register-tag">{{ item }}</span>
                               }
                             </span>
+                          }
+                          @case ('chip-text') {
+                            <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; width: 100%;">
+                              @if (cell.chipLabel) {
+                                <span class="pm-table-chip {{ cell.chipTone || '' }}">{{ cell.chipLabel }}</span>
+                              }
+                              <span class="pm-register-cell-text strong" [attr.title]="cell.text" style="white-space: normal; font-size: 13px; font-weight: 600; color: #252a34; line-height: 1.4; display: block; width: 100%;">{{ cell.text }}</span>
+                            </div>
                           }
                           @default {
                             <span class="pm-register-cell-text" [class.strong]="cell.strong" [class.muted]="cell.muted">{{ cell.text || cell.label }}</span>

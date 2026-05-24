@@ -340,7 +340,14 @@ export class PortfolioManagerLandingComponent implements AfterViewChecked {
       });
       return;
     }
-    if (actionId === 'registers' || actionId === 'reports') {
+    if (actionId === 'reports') {
+      this.consoleStateChange.emit({
+        selectedPage: 'portfolio-workspace',
+        portfolioWorkspaceTab: 'overview',
+      });
+      return;
+    }
+    if (actionId === 'registers') {
       this.consoleStateChange.emit({
         selectedPage: 'portfolio-workspace',
         portfolioWorkspaceTab: actionId,

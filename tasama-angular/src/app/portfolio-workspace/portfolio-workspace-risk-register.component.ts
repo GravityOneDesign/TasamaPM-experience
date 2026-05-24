@@ -178,17 +178,9 @@ export interface PortfolioGroup {
                             <span pmConsoleIcon="pencil" aria-hidden="true"></span>
                             Edit
                           </button>
-                          <button type="button" role="menuitem">
-                            <span pmConsoleIcon="user" aria-hidden="true"></span>
-                            Change owner
-                          </button>
-                          <button type="button" role="menuitem">
-                            <span pmConsoleIcon="trending-up" aria-hidden="true"></span>
-                            Escalate
-                          </button>
                           <button class="danger" type="button" role="menuitem">
-                            <span pmConsoleIcon="archive" aria-hidden="true"></span>
-                            Archive
+                            <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                            Delete
                           </button>
                         </app-pm-console-row-action-menu>
                       </td>
@@ -250,17 +242,9 @@ export interface PortfolioGroup {
                                 <span pmConsoleIcon="pencil" aria-hidden="true"></span>
                                 Edit
                               </button>
-                              <button type="button" role="menuitem">
-                                <span pmConsoleIcon="user" aria-hidden="true"></span>
-                                Change owner
-                              </button>
-                              <button type="button" role="menuitem">
-                                <span pmConsoleIcon="trending-up" aria-hidden="true"></span>
-                                Escalate
-                              </button>
                               <button class="danger" type="button" role="menuitem">
-                                <span pmConsoleIcon="archive" aria-hidden="true"></span>
-                                Archive
+                                <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                Delete
                               </button>
                             </app-pm-console-row-action-menu>
                           </td>
@@ -321,17 +305,9 @@ export interface PortfolioGroup {
                                     <span pmConsoleIcon="pencil" aria-hidden="true"></span>
                                     Edit
                                   </button>
-                                  <button type="button" role="menuitem">
-                                    <span pmConsoleIcon="user" aria-hidden="true"></span>
-                                    Change owner
-                                  </button>
-                                  <button type="button" role="menuitem">
-                                    <span pmConsoleIcon="trending-up" aria-hidden="true"></span>
-                                    Escalate
-                                  </button>
                                   <button class="danger" type="button" role="menuitem">
-                                    <span pmConsoleIcon="archive" aria-hidden="true"></span>
-                                    Archive
+                                    <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                    Delete
                                   </button>
                                 </app-pm-console-row-action-menu>
                               </td>
@@ -399,17 +375,9 @@ export interface PortfolioGroup {
                                 <span pmConsoleIcon="pencil" aria-hidden="true"></span>
                                 Edit
                               </button>
-                              <button type="button" role="menuitem">
-                                <span pmConsoleIcon="user" aria-hidden="true"></span>
-                                Change owner
-                              </button>
-                              <button type="button" role="menuitem">
-                                <span pmConsoleIcon="trending-up" aria-hidden="true"></span>
-                                Escalate
-                              </button>
                               <button class="danger" type="button" role="menuitem">
-                                <span pmConsoleIcon="archive" aria-hidden="true"></span>
-                                Archive
+                                <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                Delete
                               </button>
                             </app-pm-console-row-action-menu>
                           </td>
@@ -668,12 +636,12 @@ export interface PortfolioGroup {
       font-size: 13.5px;
     }
 
-    /* Project sub-headers: lightest weight, no background tint */
+    /* Project sub-headers: same light grey coloring as Independent security assessment */
     .rr-project-header {
-      background-color: #ffffff !important;
+      background-color: rgba(100, 116, 139, 0.03) !important;
     }
     .rr-project-header:hover {
-      background-color: #f8fafc !important;
+      background-color: rgba(100, 116, 139, 0.06) !important;
     }
     .rr-project-header .group-title {
       color: #4a5568;
@@ -896,6 +864,8 @@ export interface PortfolioGroup {
     }
 
     .schedule-table-actions {
+      display: table-cell !important;
+      vertical-align: middle !important;
       text-align: right !important;
       overflow: visible;
       padding-right: 48px !important;
@@ -977,6 +947,13 @@ export interface PortfolioGroup {
     @keyframes slideIn {
       from { opacity: 0; transform: translateX(8px); }
       to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Make gap between all columns equal in List View */
+    .flat-list-wrapper ::ng-deep .pm-main-register-table th,
+    .flat-list-wrapper ::ng-deep .pm-main-register-table td {
+      padding-left: 12px !important;
+      padding-right: 12px !important;
     }
   `]
 })
@@ -1128,12 +1105,13 @@ export class PortfolioWorkspaceRiskRegisterComponent {
   get flatColumns(): PmConsoleRegisterTableColumn[] {
     return [
       { id: 'riskIdName', label: 'Risk ID & Name', minWidth: 280 },
+      { id: 'linkedTo', label: 'Linked to', minWidth: 260 },
       { id: 'owner', label: 'Owner', minWidth: 150 },
       { id: 'mitigation', label: 'Mitigation', minWidth: 280 },
-      { id: 'lastReview', label: 'Last Review', minWidth: 100 },
-      { id: 'exposure', label: 'Exposure', minWidth: 100 },
-      { id: 'status', label: 'Status', minWidth: 120 },
-      { id: 'actions', label: 'Actions', minWidth: 80, align: 'center' }
+      { id: 'lastReview', label: 'Last Review', minWidth: 85 },
+      { id: 'exposure', label: 'Exposure', minWidth: 85 },
+      { id: 'status', label: 'Status', minWidth: 95 },
+      { id: 'actions', label: 'Actions', minWidth: 60, align: 'center' }
     ];
   }
 
@@ -1159,6 +1137,12 @@ export class PortfolioWorkspaceRiskRegisterComponent {
           subtitle: r.id,
           title: r.name,
           ariaLabel: `View risk ${r.id}: ${r.name}`
+        },
+        linkedTo: {
+          kind: 'chip-text',
+          chipLabel: r.level,
+          chipTone: r.level,
+          text: r.linkedTo
         },
         owner: {
           kind: 'person',
@@ -1188,9 +1172,7 @@ export class PortfolioWorkspaceRiskRegisterComponent {
           ariaLabel: `Actions for ${r.id}`,
           actions: [
             { id: 'edit', label: 'Edit', icon: 'pencil' },
-            { id: 'change_owner', label: 'Change owner', icon: 'user' },
-            { id: 'escalate', label: 'Escalate', icon: 'trending-up' },
-            { id: 'archive', label: 'Archive', icon: 'archive', tone: 'danger' }
+            { id: 'delete', label: 'Delete', icon: 'trash-2', tone: 'danger' }
           ]
         }
       }

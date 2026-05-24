@@ -102,6 +102,106 @@ type WorkspaceTab = 'overview' | 'registers' | 'reports';
       background: #ffffff;
       padding: 10px 24px 18px;
     }
+
+    /* L1 Workspace Tabs Styling matching Image 2 */
+    .pm-register-tabs {
+      display: flex;
+      align-items: flex-end;
+      position: absolute;
+      bottom: 0;
+      left: 16px;
+      margin: 0;
+      z-index: 4;
+      height: 44px;
+    }
+
+    .pm-register-tab {
+      background: transparent;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: 44px;
+      position: relative;
+      z-index: 2;
+      color: #475467;
+      font-size: 13.5px;
+      font-weight: 500;
+      transition: color 200ms ease;
+      padding: 0;
+    }
+
+    .pm-register-tab:hover {
+      color: #10069f;
+    }
+
+    .pm-register-tab.active {
+      color: #10069f;
+      font-weight: 600;
+    }
+
+    .pm-register-tab-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: currentColor;
+    }
+
+    .pm-register-tab-copy {
+      display: inline-flex;
+      align-items: center;
+      color: currentColor;
+    }
+
+    .pm-register-tab-copy strong {
+      font-weight: inherit;
+    }
+
+    .pm-register-tab-indicator {
+      background: #ffffff;
+      border-radius: 12px 12px 0 0;
+      bottom: 0;
+      height: 44px;
+      left: 0;
+      pointer-events: none;
+      position: absolute;
+      transform: translateX(var(--register-tab-left));
+      transition:
+        transform 280ms cubic-bezier(0.4, 0, 0.2, 1),
+        width 280ms cubic-bezier(0.4, 0, 0.2, 1);
+      width: var(--register-tab-width);
+      z-index: 1;
+    }
+
+    .pm-register-tab-indicator::before,
+    .pm-register-tab-indicator::after {
+      background: #ffffff;
+      border-radius: 0;
+      bottom: 0;
+      box-shadow: none;
+      content: "";
+      display: block;
+      height: 14px;
+      pointer-events: none;
+      position: absolute;
+      width: 14px;
+    }
+
+    .pm-register-tab-indicator::before {
+      background: radial-gradient(circle at left top, transparent 14px, #ffffff 14.5px);
+      left: -14px;
+      right: auto;
+    }
+
+    .pm-register-tab-indicator::after {
+      background: radial-gradient(circle at right top, transparent 14px, #ffffff 14.5px);
+      left: auto;
+      right: -14px;
+    }
   `]
 })
 export class PortfolioWorkspaceComponent {
