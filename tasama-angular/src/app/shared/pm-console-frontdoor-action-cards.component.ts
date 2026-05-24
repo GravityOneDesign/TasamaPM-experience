@@ -75,6 +75,10 @@ export interface PmConsoleFrontdoorAction {
         opacity: 1;
       }
 
+      .frontdoor-action-card:disabled .frontdoor-action-button {
+        color: rgba(16, 6, 159, 0.32);
+      }
+
       .frontdoor-action-card::before {
         border-radius: inherit;
         box-shadow:
@@ -306,15 +310,12 @@ export interface PmConsoleFrontdoorAction {
           </span>
           <span
             class="frontdoor-action-button"
-            [class.has-label]="action.ctaLabel"
             [class.has-badge]="action.badgeLabel"
             aria-hidden="true"
           >
             @if (action.badgeLabel) {
               <span class="frontdoor-action-badge">{{ action.badgeLabel }}</span>
-            } @else if (action.ctaLabel) {
-              <span>{{ action.ctaLabel }}</span>
-            } @else if (!action.disabled) {
+            } @else {
               <span pmConsoleIcon="arrow-right" aria-hidden="true"></span>
             }
           </span>

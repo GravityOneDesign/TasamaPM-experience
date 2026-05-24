@@ -65,6 +65,7 @@ export interface PmConsoleFrontdoorCoverUploadRequest {
           linear-gradient(180deg, rgba(11, 11, 11, 0.05) 0%, rgba(11, 11, 11, 0.76) 100%),
           linear-gradient(90deg, rgba(8, 45, 49, 0.82) 0%, rgba(9, 38, 47, 0.58) 47%, rgba(8, 45, 49, 0.14) 100%);
         content: "";
+        opacity: 0.45;
         z-index: 1;
       }
 

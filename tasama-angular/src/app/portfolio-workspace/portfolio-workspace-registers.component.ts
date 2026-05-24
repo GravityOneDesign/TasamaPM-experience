@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, HostListener } from '@angular/core'
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PmConsoleIconComponent } from '../shared/pm-console-icon.component';
-import { PmConsoleStatusPillComponent } from '../shared/pm-console-status-pill.component';
 import {
   portfolioProgramRows,
   standaloneProjects,
@@ -10,8 +9,10 @@ import {
   benefitsRegisterData,
   ProgramRow,
   Risk,
+  Benefit
 } from './portfolio-workspace.data';
 import { PortfolioWorkspaceRiskRegisterComponent } from './portfolio-workspace-risk-register.component';
+import { PortfolioWorkspaceBenefitsRegisterComponent } from './portfolio-workspace-benefits-register.component';
 
 type SubTab = 'projects' | 'risks' | 'benefits';
 
@@ -22,8 +23,8 @@ type SubTab = 'projects' | 'risks' | 'benefits';
     CommonModule,
     FormsModule,
     PmConsoleIconComponent,
-    PmConsoleStatusPillComponent,
-    PortfolioWorkspaceRiskRegisterComponent
+    PortfolioWorkspaceRiskRegisterComponent,
+    PortfolioWorkspaceBenefitsRegisterComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -320,45 +321,7 @@ type SubTab = 'projects' | 'risks' | 'benefits';
         <!-- BENEFITS REGISTER -->
         @case ('benefits') {
           <div class="tab-content-container animation-slide">
-            <div class="register-toolbar">
-              <div class="toolbar-left">
-                <span class="items-count">3 strategic benefits mapped</span>
-              </div>
-            </div>
-
-            <div class="pm-project-table-scroll">
-              <table class="pm-project-table">
-                <thead>
-                  <tr>
-                    <th style="width: 25%">Strategic Benefit</th>
-                    <th style="width: 30%">Performance Metric</th>
-                    <th style="width: 15%">Baseline</th>
-                    <th style="width: 15%">Target</th>
-                    <th style="width: 15%">Owner</th>
-                    <th style="width: 10%">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (b of benefits; track b.id) {
-                    <tr>
-                      <td><strong>{{ b.benefit }}</strong></td>
-                      <td>{{ b.metric }}</td>
-                      <td class="baseline-col">{{ b.baseline }}</td>
-                      <td class="target-col">{{ b.target }}</td>
-                      <td>
-                        <div class="avatar-cell">
-                          <div class="avatar-circle">{{ getInitials(b.owner) }}</div>
-                          <span class="owner-name">{{ b.owner }}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <span [pmConsoleStatusPill]="b.status" baseClass="dependency-register-pill" [tone]="statusTone(b.status)"></span>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
+            <app-portfolio-workspace-benefits-register [benefits]="benefits" />
           </div>
         }
       }
@@ -964,7 +927,7 @@ export class PortfolioWorkspaceRegistersComponent {
   programs = portfolioProgramRows;
   standaloneList = standaloneProjects;
   riskData: Risk[] = riskRegisterData;
-  benefits = benefitsRegisterData;
+  benefits: Benefit[] = benefitsRegisterData;
 
   @HostListener('document:click')
   onDocumentClick(): void {

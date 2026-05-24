@@ -459,8 +459,100 @@ export const riskRegisterData: Risk[] = [
 ];
 
 
-export const benefitsRegisterData = [
-  { id: 'b-1', benefit: 'Cyber Incident Rate Reduction', metric: 'Reduce monthly government cyber incidents by 45%', baseline: '4.8 incidents/month', target: '2.6 incidents/month', owner: 'Fatima Qahtani', status: 'On-Track' },
-  { id: 'b-2', benefit: 'Improved SOC MTTR', metric: 'Lower Mean Time to Respond to critical threats', baseline: '45 mins average response', target: 'under 5 mins', owner: 'Dr. Khalid Al-Mansoori', status: 'On-Track' },
-  { id: 'b-3', benefit: 'MFA Protection Level', metric: 'Attain 100% MFA enrolment for senior civil servants', baseline: '62% senior enrolment', target: '100% senior enrolment', owner: 'Saeed Al-Mansoori', status: 'Alert' }
+export interface Benefit {
+  id: string;
+  name: string;
+  benefit: string; // for compatibility with performance dashboard
+  level: 'program' | 'project';
+  linkedTo: string;
+  parentProgram?: string; // nested project benefits in grouped view
+  owner: { name: string; initials: string };
+  targetDate: string;
+  kpiMeasure: string;
+  metric: string; // for compatibility with performance dashboard
+  baseline: string; // for compatibility with performance dashboard
+  target: string; // for compatibility with performance dashboard
+  realization: string;
+  status: 'On-Track' | 'Under Review' | 'Alert' | 'Delayed' | 'Completed' | 'on-track' | 'under-review' | 'alert' | 'delayed' | 'completed';
+}
+
+export const benefitsRegisterData: Benefit[] = [
+  {
+    id: 'BEN-01',
+    name: 'Cyber Incident Rate Reduction',
+    benefit: 'Cyber Incident Rate Reduction',
+    level: 'program',
+    linkedTo: 'National Infrastructure Protection',
+    owner: { name: 'Fatima Qahtani', initials: 'FQ' },
+    targetDate: '06/30/2027',
+    kpiMeasure: 'Reduce monthly government cyber incidents by 45%',
+    metric: 'Reduce monthly government cyber incidents by 45%',
+    baseline: '4.8 incidents/month',
+    target: '2.6 incidents/month',
+    realization: '4.8 to 2.6 incidents/mo',
+    status: 'On-Track'
+  },
+  {
+    id: 'BEN-02',
+    name: 'Improved SOC MTTR',
+    benefit: 'Improved SOC MTTR',
+    level: 'project',
+    linkedTo: 'Ministerial SOC Hub Integration',
+    parentProgram: 'National Infrastructure Protection',
+    owner: { name: 'Dr. Khalid Al-Mansoori', initials: 'KM' },
+    targetDate: '08/30/2026',
+    kpiMeasure: 'Lower Mean Time to Respond to critical threats',
+    metric: 'Lower Mean Time to Respond to critical threats',
+    baseline: '45 mins average response',
+    target: 'under 5 mins',
+    realization: '45m to under 5m',
+    status: 'On-Track'
+  },
+  {
+    id: 'BEN-03',
+    name: 'MFA Protection Level',
+    benefit: 'MFA Protection Level',
+    level: 'project',
+    linkedTo: 'Multi-Factor Authentication Rollout',
+    parentProgram: 'Identity & Access Program',
+    owner: { name: 'Saeed Al-Mansoori', initials: 'SA' },
+    targetDate: '07/20/2026',
+    kpiMeasure: 'Attain 100% MFA enrolment for senior civil servants',
+    metric: 'Attain 100% MFA enrolment for senior civil servants',
+    baseline: '62% senior enrolment',
+    target: '100% senior enrolment',
+    realization: '62% to 100% senior',
+    status: 'Alert'
+  },
+  {
+    id: 'BEN-04',
+    name: 'Unified Threat Feed Integration',
+    benefit: 'Unified Threat Feed Integration',
+    level: 'program',
+    linkedTo: 'Cyber Threat Intelligence',
+    owner: { name: 'Amna Al-Hammadi', initials: 'AA' },
+    targetDate: '12/15/2026',
+    kpiMeasure: 'Automated sharing across 45 agencies',
+    metric: 'Automated sharing across 45 agencies',
+    baseline: '12 agencies integrated',
+    target: '45 agencies integrated',
+    realization: '12 to 45 agencies',
+    status: 'Under Review'
+  },
+  {
+    id: 'BEN-05',
+    name: 'Security awareness coverage',
+    benefit: 'Security awareness coverage',
+    level: 'project',
+    linkedTo: 'Standalone Cyber Security Awareness Campaign',
+    owner: { name: 'Mariam Al-Ali', initials: 'MA' },
+    targetDate: '06/30/2026',
+    kpiMeasure: 'Train 10,000+ government employees',
+    metric: 'Train 10,000+ government employees',
+    baseline: '1,200 trained',
+    target: '10,000 trained',
+    realization: '1,200 / 10k staff',
+    status: 'On-Track'
+  }
 ];
+

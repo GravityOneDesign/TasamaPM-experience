@@ -77,7 +77,7 @@ const portfolioDigestSections: readonly PmConsoleDigestSection[] = [
           { text: '74%', emphasis: true },
           { text: ' this month from ' },
           { text: '89%', emphasis: true },
-          { text: ' last month. Follow up with program and project managers who have not yet reported.' },
+          { text: ' last month. Follow up with  managers who have not yet reported.' },
         ],
       },
       {
@@ -200,7 +200,7 @@ function portfolioActionDecor(decor: string): PmConsoleFrontdoorAction['decor'] 
                       projectId="portfolio"
                       projectName="Portfolio Name"
                       projectIcon="folder"
-                      heroImageSrc="./assets/Card-visual.jpg"
+                      heroImageSrc="./assets/Card-visual-2.jpg"
                       stageLabel="Portfolio overview"
                       statusLabel="On Track"
                       statusTone="green"
@@ -347,7 +347,7 @@ export class PortfolioManagerLandingComponent implements AfterViewChecked {
   readonly welcomeSubtitle = [
     "Here's what's happening across your portfolio today."
   ];
-  readonly welcomeIconSrc = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='28' height='28' fill='none' stroke='%2310069f' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M16 8.5C16 6.57 14.21 5 12 5C9.79 5 8 6.57 8 8.5C8 10.43 9.79 12 12 12C14.21 12 16 13.57 16 15.5C16 17.43 14.21 19 12 19C9.79 19 8 17.43 8 15.5'/></svg>";
+  readonly welcomeIconSrc = "./assets/client-logo-mark.svg";
   private iconsHydrated = false;
 
   constructor(

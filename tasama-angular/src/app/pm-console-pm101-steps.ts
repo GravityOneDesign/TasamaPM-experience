@@ -94,7 +94,7 @@ export const portfolioManagerSteps: Pm101Step[] = [
     footerActionId: 'reports',
   },
   {
-    title: 'Access portfolio insights',
+    title: 'Explore portfolio insights',
     body: 'Track delivery health and view performance trends across your portfolio.',
     icon: 'stageGate',
     decor: 'plus',
@@ -104,8 +104,8 @@ export const portfolioManagerSteps: Pm101Step[] = [
     comingSoon: true,
   },
   {
-    title: 'Learn and reference',
-    body: 'Access playbooks, frameworks, and guides to support your portfolio management practice.',
+    title: 'Access Learning',
+    body: 'Explore portfolio management playbooks, frameworks and guidelines to support your practice.',
     icon: 'book',
     decor: 'burst',
     decorAssets: ['./assets/pm101/decor-1.svg'],

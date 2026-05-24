@@ -113,10 +113,11 @@ export interface PortfolioGroup {
           <table class="pm-project-table pm-grouped-risk-table">
             <thead>
               <tr>
-                <th style="width: 36%">Risk ID & Name</th>
-                <th style="width: 14%">Owner</th>
-                <th style="width: 22%">Mitigation</th>
-                <th style="width: 10%">Last Review</th>
+                <th style="width: 22%">Portfolio / Program / Project</th>
+                <th style="width: 24%">Risk ID & Name</th>
+                <th style="width: 12%">Owner</th>
+                <th style="width: 18%">Mitigation</th>
+                <th style="width: 8%">Last Review</th>
                 <th style="width: 8%">Exposure</th>
                 <th style="width: 8%">Status</th>
                 <th style="width: 8%; text-align: center;">Actions</th>
@@ -126,24 +127,30 @@ export interface PortfolioGroup {
               @for (portfolio of computedGroups; track portfolio.key) {
                 <!-- Portfolio Header Row -->
                 <tr class="rr-group-header rr-portfolio-header" (click)="toggleGroup(portfolio.key)">
-                  <td colspan="7">
-                    <div class="group-header-content">
+                  <td class="rr-hierarchy-cell rr-indent-portfolio">
+                    <div class="hierarchy-cell-content">
                       @if (isCollapsed(portfolio.key)) {
                         <span pmConsoleIcon="chevron-right" class="group-chevron"></span>
                       } @else {
                         <span pmConsoleIcon="chevron-down" class="group-chevron"></span>
                       }
-                      <span class="group-badge portfolio-badge">Portfolio</span>
-                      <strong class="group-title">{{ portfolio.label }}</strong>
+                      <div class="hierarchy-name-container">
+                        <span class="group-badge portfolio-badge">Portfolio</span>
+                        <strong class="group-title">{{ portfolio.label }}</strong>
+                      </div>
                       <span class="group-count">{{ getPortfolioCount(portfolio) }}</span>
                     </div>
                   </td>
+                  <td colspan="7"></td>
                 </tr>
 
                 @if (!isCollapsed(portfolio.key)) {
                   <!-- Portfolio Direct Risks -->
                   @for (risk of portfolio.directRisks; track risk.id) {
                     <tr class="rr-risk-row">
+                      <td class="rr-hierarchy-cell rr-indent-risk-portfolio"
+                          [class.rr-trunk-portfolio]="portfolio.programs.length > 0 || portfolio.standaloneProjects.risks.length > 0">
+                      </td>
                       <td class="rr-name-cell">
                         <div class="risk-id-above-name">
                           <span class="risk-id-text">{{ risk.id }}</span>
@@ -188,28 +195,36 @@ export interface PortfolioGroup {
                   }
 
                   <!-- Programs -->
-                  @for (program of portfolio.programs; track program.key) {
+                  @for (program of portfolio.programs; track program.key; let lastProgram = $last) {
                     <tr class="rr-group-header rr-program-header" (click)="toggleGroup(program.key)">
-                      <td colspan="7">
-                        <div class="group-header-content" style="padding-left: 20px;">
+                      <td class="rr-hierarchy-cell rr-indent-program rr-elbow-program"
+                          [class.is-last]="lastProgram && portfolio.standaloneProjects.risks.length === 0">
+                        <div class="hierarchy-cell-content">
                           @if (isCollapsed(program.key)) {
                             <span pmConsoleIcon="chevron-right" class="group-chevron"></span>
                           } @else {
                             <span pmConsoleIcon="chevron-down" class="group-chevron"></span>
                           }
-                          <span class="group-badge program-badge">Program</span>
-                          <strong class="group-title">{{ program.label }}</strong>
+                          <div class="hierarchy-name-container">
+                            <span class="group-badge program-badge">Program</span>
+                            <strong class="group-title">{{ program.label }}</strong>
+                          </div>
                           <span class="group-count">{{ getProgramCount(program) }}</span>
                         </div>
                       </td>
+                      <td colspan="7"></td>
                     </tr>
 
                     @if (!isCollapsed(program.key)) {
                       <!-- Program Direct Risks -->
                       @for (risk of program.directRisks; track risk.id) {
-                        <tr class="rr-risk-row rr-indent-1">
+                        <tr class="rr-risk-row">
+                          <td class="rr-hierarchy-cell rr-indent-risk-program"
+                              [class.rr-trunk-portfolio]="!lastProgram || portfolio.standaloneProjects.risks.length > 0"
+                              [class.rr-trunk-program]="program.projects.length > 0">
+                          </td>
                           <td class="rr-name-cell">
-                            <div class="risk-id-above-name" style="padding-left: 24px;">
+                            <div class="risk-id-above-name">
                               <span class="risk-id-text">{{ risk.id }}</span>
                               <a class="risk-name-link">{{ risk.name }}</a>
                             </div>
@@ -252,27 +267,36 @@ export interface PortfolioGroup {
                       }
 
                       <!-- Projects inside Program -->
-                      @for (project of program.projects; track project.key) {
+                      @for (project of program.projects; track project.key; let lastProject = $last) {
                         <tr class="rr-group-header rr-project-header" (click)="toggleGroup(project.key)">
-                          <td colspan="7">
-                            <div class="group-header-content" style="padding-left: 40px;">
+                          <td class="rr-hierarchy-cell rr-indent-project rr-elbow-project"
+                              [class.is-last]="lastProject"
+                              [class.rr-trunk-portfolio]="!lastProgram || portfolio.standaloneProjects.risks.length > 0">
+                            <div class="hierarchy-cell-content">
                               @if (isCollapsed(project.key)) {
                                 <span pmConsoleIcon="chevron-right" class="group-chevron"></span>
                               } @else {
                                 <span pmConsoleIcon="chevron-down" class="group-chevron"></span>
                               }
-                              <span class="group-badge project-badge">Project</span>
-                              <strong class="group-title">{{ project.label }}</strong>
+                              <div class="hierarchy-name-container">
+                                <span class="group-badge project-badge">Project</span>
+                                <strong class="group-title">{{ project.label }}</strong>
+                              </div>
                               <span class="group-count">{{ project.risks.length }}</span>
                             </div>
                           </td>
+                          <td colspan="7"></td>
                         </tr>
 
                         @if (!isCollapsed(project.key)) {
                           @for (risk of project.risks; track risk.id) {
-                            <tr class="rr-risk-row rr-indent-2">
+                            <tr class="rr-risk-row">
+                              <td class="rr-hierarchy-cell rr-indent-risk-project"
+                                  [class.rr-trunk-portfolio]="!lastProgram || portfolio.standaloneProjects.risks.length > 0"
+                                  [class.rr-trunk-program]="!lastProject">
+                              </td>
                               <td class="rr-name-cell">
-                                <div class="risk-id-above-name" style="padding-left: 48px;">
+                                <div class="risk-id-above-name">
                                   <span class="risk-id-text">{{ risk.id }}</span>
                                   <a class="risk-name-link">{{ risk.name }}</a>
                                 </div>
@@ -321,28 +345,33 @@ export interface PortfolioGroup {
                   <!-- Standalone Projects -->
                   @if (portfolio.standaloneProjects.risks.length > 0) {
                     <tr class="rr-group-header rr-standalone-header" (click)="toggleGroup(portfolio.standaloneProjects.key)">
-                      <td colspan="7">
-                        <div class="group-header-content" style="padding-left: 20px;">
+                      <td class="rr-hierarchy-cell rr-indent-standalone rr-elbow-program is-last">
+                        <div class="hierarchy-cell-content">
                           @if (isCollapsed(portfolio.standaloneProjects.key)) {
                             <span pmConsoleIcon="chevron-right" class="group-chevron"></span>
                           } @else {
                             <span pmConsoleIcon="chevron-down" class="group-chevron"></span>
                           }
-                          <span class="group-badge standalone-badge">Project</span>
-                          <div class="tooltip-container">
-                            <strong class="group-title">Independent Security Assessment</strong>
-                            <span class="tooltip-text">Associated Program: None</span>
+                          <div class="hierarchy-name-container">
+                            <span class="group-badge standalone-badge">Project</span>
+                            <div class="tooltip-container">
+                              <strong class="group-title">Independent Security Assessment</strong>
+                              <span class="tooltip-text">Associated Program: None</span>
+                            </div>
                           </div>
                           <span class="group-count">{{ portfolio.standaloneProjects.risks.length }}</span>
                         </div>
                       </td>
+                      <td colspan="7"></td>
                     </tr>
 
                     @if (!isCollapsed(portfolio.standaloneProjects.key)) {
                       @for (risk of portfolio.standaloneProjects.risks; track risk.id) {
-                        <tr class="rr-risk-row rr-indent-1">
+                        <tr class="rr-risk-row">
+                          <td class="rr-hierarchy-cell rr-indent-risk-standalone">
+                          </td>
                           <td class="rr-name-cell">
-                            <div class="risk-id-above-name" style="padding-left: 24px;">
+                            <div class="risk-id-above-name">
                               <span class="risk-id-text">{{ risk.id }}</span>
                               <a class="risk-name-link">{{ risk.name }}</a>
                             </div>
@@ -954,6 +983,131 @@ export interface PortfolioGroup {
     .flat-list-wrapper ::ng-deep .pm-main-register-table td {
       padding-left: 12px !important;
       padding-right: 12px !important;
+    }
+
+    /* Hierarchy Column & Cells styling */
+    .rr-hierarchy-cell {
+      position: relative;
+      vertical-align: middle !important;
+      height: 64px;
+      padding: 8px 12px 8px 16px !important;
+    }
+
+    .hierarchy-cell-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      height: 100%;
+    }
+
+    .hierarchy-name-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 3px;
+    }
+
+    .hierarchy-name-container .group-badge {
+      margin-right: 0 !important;
+    }
+
+    .hierarchy-name-container .group-title {
+      font-size: 13px;
+      line-height: 1.2;
+    }
+
+    /* Indentations for Hierarchy cells */
+    .rr-indent-portfolio {
+      padding-left: 16px !important;
+    }
+
+    .rr-indent-program,
+    .rr-indent-standalone {
+      padding-left: 40px !important;
+    }
+
+    .rr-indent-project {
+      padding-left: 64px !important;
+    }
+
+    /* Background Trunks (Vertical Lines) */
+    .rr-trunk-portfolio {
+      background-image: linear-gradient(to right, #cbd5e1 1px, transparent 1px) !important;
+      background-position: 24px 0 !important;
+      background-size: 1px 100% !important;
+      background-repeat: no-repeat !important;
+    }
+
+    .rr-trunk-program {
+      background-image: linear-gradient(to right, #cbd5e1 1px, transparent 1px) !important;
+      background-position: 48px 0 !important;
+      background-size: 1px 100% !important;
+      background-repeat: no-repeat !important;
+    }
+
+    .rr-trunk-portfolio.rr-trunk-program {
+      background-image: 
+        linear-gradient(to right, #cbd5e1 1px, transparent 1px),
+        linear-gradient(to right, #cbd5e1 1px, transparent 1px) !important;
+      background-position: 24px 0, 48px 0 !important;
+      background-size: 1px 100%, 1px 100% !important;
+      background-repeat: no-repeat, no-repeat !important;
+    }
+
+    /* Elbow Pseudo-Elements */
+    .rr-elbow-program {
+      position: relative;
+    }
+
+    .rr-elbow-program::before {
+      content: "";
+      position: absolute;
+      left: 24px;
+      top: 0;
+      height: 50%;
+      width: 12px;
+      border-left: 1px solid #cbd5e1;
+      border-bottom: 1px solid #cbd5e1;
+      z-index: 2;
+    }
+
+    .rr-elbow-program:not(.is-last)::after {
+      content: "";
+      position: absolute;
+      left: 24px;
+      top: 50%;
+      bottom: 0;
+      width: 1px;
+      background-color: #cbd5e1;
+      z-index: 2;
+    }
+
+    .rr-elbow-project {
+      position: relative;
+    }
+
+    .rr-elbow-project::before {
+      content: "";
+      position: absolute;
+      left: 48px;
+      top: 0;
+      height: 50%;
+      width: 12px;
+      border-left: 1px solid #cbd5e1;
+      border-bottom: 1px solid #cbd5e1;
+      z-index: 2;
+    }
+
+    .rr-elbow-project:not(.is-last)::after {
+      content: "";
+      position: absolute;
+      left: 48px;
+      top: 50%;
+      bottom: 0;
+      width: 1px;
+      background-color: #cbd5e1;
+      z-index: 2;
     }
   `]
 })

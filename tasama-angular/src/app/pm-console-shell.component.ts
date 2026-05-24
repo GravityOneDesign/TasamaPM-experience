@@ -162,7 +162,6 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   readonly portfolioManagerRailItems: RailItem[] = [
     { id: 'home', icon: 'house', label: 'Home', page: 'workspace', home: true },
     { id: 'register', icon: 'layout-grid', label: 'Register', page: 'workspaces' },
-    { id: 'framework', icon: 'settings', label: 'Framework & Configuration', page: 'framework' },
   ];
 
   readonly bottomRailItems: RailItem[] = [
@@ -202,14 +201,6 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
 
   get primaryRailItems(): readonly RailItem[] {
     const baseItems = this.currentUser === 'fatima' ? [...this.portfolioManagerRailItems] : [...this.projectManagerRailItems];
-    if (this.currentUser === 'fatima') {
-      baseItems.push({
-        id: 'performance',
-        icon: 'activity',
-        label: 'Portfolio Performance',
-        page: 'performance'
-      });
-    }
     return baseItems.map((item) => ({
       ...item,
       label: item.id === 'register' && this.currentUser === 'fatima' ? 'Portfolio Workspace' : item.label,
