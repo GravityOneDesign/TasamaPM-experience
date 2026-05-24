@@ -128,10 +128,11 @@ export interface PortfolioGroup {
                 <tr class="rr-group-header rr-portfolio-header" (click)="toggleGroup(portfolio.key)">
                   <td colspan="7">
                     <div class="group-header-content">
-                      <span
-                        [pmConsoleIcon]="isCollapsed(portfolio.key) ? 'chevron-right' : 'chevron-down'"
-                        class="group-chevron"
-                      ></span>
+                      @if (isCollapsed(portfolio.key)) {
+                        <span pmConsoleIcon="chevron-right" class="group-chevron"></span>
+                      } @else {
+                        <span pmConsoleIcon="chevron-down" class="group-chevron"></span>
+                      }
                       <span class="group-badge portfolio-badge">Portfolio</span>
                       <strong class="group-title">{{ portfolio.label }}</strong>
                       <span class="group-count">{{ getPortfolioCount(portfolio) }}</span>
@@ -199,10 +200,11 @@ export interface PortfolioGroup {
                     <tr class="rr-group-header rr-program-header" (click)="toggleGroup(program.key)">
                       <td colspan="7">
                         <div class="group-header-content" style="padding-left: 20px;">
-                          <span
-                            [pmConsoleIcon]="isCollapsed(program.key) ? 'chevron-right' : 'chevron-down'"
-                            class="group-chevron"
-                          ></span>
+                          @if (isCollapsed(program.key)) {
+                            <span pmConsoleIcon="chevron-right" class="group-chevron"></span>
+                          } @else {
+                            <span pmConsoleIcon="chevron-down" class="group-chevron"></span>
+                          }
                           <span class="group-badge program-badge">Program</span>
                           <strong class="group-title">{{ program.label }}</strong>
                           <span class="group-count">{{ getProgramCount(program) }}</span>
@@ -270,10 +272,11 @@ export interface PortfolioGroup {
                         <tr class="rr-group-header rr-project-header" (click)="toggleGroup(project.key)">
                           <td colspan="7">
                             <div class="group-header-content" style="padding-left: 40px;">
-                              <span
-                                [pmConsoleIcon]="isCollapsed(project.key) ? 'chevron-right' : 'chevron-down'"
-                                class="group-chevron"
-                              ></span>
+                              @if (isCollapsed(project.key)) {
+                                <span pmConsoleIcon="chevron-right" class="group-chevron"></span>
+                              } @else {
+                                <span pmConsoleIcon="chevron-down" class="group-chevron"></span>
+                              }
                               <span class="group-badge project-badge">Project</span>
                               <strong class="group-title">{{ project.label }}</strong>
                               <span class="group-count">{{ project.risks.length }}</span>
@@ -344,12 +347,16 @@ export interface PortfolioGroup {
                     <tr class="rr-group-header rr-standalone-header" (click)="toggleGroup(portfolio.standaloneProjects.key)">
                       <td colspan="7">
                         <div class="group-header-content" style="padding-left: 20px;">
-                          <span
-                            [pmConsoleIcon]="isCollapsed(portfolio.standaloneProjects.key) ? 'chevron-right' : 'chevron-down'"
-                            class="group-chevron"
-                          ></span>
+                          @if (isCollapsed(portfolio.standaloneProjects.key)) {
+                            <span pmConsoleIcon="chevron-right" class="group-chevron"></span>
+                          } @else {
+                            <span pmConsoleIcon="chevron-down" class="group-chevron"></span>
+                          }
                           <span class="group-badge standalone-badge">Project</span>
-                          <strong class="group-title">Other Independent Projects</strong>
+                          <div class="tooltip-container">
+                            <strong class="group-title">Independent Security Assessment</strong>
+                            <span class="tooltip-text">Associated Program: None</span>
+                          </div>
                           <span class="group-count">{{ portfolio.standaloneProjects.risks.length }}</span>
                         </div>
                       </td>
@@ -883,9 +890,15 @@ export interface PortfolioGroup {
       color: #252a34;
     }
 
+    .pm-grouped-risk-table th:last-child {
+      padding-right: 48px !important;
+      text-align: right !important;
+    }
+
     .schedule-table-actions {
-      text-align: center;
+      text-align: right !important;
       overflow: visible;
+      padding-right: 48px !important;
     }
 
     .schedule-table-actions .pm-row-action-trigger {
@@ -911,6 +924,50 @@ export interface PortfolioGroup {
     .flat-list-wrapper {
       width: 100%;
       height: 100%;
+    }
+
+    .tooltip-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .tooltip-text {
+      visibility: hidden;
+      width: 160px;
+      background-color: #1e293b;
+      color: #ffffff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 6px 10px;
+      position: absolute;
+      z-index: 100;
+      bottom: 125%; /* Position above the text */
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: none; /* Instant appearance */
+      font-size: 11px;
+      font-weight: 500;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      pointer-events: none;
+      line-height: 1.4;
+      font-family: inherit;
+    }
+
+    .tooltip-text::after {
+      content: "";
+      position: absolute;
+      top: 100%; /* At the bottom of the tooltip */
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: #1e293b transparent transparent transparent;
+    }
+
+    .tooltip-container:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
     }
 
     .animation-slide {
