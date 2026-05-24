@@ -65,6 +65,17 @@ import { PmConsoleIconComponent } from '../../../../shared/components/ui/icon/ic
         white-space: nowrap;
       }
 
+      .workspace-project-switch-label:empty {
+        display: none;
+      }
+
+      .workspace-project-switch-icon {
+        color: #2f2f2f;
+        flex: 0 0 auto;
+        height: 20px;
+        width: 20px;
+      }
+
       .pm-project-dropdown-trigger .icon {
         color: #657184;
         flex: 0 0 auto;
@@ -153,6 +164,9 @@ import { PmConsoleIconComponent } from '../../../../shared/components/ui/icon/ic
       [attr.data-tour-target]="tourTarget || null"
       (click)="$event.stopPropagation()"
     >
+      @if (leadingIcon) {
+        <span class="workspace-project-switch-icon" [pmConsoleIcon]="leadingIcon" aria-hidden="true"></span>
+      }
       <span class="workspace-project-switch-label">{{ label }}</span>
       <button
         #triggerButton
@@ -205,6 +219,7 @@ export class PmConsoleProjectDropdownComponent implements OnDestroy {
   private static nextId = 0;
 
   @Input() label = 'Viewing';
+  @Input() leadingIcon = '';
   @Input() ariaLabel = 'Select project';
   @Input() options: readonly ProjectOption[] = [];
   @Input() value = 'all';
@@ -393,5 +408,4 @@ export class PmConsoleProjectDropdownComponent implements OnDestroy {
     this.positionFrame = null;
   }
 }
-
 

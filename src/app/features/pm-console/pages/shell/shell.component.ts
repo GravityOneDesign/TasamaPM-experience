@@ -14,7 +14,7 @@ interface RailItem extends PmConsoleSideNavItem {
 }
 
 type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground';
-type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages';
+type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages' | 'quicklinks';
 const ONBOARDING_PM101_PROJECT_ID = 'all';
 const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
 
@@ -78,7 +78,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
 
   readonly topRailItems: RailItem[] = [
     { id: 'home', icon: 'house', label: 'Home', page: 'workspace', home: true },
-    { id: 'register', icon: 'layout-grid', label: 'Register', page: 'workspaces' },
+    { id: 'register', icon: 'layout-grid', label: 'My Workspace', page: 'workspaces' },
     {
       id: 'dashboards',
       icon: 'chart-column',
@@ -97,7 +97,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
 
   selectedProject = 'all';
   selectedPage: ConsolePage = 'workspace';
-  selectedView: WorkspaceView = 'board';
+  selectedView: WorkspaceView = 'calendar';
   frontDoorMode = 'assigned';
   notificationPanelOpen = false;
   pmoAssignmentReady = false;
@@ -143,7 +143,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     this.forgetSideNavExpandedPreference();
     this.selectedProject = this.initialState.projectId || 'all';
     this.selectedPage = (this.initialState.selectedPage as ConsolePage) || 'workspace';
-    this.selectedView = (this.initialState.selectedView as WorkspaceView) || 'board';
+    this.selectedView = (this.initialState.selectedView as WorkspaceView) || 'calendar';
     this.frontDoorMode = this.initialState.frontDoorMode || 'assigned';
     this.guidedTourActive = Boolean(this.initialState.guidedTourActive);
     this.guidedTourExitMode = this.initialState.guidedTourExitMode ?? null;

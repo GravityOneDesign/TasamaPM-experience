@@ -47,6 +47,34 @@ type CalendarPopoverPlacement = 'above' | 'below';
             <span pmConsoleIcon="chevron-right" aria-hidden="true"></span>
           </button>
         </div>
+        @if (showFilterBar) {
+          <div class="calendar-filter-bar" aria-label="Calendar filters">
+            <span class="calendar-filter-label">SHOW</span>
+            <details class="calendar-filter-dropdown">
+              <summary [attr.aria-label]="'Filter calendar by ' + selectedFilterLabel">
+                <span class="calendar-filter-icon" [pmConsoleIcon]="selectedFilterIcon" aria-hidden="true"></span>
+                <span>{{ selectedFilterLabel }}</span>
+                <strong>{{ selectedFilterCount }}</strong>
+                <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
+              </summary>
+              <div class="calendar-filter-menu" role="menu">
+                @for (filter of filters; track filter.id) {
+                  <button
+                    [class.active]="filter.id === selectedFilterId"
+                    type="button"
+                    role="menuitemradio"
+                    [attr.aria-checked]="filter.id === selectedFilterId"
+                    (click)="selectFilter(filter.id, $event)"
+                  >
+                    <span class="calendar-filter-icon" [pmConsoleIcon]="filter.icon" aria-hidden="true"></span>
+                    <span>{{ filter.label }}</span>
+                    <strong>{{ filter.count }}</strong>
+                  </button>
+                }
+              </div>
+            </details>
+          </div>
+        }
       </div>
       <div class="weekdays" aria-hidden="true">
         <span>Mon</span>
@@ -289,6 +317,121 @@ type CalendarPopoverPlacement = 'above' | 'below';
         transform: translateY(-1px);
       }
 
+      .calendar-filter-bar {
+        align-items: center;
+        display: inline-flex;
+        flex: 0 0 auto;
+        gap: 12px;
+        justify-content: flex-end;
+        min-width: 0;
+      }
+
+      .calendar-filter-label {
+        color: #596273;
+        flex: 0 0 auto;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0;
+        line-height: 16px;
+      }
+
+      .calendar-filter-dropdown {
+        flex: 0 0 auto;
+        position: relative;
+      }
+
+      .calendar-filter-dropdown summary {
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid #dfe4ee;
+        border-radius: 999px;
+        color: #404756;
+        cursor: pointer;
+        display: inline-flex;
+        font-size: 12px;
+        font-weight: 500;
+        gap: 8px;
+        height: 36px;
+        justify-content: center;
+        list-style: none;
+        min-width: 154px;
+        padding: 0 12px;
+      }
+
+      .calendar-filter-dropdown summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .calendar-filter-dropdown summary:focus-visible {
+        outline: 2px solid rgba(16, 6, 159, 0.18);
+        outline-offset: 2px;
+      }
+
+      .calendar-filter-dropdown summary > .icon:last-child {
+        color: #8290a4;
+        height: 14px;
+        margin-left: auto;
+        width: 14px;
+      }
+
+      .calendar-filter-icon {
+        color: #10069f;
+        flex: 0 0 auto;
+        height: 16px;
+        width: 16px;
+      }
+
+      .calendar-filter-dropdown strong {
+        align-items: center;
+        background: #edf0f7;
+        border-radius: 999px;
+        color: #6b7484;
+        display: inline-flex;
+        font-size: 10px;
+        font-weight: 600;
+        height: 20px;
+        justify-content: center;
+        min-width: 20px;
+        padding: 0 6px;
+      }
+
+      .calendar-filter-menu {
+        background: #ffffff;
+        border: 1px solid #dfe4ee;
+        border-radius: 10px;
+        box-shadow: 0 18px 36px rgba(25, 33, 61, 0.14);
+        display: grid;
+        gap: 3px;
+        padding: 6px;
+        position: absolute;
+        right: 0;
+        top: calc(100% + 8px);
+        width: 220px;
+        z-index: 60;
+      }
+
+      .calendar-filter-menu button {
+        align-items: center;
+        border-radius: 8px;
+        color: #404756;
+        display: grid;
+        font-size: 12px;
+        font-weight: 500;
+        gap: 8px;
+        grid-template-columns: 18px minmax(0, 1fr) auto;
+        min-height: 34px;
+        padding: 0 8px;
+        text-align: left;
+      }
+
+      .calendar-filter-menu button:hover,
+      .calendar-filter-menu button:focus-visible,
+      .calendar-filter-menu button.active {
+        background: #f5f6ff;
+        color: #10069f;
+        outline: 0;
+      }
+
       .calendar-hover-card {
         background: #ffffff;
         border: 1px solid #dfe4ee;
@@ -528,6 +671,22 @@ type CalendarPopoverPlacement = 'above' | 'below';
       }
 
       @media (max-width: 700px) {
+        .calendar-filter-bar {
+          align-items: stretch;
+          width: 100%;
+        }
+
+        .calendar-filter-dropdown,
+        .calendar-filter-dropdown summary {
+          width: 100%;
+        }
+
+        .calendar-filter-menu {
+          left: 0;
+          right: auto;
+          width: min(260px, 100%);
+        }
+
         .calendar-event.calendar-action-summary {
           justify-content: center;
           max-width: none;
@@ -578,6 +737,7 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
   @Input() cells: PmConsoleCalendarCell[] = [];
   @Input() filters: PmConsoleCalendarFilter[] = [];
   @Input() selectedFilterId = 'all';
+  @Input() showFilterBar = true;
 
   @Output() readonly monthShift = new EventEmitter<number>();
   @Output() readonly filterChange = new EventEmitter<string>();
