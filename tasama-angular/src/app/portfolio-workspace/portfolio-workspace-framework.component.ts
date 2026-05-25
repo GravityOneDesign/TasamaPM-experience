@@ -52,7 +52,7 @@ export interface TaxonomyCard {
     </header>
 
     <!-- Scrollable full-width tab content area -->
-    <main class="portfolio-workspace-body" style="grid-row: 2; overflow-y: auto; background: #ffffff; padding: 24px;">
+    <main class="portfolio-workspace-body" style="grid-row: 2; overflow-y: auto; background: #ffffff; padding: 24px; display: flex; flex-direction: column;">
       
       @if (activeSectionId === 'org-structure') {
         <div class="org-structure-container animation-fade">
@@ -392,9 +392,21 @@ export interface TaxonomyCard {
                       <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
                     </div>
                     <div class="standards-card-body">
-                      <h4>{{ card.title }}</h4>
+                      <h4>
+                        {{ card.title }}
+                        @if (card.items && card.items.length > 0) {
+                          <span class="standards-card-item-count">
+                            <span class="standards-card-item-count-inner">{{ card.items.length }}</span>
+                          </span>
+                        }
+                      </h4>
                       <p>{{ card.description }}</p>
                     </div>
+                    @if (card.items && card.items.length > 0) {
+                      <div class="standards-card-meta">
+                        {{ getCardItemsPreview(card.items) }}
+                      </div>
+                    }
                     <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
                   </button>
                 }
@@ -403,16 +415,34 @@ export interface TaxonomyCard {
           </div>
         </div>
       } @else if (activeSectionId === 'standards') {
-        <div class="standards-container animation-fade">
-          <div class="standards-intro">
-            <h2>Review and customise the standards your programs and projects will follow across this portfolio.</h2>
+        <div class="standards-split-layout animation-fade">
+
+          <!-- Left Sidebar: category nav -->
+          <div class="standards-sidebar" style="padding-top: 48px;">
+            <nav class="standards-category-nav" aria-label="Standards categories">
+              @for (cat of standardsCategories; track cat.id) {
+                <button
+                  type="button"
+                  class="standards-cat-btn"
+                  [class.active]="activeStandardsCategory === cat.id"
+                  (click)="setStandardsCategory(cat.id)"
+                >
+                  <div class="cat-content-left">
+                    <span class="cat-label">{{ cat.label }}</span>
+                    @if (activeStandardsCategory === cat.id) {
+                      <span class="cat-subtitle">{{ getCategoryCount(cat.id) }} items configured</span>
+                    }
+                  </div>
+                  <span class="cat-count">{{ getCategoryCount(cat.id) }}</span>
+                </button>
+              }
+            </nav>
           </div>
 
-          <div class="standards-sections-stack">
-            <!-- Section: Project Setup -->
-            <section class="standards-group">
-              <h3 class="standards-section-heading">Project Setup</h3>
-              <div class="standards-grid">
+          <!-- Right Panel: cards for the selected category -->
+          <div class="standards-cards-panel">
+            @if (activeStandardsCategory === 'project-setup') {
+              <div class="standards-grid animation-fade">
                 @for (card of projectSetupCards; track card.id) {
                   <button type="button" class="standards-card" (click)="openCardDrawer(card, 'Project Setup')">
                     @if (card.needsAttention) {
@@ -422,19 +452,27 @@ export interface TaxonomyCard {
                       <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
                     </div>
                     <div class="standards-card-body">
-                      <h4>{{ card.title }}</h4>
+                      <h4>
+                        {{ card.title }}
+                        @if (card.items && card.items.length > 0) {
+                          <span class="standards-card-item-count">
+                            <span class="standards-card-item-count-inner">{{ card.items.length }}</span>
+                          </span>
+                        }
+                      </h4>
                       <p>{{ card.description }}</p>
                     </div>
+                    @if (card.items && card.items.length > 0) {
+                      <div class="standards-card-meta">
+                        {{ getCardItemsPreview(card.items) }}
+                      </div>
+                    }
                     <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
                   </button>
                 }
               </div>
-            </section>
-
-            <!-- Section: Project Planning -->
-            <section class="standards-group">
-              <h3 class="standards-section-heading">Project Planning</h3>
-              <div class="standards-grid">
+            } @else if (activeStandardsCategory === 'project-planning') {
+              <div class="standards-grid animation-fade">
                 @for (card of projectPlanningCards; track card.id) {
                   <button type="button" class="standards-card" (click)="openCardDrawer(card, 'Project Planning')">
                     @if (card.needsAttention) {
@@ -444,19 +482,27 @@ export interface TaxonomyCard {
                       <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
                     </div>
                     <div class="standards-card-body">
-                      <h4>{{ card.title }}</h4>
+                      <h4>
+                        {{ card.title }}
+                        @if (card.items && card.items.length > 0) {
+                          <span class="standards-card-item-count">
+                            <span class="standards-card-item-count-inner">{{ card.items.length }}</span>
+                          </span>
+                        }
+                      </h4>
                       <p>{{ card.description }}</p>
                     </div>
+                    @if (card.items && card.items.length > 0) {
+                      <div class="standards-card-meta">
+                        {{ getCardItemsPreview(card.items) }}
+                      </div>
+                    }
                     <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
                   </button>
                 }
               </div>
-            </section>
-
-            <!-- Section: Project Closure -->
-            <section class="standards-group">
-              <h3 class="standards-section-heading">Project Closure</h3>
-              <div class="standards-grid">
+            } @else if (activeStandardsCategory === 'project-closure') {
+              <div class="standards-grid animation-fade">
                 @for (card of projectClosureCards; track card.id) {
                   <button type="button" class="standards-card" (click)="openCardDrawer(card, 'Project Closure')">
                     @if (card.needsAttention) {
@@ -466,21 +512,29 @@ export interface TaxonomyCard {
                       <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
                     </div>
                     <div class="standards-card-body">
-                      <h4>{{ card.title }}</h4>
+                      <h4>
+                        {{ card.title }}
+                        @if (card.items && card.items.length > 0) {
+                          <span class="standards-card-item-count">
+                            <span class="standards-card-item-count-inner">{{ card.items.length }}</span>
+                          </span>
+                        }
+                      </h4>
                       <p>{{ card.description }}</p>
                     </div>
+                    @if (card.items && card.items.length > 0) {
+                      <div class="standards-card-meta">
+                        {{ getCardItemsPreview(card.items) }}
+                      </div>
+                    }
                     <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
                   </button>
                 }
               </div>
-            </section>
-
-            <!-- Section: Benefits Configuration -->
-            <section class="standards-group">
-              <h3 class="standards-section-heading">Benefits Configuration</h3>
-              <div class="standards-grid">
+            } @else if (activeStandardsCategory === 'benefits-config') {
+              <div class="standards-grid animation-fade">
                 @for (card of benefitsConfigCards; track card.id) {
-                  <button type="button" class="standards-card" (click)="openCardDrawer(card, 'Benefits Configuration')">
+                  <button type="button" class="standards-card" (click)="openCardDrawer(card, 'Benefits and Config')">
                     @if (card.needsAttention) {
                       <span class="attention-dot" title="Needs attention"></span>
                     }
@@ -488,14 +542,26 @@ export interface TaxonomyCard {
                       <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
                     </div>
                     <div class="standards-card-body">
-                      <h4>{{ card.title }}</h4>
+                      <h4>
+                        {{ card.title }}
+                        @if (card.items && card.items.length > 0) {
+                          <span class="standards-card-item-count">
+                            <span class="standards-card-item-count-inner">{{ card.items.length }}</span>
+                          </span>
+                        }
+                      </h4>
                       <p>{{ card.description }}</p>
                     </div>
+                    @if (card.items && card.items.length > 0) {
+                      <div class="standards-card-meta">
+                        {{ getCardItemsPreview(card.items) }}
+                      </div>
+                    }
                     <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
                   </button>
                 }
               </div>
-            </section>
+            }
           </div>
         </div>
       } @else if (activeSectionId === 'governance') {
@@ -516,9 +582,21 @@ export interface TaxonomyCard {
                       <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
                     </div>
                     <div class="standards-card-body">
-                      <h4>{{ card.title }}</h4>
+                      <h4>
+                        {{ card.title }}
+                        @if (card.items && card.items.length > 0) {
+                          <span class="standards-card-item-count">
+                            <span class="standards-card-item-count-inner">{{ card.items.length }}</span>
+                          </span>
+                        }
+                      </h4>
                       <p>{{ card.description }}</p>
                     </div>
+                    @if (card.items && card.items.length > 0) {
+                      <div class="standards-card-meta">
+                        {{ getCardItemsPreview(card.items) }}
+                      </div>
+                    }
                     <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
                   </button>
                 }
@@ -535,9 +613,21 @@ export interface TaxonomyCard {
                       <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
                     </div>
                     <div class="standards-card-body">
-                      <h4>{{ card.title }}</h4>
+                      <h4>
+                        {{ card.title }}
+                        @if (card.items && card.items.length > 0) {
+                          <span class="standards-card-item-count">
+                            <span class="standards-card-item-count-inner">{{ card.items.length }}</span>
+                          </span>
+                        }
+                      </h4>
                       <p>{{ card.description }}</p>
                     </div>
+                    @if (card.items && card.items.length > 0) {
+                      <div class="standards-card-meta">
+                        {{ getCardItemsPreview(card.items) }}
+                      </div>
+                    }
                     <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
                   </button>
                 }
@@ -554,9 +644,21 @@ export interface TaxonomyCard {
                       <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
                     </div>
                     <div class="standards-card-body">
-                      <h4>{{ card.title }}</h4>
+                      <h4>
+                        {{ card.title }}
+                        @if (card.items && card.items.length > 0) {
+                          <span class="standards-card-item-count">
+                            <span class="standards-card-item-count-inner">{{ card.items.length }}</span>
+                          </span>
+                        }
+                      </h4>
                       <p>{{ card.description }}</p>
                     </div>
+                    @if (card.items && card.items.length > 0) {
+                      <div class="standards-card-meta">
+                        {{ getCardItemsPreview(card.items) }}
+                      </div>
+                    }
                     <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
                   </button>
                 }
@@ -573,9 +675,21 @@ export interface TaxonomyCard {
                       <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
                     </div>
                     <div class="standards-card-body">
-                      <h4>{{ card.title }}</h4>
+                      <h4>
+                        {{ card.title }}
+                        @if (card.items && card.items.length > 0) {
+                          <span class="standards-card-item-count">
+                            <span class="standards-card-item-count-inner">{{ card.items.length }}</span>
+                          </span>
+                        }
+                      </h4>
                       <p>{{ card.description }}</p>
                     </div>
+                    @if (card.items && card.items.length > 0) {
+                      <div class="standards-card-meta">
+                        {{ getCardItemsPreview(card.items) }}
+                      </div>
+                    }
                     <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
                   </button>
                 }
@@ -592,9 +706,21 @@ export interface TaxonomyCard {
                       <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
                     </div>
                     <div class="standards-card-body">
-                      <h4>{{ card.title }}</h4>
+                      <h4>
+                        {{ card.title }}
+                        @if (card.items && card.items.length > 0) {
+                          <span class="standards-card-item-count">
+                            <span class="standards-card-item-count-inner">{{ card.items.length }}</span>
+                          </span>
+                        }
+                      </h4>
                       <p>{{ card.description }}</p>
                     </div>
+                    @if (card.items && card.items.length > 0) {
+                      <div class="standards-card-meta">
+                        {{ getCardItemsPreview(card.items) }}
+                      </div>
+                    }
                     <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
                   </button>
                 }
@@ -623,9 +749,21 @@ export interface TaxonomyCard {
                       <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
                     </div>
                     <div class="standards-card-body">
-                      <h4>{{ card.title }}</h4>
+                      <h4>
+                        {{ card.title }}
+                        @if (card.items && card.items.length > 0) {
+                          <span class="standards-card-item-count">
+                            <span class="standards-card-item-count-inner">{{ card.items.length }}</span>
+                          </span>
+                        }
+                      </h4>
                       <p>{{ card.description }}</p>
                     </div>
+                    @if (card.items && card.items.length > 0) {
+                      <div class="standards-card-meta">
+                        {{ getCardItemsPreview(card.items) }}
+                      </div>
+                    }
                     <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
                   </button>
                 }
@@ -645,9 +783,21 @@ export interface TaxonomyCard {
                       <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
                     </div>
                     <div class="standards-card-body">
-                      <h4>{{ card.title }}</h4>
+                      <h4>
+                        {{ card.title }}
+                        @if (card.items && card.items.length > 0) {
+                          <span class="standards-card-item-count">
+                            <span class="standards-card-item-count-inner">{{ card.items.length }}</span>
+                          </span>
+                        }
+                      </h4>
                       <p>{{ card.description }}</p>
                     </div>
+                    @if (card.items && card.items.length > 0) {
+                      <div class="standards-card-meta">
+                        {{ getCardItemsPreview(card.items) }}
+                      </div>
+                    }
                     <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
                   </button>
                 }
@@ -1650,6 +1800,113 @@ export interface TaxonomyCard {
       color: #202633;
     }
 
+    /* Sidebar + panel split layout for Standards & Taxonomies */
+    .standards-split-layout {
+      display: flex;
+      gap: 24px;
+      width: 100%;
+      min-height: 0;
+      flex: 1;
+      color: #202633;
+    }
+
+    /* Left sidebar nav */
+    .standards-sidebar {
+      display: flex;
+      flex-direction: column;
+      width: 260px;
+      min-width: 220px;
+      flex-shrink: 0;
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      position: relative;
+      z-index: 10;
+      padding: 16px;
+      gap: 12px;
+      margin-top: -24px;
+      margin-left: -24px;
+      margin-bottom: -24px;
+    }
+
+    .standards-category-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .standards-cat-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 14px 16px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 400;
+      color: #475569;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s ease;
+    }
+
+    .standards-cat-btn:hover {
+      background: #f8fafc;
+      color: #0f172a;
+    }
+
+    .standards-cat-btn.active {
+      background: #f5f6ff;
+      color: #10069f;
+      font-weight: 600;
+      border: 1px solid #10069f;
+      align-items: flex-start;
+    }
+
+    .cat-content-left {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .cat-label {
+      font-size: 13.5px;
+    }
+
+    .cat-subtitle {
+      font-size: 11.5px;
+      font-weight: 400;
+      color: #64748b;
+    }
+
+    .cat-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 500;
+      color: #334155;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 3px 10px;
+      margin-top: 2px;
+    }
+
+    .standards-cat-btn.active .cat-count {
+      color: #10069f;
+      background: #eef2ff;
+      border-color: #c7d2fe;
+    }
+
+    /* Right cards panel */
+    .standards-cards-panel {
+      flex: 1;
+      min-width: 0;
+      overflow-y: auto;
+    }
+
     .standards-intro h2 {
       font-size: 18px;
       font-weight: 600;
@@ -1692,7 +1949,7 @@ export interface TaxonomyCard {
 
     .standards-card {
       position: relative;
-      background: linear-gradient(180deg, #ffffff 0%, #f6f8fc 100%);
+      background: #f5f6ff;
       border: 1px solid #dfe4ee;
       border-radius: 16px;
       box-shadow: 0 1px 3px rgba(25, 33, 61, 0.03);
@@ -1703,7 +1960,7 @@ export interface TaxonomyCard {
       text-align: left;
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       width: 100%;
-      height: 146px;
+      height: 160px;
       box-sizing: border-box;
       outline: none;
     }
@@ -1765,6 +2022,39 @@ export interface TaxonomyCard {
       color: #1d2939;
       margin: 0;
       line-height: 1.3;
+      display: flex;
+      align-items: center;
+    }
+
+    .standards-card-item-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid #1d2939;
+      margin-left: 8px;
+    }
+
+    .standards-card-item-count-inner {
+      font-size: 10px;
+      font-weight: 600;
+      color: #1d2939;
+    }
+
+    .standards-card-meta {
+      margin-top: 12px;
+      font-size: 11.5px;
+      color: #475467;
+      line-height: 1.4;
+      display: block;
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding-right: 24px;
+      box-sizing: border-box;
     }
 
     .standards-card-body p {
@@ -2070,6 +2360,31 @@ export class PortfolioWorkspaceFrameworkComponent {
   @Output() readonly back = new EventEmitter<void>();
 
   activeSectionId = 'org-structure';
+
+  // Standards & Taxonomies category sidebar state
+  activeStandardsCategory = 'project-setup';
+
+  readonly standardsCategories = [
+    { id: 'project-setup', label: 'Project Setup' },
+    { id: 'project-planning', label: 'Project Planning' },
+    { id: 'project-closure', label: 'Project Closure' },
+    { id: 'benefits-config', label: 'Benefits and Config' }
+  ];
+
+  setStandardsCategory(id: string): void {
+    this.activeStandardsCategory = id;
+    this.changeDetector.markForCheck();
+  }
+
+  getCategoryCount(id: string): number {
+    switch (id) {
+      case 'project-setup': return this.projectSetupCards.length;
+      case 'project-planning': return this.projectPlanningCards.length;
+      case 'project-closure': return this.projectClosureCards.length;
+      case 'benefits-config': return this.benefitsConfigCards.length;
+      default: return 0;
+    }
+  }
 
   // Standards & Taxonomies Cards Data State
   projectSetupCards: TaxonomyCard[] = [
@@ -2561,6 +2876,12 @@ export class PortfolioWorkspaceFrameworkComponent {
   removeUser(index: number): void {
     this.users = this.users.filter((_, i) => i !== index);
     this.changeDetector.markForCheck();
+  }
+
+  getCardItemsPreview(items: string[]): string {
+    if (!items || items.length === 0) return '';
+    if (items.length <= 3) return items.join(', ');
+    return `${items.slice(0, 3).join(', ')} .. ${items.length - 3} more`;
   }
 
   getInitials(name: string): string {
