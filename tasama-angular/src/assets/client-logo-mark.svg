@@ -1,0 +1,15 @@
+<svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <polygon points="13,0 26,6 26,20 13,26 0,20 0,6" fill="url(#clientGrad)" opacity="0.9"/>
+  <polygon points="13,3 23,8 23,18 13,23 3,18 3,8" fill="#ffffff" opacity="0.3"/>
+  <path d="M13,6 L23,10 L13,14 L13,6" fill="url(#clientGrad2)"/>
+  <defs>
+    <linearGradient id="clientGrad" x1="0" y1="0" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0EA5E9"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+    <linearGradient id="clientGrad2" x1="13" y1="6" x2="23" y2="14" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+  </defs>
+</svg>

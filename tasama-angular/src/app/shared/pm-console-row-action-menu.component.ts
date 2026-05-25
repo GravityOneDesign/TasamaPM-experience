@@ -36,8 +36,6 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
           #popover
           class="pm-row-action-popover"
           role="menu"
-          [style.top.px]="popoverTop"
-          [style.left.px]="popoverLeft"
           (click)="handlePopoverClick($event)"
         >
           <ng-content></ng-content>
@@ -75,7 +73,9 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
         display: grid;
         min-width: 168px;
         padding: 6px;
-        position: fixed;
+        position: absolute;
+        right: 0;
+        top: calc(100% + 6px);
         z-index: 1000;
       }
 

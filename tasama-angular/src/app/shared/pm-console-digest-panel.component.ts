@@ -214,6 +214,7 @@ export interface PmConsoleDigestSection {
         align-self: center;
         display: block;
         min-width: 0;
+        white-space: pre-line;
       }
 
       .digest-panel-item-copy > :not(:first-child)::before {
