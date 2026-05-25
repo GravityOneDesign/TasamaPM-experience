@@ -43,6 +43,9 @@ Avoid hardcoded pages and copied UI blocks.
 - Avoid direct DOM access unless layout measurement or third-party integration truly requires it.
 - Use Angular bindings instead of manual `innerHTML`.
 - Do not introduce new framework dependencies without a clear reason.
+- Keep API access and business workflows in services, not components. Components should bind state, handle user interaction, and delegate data loading or persistence.
+- Use environment files or typed configuration providers for API URLs, feature flags, and deployment-specific values. Do not hardcode environment-specific values in components or shared utilities.
+- Preserve or improve lazy loading for feature areas and routes. Do not eagerly import large feature modules, page shells, or heavy dependencies unless the user flow requires them immediately.
 
 ## Styling And Figma Fidelity
 
@@ -51,6 +54,10 @@ Avoid hardcoded pages and copied UI blocks.
 - Add or extend tokens only when the design requires a reusable value that does not exist.
 - Avoid adding more global CSS to `tasama-angular/src/styles.css` unless extracting existing global styles is out of scope.
 - Prefer component-scoped class systems and reusable style primitives for new components.
+- Do not use inline styles in Angular templates except for narrowly justified dynamic values that cannot be expressed cleanly through classes, CSS custom properties, or bindings.
+- Keep SCSS organized by component responsibility: layout, variants, states, and responsive rules should be readable and grouped clearly.
+- Build responsive behavior into new UI by default, covering mobile, tablet, and desktop breakpoints where the screen can reasonably appear.
+- Prefer reusable atoms, molecules, and organisms over one-off page markup, especially for buttons, filters, cards, tables, panels, drawers, and form controls.
 - Before finalizing meaningful UI work, run the app and visually verify the changed screens where feasible.
 
 ## Refactoring Direction
@@ -71,4 +78,3 @@ Before handing work back:
 - For Angular changes, prefer `npm run build` from `tasama-angular` once build stability is fixed.
 - Mention any verification that could not be completed.
 - Keep unrelated user changes intact.
-

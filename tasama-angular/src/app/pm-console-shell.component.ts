@@ -1,5 +1,7 @@
-import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, inject } from '@angular/core';
 import { PmConsoleContentComponent } from './pm-console-content.component';
+import { PortfolioManagerActionDrawerComponent } from './portfolio-manager-action-drawer.component';
+import { PortfolioManagerActionDrawerService } from './portfolio-manager-action-drawer.service';
 import { PortfolioManagerConsoleComponent } from './portfolio-manager-console.component';
 import { PmConsoleIconService } from './pm-console-icon.service';
 import { ConsolePage, ConsoleUser, PmConsoleMountOptions, ProjectOption } from './pm-console.types';
@@ -22,7 +24,7 @@ const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
 @Component({
   selector: 'app-pm-console-shell',
   standalone: true,
-  imports: [PmConsoleAgentDockComponent, PmConsoleContentComponent, PortfolioManagerConsoleComponent, PmConsoleIconComponent, PmConsoleNotificationsComponent, PmConsoleSideNavComponent, PmConsoleTopBarComponent],
+  imports: [PmConsoleAgentDockComponent, PmConsoleContentComponent, PortfolioManagerActionDrawerComponent, PortfolioManagerConsoleComponent, PmConsoleIconComponent, PmConsoleNotificationsComponent, PmConsoleSideNavComponent, PmConsoleTopBarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="modern-shell" [class.side-nav-expanded]="sideNavExpanded" [class.playground-mode]="selectedPage === 'playground'" [class.wbs-mode]="selectedPage === 'wbs'" [class.project-plan-mode]="selectedPage === 'project-plan'" [class.unassigned-mode]="frontDoorMode === 'unassigned'">
@@ -126,13 +128,22 @@ const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
           (consoleStateChange)="applyContentState($event)"
         />
       }
+      @if (currentUser === 'fatima') {
+        <app-portfolio-manager-action-drawer
+          [item]="activePortfolioActionItem()"
+          (close)="closePortfolioActionDrawer()"
+        ></app-portfolio-manager-action-drawer>
+      }
       <app-pm-console-notifications [open]="notificationPanelOpen" (closePanel)="closeNotifications()" />
       <app-pm-console-agent-dock />
     </div>
   `,
 })
 export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
+  private readonly portfolioActionDrawer = inject(PortfolioManagerActionDrawerService);
+
   @Input() initialState: PmConsoleMountOptions = {};
+  readonly activePortfolioActionItem = this.portfolioActionDrawer.activeItem;
 
   readonly projects: ProjectOption[] = [
     { id: 'all', name: 'All projects' },
@@ -313,6 +324,10 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     if (!this.notificationPanelOpen) return;
     this.notificationPanelOpen = false;
     this.markShellChanged();
+  }
+
+  closePortfolioActionDrawer(): void {
+    this.portfolioActionDrawer.close();
   }
 
   setWorkspaceView(view: WorkspaceView): void {

@@ -20,6 +20,15 @@ import { PmConsolePlanDrawerComponent } from './pm-console-plan-drawer.component
 import { PmConsolePlanEmptyStateComponent } from './pm-console-plan-empty-state.component';
 import { PmConsolePlanTableComponent } from './pm-console-plan-table.component';
 import { PmConsoleReportDrawerComponent } from './pm-console-report-drawer.component';
+import {
+  projectPlanStageDateWindows,
+  stageDefinitions,
+  stageProfiles,
+  type StageDefinition,
+  type StageGateContext,
+  type StageGateStatus,
+  type StageProfile,
+} from './pm-console-stage-gate.data';
 import { PmConsoleMountOptions, ProjectOption } from './pm-console.types';
 import { PmConsoleAiGuideChipComponent, pmConsoleAiGuideFor, type PmConsoleAiGuideCopy } from './shared/pm-console-ai-guide-chip.component';
 import { PmConsoleAgentBannerComponent } from './shared/pm-console-agent-banner.component';
@@ -67,6 +76,8 @@ import {
 } from './shared/pm-console-risk-profile.component';
 import { PmConsoleRiskMatrixComponent, PmConsoleRiskMatrixSelection } from './shared/pm-console-risk-matrix.component';
 import { PmConsoleStatusPillComponent } from './shared/pm-console-status-pill.component';
+import { PmConsoleStatusTrendComponent } from './shared/pm-console-status-trend.component';
+import { PmConsoleStageGateDrawerComponent } from './shared/pm-console-stage-gate-drawer.component';
 import { PmConsoleTableActionComponent } from './shared/pm-console-table-action.component';
 import { PmConsoleToolbarComponent } from './shared/pm-console-toolbar.component';
 import {
@@ -3500,85 +3511,6 @@ const reportCreationDetails: Record<string, ReportCreationDetail> = {
   },
 };
 
-const stageDefinitions = [
-  { id: 'initiation', label: 'Initiation', gate: 'Initiation gate' },
-  { id: 'planning', label: 'Planning', gate: 'Planning gate' },
-  { id: 'execution', label: 'Execution', gate: 'Execution gate' },
-  { id: 'closure', label: 'Closure', gate: 'Closure gate' },
-];
-
-const projectPlanStageDateWindows: Record<string, { start: string; end: string }> = {
-  initiation: { start: '01/05/2026', end: '07/05/2026' },
-  planning: { start: '08/05/2026', end: '12/06/2026' },
-  execution: { start: '15/06/2026', end: '30/11/2026' },
-  closure: { start: '01/12/2026', end: '31/12/2026' },
-};
-
-const stageProfiles = [
-  {
-    project: 'Vision 2030',
-    currentStage: 2,
-    tone: 'green',
-    gateDue: 'Jun 12',
-    gateDone: 3,
-    gateTotal: 5,
-    checkpoint: 'Benefits baseline and status report evidence',
-    checklist: ['Scope narrative updated', 'RAID log reviewed', 'Benefits baseline attached', 'Sponsor sign-off drafted', 'Next-stage owners assigned'],
-  },
-  {
-    project: 'UAE Research Map',
-    currentStage: 0,
-    tone: 'amber',
-    gateDue: 'Jun 12',
-    gateDone: 2,
-    gateTotal: 5,
-    checkpoint: 'Project identity, stakeholder scope, and initiation evidence',
-    checklist: ['Project identity confirmed', 'Stakeholder scope drafted', 'Initial RAID log created', 'Sponsor route identified', 'Planning owners assigned'],
-  },
-  {
-    project: 'NEOM Integration',
-    currentStage: 1,
-    tone: 'amber',
-    gateDue: 'May 24',
-    gateDone: 2,
-    gateTotal: 5,
-    checkpoint: 'Budget response and dependency reset',
-    checklist: ['Commercial risk response added', 'Dependency owner confirmed', 'Integration plan refreshed', 'Finance approval requested', 'Steering note prepared'],
-  },
-  {
-    project: 'Smart City Alpha',
-    currentStage: 2,
-    tone: 'blue',
-    gateDue: 'May 29',
-    gateDone: 4,
-    gateTotal: 5,
-    checkpoint: 'Product evidence and benefits owner response',
-    checklist: ['Pilot evidence uploaded', 'API dependency closed', 'Benefits owner confirmed', 'Acceptance criteria checked', 'Go-forward decision captured'],
-  },
-  {
-    project: 'PMO Capability',
-    currentStage: 1,
-    tone: 'green',
-    gateDue: 'May 15',
-    gateDone: 3,
-    gateTotal: 4,
-    checkpoint: 'Forum pack and rollout plan',
-    checklist: ['Forum pack complete', 'Training audience confirmed', 'Playbook draft linked', 'Rollout risks logged'],
-  },
-];
-
-type StageDefinition = (typeof stageDefinitions)[number];
-type StageProfile = (typeof stageProfiles)[number];
-type StageGateStatus = 'complete' | 'submitted' | 'current' | 'upcoming' | 'revoked';
-
-interface StageGateContext {
-  profile: StageProfile;
-  stage: StageDefinition;
-  stageIndex: number;
-  status: StageGateStatus;
-  checkedCount: number;
-}
-
 interface ProjectPlanStageRow {
   stage: StageDefinition;
   stageIndex: number;
@@ -4085,7 +4017,9 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
     PmConsoleRiskMatrixComponent,
     PmConsoleRiskProfileComponent,
     PmConsoleRowActionMenuComponent,
+    PmConsoleStageGateDrawerComponent,
     PmConsoleStatusPillComponent,
+    PmConsoleStatusTrendComponent,
     PmConsoleTableActionComponent,
     PmConsoleToolbarComponent,
     PmConsoleWorkCalendarComponent,
@@ -4478,7 +4412,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                                     <td class="pm-table-column-cell pm-table-stage-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)"><div class="pm-table-column-frame"><span class="pm-table-stage">{{ project.stage }}</span></div></td>
                                   }
                                   @case ('trend') {
-                                    <td class="pm-table-column-cell pm-table-trend-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)"><div class="pm-table-column-frame"><div class="pm-table-trend" [attr.aria-label]="project.title + ' report status trend'">@for (tone of project.trend; track $index) { <span class="pm-table-trend-item {{ tone }}" role="img" [attr.aria-label]="trendPointLabel(tone, $index)" [attr.title]="trendPointLabel(tone, $index)"><span class="pm-table-trend-dot {{ tone }}" aria-hidden="true"><span [pmConsoleIcon]="trendIcon(tone)"></span></span><small>{{ trendMonthLabel($index) }}</small></span> }</div></div></td>
+                                    <td class="pm-table-column-cell pm-table-trend-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)"><div class="pm-table-column-frame"><app-pm-console-status-trend [tones]="project.trend" [ariaLabel]="project.title + ' report status trend'"></app-pm-console-status-trend></div></td>
                                   }
                                   @case ('manager') {
                                     <td class="pm-table-column-cell pm-table-manager-cell" [class.is-entering]="workspaceTableColumnMotionState(column.id) === 'entering'" [class.is-exiting]="workspaceTableColumnMotionState(column.id) === 'exiting'" [style.--column-open-width]="workspaceTableColumnWidth(column.id)"><div class="pm-table-column-frame"><span class="pm-table-manager"><i>{{ project.managerInitials }}</i>{{ project.manager }}</span></div></td>
@@ -9791,110 +9725,27 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
     }
 
     @if (selectedStageGateContext; as gate) {
-      <div class="stage-drawer-shell" aria-live="polite">
-        <button class="stage-drawer-backdrop" type="button" (click)="closeStageGate()" aria-label="Close stage gate drawer"></button>
-        <aside class="stage-gate-drawer" [attr.aria-label]="gate.profile.project + ' ' + gate.stage.gate + ' submission'">
-          <div class="drawer-head">
-            <button class="drawer-close" type="button" (click)="closeStageGate()" aria-label="Close drawer"><span class="icon" aria-hidden="true"><i data-lucide="chevron-left"></i></span></button>
-            <div>
-              <span class="eyebrow">{{ gate.profile.project }}</span>
-              <h2>{{ gate.stage.gate }}</h2>
-              <p>{{ gate.stage.label }} stage gate submission to PMO</p>
-            </div>
-          </div>
-          <div class="drawer-status-card {{ gate.status }}">
-            <strong>{{ stageStatusLabel(gate.status) }}</strong>
-            <span>{{ gateReadinessText(gate) }} · Due {{ gate.profile.gateDue }}</span>
-          </div>
-          <div class="stage-gate-review-flow" aria-label="Stage gate workflow">
-            <span [class.active]="gate.status === 'current'">Ready</span>
-            <i></i>
-            <span [class.active]="gate.status === 'submitted'">Submitted</span>
-            <i></i>
-            <span [class.active]="gate.status === 'complete'">Approved</span>
-          </div>
-          <form class="stage-gate-form" (submit)="submitStageGate($event, gate)">
-            <div class="stage-gate-drawer-body">
-              <div class="drawer-section stage-checklist-section">
-                <div class="drawer-section-headline">
-                  <span class="drawer-section-title">Checklist</span>
-                  <small>{{ gate.checkedCount }}/{{ gate.profile.gateTotal }} complete</small>
-                </div>
-                <div class="project-stages-panel-progress" aria-hidden="true">
-                  <span [style.width]="stageGateChecklistProgressWidth(gate)"></span>
-                </div>
-                <div class="project-stages-checklist">
-                  @for (item of gate.profile.checklist; track item; let index = $index) {
-                    <label class="stage-checklist-item" [class.checked]="isStageGateChecklistChecked(gate, index)" [class.is-disabled]="!canEditStageGateChecklist(gate.status)">
-                      <input type="checkbox" [checked]="isStageGateChecklistChecked(gate, index)" [disabled]="!canEditStageGateChecklist(gate.status)" (change)="toggleStageGateChecklistItem(gate, index, $any($event.target).checked)" />
-                      <i aria-hidden="true"><span class="icon"><i data-lucide="check"></i></span></i>
-                      <span>{{ item }}</span>
-                    </label>
-                  }
-                </div>
-              </div>
-
-              <div class="drawer-section stage-comment-section">
-                <div class="drawer-section-headline">
-                  <span class="drawer-section-title">Comments</span>
-                  <small>{{ isStageGateCommentAdded(gate) ? 'Added' : 'Required' }}</small>
-                </div>
-                <label class="project-stages-comment-field">
-                  <span>Submission comments</span>
-                  <textarea rows="7" maxlength="1200" [value]="stageGateCommentFor(gate)" [disabled]="!canEditStageGateComments(gate.status)" (input)="updateStageGateComment(gate, $any($event.target).value)" placeholder="Add PMO review notes before submitting" aria-label="Stage gate submission comments"></textarea>
-                </label>
-              </div>
-
-              <div class="drawer-section stage-evidence-section" [class.is-attached]="isStageGateEvidenceAttached(gate)">
-                <div class="drawer-section-headline">
-                  <span class="drawer-section-title">Evidence</span>
-                  <small>{{ stageGateEvidenceEnabled(gate) ? stageGateEvidenceLabel(gate) : 'Not required' }}</small>
-                </div>
-                @if (stageGateEvidenceEnabled(gate)) {
-                  <p>{{ gate.profile.checkpoint }}</p>
-                  <label class="stage-evidence-upload">
-                    <input type="file" multiple (change)="addStageGateAttachments($event, gate)" [disabled]="!canEditStageGateChecklist(gate.status)" />
-                    <span class="icon" aria-hidden="true"><i [attr.data-lucide]="isStageGateEvidenceAttached(gate) ? 'file-check-2' : 'upload-cloud'"></i></span>
-                    <strong>{{ isStageGateEvidenceAttached(gate) ? stageGateEvidenceLabel(gate) : 'Attach proof of work' }}</strong>
-                    <small>{{ isStageGateEvidenceAttached(gate) ? 'Evidence attached for PMO review' : 'Upload artefact, sign-off, or work proof requested by PMO' }}</small>
-                  </label>
-                  @if (stageGateAttachmentsFor(gate).length) {
-                    <div class="attachment-list stage-attachment-list" aria-label="Stage gate evidence attachments">
-                      @for (attachment of stageGateAttachmentsFor(gate); track attachment.id) {
-                        <article class="attachment-list-item">
-                          <span class="attachment-list-icon" aria-hidden="true"><span class="icon"><i data-lucide="paperclip"></i></span></span>
-                          <div>
-                            <strong>{{ attachment.name }}</strong>
-                            <small>{{ attachmentMeta(attachment) }}</small>
-                          </div>
-                          <div class="attachment-list-actions">
-                            @if (attachment.url) {
-                              <a [href]="attachment.url" [attr.download]="attachment.source === 'upload' ? attachment.name : null" [attr.target]="attachment.source === 'link' ? '_blank' : null" rel="noreferrer">{{ attachment.source === 'upload' ? 'Download' : 'Open' }}</a>
-                            } @else {
-                              <span>Archived</span>
-                            }
-                            @if (canEditStageGateChecklist(gate.status)) {
-                              <button type="button" (click)="removeStageGateAttachment(gate, attachment.id)" [attr.aria-label]="'Remove ' + attachment.name">
-                                <span class="icon" aria-hidden="true"><i data-lucide="x"></i></span>
-                              </button>
-                            }
-                          </div>
-                        </article>
-                      }
-                    </div>
-                  }
-                } @else {
-                  <p>PMO has not enabled evidence capture for this gate.</p>
-                }
-              </div>
-
-            </div>
-            <button class="drawer-submit" type="submit" [disabled]="!canSubmitStageGate(gate)">
-              {{ stageGateSubmitLabel(gate.status) }}
-            </button>
-          </form>
-        </aside>
-      </div>
+      <app-pm-console-stage-gate-drawer
+        [project]="gate.profile.project"
+        [gate]="gate.stage.gate"
+        [stageLabel]="gate.stage.label"
+        [status]="gate.status"
+        [checkedCount]="gate.checkedCount"
+        [gateTotal]="gate.profile.gateTotal"
+        [dueLabel]="gate.profile.gateDue"
+        [checkpoint]="gate.profile.checkpoint"
+        [checklist]="gate.profile.checklist"
+        [checklistState]="stageGateChecklistStateFor(gate)"
+        [comment]="stageGateCommentFor(gate)"
+        [attachments]="stageGateAttachmentsFor(gate)"
+        [ariaLabel]="gate.profile.project + ' ' + gate.stage.gate + ' submission'"
+        (close)="closeStageGate()"
+        (submitGate)="submitStageGate($event, gate)"
+        (commentChange)="updateStageGateComment(gate, $event)"
+        (checklistChange)="toggleStageGateChecklistItem(gate, $event.index, $event.checked)"
+        (attachmentsSelected)="addStageGateFiles($event, gate)"
+        (attachmentRemove)="removeStageGateAttachment(gate, $event)"
+      ></app-pm-console-stage-gate-drawer>
     }
 
     @if (selectedStageRevokeContext; as revokeGate) {
@@ -17635,6 +17486,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return index < gate.checkedCount;
   }
 
+  stageGateChecklistStateFor(gate: StageGateContext): boolean[] {
+    return this.stageGateChecklistState[this.stageGateKey(gate.profile.project, gate.stage.id)] || [];
+  }
+
   toggleStageGateChecklistItem(gate: StageGateContext, index: number, checked: boolean): void {
     if (!this.canEditStageGateChecklist(gate.status)) return;
     const key = this.stageGateKey(gate.profile.project, gate.stage.id);
@@ -17669,17 +17524,15 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return this.stageGateAttachmentsFor(gate).length > 0;
   }
 
-  addStageGateAttachments(event: Event, gate: StageGateContext): void {
+  addStageGateFiles(files: readonly File[], gate: StageGateContext): void {
     if (!this.canEditStageGateChecklist(gate.status)) return;
-    const input = event.target;
-    if (!(input instanceof HTMLInputElement) || !input.files?.length) return;
     const key = this.stageGateKey(gate.profile.project, gate.stage.id);
-    const attachments = Array.from(input.files).map((file) => this.createFileAttachment(file, 'stage-gate'));
+    if (!files.length) return;
+    const attachments = files.map((file) => this.createFileAttachment(file, 'stage-gate'));
     this.stageGateAttachments = {
       ...this.stageGateAttachments,
       [key]: [...(this.stageGateAttachments[key] || []), ...attachments],
     };
-    input.value = '';
     this.iconsHydrated = false;
   }
 

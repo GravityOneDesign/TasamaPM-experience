@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { PmConsoleIconService } from './pm-console-icon.service';
 import { portfolioManagerSteps, Pm101Step } from './pm-console-pm101-steps';
 import { iconName } from './pm-console-icon.utils';
-import { PmConsoleMountOptions, ProjectOption } from './pm-console.types';
+import { PmConsoleMountOptions } from './pm-console.types';
 import { PortfolioManagerActionsComponent } from './portfolio-manager-actions.component';
 import {
   PmConsoleDigestPanelComponent,
@@ -16,7 +16,6 @@ import {
 } from './shared/pm-console-frontdoor-overview.component';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 import { PmConsoleModeTabsComponent, type PmConsoleModeTabItem } from './shared/pm-console-mode-tabs.component';
-import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-dropdown.component';
 
 type PortfolioLandingTab = 'overview' | 'manage-work' | 'quicklinks';
 type PortfolioQuickLinkId = 'framework' | 'workspace' | 'registers' | 'reports' | 'performance' | 'actions';
@@ -32,10 +31,6 @@ const portfolioLandingTabs: readonly PmConsoleModeTabItem[] = [
   { id: 'overview', label: 'Overview', icon: 'square-chart-gantt', widthPx: 144 },
   { id: 'manage-work', label: 'Manage My Work', icon: 'network', widthPx: 190 },
   { id: 'quicklinks', label: 'Quick links', icon: 'folder-symlink', widthPx: 158 },
-];
-
-const portfolioOptions: readonly ProjectOption[] = [
-  { id: 'portfolio', name: 'Portfolio Name' },
 ];
 
 const portfolioTrendDots: readonly PmConsoleFrontdoorTrendDot[] = [
@@ -162,7 +157,6 @@ function portfolioActionDecor(decor: string): PmConsoleFrontdoorAction['decor'] 
     PmConsoleFrontdoorOverviewComponent,
     PmConsoleIconComponent,
     PmConsoleModeTabsComponent,
-    PmConsoleProjectDropdownComponent,
     PortfolioManagerActionsComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -173,16 +167,6 @@ function portfolioActionDecor(decor: string): PmConsoleFrontdoorAction['decor'] 
           <div class="left-column">
             <section class="workspace-panel pm101-operational-workspace normal-pm-frontdoor-workspace portfolio-frontdoor-workspace">
               <div class="workspace-shell-head pm101-operational-shell-head pm101-frontdoor-assigned-shell-head normal-pm-frontdoor-shell-head portfolio-frontdoor-shell-head">
-                <div class="workspace-shell-actions">
-                  <app-pm-console-project-dropdown
-                    label=""
-                    leadingIcon="folder"
-                    ariaLabel="Select portfolio"
-                    [options]="portfolioOptions"
-                    [value]="selectedPortfolio"
-                    (valueChange)="setSelectedPortfolio($event)"
-                  ></app-pm-console-project-dropdown>
-                </div>
                 <div class="onboarding-operational-tabs" data-tour-target="workspace-tabs">
                   <app-pm-console-mode-tabs
                     ariaLabel="Portfolio manager workspace view"
@@ -272,8 +256,9 @@ function portfolioActionDecor(decor: string): PmConsoleFrontdoorAction['decor'] 
       min-width: 0;
     }
 
-    .portfolio-frontdoor-body {
+    .portfolio-frontdoor-workspace .portfolio-frontdoor-body {
       min-height: 0;
+      padding: 16px 16px 24px;
     }
 
     .portfolio-quicklinks-view {
@@ -286,6 +271,17 @@ function portfolioActionDecor(decor: string): PmConsoleFrontdoorAction['decor'] 
 
     .portfolio-quicklinks-view .workspace-quick-links-view {
       padding-top: 0;
+    }
+
+    .portfolio-quicklinks-view .selected-project-quick-link-grid {
+      align-items: stretch;
+      grid-auto-rows: minmax(166px, 1fr);
+    }
+
+    .portfolio-quicklinks-view .selected-project-quick-link-card,
+    .portfolio-quicklinks-view .selected-project-quick-link-main {
+      height: 100%;
+      min-height: 0;
     }
 
     app-pm-console-digest-panel ::ng-deep .digest-panel-section-label {
@@ -335,15 +331,13 @@ export class PortfolioManagerLandingComponent implements AfterViewChecked {
   @Output() readonly consoleStateChange = new EventEmitter<Partial<PmConsoleMountOptions>>();
 
   selectedTab: PortfolioLandingTab = 'overview';
-  selectedPortfolio = 'portfolio';
   readonly landingTabs = portfolioLandingTabs;
-  readonly portfolioOptions = portfolioOptions;
   readonly portfolioTrendDots = portfolioTrendDots;
   readonly portfolioDigestSections = portfolioDigestSections;
   readonly frontdoorActions = portfolioFrontdoorActions;
   readonly quickLinks = portfolioQuickLinks;
-  readonly journeyDescriptorTitleText = "Manage your portfolio management journey";
-  readonly journeyDescriptorText = "Start with setting up your framework, then work through each step as your portfolio progresses. Return to any card at any time.";
+  readonly journeyDescriptorTitleText = "Run your portfolio, end to end";
+  readonly journeyDescriptorText = "Navigate every key area of your portfolio, all in one place.";
   readonly welcomeSubtitle = [
     "Here's what's happening across your portfolio today."
   ];
@@ -364,11 +358,6 @@ export class PortfolioManagerLandingComponent implements AfterViewChecked {
   setTab(tabId: string): void {
     if (tabId !== 'overview' && tabId !== 'manage-work' && tabId !== 'quicklinks') return;
     this.selectedTab = tabId;
-    this.refreshIcons();
-  }
-
-  setSelectedPortfolio(portfolioId: string): void {
-    this.selectedPortfolio = portfolioId;
     this.refreshIcons();
   }
 

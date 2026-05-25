@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, HostListener } from '@angular/core'
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PmConsoleIconComponent } from '../shared/pm-console-icon.component';
+import { PmConsoleStatusTrendComponent, type PmConsoleStatusTrendInput } from '../shared/pm-console-status-trend.component';
 import {
   portfolioProgramRows,
   standaloneProjects,
@@ -23,6 +24,7 @@ type SubTab = 'projects' | 'risks' | 'benefits';
     CommonModule,
     FormsModule,
     PmConsoleIconComponent,
+    PmConsoleStatusTrendComponent,
     PortfolioWorkspaceRiskRegisterComponent,
     PortfolioWorkspaceBenefitsRegisterComponent
   ],
@@ -144,12 +146,12 @@ type SubTab = 'projects' | 'risks' | 'benefits';
               <table class="pm-project-table">
                 <thead>
                   <tr>
-                    <th style="width: 30%">Program / Project Name</th>
-                    <th style="width: 18%">Manager</th>
-                    <th style="width: 14%">Status Trend</th>
+                    <th style="width: 28%">Program / Project Name</th>
+                    <th style="width: 16%">Manager</th>
+                    <th style="width: 20%">Status Trend</th>
                     <th style="width: 12%">Start Date</th>
                     <th style="width: 12%">End Date</th>
-                    <th style="width: 14%">Budget Utilised</th>
+                    <th style="width: 12%">Budget Utilised</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -189,19 +191,7 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                         </div>
                       </td>
                       <td>
-                        <div class="trend-circle-wrapper">
-                          @for (trendItem of getThreePeriodTrend(prog.id); track $index) {
-                            <div class="trend-circle" [class]="trendItem">
-                              @if (trendItem === 'check') {
-                                <span [pmConsoleIcon]="'check'"></span>
-                              } @else if (trendItem === 'bell') {
-                                <span [pmConsoleIcon]="'bell'"></span>
-                              } @else {
-                                <span [pmConsoleIcon]="'x'"></span>
-                              }
-                            </div>
-                          }
-                        </div>
+                        <app-pm-console-status-trend [tones]="getThreePeriodTrend(prog.id)" [ariaLabel]="prog.name + ' report status trend'"></app-pm-console-status-trend>
                       </td>
                       <td class="date-col">{{ formatDate(prog.startDate) }}</td>
                       <td class="date-col">{{ formatDate(prog.endDate) }}</td>
@@ -235,19 +225,7 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                             </div>
                           </td>
                           <td>
-                            <div class="trend-circle-wrapper">
-                              @for (trendItem of getThreePeriodTrend(proj.id); track $index) {
-                                <div class="trend-circle" [class]="trendItem">
-                                  @if (trendItem === 'check') {
-                                    <span [pmConsoleIcon]="'check'"></span>
-                                  } @else if (trendItem === 'bell') {
-                                    <span [pmConsoleIcon]="'bell'"></span>
-                                  } @else {
-                                    <span [pmConsoleIcon]="'x'"></span>
-                                  }
-                                </div>
-                              }
-                            </div>
+                            <app-pm-console-status-trend [tones]="getThreePeriodTrend(proj.id)" [ariaLabel]="proj.name + ' report status trend'"></app-pm-console-status-trend>
                           </td>
                           <td class="date-col">{{ formatDate(proj.startDate) }}</td>
                           <td class="date-col">{{ formatDate(proj.endDate) }}</td>
@@ -282,19 +260,7 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                         </div>
                       </td>
                       <td>
-                        <div class="trend-circle-wrapper">
-                          @for (trendItem of getThreePeriodTrend(sa.id); track $index) {
-                            <div class="trend-circle" [class]="trendItem">
-                              @if (trendItem === 'check') {
-                                <span [pmConsoleIcon]="'check'"></span>
-                              } @else if (trendItem === 'bell') {
-                                <span [pmConsoleIcon]="'bell'"></span>
-                              } @else {
-                                <span [pmConsoleIcon]="'x'"></span>
-                              }
-                            </div>
-                          }
-                        </div>
+                        <app-pm-console-status-trend [tones]="getThreePeriodTrend(sa.id)" [ariaLabel]="sa.name + ' report status trend'"></app-pm-console-status-trend>
                       </td>
                       <td class="date-col">{{ formatDate(sa.startDate) }}</td>
                       <td class="date-col">{{ formatDate(sa.endDate) }}</td>
@@ -314,7 +280,12 @@ type SubTab = 'projects' | 'risks' | 'benefits';
         <!-- RISK REGISTER -->
         @case ('risks') {
           <div class="tab-content-container animation-slide">
-            <app-portfolio-workspace-risk-register [risks]="riskData" />
+            <app-portfolio-workspace-risk-register
+              [risks]="riskData"
+              [programs]="programs"
+              [standaloneProjects]="standaloneList"
+              (riskCreate)="addRisk($event)"
+            />
           </div>
         }
 
@@ -656,65 +627,6 @@ type SubTab = 'projects' | 'risks' | 'benefits';
       gap: 10px;
     }
 
-    /* 3-period Trend Circles */
-    .trend-circle-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .trend-circle {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    }
-
-    .trend-circle.check {
-      background: #16a15f;
-    }
-
-    .trend-circle.bell {
-      background: #d97706;
-    }
-
-    .trend-circle.cross {
-      background: #de350b;
-    }
-
-    .trend-circle span {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .trend-circle ::ng-deep .icon {
-      width: 11px !important;
-      height: 11px !important;
-      stroke-width: 3px !important;
-      color: #ffffff !important;
-    }
-
-    .trend-icon {
-      font-size: 14px;
-    }
-
-    .trend-icon.up {
-      color: #16a15f;
-    }
-
-    .trend-icon.stable {
-      color: var(--brand, #007aff);
-    }
-
-    .trend-icon.down {
-      color: #de350b;
-    }
-
     .avatar-cell {
       display: flex;
       align-items: center;
@@ -944,6 +856,10 @@ export class PortfolioWorkspaceRegistersComponent {
     this.showCreateDropdown = false;
   }
 
+  addRisk(risk: Risk): void {
+    this.riskData = [...this.riskData, risk];
+  }
+
   getRowStatusLabel(id: string, defaultStatus: string): string {
     // The first three top-level rows visible are 'prog-1', 'prog-2', 'prog-3'
     if (id === 'prog-1' || id === 'prog-2' || id === 'prog-3') {
@@ -1025,8 +941,8 @@ export class PortfolioWorkspaceRegistersComponent {
     return id.toUpperCase();
   }
 
-  getThreePeriodTrend(id: string): ('check' | 'bell' | 'cross')[] {
-    const trendMap: Record<string, ('check' | 'bell' | 'cross')[]> = {
+  getThreePeriodTrend(id: string): readonly PmConsoleStatusTrendInput[] {
+    const trendMap: Record<string, readonly PmConsoleStatusTrendInput[]> = {
       'prog-1': ['check', 'bell', 'bell'],
       'proj-1-1': ['check', 'check', 'bell'],
       'proj-1-2': ['check', 'check', 'check'],
@@ -1120,14 +1036,6 @@ export class PortfolioWorkspaceRegistersComponent {
     return parts[0].slice(0, 2).toUpperCase();
   }
 
-  trendIcon(trend: 'stable' | 'up' | 'down'): string {
-    switch (trend) {
-      case 'up': return 'trending-up';
-      case 'down': return 'trending-down';
-      default: return 'minus';
-    }
-  }
-
   statusTone(status: string): string {
     switch (status.toLowerCase()) {
       case 'on-track':
@@ -1179,4 +1087,3 @@ export class PortfolioWorkspaceRegistersComponent {
     return name.length > limit ? name.substring(0, limit) + '...' : name;
   }
 }
-
