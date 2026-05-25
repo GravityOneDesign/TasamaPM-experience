@@ -2,6 +2,14 @@
 
 These instructions apply to the whole repository. Read them before making any change.
 
+## Project Bible And Memory
+
+Read `BIBLE.md` together with this file before making project changes. `BIBLE.md` is the living architecture, product-memory, glossary, and handoff blueprint for restarting this project in another AI coding tool or developer environment.
+
+- Update `BIBLE.md` in the same change set whenever a meaningful change affects architecture, persona behavior, navigation, shared components, fixtures/data placement, design rules, terminology, setup, verification, or known project context.
+- Add a short entry to the `BIBLE.md` Memory Log for meaningful changes.
+- If a prompt is only a question or a tiny text/style fix that does not change durable project context, a Bible update may be skipped; when unsure, update it.
+
 ## Product Goal
 
 Tasama should be a structured, optimized, production-ready Angular codebase that matches supplied Figma designs closely while staying easy to extend. Prefer reusable component systems over one-off page markup.
