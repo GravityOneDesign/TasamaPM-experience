@@ -132,6 +132,7 @@ interface CalendarPopoverPosition {
                       class="calendar-event {{ item.tone }}"
                       type="button"
                       [attr.aria-label]="calendarEventLabel(item)"
+                      [attr.title]="item.label"
                       (mouseenter)="queueItemPreview(item, $event)"
                       (mouseleave)="hidePreviewSoon()"
                       (focus)="showItemPreview(item, $event)"
@@ -139,7 +140,7 @@ interface CalendarPopoverPosition {
                       (click)="openAgendaItem(item, $event)"
                     >
                       <span class="calendar-event-dot"></span>
-                      <span class="calendar-event-title">{{ item.label }}</span>
+                      <span class="calendar-event-title">{{ calendarEventTitle(item) }}</span>
                     </button>
                   }
                 }
@@ -240,10 +241,6 @@ interface CalendarPopoverPosition {
       }
 
       .calendar-cell {
-        overflow: visible;
-      }
-
-      .calendar-cell:not(.has-items) {
         overflow: hidden;
       }
 
@@ -261,18 +258,32 @@ interface CalendarPopoverPosition {
         display: grid;
         gap: 3px;
         justify-items: start;
+        max-width: 100%;
         min-width: 0;
+        overflow: hidden;
+        width: 100%;
       }
 
       .calendar-event {
+        box-sizing: border-box;
         cursor: pointer;
         font-size: 10.25px;
         height: 22px;
         margin-top: 0;
         max-width: calc(100% - 2px);
+        min-width: 0;
+        overflow: hidden;
         padding: 0 8px;
         position: relative;
         z-index: 70;
+      }
+
+      .calendar-event-title {
+        display: block;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .calendar-action-summary {
@@ -777,6 +788,10 @@ interface CalendarPopoverPosition {
           text-overflow: clip;
         }
 
+        .calendar-event:not(.calendar-action-summary) .calendar-event-title {
+          display: none;
+        }
+
         .calendar-summary-count {
           display: inline-flex;
         }
@@ -821,6 +836,7 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
 
   readonly maxInlineItems = 2;
   readonly maxSummaryDots = 3;
+  readonly maxInlineLabelLength = 22;
 
   previewItem: PmConsoleCalendarItem | null = null;
   previewCell: PmConsoleCalendarCell | null = null;
@@ -967,6 +983,12 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
 
   calendarEventLabel(item: PmConsoleCalendarItem): string {
     return `${item.label}, ${this.itemTargetLabel(item)}, ${this.dateLabel(item.date)}. Open item.`;
+  }
+
+  calendarEventTitle(item: PmConsoleCalendarItem): string {
+    const label = item.label.trim();
+    if (label.length <= this.maxInlineLabelLength) return label;
+    return `${label.slice(0, this.maxInlineLabelLength).trimEnd()}...`;
   }
 
   cellAgendaLabel(cell: PmConsoleCalendarCell): string {

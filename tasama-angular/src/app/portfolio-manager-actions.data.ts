@@ -39,7 +39,7 @@ export interface PortfolioBoardFilter {
 }
 
 export const portfolioBoardFilters: PortfolioBoardFilter[] = [
-  { id: 'all', label: 'All', icon: 'grid' },
+  { id: 'all', label: 'All types', icon: 'grid' },
   { id: 'report', label: 'Reports', icon: 'plan' },
   { id: 'risk', label: 'Risks', icon: 'risks' },
   { id: 'dependency', label: 'Dependencies', icon: 'dependencies' },
