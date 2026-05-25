@@ -2314,6 +2314,36 @@ export class PortfolioWorkspaceFrameworkComponent {
   newPriorityName = '';
   editingPriorityIndex: number | null = null;
   editingPriorityValue = '';
+  searchQuery = '';
+  activeActionMenuIndex: number | null = null;
+
+  getFilteredPriorities(): string[] {
+    if (!this.selectedCard) return [];
+    const q = this.searchQuery.trim().toLowerCase();
+    if (!q) return this.selectedCard.items;
+    return this.selectedCard.items.filter(item => item.toLowerCase().includes(q));
+  }
+
+  toggleActionMenu(event: Event, index: number): void {
+    event.stopPropagation();
+    this.activeActionMenuIndex = this.activeActionMenuIndex === index ? null : index;
+    this.changeDetector.markForCheck();
+  }
+
+  triggerEditRow(index: number, item: string): void {
+    this.activeActionMenuIndex = null;
+    this.startEditPriority(index, item);
+  }
+
+  triggerDeleteRow(item: string): void {
+    this.activeActionMenuIndex = null;
+    if (this.selectedCard) {
+      const idx = this.selectedCard.items.indexOf(item);
+      if (idx !== -1) {
+        this.deletePriorityItem(idx);
+      }
+    }
+  }
 
   addPriorityItem(): void {
     const val = this.newPriorityName.trim();

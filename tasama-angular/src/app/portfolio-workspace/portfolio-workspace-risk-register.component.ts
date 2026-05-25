@@ -10,6 +10,7 @@ import {
   PmConsoleRegisterTableActionEvent
 } from '../shared/pm-console-register-table.component';
 import { Risk } from './portfolio-workspace.data';
+import { PortfolioWorkspaceRiskVisualComponent } from './portfolio-workspace-risk-visual.component';
 
 export interface ProjectGroup {
   key: string;
@@ -40,7 +41,8 @@ export interface PortfolioGroup {
     FormsModule,
     PmConsoleIconComponent,
     PmConsoleRowActionMenuComponent,
-    PmConsoleRegisterTableComponent
+    PmConsoleRegisterTableComponent,
+    PortfolioWorkspaceRiskVisualComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -63,6 +65,13 @@ export interface PortfolioGroup {
               (click)="viewMode = 'flat'"
             >
               List view
+            </button>
+            <button
+              type="button"
+              [class.active]="viewMode === 'visual'"
+              (click)="viewMode = 'visual'"
+            >
+              Visual Layer
             </button>
           </div>
         </div>
@@ -433,6 +442,13 @@ export interface PortfolioGroup {
             (cellAction)="onCellAction($event)"
           />
         </div>
+      }
+
+      <!-- Visual Layer Mode -->
+      @if (viewMode === 'visual') {
+        <app-portfolio-workspace-risk-visual
+          [groups]="computedGroups"
+        />
       }
     </div>
   `,
@@ -1114,7 +1130,7 @@ export interface PortfolioGroup {
 export class PortfolioWorkspaceRiskRegisterComponent {
   @Input() risks: Risk[] = [];
 
-  viewMode: 'grouped' | 'flat' = 'grouped';
+  viewMode: 'grouped' | 'flat' | 'visual' = 'grouped';
   collapsedGroupIds = new Set<string>();
   searchQuery = '';
   showSearch = false;
