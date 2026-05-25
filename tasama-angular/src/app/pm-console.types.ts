@@ -1,8 +1,5 @@
-export type ConsoleUser = 'muna' | 'fatima';
-
 export interface PmConsoleMountOptions {
   authenticated?: boolean;
-  currentUser?: ConsoleUser;
   projectId?: string;
   selectedPage?: string;
   selectedView?: string;
@@ -14,12 +11,9 @@ export interface PmConsoleMountOptions {
   onboardingProjectSetup?: boolean;
   notificationPanelOpen?: boolean;
   pmoAssignmentReady?: boolean;
-  portfolioWorkspaceTab?: string;
 }
 
 export interface ProjectOption {
   id: string;
   name: string;
 }
-
-export type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground' | 'portfolio-workspace' | 'framework' | 'performance';

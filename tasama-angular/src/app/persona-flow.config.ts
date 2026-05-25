@@ -16,7 +16,6 @@ export const personaFlowOptions: readonly PersonaFlowOption[] = [
     instanceTitle: 'Project Manager Instance',
     entryState: {
       authenticated: true,
-      currentUser: 'muna',
       projectId: 'all',
       selectedPage: 'workspace',
       selectedView: 'pm101',
@@ -44,12 +43,10 @@ export const personaFlowOptions: readonly PersonaFlowOption[] = [
     instanceTitle: 'Portfolio Manager Instance',
     entryState: {
       authenticated: true,
-      currentUser: 'fatima',
       projectId: 'all',
       selectedPage: 'workspace',
       selectedView: 'pm101',
       frontDoorMode: 'assigned',
-      portfolioWorkspaceTab: 'overview',
     },
   },
 ];

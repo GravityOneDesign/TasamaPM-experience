@@ -27,7 +27,7 @@ export interface PmConsoleFrontdoorAction {
       .frontdoor-action-grid {
         display: grid;
         gap: 10px;
-        grid-template-columns: repeat(var(--frontdoor-action-columns, 5), minmax(185px, 1fr));
+        grid-template-columns: repeat(5, minmax(185px, 1fr));
         justify-content: start;
         margin: 0 -18px -24px;
         min-width: 0;
@@ -73,10 +73,6 @@ export interface PmConsoleFrontdoorAction {
       .frontdoor-action-card:disabled {
         cursor: default;
         opacity: 1;
-      }
-
-      .frontdoor-action-card:disabled .frontdoor-action-button {
-        color: rgba(16, 6, 159, 0.32);
       }
 
       .frontdoor-action-card::before {
@@ -272,13 +268,13 @@ export interface PmConsoleFrontdoorAction {
 
       @media (max-width: 1180px) {
         .frontdoor-action-grid {
-          grid-template-columns: repeat(var(--frontdoor-action-columns, 5), minmax(185px, 1fr));
+          grid-template-columns: repeat(5, minmax(185px, 1fr));
         }
       }
 
       @media (max-width: 780px) {
         .frontdoor-action-grid {
-          grid-template-columns: repeat(var(--frontdoor-action-columns, 5), minmax(185px, 1fr));
+          grid-template-columns: repeat(5, minmax(185px, 1fr));
         }
       }
 
@@ -291,7 +287,7 @@ export interface PmConsoleFrontdoorAction {
     `,
   ],
   template: `
-    <section class="frontdoor-action-grid" [class.without-edge-bleed]="!edgeBleed" [style.--frontdoor-action-columns]="columnCount" [attr.aria-label]="ariaLabel">
+    <section class="frontdoor-action-grid" [class.without-edge-bleed]="!edgeBleed" [attr.aria-label]="ariaLabel">
       @for (action of actions; track action.id) {
         <button
           class="frontdoor-action-card decor-{{ action.decor || 'waves' }}"
@@ -332,7 +328,6 @@ export class PmConsoleFrontdoorActionCardsComponent {
   @Input() ariaLabel = 'Project actions';
   @Input() projectName = '';
   @Input() edgeBleed = true;
-  @Input() columnCount = 5;
 
   @Output() readonly actionSelected = new EventEmitter<string>();
 

@@ -683,7 +683,6 @@ export interface TaxonomyCard {
         [description]="'Manage and configure the active guidelines and options for ' + selectedCard.title.toLowerCase() + '.' "
         submitLabel="Add item"
         cancelLabel="Cancel"
-        [hideFooter]="selectedCard.id === 'priority'"
         [panelClass]="selectedCard.id === 'priority' ? 'priority-drawer-view' : ''"
         (close)="closeDrawer()"
         (submitForm)="saveDrawer($event)"

@@ -2,13 +2,18 @@ import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component
 import { CommonModule } from '@angular/common';
 import { PmConsoleWorkCalendarComponent, PmConsoleCalendarCell, PmConsoleCalendarItem, PmConsoleCalendarFilter } from './shared/pm-console-work-calendar.component';
 import { PmConsoleIconService } from './pm-console-icon.service';
-import { iconName } from './pm-console-icon.utils';
+import { iconName } from './portfolio-manager-icon.utils';
 import { portfolioActionItems, portfolioBoardFilters, PortfolioActionItem, PortfolioBoardFilter, PortfolioBoardColumn } from './portfolio-manager-actions.data';
 import { PortfolioManagerActionDrawerService } from './portfolio-manager-action-drawer.service';
 import { portfolioProgramRows, standaloneProjects, type ProgramRow } from './portfolio-workspace/portfolio-workspace.data';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 
 type PortfolioWorkTargetType = 'all' | 'program' | 'project';
+
+type PortfolioCalendarItem = PmConsoleCalendarItem & {
+  id: string;
+  targetType: PortfolioActionItem['targetType'];
+};
 
 interface PortfolioWorkTargetOption {
   id: string;
@@ -577,12 +582,13 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
   }
 
   handleCalendarItemOpen(item: PmConsoleCalendarItem): void {
-    const action = this.actionItems.find((candidate) => candidate.id === item.id)
+    const portfolioItem = item as PortfolioCalendarItem;
+    const action = this.actionItems.find((candidate) => candidate.id === portfolioItem.id)
       || this.actionItems.find((candidate) =>
-        candidate.date === item.date
-        && candidate.label === item.label
-        && candidate.project === item.project
-        && candidate.kind === item.kind
+        candidate.date === portfolioItem.date
+        && candidate.label === portfolioItem.label
+        && candidate.project === portfolioItem.project
+        && candidate.kind === portfolioItem.kind
       );
     if (!action) return;
     this.openActionDrawer(action);
@@ -683,7 +689,7 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
     return this.calendarMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   }
 
-  get visibleMonthItems(): PmConsoleCalendarItem[] {
+  get visibleMonthItems(): PortfolioCalendarItem[] {
     return this.filteredItems
       .filter((item) => this.sameMonth(this.parseDate(item.date), this.calendarMonth))
       .map((item) => ({

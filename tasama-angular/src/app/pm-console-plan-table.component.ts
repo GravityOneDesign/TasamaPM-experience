@@ -13,30 +13,28 @@ import { PmConsoleStatusPillComponent } from './shared/pm-console-status-pill.co
   template: `
     <article class="plan-data-table-card" [ngClass]="panelClass" [class.is-collapsible]="collapsible" [class.is-collapsed]="collapsible && !isOpen">
       <header class="plan-data-table-head">
-        @if (title) {
-          <div class="plan-data-table-title">
-            <span class="plan-data-table-icon" aria-hidden="true">
-              <span [pmConsoleIcon]="iconName"></span>
-            </span>
-            <span class="plan-data-table-copy">
-              @if (eyebrow) {
-                <small class="plan-data-table-eyebrow">{{ eyebrow }}</small>
+        <div class="plan-data-table-title">
+          <span class="plan-data-table-icon" aria-hidden="true">
+            <span [pmConsoleIcon]="iconName"></span>
+          </span>
+          <span class="plan-data-table-copy">
+            @if (eyebrow) {
+              <small class="plan-data-table-eyebrow">{{ eyebrow }}</small>
+            }
+            <span class="plan-data-table-heading-line">
+              <strong>{{ title }}</strong>
+              @if (hasAiGuide) {
+                <app-pm-console-ai-guide-chip
+                  [title]="resolvedAiGuideTitle"
+                  [what]="resolvedAiGuideWhat"
+                  [how]="resolvedAiGuideHow"
+                  [example]="resolvedAiGuideExample"
+                ></app-pm-console-ai-guide-chip>
               }
-              <span class="plan-data-table-heading-line">
-                <strong>{{ title }}</strong>
-                @if (hasAiGuide) {
-                  <app-pm-console-ai-guide-chip
-                    [title]="resolvedAiGuideTitle"
-                    [what]="resolvedAiGuideWhat"
-                    [how]="resolvedAiGuideHow"
-                    [example]="resolvedAiGuideExample"
-                  ></app-pm-console-ai-guide-chip>
-                }
-              </span>
-              <small>{{ description }}</small>
             </span>
-          </div>
-        }
+            <small>{{ description }}</small>
+          </span>
+        </div>
         <div class="plan-data-table-actions">
           @if (countLabel) {
             <span [pmConsoleStatusPill]="countLabel" baseClass="plan-data-table-count"></span>

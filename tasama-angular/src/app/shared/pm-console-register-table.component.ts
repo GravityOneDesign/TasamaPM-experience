@@ -35,7 +35,7 @@ export interface PmConsoleRegisterTableMenuItem {
 }
 
 export interface PmConsoleRegisterTableCell {
-  kind: 'text' | 'primary' | 'status' | 'budget' | 'person' | 'action' | 'iconAction' | 'menu' | 'checkbox' | 'tags' | 'chip-text';
+  kind: 'text' | 'primary' | 'status' | 'budget' | 'person' | 'action' | 'iconAction' | 'menu' | 'checkbox' | 'tags';
   text?: string;
   title?: string;
   subtitle?: string;
@@ -53,8 +53,6 @@ export interface PmConsoleRegisterTableCell {
   muted?: boolean;
   strong?: boolean;
   ariaLabel?: string;
-  chipLabel?: string;
-  chipTone?: 'portfolio' | 'program' | 'project';
 }
 
 export interface PmConsoleRegisterTableRow {
@@ -63,15 +61,6 @@ export interface PmConsoleRegisterTableRow {
   clickable?: boolean;
   selected?: boolean;
   cells: Record<string, PmConsoleRegisterTableCell>;
-}
-
-export interface PmConsoleRegisterTableGroup {
-  id: string;
-  label: string;
-  countLabel?: string;
-  ariaLabel?: string;
-  collapsed?: boolean;
-  rows: PmConsoleRegisterTableRow[];
 }
 
 export interface PmConsoleRegisterTableActionEvent {
@@ -113,69 +102,6 @@ let registerTableInstance = 0;
         grid-template-rows: minmax(0, 1fr);
       }
 
-      .pm-main-register-table-view.has-grouped-by {
-        grid-template-rows: auto auto minmax(0, 1fr);
-      }
-
-      .pm-main-register-table-view.without-toolbar.has-grouped-by {
-        grid-template-rows: auto minmax(0, 1fr);
-      }
-
-      .pm-register-grouped-by {
-        align-items: center;
-        color: #6f7785;
-        display: flex;
-        flex-wrap: wrap;
-        font-size: 13px;
-        font-weight: 500;
-        gap: 10px;
-        min-width: 0;
-      }
-
-      .pm-register-grouped-chip {
-        align-items: center;
-        background: #f1f3f7;
-        border: 1px solid #eef1f5;
-        border-radius: 999px;
-        color: #4f596a;
-        display: inline-flex;
-        font-size: 13px;
-        font-weight: 600;
-        gap: 8px;
-        height: 34px;
-        min-width: 0;
-        padding: 0 12px 0 14px;
-      }
-
-      .pm-register-grouped-chip .icon {
-        color: #9aa2af;
-        height: 14px;
-        width: 14px;
-      }
-
-      .pm-register-group-clear {
-        align-items: center;
-        background: transparent;
-        border: 0;
-        color: #9aa2af;
-        cursor: pointer;
-        display: inline-flex;
-        height: 18px;
-        justify-content: center;
-        padding: 0;
-        width: 18px;
-      }
-
-      .pm-register-group-clear:hover,
-      .pm-register-group-clear:focus-visible {
-        color: #4f596a;
-      }
-
-      .pm-register-group-clear:focus-visible {
-        outline: 2px solid rgba(16, 6, 159, 0.22);
-        outline-offset: 2px;
-      }
-
       .pm-register-toolbar-label {
         align-items: center;
         display: inline-flex;
@@ -199,61 +125,6 @@ let registerTableInstance = 0;
       .pm-main-register-table-row.is-clickable:focus-visible {
         outline: 2px solid rgba(16, 6, 159, 0.22);
         outline-offset: -2px;
-      }
-
-      .pm-register-group-row td {
-        background: #f7f8fa;
-        border-bottom-color: #e3e5e9;
-        padding: 0;
-      }
-
-      .pm-register-group-toggle {
-        align-items: center;
-        background: transparent;
-        border: 0;
-        color: #4f596a;
-        cursor: pointer;
-        display: flex;
-        font: inherit;
-        gap: 10px;
-        min-height: 58px;
-        padding: 0 16px;
-        text-align: left;
-        width: 100%;
-      }
-
-      .pm-register-group-toggle:hover,
-      .pm-register-group-toggle:focus-visible {
-        background: #f2f4f8;
-      }
-
-      .pm-register-group-toggle:focus-visible {
-        outline: 2px solid rgba(16, 6, 159, 0.22);
-        outline-offset: -2px;
-      }
-
-      .pm-register-group-toggle .icon {
-        color: #5f6877;
-        flex: 0 0 auto;
-        height: 18px;
-        width: 18px;
-      }
-
-      .pm-register-group-title {
-        color: #4b5563;
-        font-size: 14px;
-        font-weight: 600;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
-      .pm-register-group-count {
-        color: #8a9099;
-        font-size: 13px;
-        font-weight: 600;
-        margin-left: auto;
-        white-space: nowrap;
       }
 
       .pm-main-register-table .pm-table-column-cell.align-right .pm-table-column-frame {
@@ -309,17 +180,13 @@ let registerTableInstance = 0;
 
       .pm-register-primary-button strong {
         color: #354cb5;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
+        display: block;
         font-size: 13px;
         font-weight: 600;
         line-height: 18px;
-        max-height: 36px;
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: normal;
-        text-align: left;
+        white-space: nowrap;
         width: 100%;
       }
 
@@ -475,30 +342,6 @@ let registerTableInstance = 0;
         white-space: nowrap;
       }
 
-      .pm-table-chip {
-        font-size: 10px;
-        font-weight: 600;
-        padding: 2px 8px;
-        border-radius: 12px;
-        text-transform: capitalize;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        line-height: 1.2;
-      }
-      .pm-table-chip.portfolio {
-        background: rgba(16, 6, 159, 0.06);
-        color: #10069f;
-      }
-      .pm-table-chip.program {
-        background: rgba(0, 122, 255, 0.06);
-        color: #007aff;
-      }
-      .pm-table-chip.project {
-        background: rgba(74, 85, 104, 0.06);
-        color: #4a5568;
-      }
-
       .pm-register-empty-state {
         align-items: center;
         display: grid;
@@ -527,7 +370,7 @@ let registerTableInstance = 0;
     `,
   ],
   template: `
-    <article class="pm-main-register-table-view" [class.without-toolbar]="!showToolbar" [class.has-grouped-by]="hasGroupedByChip">
+    <article class="pm-main-register-table-view" [class.without-toolbar]="!showToolbar">
       @if (showToolbar) {
         <app-pm-console-toolbar [itemLabel]="showItemLabel ? computedItemLabel : ''" [toolbarClass]="toolbarClass">
           <span toolbarLabel class="pm-register-toolbar-label">
@@ -547,7 +390,7 @@ let registerTableInstance = 0;
             <button class="pm-table-tool" type="button"><span pmConsoleIcon="filter" aria-hidden="true"></span><span>Filter</span></button>
           }
           @if (showGroupBy) {
-            <button class="pm-table-tool" type="button" (click)="emitGroupBy($event)"><span pmConsoleIcon="sliders-horizontal" aria-hidden="true"></span><span>Group by</span></button>
+            <button class="pm-table-tool" type="button"><span pmConsoleIcon="sliders-horizontal" aria-hidden="true"></span><span>Group by</span></button>
           }
           @if (showExport) {
             <button class="pm-table-tool" type="button"><span pmConsoleIcon="download" aria-hidden="true"></span><span>Export</span></button>
@@ -584,18 +427,6 @@ let registerTableInstance = 0;
         </app-pm-console-toolbar>
       }
 
-      @if (hasGroupedByChip) {
-        <div class="pm-register-grouped-by" [attr.aria-label]="groupedByLabel + ' ' + groupChipLabel">
-          <span>{{ groupedByLabel }}</span>
-          <span class="pm-register-grouped-chip">
-            <span>{{ groupChipLabel }}</span>
-            <button class="pm-register-group-clear" type="button" [attr.aria-label]="'Remove ' + groupChipLabel + ' grouping'" (click)="clearGrouping($event)">
-              <span pmConsoleIcon="x" aria-hidden="true"></span>
-            </button>
-          </span>
-        </div>
-      }
-
       <div class="pm-project-table-scroll pm-main-register-table-scroll" tabindex="0">
         <table class="pm-project-table pm-register-table pm-main-register-table" [attr.aria-label]="ariaLabel" [style.--register-table-min-width.px]="tableMinWidth()">
           <thead>
@@ -613,7 +444,7 @@ let registerTableInstance = 0;
             </tr>
           </thead>
           <tbody>
-            <ng-template #registerRow let-row>
+            @for (row of visibleRows; track row.id) {
               <tr class="pm-main-register-table-row" [class.is-clickable]="row.clickable !== false" role="button" tabindex="0" [attr.aria-label]="row.ariaLabel || 'Open row'" (click)="openRow(row)" (keydown.enter)="openRowFromKeyboard($event, row)" (keydown.space)="openRowFromKeyboard($event, row)">
                 @if (selectable) {
                   <td class="pm-table-check-cell"><input type="checkbox" [checked]="row.selected" [attr.aria-label]="'Select ' + (row.ariaLabel || 'row')" (click)="$event.stopPropagation()" /></td>
@@ -625,7 +456,7 @@ let registerTableInstance = 0;
                       @if (cell) {
                         @switch (cell.kind) {
                           @case ('primary') {
-                            <button class="pm-register-primary-button" type="button" [attr.aria-label]="cell.ariaLabel || cell.title" [attr.title]="cell.title || cell.text" (click)="openRow(row); $event.stopPropagation()">
+                            <button class="pm-register-primary-button" type="button" [attr.aria-label]="cell.ariaLabel || cell.title" (click)="openRow(row); $event.stopPropagation()">
                               @if (cell.subtitle) {
                                 <span>{{ cell.subtitle }}</span>
                               }
@@ -689,14 +520,6 @@ let registerTableInstance = 0;
                               }
                             </span>
                           }
-                          @case ('chip-text') {
-                            <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; width: 100%;">
-                              @if (cell.chipLabel) {
-                                <span class="pm-table-chip {{ cell.chipTone || '' }}">{{ cell.chipLabel }}</span>
-                              }
-                              <span class="pm-register-cell-text strong" [attr.title]="cell.text" style="white-space: normal; font-size: 13px; font-weight: 600; color: #252a34; line-height: 1.4; display: block; width: 100%;">{{ cell.text }}</span>
-                            </div>
-                          }
                           @default {
                             <span class="pm-register-cell-text" [class.strong]="cell.strong" [class.muted]="cell.muted">{{ cell.text || cell.label }}</span>
                           }
@@ -706,40 +529,7 @@ let registerTableInstance = 0;
                   </td>
                 }
               </tr>
-            </ng-template>
-
-            @if (hasGroups) {
-              @for (group of visibleGroups; track group.id) {
-                <tr class="pm-register-group-row" [class.is-collapsed]="group.collapsed">
-                  <td [attr.colspan]="tableColumnSpan()">
-                    <button class="pm-register-group-toggle" type="button" [attr.aria-expanded]="!group.collapsed" [attr.aria-label]="group.ariaLabel || 'Toggle ' + group.label + ' group'" (click)="toggleGroup(group.id, $event)">
-                      <span [pmConsoleIcon]="group.collapsed ? 'chevron-right' : 'chevron-down'" aria-hidden="true"></span>
-                      <strong class="pm-register-group-title">{{ group.label }}</strong>
-                      <span class="pm-register-group-count">{{ group.countLabel || group.rows.length }}</span>
-                    </button>
-                  </td>
-                </tr>
-                @if (!group.collapsed) {
-                  @for (row of group.rows; track row.id) {
-                    <ng-container [ngTemplateOutlet]="registerRow" [ngTemplateOutletContext]="{ $implicit: row }"></ng-container>
-                  }
-                }
-              } @empty {
-                <tr>
-                  <td [attr.colspan]="tableColumnSpan()">
-                    <div class="pm-register-empty-state">
-                      <strong>{{ emptyTitle }}</strong>
-                      @if (emptyDescription) {
-                        <span>{{ emptyDescription }}</span>
-                      }
-                    </div>
-                  </td>
-                </tr>
-              }
-            } @else {
-              @for (row of visibleRows; track row.id) {
-                <ng-container [ngTemplateOutlet]="registerRow" [ngTemplateOutletContext]="{ $implicit: row }"></ng-container>
-              } @empty {
+            } @empty {
               <tr>
                 <td [attr.colspan]="tableColumnSpan()">
                   <div class="pm-register-empty-state">
@@ -750,7 +540,6 @@ let registerTableInstance = 0;
                   </div>
                 </td>
               </tr>
-              }
             }
           </tbody>
         </table>
@@ -761,13 +550,10 @@ let registerTableInstance = 0;
 export class PmConsoleRegisterTableComponent implements OnChanges, OnDestroy {
   @Input() columns: PmConsoleRegisterTableColumn[] = [];
   @Input() rows: PmConsoleRegisterTableRow[] = [];
-  @Input() rowGroups: PmConsoleRegisterTableGroup[] = [];
   @Input() storageKey = '';
   @Input() ariaLabel = 'Register table';
   @Input() itemName = 'items';
   @Input() itemLabel = '';
-  @Input() groupedByLabel = 'Grouped By';
-  @Input() groupChipLabel = '';
   @Input() selectAllLabel = 'Select all rows';
   @Input() toolbarClass: string | string[] | Set<string> | Record<string, unknown> = 'pm-main-register-toolbar';
   @Input() selectable = true;
@@ -789,9 +575,6 @@ export class PmConsoleRegisterTableComponent implements OnChanges, OnDestroy {
   @Output() rowOpen = new EventEmitter<PmConsoleRegisterTableRow>();
   @Output() cellAction = new EventEmitter<PmConsoleRegisterTableActionEvent>();
   @Output() addItem = new EventEmitter<void>();
-  @Output() groupBy = new EventEmitter<void>();
-  @Output() groupClear = new EventEmitter<void>();
-  @Output() groupToggle = new EventEmitter<string>();
 
   readonly columnPickerId = `pm-register-table-columns-${++registerTableInstance}`;
   visibleColumnIds: string[] = [];
@@ -837,7 +620,7 @@ export class PmConsoleRegisterTableComponent implements OnChanges, OnDestroy {
   }
 
   get computedItemLabel(): string {
-    return this.itemLabel || `Items: ${this.visibleRecordCount}`;
+    return this.itemLabel || `Items: ${this.visibleRows.length}`;
   }
 
   get computedSearchPlaceholder(): string {
@@ -852,32 +635,6 @@ export class PmConsoleRegisterTableComponent implements OnChanges, OnDestroy {
     const query = this.normalizedSearchValue();
     if (!this.showSearch || this.searchVariant !== 'workspace' || !query) return this.rows;
     return this.rows.filter((row) => this.searchableRowValue(row).includes(query));
-  }
-
-  get hasGroups(): boolean {
-    return this.rowGroups.length > 0;
-  }
-
-  get hasGroupedByChip(): boolean {
-    return this.hasGroups && Boolean(this.groupChipLabel);
-  }
-
-  get visibleGroups(): PmConsoleRegisterTableGroup[] {
-    const query = this.normalizedSearchValue();
-    if (!this.showSearch || this.searchVariant !== 'workspace' || !query) return this.rowGroups;
-
-    return this.rowGroups
-      .map((group) => {
-        if (this.searchableGroupValue(group).includes(query)) return group;
-        const rows = group.rows.filter((row) => this.searchableRowValue(row).includes(query));
-        return rows.length ? { ...group, rows, collapsed: false } : null;
-      })
-      .filter((group): group is PmConsoleRegisterTableGroup => Boolean(group));
-  }
-
-  get visibleRecordCount(): number {
-    if (!this.hasGroups) return this.visibleRows.length;
-    return this.visibleGroups.reduce((total, group) => total + group.rows.length, 0);
   }
 
   get visibleColumns(): PmConsoleRegisterTableColumn[] {
@@ -1000,21 +757,6 @@ export class PmConsoleRegisterTableComponent implements OnChanges, OnDestroy {
     this.addItem.emit();
   }
 
-  emitGroupBy(event: Event): void {
-    event.stopPropagation();
-    this.groupBy.emit();
-  }
-
-  clearGrouping(event: Event): void {
-    event.stopPropagation();
-    this.groupClear.emit();
-  }
-
-  toggleGroup(groupId: string, event: Event): void {
-    event.stopPropagation();
-    this.groupToggle.emit(groupId);
-  }
-
   private syncColumnsFromInputs(): void {
     const visible = this.loadColumns();
     this.visibleColumnIds = visible;
@@ -1078,10 +820,6 @@ export class PmConsoleRegisterTableComponent implements OnChanges, OnDestroy {
       );
     }
     return this.normalizeSearchValue(values.join(' '));
-  }
-
-  private searchableGroupValue(group: PmConsoleRegisterTableGroup): string {
-    return this.normalizeSearchValue([group.id, group.label, group.countLabel || '', group.ariaLabel || ''].join(' '));
   }
 
   private normalizeSearchValue(value: string): string {

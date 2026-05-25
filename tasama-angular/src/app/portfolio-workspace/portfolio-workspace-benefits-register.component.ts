@@ -792,6 +792,10 @@ export class PortfolioWorkspaceBenefitsRegisterComponent {
     }
   }
 
+  levelLabel(level: Benefit['level']): string {
+    return level.charAt(0).toUpperCase() + level.slice(1);
+  }
+
   get computedGroups(): ProgramGroup[] {
     const query = this.searchQuery.trim().toLowerCase();
     const filtered = this.benefits.filter(b => {
@@ -928,10 +932,9 @@ export class PortfolioWorkspaceBenefitsRegisterComponent {
           ariaLabel: `View benefit ${b.id}: ${b.name}`
         },
         linkedTo: {
-          kind: 'chip-text',
-          chipLabel: b.level,
-          chipTone: b.level,
-          text: b.linkedTo
+          kind: 'text',
+          text: `${this.levelLabel(b.level)}: ${b.linkedTo}`,
+          strong: true,
         },
         owner: {
           kind: 'person',

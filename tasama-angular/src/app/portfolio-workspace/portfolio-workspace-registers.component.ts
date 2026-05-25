@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, HostListener } from '@angular/core'
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PmConsoleIconComponent } from '../shared/pm-console-icon.component';
-import { PmConsoleStatusTrendComponent, type PmConsoleStatusTrendInput } from '../shared/pm-console-status-trend.component';
+import { PortfolioManagerStatusTrendComponent, type PortfolioManagerStatusTrendInput } from '../portfolio-manager-status-trend.component';
 import {
   portfolioProgramRows,
   standaloneProjects,
@@ -24,7 +24,7 @@ type SubTab = 'projects' | 'risks' | 'benefits';
     CommonModule,
     FormsModule,
     PmConsoleIconComponent,
-    PmConsoleStatusTrendComponent,
+    PortfolioManagerStatusTrendComponent,
     PortfolioWorkspaceRiskRegisterComponent,
     PortfolioWorkspaceBenefitsRegisterComponent
   ],
@@ -191,7 +191,7 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                         </div>
                       </td>
                       <td>
-                        <app-pm-console-status-trend [tones]="getThreePeriodTrend(prog.id)" [ariaLabel]="prog.name + ' report status trend'"></app-pm-console-status-trend>
+                        <app-portfolio-manager-status-trend [tones]="getThreePeriodTrend(prog.id)" [ariaLabel]="prog.name + ' report status trend'"></app-portfolio-manager-status-trend>
                       </td>
                       <td class="date-col">{{ formatDate(prog.startDate) }}</td>
                       <td class="date-col">{{ formatDate(prog.endDate) }}</td>
@@ -225,7 +225,7 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                             </div>
                           </td>
                           <td>
-                            <app-pm-console-status-trend [tones]="getThreePeriodTrend(proj.id)" [ariaLabel]="proj.name + ' report status trend'"></app-pm-console-status-trend>
+                            <app-portfolio-manager-status-trend [tones]="getThreePeriodTrend(proj.id)" [ariaLabel]="proj.name + ' report status trend'"></app-portfolio-manager-status-trend>
                           </td>
                           <td class="date-col">{{ formatDate(proj.startDate) }}</td>
                           <td class="date-col">{{ formatDate(proj.endDate) }}</td>
@@ -260,7 +260,7 @@ type SubTab = 'projects' | 'risks' | 'benefits';
                         </div>
                       </td>
                       <td>
-                        <app-pm-console-status-trend [tones]="getThreePeriodTrend(sa.id)" [ariaLabel]="sa.name + ' report status trend'"></app-pm-console-status-trend>
+                        <app-portfolio-manager-status-trend [tones]="getThreePeriodTrend(sa.id)" [ariaLabel]="sa.name + ' report status trend'"></app-portfolio-manager-status-trend>
                       </td>
                       <td class="date-col">{{ formatDate(sa.startDate) }}</td>
                       <td class="date-col">{{ formatDate(sa.endDate) }}</td>
@@ -941,8 +941,8 @@ export class PortfolioWorkspaceRegistersComponent {
     return id.toUpperCase();
   }
 
-  getThreePeriodTrend(id: string): readonly PmConsoleStatusTrendInput[] {
-    const trendMap: Record<string, readonly PmConsoleStatusTrendInput[]> = {
+  getThreePeriodTrend(id: string): readonly PortfolioManagerStatusTrendInput[] {
+    const trendMap: Record<string, readonly PortfolioManagerStatusTrendInput[]> = {
       'prog-1': ['check', 'bell', 'bell'],
       'proj-1-1': ['check', 'check', 'bell'],
       'proj-1-2': ['check', 'check', 'check'],

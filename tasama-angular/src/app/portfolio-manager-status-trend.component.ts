@@ -1,14 +1,14 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PmConsoleIconComponent } from './pm-console-icon.component';
+import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 
-export type PmConsoleStatusTrendTone = 'green' | 'amber' | 'red' | 'blue' | 'neutral';
-export type PmConsoleStatusTrendInput = string;
+export type PortfolioManagerStatusTrendTone = 'green' | 'amber' | 'red' | 'blue' | 'neutral';
+export type PortfolioManagerStatusTrendInput = string;
 
 const DEFAULT_TREND_PERIODS = ['Mar', 'Apr', 'May'] as const;
 
 @Component({
-  selector: 'app-pm-console-status-trend',
+  selector: 'app-portfolio-manager-status-trend',
   standalone: true,
   imports: [CommonModule, PmConsoleIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -144,13 +144,13 @@ const DEFAULT_TREND_PERIODS = ['Mar', 'Apr', 'May'] as const;
     </div>
   `,
 })
-export class PmConsoleStatusTrendComponent {
-  @Input() tones: readonly PmConsoleStatusTrendInput[] = [];
+export class PortfolioManagerStatusTrendComponent {
+  @Input() tones: readonly PortfolioManagerStatusTrendInput[] = [];
   @Input() periodLabels: readonly string[] = DEFAULT_TREND_PERIODS;
   @Input() ariaLabel = 'Report status trend';
 
-  normalizedTone(tone: PmConsoleStatusTrendInput): PmConsoleStatusTrendTone {
-    const tones: Record<string, PmConsoleStatusTrendTone> = {
+  normalizedTone(tone: PortfolioManagerStatusTrendInput): PortfolioManagerStatusTrendTone {
+    const tones: Record<string, PortfolioManagerStatusTrendTone> = {
       green: 'green',
       amber: 'amber',
       red: 'red',
@@ -164,8 +164,8 @@ export class PmConsoleStatusTrendComponent {
     return tones[tone] || 'neutral';
   }
 
-  trendIcon(tone: PmConsoleStatusTrendInput): string {
-    const icons: Record<PmConsoleStatusTrendTone, string> = {
+  trendIcon(tone: PortfolioManagerStatusTrendInput): string {
+    const icons: Record<PortfolioManagerStatusTrendTone, string> = {
       green: 'circle-check',
       amber: 'triangle-alert',
       red: 'circle-x',
@@ -180,12 +180,12 @@ export class PmConsoleStatusTrendComponent {
     return this.periodLabels[index] || `M${index + 1}`;
   }
 
-  trendPointLabel(tone: PmConsoleStatusTrendInput, index: number): string {
+  trendPointLabel(tone: PortfolioManagerStatusTrendInput, index: number): string {
     return `${this.trendPeriodLabel(index)}: ${this.trendLabel(tone)}`;
   }
 
-  private trendLabel(tone: PmConsoleStatusTrendInput): string {
-    const labels: Record<PmConsoleStatusTrendTone, string> = {
+  private trendLabel(tone: PortfolioManagerStatusTrendInput): string {
+    const labels: Record<PortfolioManagerStatusTrendTone, string> = {
       green: 'On track',
       amber: 'Alert',
       red: 'Off track',

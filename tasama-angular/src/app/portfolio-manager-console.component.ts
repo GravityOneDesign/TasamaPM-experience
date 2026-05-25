@@ -4,9 +4,8 @@ import { PortfolioWorkspaceComponent } from './portfolio-workspace/portfolio-wor
 import { PortfolioManagerLandingComponent } from './portfolio-manager-landing.component';
 import { PortfolioWorkspaceFrameworkComponent } from './portfolio-workspace/portfolio-workspace-framework.component';
 import { PortfolioWorkspacePerformanceComponent } from './portfolio-workspace/portfolio-workspace-performance.component';
-import { ConsolePage, PmConsoleMountOptions, ProjectOption } from './pm-console.types';
-
-type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages' | 'quicklinks';
+import { ProjectOption } from './pm-console.types';
+import { PortfolioConsolePage, PortfolioManagerMountOptions, PortfolioWorkspaceView } from './portfolio-manager.types';
 
 @Component({
   selector: 'app-portfolio-manager-console',
@@ -104,8 +103,8 @@ type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages' | 'quicklinks';
 export class PortfolioManagerConsoleComponent {
   @Input() projectOptions: readonly ProjectOption[] = [];
   @Input() selectedProject = 'all';
-  @Input() selectedPage: ConsolePage = 'workspace';
-  @Input() selectedView: WorkspaceView = 'board';
+  @Input() selectedPage: PortfolioConsolePage = 'workspace';
+  @Input() selectedView: PortfolioWorkspaceView = 'board';
   @Input() frontDoorMode = 'assigned';
   @Input() pmoAssignmentReady = false;
   @Input() guidedTourActive = false;
@@ -114,5 +113,5 @@ export class PortfolioManagerConsoleComponent {
   @Input() onboardingPm101Locked = false;
   @Input() onboardingProjectSetup = false;
   @Input() portfolioWorkspaceTab: any = 'overview';
-  @Output() readonly consoleStateChange = new EventEmitter<Partial<PmConsoleMountOptions>>();
+  @Output() readonly consoleStateChange = new EventEmitter<Partial<PortfolioManagerMountOptions>>();
 }

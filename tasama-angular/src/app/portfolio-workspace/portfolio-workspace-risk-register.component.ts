@@ -6,7 +6,6 @@ import {
   PmConsoleRegisterTableComponent,
   type PmConsoleRegisterTableCell,
   type PmConsoleRegisterTableColumn,
-  type PmConsoleRegisterTableGroup,
   type PmConsoleRegisterTableRow,
 } from '../shared/pm-console-register-table.component';
 import { ProgramRow, Risk, type RiskExposure, type RiskLevel, type RiskStatus } from './portfolio-workspace.data';
@@ -108,16 +107,13 @@ const riskTableColumns: PmConsoleRegisterTableColumn[] = [
         <app-pm-console-register-table
           [columns]="riskTableColumns"
           [rows]="activeRiskTableRows"
-          [rowGroups]="activeRiskTableGroups"
           [storageKey]="activeStorageKey"
           [ariaLabel]="activeAriaLabel"
           [itemName]="activeRiskLevelOption.itemName"
           [showItemLabel]="false"
-          groupedByLabel="Grouped By"
-          [groupChipLabel]="activeGroupChipLabel"
           [selectable]="false"
           searchVariant="workspace"
-          [showGroupBy]="activeRiskLevelFilter !== 'portfolio'"
+          [showGroupBy]="false"
           [searchPlaceholder]="activeSearchPlaceholder"
           [searchAriaLabel]="activeSearchAriaLabel"
           selectAllLabel="Select all risks"
@@ -127,9 +123,6 @@ const riskTableColumns: PmConsoleRegisterTableColumn[] = [
           [emptyTitle]="activeRiskLevelOption.emptyTitle"
           [emptyDescription]="activeRiskLevelOption.emptyDescription"
           (addItem)="openAddRiskDrawer()"
-          (groupBy)="enableRiskGrouping()"
-          (groupClear)="clearRiskGrouping()"
-          (groupToggle)="toggleRiskGroup($event)"
         >
           <span registerTableToolbarLabel class="risk-filter-tabs" role="tablist" aria-label="Risk level tabs">
             @for (option of riskLevelFilterOptions; track option.id) {
@@ -493,7 +486,14 @@ export class PortfolioWorkspaceRiskRegisterComponent {
     return this.riskTableRowsFor(this.activeRisks);
   }
 
-  get activeRiskTableGroups(): PmConsoleRegisterTableGroup[] {
+  get activeRiskTableGroups(): Array<{
+    id: string;
+    label: string;
+    countLabel: string;
+    ariaLabel: string;
+    collapsed: boolean;
+    rows: PmConsoleRegisterTableRow[];
+  }> {
     if (!this.riskGroupingEnabled || this.activeRiskLevelFilter === 'portfolio') return [];
 
     const groupedRisks = new Map<string, { label: string; risks: Risk[] }>();
@@ -649,10 +649,9 @@ export class PortfolioWorkspaceRiskRegisterComponent {
         ariaLabel: `View ${risk.id}: ${risk.name}`,
       },
       linkedTo: {
-        kind: 'chip-text',
-        chipLabel: this.riskLevelLabel(risk.level),
-        chipTone: risk.level,
-        text: risk.linkedTo,
+        kind: 'text',
+        text: `${this.riskLevelLabel(risk.level)}: ${risk.linkedTo}`,
+        strong: true,
       },
       parentContext: {
         kind: 'text',

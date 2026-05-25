@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import type { StageGateStatus } from '../pm-console-stage-gate.data';
-import { PmConsoleIconComponent } from './pm-console-icon.component';
+import type { StageGateStatus } from './portfolio-manager-stage-gate.data';
+import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 
 export interface StageGateAttachment {
   id: string;
@@ -18,7 +18,7 @@ export interface StageGateChecklistChange {
 }
 
 @Component({
-  selector: 'app-pm-console-stage-gate-drawer',
+  selector: 'app-portfolio-manager-stage-gate-drawer',
   standalone: true,
   imports: [CommonModule, PmConsoleIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -147,7 +147,7 @@ export interface StageGateChecklistChange {
     </div>
   `,
 })
-export class PmConsoleStageGateDrawerComponent {
+export class PortfolioManagerStageGateDrawerComponent {
   @Input() project = '';
   @Input() gate = '';
   @Input() stageLabel = '';

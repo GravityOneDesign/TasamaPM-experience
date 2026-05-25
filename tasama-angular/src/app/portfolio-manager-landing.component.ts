@@ -1,19 +1,19 @@
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PmConsoleIconService } from './pm-console-icon.service';
-import { portfolioManagerSteps, Pm101Step } from './pm-console-pm101-steps';
-import { iconName } from './pm-console-icon.utils';
-import { PmConsoleMountOptions } from './pm-console.types';
+import { portfolioManagerSteps, Pm101Step } from './portfolio-manager-pm101-steps';
+import { iconName } from './portfolio-manager-icon.utils';
+import {
+  PortfolioManagerFrontdoorOverviewComponent,
+  type PortfolioManagerFrontdoorAction,
+  type PortfolioManagerFrontdoorTrendDot,
+} from './portfolio-manager-frontdoor-overview.component';
 import { PortfolioManagerActionsComponent } from './portfolio-manager-actions.component';
+import { PortfolioManagerMountOptions } from './portfolio-manager.types';
 import {
   PmConsoleDigestPanelComponent,
   type PmConsoleDigestSection,
 } from './shared/pm-console-digest-panel.component';
-import {
-  PmConsoleFrontdoorOverviewComponent,
-  type PmConsoleFrontdoorAction,
-  type PmConsoleFrontdoorTrendDot,
-} from './shared/pm-console-frontdoor-overview.component';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 import { PmConsoleModeTabsComponent, type PmConsoleModeTabItem } from './shared/pm-console-mode-tabs.component';
 
@@ -33,7 +33,7 @@ const portfolioLandingTabs: readonly PmConsoleModeTabItem[] = [
   { id: 'quicklinks', label: 'Quick links', icon: 'folder-symlink', widthPx: 158 },
 ];
 
-const portfolioTrendDots: readonly PmConsoleFrontdoorTrendDot[] = [
+const portfolioTrendDots: readonly PortfolioManagerFrontdoorTrendDot[] = [
   { tone: 'green', label: 'On track' },
   { tone: 'green', label: 'On track' },
   { tone: 'amber', label: 'Delayed' },
@@ -86,7 +86,7 @@ const portfolioDigestSections: readonly PmConsoleDigestSection[] = [
   },
 ];
 
-const portfolioFrontdoorActions: readonly PmConsoleFrontdoorAction[] = portfolioManagerSteps.map((step) => portfolioStepToAction(step));
+const portfolioFrontdoorActions: readonly PortfolioManagerFrontdoorAction[] = portfolioManagerSteps.map((step) => portfolioStepToAction(step));
 
 const portfolioQuickLinks: readonly PortfolioQuickLink[] = [
   {
@@ -127,7 +127,7 @@ const portfolioQuickLinks: readonly PortfolioQuickLink[] = [
   },
 ];
 
-function portfolioStepToAction(step: Pm101Step): PmConsoleFrontdoorAction {
+function portfolioStepToAction(step: Pm101Step): PortfolioManagerFrontdoorAction {
   return {
     id: step.footerActionId ?? step.title,
     title: step.title,
@@ -140,7 +140,7 @@ function portfolioStepToAction(step: Pm101Step): PmConsoleFrontdoorAction {
   };
 }
 
-function portfolioActionDecor(decor: string): PmConsoleFrontdoorAction['decor'] {
+function portfolioActionDecor(decor: string): PortfolioManagerFrontdoorAction['decor'] {
   if (decor === 'waves' || decor === 'loops' || decor === 'hex' || decor === 'plus' || decor === 'burst') {
     return decor;
   }
@@ -153,11 +153,11 @@ function portfolioActionDecor(decor: string): PmConsoleFrontdoorAction['decor'] 
   standalone: true,
   imports: [
     CommonModule,
+    PortfolioManagerActionsComponent,
+    PortfolioManagerFrontdoorOverviewComponent,
     PmConsoleDigestPanelComponent,
-    PmConsoleFrontdoorOverviewComponent,
     PmConsoleIconComponent,
     PmConsoleModeTabsComponent,
-    PortfolioManagerActionsComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -180,8 +180,7 @@ function portfolioActionDecor(decor: string): PmConsoleFrontdoorAction['decor'] 
               <div class="workspace-body normal-pm-frontdoor-body portfolio-frontdoor-body">
                 @if (selectedTab === 'overview') {
                   <div class="pm101-view pm101-operational-view normal-pm-frontdoor-overview" data-work-view="pm101" data-tour-target="frontdoor-overview">
-                    <app-pm-console-frontdoor-overview
-                      projectId="portfolio"
+                    <app-portfolio-manager-frontdoor-overview
                       projectName="Portfolio Name"
                       projectIcon="folder"
                       heroImageSrc="./assets/Card-visual-2.jpg"
@@ -200,7 +199,7 @@ function portfolioActionDecor(decor: string): PmConsoleFrontdoorAction['decor'] 
                       [journeyDescriptor]="journeyDescriptorText"
                       (projectOpen)="openAssignedProjectWorkspace()"
                       (actionSelected)="handleFrontdoorAction($event)"
-                    ></app-pm-console-frontdoor-overview>
+                    ></app-portfolio-manager-frontdoor-overview>
                   </div>
                 } @else if (selectedTab === 'manage-work') {
                   <app-portfolio-manager-actions />
@@ -328,7 +327,7 @@ function portfolioActionDecor(decor: string): PmConsoleFrontdoorAction['decor'] 
   `],
 })
 export class PortfolioManagerLandingComponent implements AfterViewChecked {
-  @Output() readonly consoleStateChange = new EventEmitter<Partial<PmConsoleMountOptions>>();
+  @Output() readonly consoleStateChange = new EventEmitter<Partial<PortfolioManagerMountOptions>>();
 
   selectedTab: PortfolioLandingTab = 'overview';
   readonly landingTabs = portfolioLandingTabs;
