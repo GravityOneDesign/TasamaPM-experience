@@ -6291,42 +6291,59 @@ button.pm-project-table-stat:focus-visible {
 .action-view-switch {
   align-items: center;
   align-self: flex-start;
-  --action-view-switch-width: 184px;
-  background: #f7f8fb;
-  border: 1px solid #e4e7ef;
+  --action-view-switch-width: 229px;
+  background: rgba(16, 6, 159, 0.05);
+  border: 0;
   border-radius: 8px;
   display: inline-flex;
   flex: 0 0 auto;
   gap: 4px;
-  height: 42px;
+  height: 40px;
   margin-left: auto;
-  padding: 5px;
+  padding: 4px;
   width: var(--action-view-switch-width);
 }
 
 .action-view-switch button {
   align-items: center;
-  border-radius: 6px;
-  color: #596273;
+  border-radius: 8px;
+  color: #404040;
   display: inline-flex;
-  flex: 1 1 0;
-  font-size: 11.5px;
+  flex: 0 0 auto;
+  font-size: 12px;
   font-weight: 500;
-  gap: 7px;
-  height: 30px;
+  gap: 4px;
+  height: 32px;
   justify-content: center;
-  line-height: normal;
+  line-height: 16px;
   min-width: 0;
-  padding: 0 10px;
+  padding: 0 8px;
   position: relative;
   white-space: nowrap;
 }
 
+.action-view-switch button[data-action-view="calendar"] {
+  width: 113px;
+}
+
+.action-view-switch button[data-action-view="board"] {
+  width: 104px;
+}
+
 .action-view-switch button.active {
   background: #ffffff;
-  box-shadow: 0 1px 2px rgba(25, 33, 61, 0.08);
+  border-radius: 6px;
   color: var(--brand);
   font-weight: 500;
+}
+
+.action-view-switch button:not(.active):hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.64);
+}
+
+.action-view-switch button:focus-visible {
+  outline: 2px solid rgba(16, 6, 159, 0.32);
+  outline-offset: 2px;
 }
 
 .action-view-switch button:disabled {
@@ -6336,33 +6353,21 @@ button.pm-project-table-stat:focus-visible {
 }
 
 .action-view-switch .icon {
-  flex: 0 0 14px;
-  height: 14px;
-  width: 14px;
+  flex: 0 0 16px;
+  height: 16px;
+  width: 16px;
 }
 
 .pm101-locked-action-view-switch {
-  --action-view-switch-width: 252px;
-  background: #f7f8fb;
-  border: 1px solid #e4e7ef;
-  gap: 4px;
-  padding: 5px;
+  --action-view-switch-width: 229px;
 }
 
 .pm101-locked-action-view-switch button {
-  border-radius: 6px;
-  color: #596273;
-  font-size: 11.5px;
-  font-weight: 500;
-  gap: 7px;
-  height: 30px;
-  min-width: 0;
-  padding: 0 10px;
+  color: #404040;
 }
 
 .pm101-locked-action-view-switch button.active {
   background: #ffffff;
-  box-shadow: 0 1px 2px rgba(25, 33, 61, 0.08);
   color: #10069f;
   font-weight: 500;
 }
@@ -6373,27 +6378,15 @@ button.pm-project-table-stat:focus-visible {
 }
 
 .pm101-ready-action-view-switch {
-  background: #f7f8fb;
-  border: 1px solid #e4e7ef;
-  border-radius: 8px;
-  gap: 4px;
-  padding: 5px;
+  --action-view-switch-width: 229px;
 }
 
 .pm101-ready-action-view-switch button {
-  border-radius: 6px;
-  color: #596273;
-  font-size: 11.5px;
-  font-weight: 500;
-  gap: 7px;
-  height: 30px;
-  min-width: 0;
-  padding: 0 10px;
+  color: #404040;
 }
 
 .pm101-ready-action-view-switch button.active {
   background: #ffffff;
-  box-shadow: 0 1px 2px rgba(25, 33, 61, 0.08);
   color: #10069f;
   font-weight: 500;
 }
@@ -31356,14 +31349,14 @@ button.pm-project-table-stat:focus-visible {
   }
 
   .action-view-switch {
-    justify-content: stretch;
+    justify-content: flex-start;
     margin-left: 0;
     overflow-x: auto;
-    width: 100%;
+    width: min(var(--action-view-switch-width), 100%);
   }
 
   .action-view-switch button {
-    flex: 1 0 max-content;
+    flex: 0 0 auto;
   }
 
   .workspace-control-actions {

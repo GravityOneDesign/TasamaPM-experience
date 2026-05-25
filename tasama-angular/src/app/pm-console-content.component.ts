@@ -8953,8 +8953,8 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                           [attr.aria-selected]="selectedView === 'calendar'"
                           (click)="setView('calendar')"
                         >
-                          <span class="icon" aria-hidden="true"><i data-lucide="calendar-days"></i></span>
-                          <span>{{ onboardingPm101Locked ? 'My Calendar' : 'Calendar' }}</span>
+                          <span pmConsoleIcon="calendar-fold" aria-hidden="true"></span>
+                          <span>My Calendar</span>
                         </button>
                         <button
                           [class.active]="selectedView === 'board'"
@@ -8964,8 +8964,8 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                           [attr.aria-selected]="selectedView === 'board'"
                           (click)="setView('board')"
                         >
-                          <span class="icon" aria-hidden="true"><i data-lucide="columns-3"></i></span>
-                          <span>{{ onboardingPm101Locked ? 'My Actions' : 'Board' }}</span>
+                          <span pmConsoleIcon="kanban" aria-hidden="true"></span>
+                          <span>My Actions</span>
                         </button>
                       </div>
                     </div>
