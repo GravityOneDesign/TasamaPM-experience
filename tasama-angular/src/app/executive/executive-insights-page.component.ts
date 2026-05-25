@@ -106,6 +106,8 @@ const EXECUTIVE_INSIGHTS_STAGE_HEIGHT = 810;
     `
       :host {
         --executive-insights-scale: 1;
+        --executive-insights-stage-height: 810px;
+        --executive-insights-stage-width: 1440px;
         display: block;
         height: 100%;
       }
@@ -123,14 +125,14 @@ const EXECUTIVE_INSIGHTS_STAGE_HEIGHT = 810;
 
       .executive-insights-stage {
         background: #ffffff;
-        height: max(810px, 100vh);
+        height: var(--executive-insights-stage-height);
         left: 50%;
         overflow: hidden;
         position: absolute;
         top: 50%;
         transform: translate(-50%, -50%) scale(var(--executive-insights-scale));
         transform-origin: center;
-        width: max(1440px, 100vw);
+        width: var(--executive-insights-stage-width);
       }
 
       app-executive-insights-header {
@@ -354,8 +356,8 @@ const EXECUTIVE_INSIGHTS_STAGE_HEIGHT = 810;
 
       .more-insights-tab.is-open {
         border-radius: 4px 0 0 4px;
-        right: 354px;
-        top: 167px;
+        right: 312px;
+        top: 156px;
       }
 
       .more-insights-tab-icon {
@@ -506,7 +508,13 @@ const EXECUTIVE_INSIGHTS_STAGE_HEIGHT = 810;
 })
 export class ExecutiveInsightsPageComponent {
   @HostBinding('style.--executive-insights-scale')
-  stageScale = this.getStageScale();
+  stageScale = '1';
+
+  @HostBinding('style.--executive-insights-stage-width')
+  stageWidth = `${EXECUTIVE_INSIGHTS_STAGE_WIDTH}px`;
+
+  @HostBinding('style.--executive-insights-stage-height')
+  stageHeight = `${EXECUTIVE_INSIGHTS_STAGE_HEIGHT}px`;
 
   @Output() readonly homeSelected = new EventEmitter<void>();
 
@@ -516,9 +524,13 @@ export class ExecutiveInsightsPageComponent {
   readonly summaryCards = executiveInsightSummaryCards;
   moreInsightsOpen = false;
 
+  constructor() {
+    this.updateStageMetrics();
+  }
+
   @HostListener('window:resize')
   onWindowResize(): void {
-    this.stageScale = this.getStageScale();
+    this.updateStageMetrics();
   }
 
   toggleMoreInsights(): void {
@@ -529,16 +541,35 @@ export class ExecutiveInsightsPageComponent {
     this.moreInsightsOpen = false;
   }
 
-  private getStageScale(): string {
+  private updateStageMetrics(): void {
+    const metrics = this.getStageMetrics();
+    this.stageScale = String(metrics.scale);
+    this.stageWidth = `${metrics.width}px`;
+    this.stageHeight = `${metrics.height}px`;
+  }
+
+  private getStageMetrics(): { scale: number; width: number; height: number } {
     if (typeof window === 'undefined') {
-      return '1';
+      return {
+        height: EXECUTIVE_INSIGHTS_STAGE_HEIGHT,
+        scale: 1,
+        width: EXECUTIVE_INSIGHTS_STAGE_WIDTH,
+      };
     }
 
-    const scale = Math.min(
-      1,
-      window.innerWidth / EXECUTIVE_INSIGHTS_STAGE_WIDTH,
-      window.innerHeight / EXECUTIVE_INSIGHTS_STAGE_HEIGHT,
+    const scale = Math.max(
+      0.1,
+      Math.min(
+        1,
+        window.innerWidth / EXECUTIVE_INSIGHTS_STAGE_WIDTH,
+        window.innerHeight / EXECUTIVE_INSIGHTS_STAGE_HEIGHT,
+      ),
     );
-    return String(scale);
+
+    return {
+      height: Math.max(EXECUTIVE_INSIGHTS_STAGE_HEIGHT, window.innerHeight / scale),
+      scale,
+      width: Math.max(EXECUTIVE_INSIGHTS_STAGE_WIDTH, window.innerWidth / scale),
+    };
   }
 }
