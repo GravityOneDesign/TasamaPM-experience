@@ -12,6 +12,8 @@ export interface PmConsoleFrontdoorAction {
   decor?: 'waves' | 'loops' | 'hex' | 'plus' | 'burst';
 }
 
+export type PmConsoleFrontdoorActionCtaMode = 'label' | 'arrow';
+
 @Component({
   selector: 'app-pm-console-frontdoor-action-cards',
   standalone: true,
@@ -227,6 +229,14 @@ export interface PmConsoleFrontdoorAction {
         justify-self: start;
       }
 
+      .frontdoor-action-button.is-arrow-only {
+        height: 24px;
+      }
+
+      .frontdoor-action-card:disabled .frontdoor-action-button.is-arrow-only {
+        color: rgba(16, 6, 159, 0.32);
+      }
+
       .frontdoor-action-badge {
         align-items: center;
         backdrop-filter: blur(2px);
@@ -306,12 +316,15 @@ export interface PmConsoleFrontdoorAction {
           </span>
           <span
             class="frontdoor-action-button"
-            [class.has-label]="action.ctaLabel"
+            [class.has-label]="action.ctaLabel && ctaMode === 'label'"
             [class.has-badge]="action.badgeLabel"
+            [class.is-arrow-only]="ctaMode === 'arrow'"
             aria-hidden="true"
           >
             @if (action.badgeLabel) {
               <span class="frontdoor-action-badge">{{ action.badgeLabel }}</span>
+            } @else if (ctaMode === 'arrow') {
+              <span pmConsoleIcon="arrow-right" aria-hidden="true"></span>
             } @else if (action.ctaLabel) {
               <span>{{ action.ctaLabel }}</span>
             } @else if (!action.disabled) {
@@ -328,6 +341,7 @@ export class PmConsoleFrontdoorActionCardsComponent {
   @Input() ariaLabel = 'Project actions';
   @Input() projectName = '';
   @Input() edgeBleed = true;
+  @Input() ctaMode: PmConsoleFrontdoorActionCtaMode = 'label';
 
   @Output() readonly actionSelected = new EventEmitter<string>();
 

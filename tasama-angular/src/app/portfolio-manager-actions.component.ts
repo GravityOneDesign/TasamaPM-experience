@@ -247,6 +247,7 @@ interface PortfolioWorkTargetGroup {
             [filters]="calendarFilterOptions"
             [selectedFilterId]="selectedFilter"
             [showFilterBar]="false"
+            [truncateInlineLabels]="true"
             (monthShift)="shiftMonth($event)"
             (filterChange)="setBoardFilter($event)"
             (itemOpen)="handleCalendarItemOpen($event)"

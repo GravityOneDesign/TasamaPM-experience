@@ -33,7 +33,7 @@ type CalendarPopoverPlacement = 'above' | 'below';
   imports: [CommonModule, PmConsoleIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="timeline-calendar">
+    <div class="timeline-calendar" [class.truncate-inline-labels]="truncateInlineLabels">
       <div class="calendar-command-row">
         <div class="calendar-month-picker" aria-label="Calendar month navigation">
           <button class="calendar-nav-button" type="button" (click)="monthShift.emit(-1)" aria-label="Previous month">
@@ -121,6 +121,7 @@ type CalendarPopoverPlacement = 'above' | 'below';
                       class="calendar-event {{ item.tone }}"
                       type="button"
                       [attr.aria-label]="calendarEventLabel(item)"
+                      [attr.title]="truncateInlineLabels ? item.label : null"
                       (mouseenter)="showItemPreview(item, $event)"
                       (mouseleave)="hidePreviewSoon()"
                       (focus)="showItemPreview(item, $event)"
@@ -128,7 +129,7 @@ type CalendarPopoverPlacement = 'above' | 'below';
                       (click)="openAgendaItem(item, $event)"
                     >
                       <span class="calendar-event-dot"></span>
-                      <span class="calendar-event-title">{{ item.label }}</span>
+                      <span class="calendar-event-title">{{ calendarEventTitle(item) }}</span>
                     </button>
                   }
                 }
@@ -222,6 +223,10 @@ type CalendarPopoverPlacement = 'above' | 'below';
         overflow: hidden;
       }
 
+      .timeline-calendar.truncate-inline-labels .calendar-cell {
+        overflow: hidden;
+      }
+
       .calendar-cell.has-items {
         padding: 5px 6px;
       }
@@ -239,6 +244,12 @@ type CalendarPopoverPlacement = 'above' | 'below';
         min-width: 0;
       }
 
+      .timeline-calendar.truncate-inline-labels .calendar-event-stack {
+        max-width: 100%;
+        overflow: hidden;
+        width: 100%;
+      }
+
       .calendar-event {
         cursor: pointer;
         font-size: 10.25px;
@@ -246,6 +257,20 @@ type CalendarPopoverPlacement = 'above' | 'below';
         margin-top: 0;
         max-width: calc(100% - 2px);
         padding: 0 8px;
+      }
+
+      .timeline-calendar.truncate-inline-labels .calendar-event {
+        box-sizing: border-box;
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      .timeline-calendar.truncate-inline-labels .calendar-event-title {
+        display: block;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .calendar-action-summary {
@@ -701,6 +726,10 @@ type CalendarPopoverPlacement = 'above' | 'below';
           text-overflow: clip;
         }
 
+        .timeline-calendar.truncate-inline-labels .calendar-event:not(.calendar-action-summary) .calendar-event-title {
+          display: none;
+        }
+
         .calendar-summary-count {
           display: inline-flex;
         }
@@ -738,6 +767,7 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
   @Input() filters: PmConsoleCalendarFilter[] = [];
   @Input() selectedFilterId = 'all';
   @Input() showFilterBar = true;
+  @Input() truncateInlineLabels = false;
 
   @Output() readonly monthShift = new EventEmitter<number>();
   @Output() readonly filterChange = new EventEmitter<string>();
@@ -745,6 +775,7 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
 
   readonly maxInlineItems = 2;
   readonly maxSummaryDots = 3;
+  readonly maxInlineLabelLength = 22;
 
   previewItem: PmConsoleCalendarItem | null = null;
   previewCell: PmConsoleCalendarCell | null = null;
@@ -858,6 +889,12 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
 
   calendarEventLabel(item: PmConsoleCalendarItem): string {
     return `${item.label}, ${item.project}, ${this.dateLabel(item.date)}. Open item.`;
+  }
+
+  calendarEventTitle(item: PmConsoleCalendarItem): string {
+    const label = item.label.trim();
+    if (!this.truncateInlineLabels || label.length <= this.maxInlineLabelLength) return label;
+    return `${label.slice(0, this.maxInlineLabelLength).trimEnd()}...`;
   }
 
   cellAgendaLabel(cell: PmConsoleCalendarCell): string {

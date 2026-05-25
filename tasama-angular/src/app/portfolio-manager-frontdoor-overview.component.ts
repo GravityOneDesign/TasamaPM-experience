@@ -331,6 +331,7 @@ export interface PortfolioManagerFrontdoorTrendDot {
         data-tour-target="frontdoor-actions"
         [actions]="actions"
         [projectName]="projectName"
+        ctaMode="arrow"
         (actionSelected)="selectAction($event)"
       ></app-pm-console-frontdoor-action-cards>
     </section>
