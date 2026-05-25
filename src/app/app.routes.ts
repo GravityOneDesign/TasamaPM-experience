@@ -24,18 +24,6 @@ export const appRoutes: Routes = [
       import('./features/pm-console/pm-console.routes').then((m) => m.pmConsoleRoutes),
   },
   {
-    path: 'executive',
-    canMatch: [authGuard],
-    loadChildren: () =>
-      import('./features/executive/executive.routes').then((m) => m.executiveRoutes),
-  },
-  {
-    path: 'persona',
-    canMatch: [authGuard],
-    loadChildren: () =>
-      import('./features/persona/persona.routes').then((m) => m.personaRoutes),
-  },
-  {
     path: '**',
     redirectTo: 'pm',
   },
