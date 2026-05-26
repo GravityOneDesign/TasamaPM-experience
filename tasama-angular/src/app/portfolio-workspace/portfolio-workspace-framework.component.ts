@@ -453,28 +453,43 @@ export interface TaxonomyCard {
               <h2>User Management</h2>
               <p>Configure team members, access roles, and system permission levels.</p>
             </div>
-            
-            <div class="user-header-actions">
-              <button class="export-btn" type="button" (click)="exportUsers()">
-                <span pmConsoleIcon="download"></span>
-                <span>Export</span>
-              </button>
-              <button class="add-user-btn" type="button" (click)="openAddUserForm()">
-                <span pmConsoleIcon="plus"></span>
-                <span>Add User</span>
-              </button>
+          </div>
+
+          <!-- Metrics Cards Row -->
+          <div class="user-metrics-row">
+            <!-- Active Users Card -->
+            <div class="user-metric-card">
+              <div class="metric-icon-wrap blue">
+                <span pmConsoleIcon="users" class="metric-icon"></span>
+              </div>
+              <div class="metric-info">
+                <span class="metric-label">Total Active Users</span>
+                <span class="metric-count">{{ getActiveUsersCount() }}</span>
+              </div>
+            </div>
+
+            <!-- Available Licences Card -->
+            <div class="user-metric-card">
+              <div class="metric-icon-wrap grey">
+                <span pmConsoleIcon="key" class="metric-icon"></span>
+              </div>
+              <div class="metric-info">
+                <span class="metric-label">Total Available Licences</span>
+                <span class="metric-count">{{ availableLicences }}</span>
+              </div>
             </div>
           </div>
 
-          <!-- Total Users Summary Bar -->
-          <div class="total-users-bar">
-            <div class="total-users-bar-inner">
-              <span class="total-users-icon-wrap">
-                <span pmConsoleIcon="users" class="total-users-icon"></span>
-              </span>
-              <span class="total-users-label">Total Users</span>
-              <span class="total-users-count">{{ maxUsers }}</span>
-            </div>
+          <!-- Actions Row Below Cards -->
+          <div class="user-actions-row">
+            <button class="export-btn" type="button" (click)="exportUsers()">
+              <span pmConsoleIcon="download"></span>
+              <span>Export</span>
+            </button>
+            <button class="add-user-btn" type="button" (click)="openAddUserForm()">
+              <span pmConsoleIcon="plus"></span>
+              <span>Add User</span>
+            </button>
           </div>
 
           <!-- Add User Side Drawer (uses platform-standard shell) -->
@@ -625,14 +640,13 @@ export interface TaxonomyCard {
             <table class="user-table">
               <thead>
                 <tr>
-                  <th style="width: 20%;">Name</th>
-                  <th style="width: 13%;">User Name</th>
-                  <th style="width: 12%;">Role(s)</th>
-                  <th style="width: 18%;">Email</th>
-                  <th style="width: 13%;">Business Unit</th>
-                  <th style="width: 9%;">Login Access</th>
-                  <th style="width: 10%;">Last Login</th>
-                  <th style="width: 5%; text-align: center;">More Action</th>
+                  <th style="width: 24%;">Name</th>
+                  <th style="width: 16%;">Role(s)</th>
+                  <th style="width: 19%;">Email</th>
+                  <th style="width: 19%;">Business Unit</th>
+                  <th style="width: 11%;">Login Access</th>
+                  <th style="width: 11%;">Last Login</th>
+                  <th style="text-align: right;">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -641,13 +655,12 @@ export interface TaxonomyCard {
                     <tr class="animation-slide-in">
                       <td>
                         <div class="user-avatar-info">
-                          <div class="avatar-circle">{{ getInitials(user.name) }}</div>
+                          <div [class]="'avatar-circle ' + getRoleBadgeClass(user.role)">{{ getInitials(user.name) }}</div>
                           <span class="user-avatar-name">{{ user.name }}</span>
                         </div>
                       </td>
-                      <td class="font-mono-text">{{ user.username }}</td>
                       <td>
-                        <span class="role-badge">{{ user.role }}</span>
+                        <span [class]="'role-badge ' + getRoleBadgeClass(user.role)">{{ user.role }}</span>
                       </td>
                       <td class="text-slate-email">{{ user.email }}</td>
                       <td class="text-slate-bu">{{ user.businessUnit }}</td>
@@ -662,12 +675,10 @@ export interface TaxonomyCard {
                           <button
                             class="user-dots-btn"
                             type="button"
-                            aria-label="More actions"
+                            aria-label="Actions"
                             (click)="toggleUserMenu($event, i)"
                           >
-                            <span class="user-dots-btn-dot"></span>
-                            <span class="user-dots-btn-dot"></span>
-                            <span class="user-dots-btn-dot"></span>
+                            <span pmConsoleIcon="more-vertical"></span>
                           </button>
 
                           @if (openUserMenuIndex === i) {
@@ -684,7 +695,7 @@ export interface TaxonomyCard {
                   }
                 } @else {
                   <tr>
-                    <td colspan="8" class="table-empty-cell">
+                    <td colspan="7" class="table-empty-cell">">
                       <div class="table-empty-container">
                         <span pmConsoleIcon="users" class="table-empty-icon"></span>
                         <h4>No Users Configured</h4>
@@ -3154,7 +3165,7 @@ export interface TaxonomyCard {
     .user-management-container {
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 12px;
       width: 100%;
       height: 100%;
       color: #202633;
@@ -3179,10 +3190,14 @@ export interface TaxonomyCard {
       margin: 0;
     }
 
-    .user-header-actions {
+    .user-actions-row {
       display: flex;
       align-items: center;
+      justify-content: flex-end;
       gap: 10px;
+      margin-top: 0;
+      margin-bottom: 0;
+      width: 100%;
     }
 
     .export-btn {
@@ -3239,47 +3254,71 @@ export interface TaxonomyCard {
       display: inline-flex;
     }
 
-    /* Total Users Bar */
-    .total-users-bar {
-      background: #f8fafc;
-      border: 1px solid #dfe4ee;
-      border-radius: 10px;
-      padding: 14px 20px;
+    /* Metrics cards (aligned exactly with Image 1: flat white cards, light-grey borders, and soft background-colored icons) */
+    .user-metrics-row {
+      display: flex;
+      gap: 16px;
+      margin-top: 4px;
+      margin-bottom: 0;
+      width: 100%;
     }
 
-    .total-users-bar-inner {
+    .user-metric-card {
+      background: #ffffff;
+      border: 1px solid #e3e5e9;
+      border-radius: 12px;
+      padding: 14px 18px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
+      flex: 1;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     }
 
-    .total-users-icon-wrap {
+    .metric-icon-wrap {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 30px;
-      height: 30px;
-      background: rgba(16, 6, 159, 0.08);
-      border-radius: 6px;
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    .metric-icon-wrap.blue {
+      background: #edf2fe;
+      border: 1px solid #d2dfff;
       color: #10069f;
     }
 
-    .total-users-icon {
-      font-size: 15px;
+    .metric-icon-wrap.grey {
+      background: #f1f3f7;
+      border: 1px solid #e2e8f0;
+      color: #64748b;
+    }
+
+    .metric-icon {
+      font-size: 20px;
       display: inline-flex;
     }
 
-    .total-users-label {
-      font-size: 13.5px;
-      font-weight: 600;
-      color: #334155;
+    .metric-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
 
-    .total-users-count {
-      font-size: 14px;
+    .metric-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: #64748b;
+    }
+
+    .metric-count {
+      font-size: 24px;
       font-weight: 700;
-      color: #10069f;
-      margin-left: 4px;
+      color: #0f172a;
+      line-height: 1.1;
     }
 
     /* =============================================
@@ -3484,12 +3523,12 @@ export interface TaxonomyCard {
       opacity: 0.5;
     }
 
-    /* Table Wrapper & Table */
+    /* Table Wrapper & Table (aligned exactly with Image 2) */
     .user-table-wrapper {
       background: #ffffff;
-      border: 1px solid #dfe4ee;
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(25, 33, 61, 0.04);
+      border: 1px solid #e3e5e9;
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
       overflow: visible;
       width: 100%;
     }
@@ -3502,22 +3541,27 @@ export interface TaxonomyCard {
     }
 
     .user-table th {
-      background: #f8fafc;
-      border-bottom: 1px solid #dfe4ee;
-      color: #475569;
+      background: #fbfcff;
+      border-bottom: 1px solid #eceef3;
+      color: #555555;
       font-size: 12px;
       font-weight: 600;
-      padding: 14px 16px;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      padding: 15px 14px;
+      text-transform: none;
+      letter-spacing: normal;
+    }
+
+    .user-table th:first-child,
+    .user-table td:first-child {
+      padding-left: 64px !important;
     }
 
     .user-table th:first-child {
-      border-top-left-radius: 12px;
+      border-top-left-radius: 16px;
     }
 
     .user-table th:last-child {
-      border-top-right-radius: 12px;
+      border-top-right-radius: 16px;
     }
 
     .user-table th.sortable {
@@ -3542,11 +3586,17 @@ export interface TaxonomyCard {
     }
 
     .user-table td {
-      border-bottom: 1px solid #f1f5f9;
-      color: #334155;
-      font-size: 13.5px;
-      padding: 12px 16px;
+      border-bottom: 1px solid #eceef3;
+      color: #252a34;
+      font-size: 12px;
+      padding: 13px 14px;
       vertical-align: middle;
+    }
+
+    .user-table th:last-child,
+    .user-table td:last-child {
+      padding-right: 64px !important;
+      text-align: right !important;
     }
 
     .user-table tr:last-child td {
@@ -3554,15 +3604,15 @@ export interface TaxonomyCard {
     }
 
     .user-table tr:last-child td:first-child {
-      border-bottom-left-radius: 12px;
+      border-bottom-left-radius: 16px;
     }
 
     .user-table tr:last-child td:last-child {
-      border-bottom-right-radius: 12px;
+      border-bottom-right-radius: 16px;
     }
 
     .user-table tr:hover td {
-      background: #f8fafc;
+      background: #fbfcff;
     }
 
     /* Avatars and badges */
@@ -3573,15 +3623,13 @@ export interface TaxonomyCard {
     }
 
     .avatar-circle {
-      width: 32px;
-      height: 32px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
-      background: #e0f2fe;
-      color: #0369a1;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 12px;
+      font-size: 9.5px;
       font-weight: 600;
       flex-shrink: 0;
       text-transform: uppercase;
@@ -3589,7 +3637,7 @@ export interface TaxonomyCard {
 
     .user-avatar-name {
       font-weight: 500;
-      color: #1e293b;
+      color: #252a34;
     }
 
     .font-mono-text {
@@ -3598,45 +3646,68 @@ export interface TaxonomyCard {
       color: #64748b;
     }
 
+    /* Role Badges and Unified Pills */
     .role-badge {
       display: inline-flex;
-      background: #f1f5f9;
-      color: #475569;
-      font-size: 11.5px;
-      font-weight: 500;
-      padding: 3px 8px;
-      border-radius: 6px;
-      border: 1px solid #e2e8f0;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 999px; /* Rounded pill treatment */
+      border: none;
+      line-height: 1.2;
+      align-items: center;
+      text-transform: none;
+    }
+
+    /* 4 Distinct Premium color-ways (shared by avatar and pill!) */
+    .role-lavender {
+      background: #DFDFEE !important;
+      color: #10069f !important;
+    }
+
+    .role-sky {
+      background: #ECF3FF !important;
+      color: #1d4ed8 !important;
+    }
+
+    .role-greyblue {
+      background: #E6ECF8 !important;
+      color: #244980 !important;
+    }
+
+    .role-cream {
+      background: #FFF8EB !important;
+      color: #b45309 !important;
     }
 
     .text-slate-email {
-      color: #475569;
+      color: #555555;
     }
 
     .text-slate-bu {
-      color: #475569;
+      color: #555555;
     }
 
     .access-pill {
       display: inline-flex;
       font-size: 11px;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 20px;
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
+      font-weight: 600; /* Aligned with role-badge! */
+      padding: 4px 12px; /* Aligned padding! */
+      border-radius: 999px; /* Aligned rounded pill! */
+      border: none;
+      line-height: 1.2;
+      align-items: center;
+      text-transform: none; /* Aligned casing! */
     }
 
     .access-pill.enabled {
-      background: rgba(16, 185, 129, 0.08);
-      color: #059669;
-      border: 1px solid rgba(16, 185, 129, 0.15);
+      background: #d1fae5;
+      color: #047857;
     }
 
     .access-pill.disabled {
-      background: rgba(239, 68, 68, 0.08);
-      color: #dc2626;
-      border: 1px solid rgba(239, 68, 68, 0.15);
+      background: #fee2e2;
+      color: #b91c1c;
     }
 
     .user-row-delete-btn {
@@ -3663,9 +3734,9 @@ export interface TaxonomyCard {
       color: #ef4444;
     }
 
-    /* 3-dot more-action button */
+    /* 3-dot Actions button (aligned exactly with Image 5) */
     .user-action-cell {
-      text-align: center;
+      text-align: right;
       position: relative;
     }
 
@@ -3677,28 +3748,29 @@ export interface TaxonomyCard {
     }
 
     .user-dots-btn {
-      background: transparent;
-      border: none;
+      background: #ffffff;
+      border: 1px solid #e3e5e9;
+      border-radius: 8px;
+      color: #707788;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      padding: 6px 8px;
-      border-radius: 6px;
-      transition: background 0.15s;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      transition: all 0.15s ease-in-out;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     }
 
     .user-dots-btn:hover {
-      background: #f1f5f9;
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      color: #10069f;
     }
 
-    .user-dots-btn-dot {
-      display: block;
-      width: 4px;
-      height: 4px;
-      border-radius: 50%;
-      background: #475569;
-      flex-shrink: 0;
+    .user-dots-btn span[pmConsoleIcon] {
+      font-size: 16px;
+      display: inline-flex;
     }
 
     /* Dropdown menu */
@@ -5409,6 +5481,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
   drawerConfirmPassword = '';
 
   maxUsers = 10;
+  availableLicences = 15;
 
   users: Array<{
     name: string;
@@ -5418,7 +5491,30 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     businessUnit: string;
     loginAccess: 'Enabled' | 'Disabled';
     lastLogin?: string;
-  }> = [];
+  }> = [
+    { name: 'Fatima Qahtani', username: 'fatima.q', role: 'Portfolio Manager', email: 'fatima.q@safesecure.com', businessUnit: 'Portfolio Management', loginAccess: 'Enabled', lastLogin: '05-26-26' },
+    { name: 'Sarah Jenkins', username: 'sarah.j', role: 'Program Manager', email: 'sarah.j@safesecure.com', businessUnit: 'Program Management', loginAccess: 'Enabled', lastLogin: '05-26-26' },
+    { name: 'Saeed Al-Mansoori', username: 'saeed.m', role: 'Program Manager', email: 'saeed.m@safesecure.com', businessUnit: 'Program Management', loginAccess: 'Enabled', lastLogin: '05-25-26' },
+    { name: 'John Doe', username: 'john.d', role: 'Administrator', email: 'john.doe@safesecure.com', businessUnit: 'IT Operations', loginAccess: 'Enabled', lastLogin: '05-26-26' },
+    { name: 'Jane Smith', username: 'jane.s', role: 'Risk Analyst', email: 'jane.smith@safesecure.com', businessUnit: 'Risk Management', loginAccess: 'Disabled', lastLogin: '05-20-26' },
+    { name: 'Alex Johnson', username: 'alex.j', role: 'Financial Manager', email: 'alex.j@safesecure.com', businessUnit: 'Finance', loginAccess: 'Enabled', lastLogin: '05-24-26' },
+    { name: 'Yasmin Al-Farsi', username: 'yasmin.f', role: 'Project Manager', email: 'yasmin.f@safesecure.com', businessUnit: 'Asset Management', loginAccess: 'Enabled', lastLogin: '05-26-26' },
+    { name: 'Marcus Aurelius', username: 'marcus.a', role: 'Executive Sponsor', email: 'marcus.a@safesecure.com', businessUnit: 'Executive Office', loginAccess: 'Enabled', lastLogin: '05-23-26' },
+    { name: 'Elena Rostova', username: 'elena.r', role: 'Business Analyst', email: 'elena.r@safesecure.com', businessUnit: 'Strategy & Growth', loginAccess: 'Enabled', lastLogin: '05-26-26' },
+    { name: 'David Kim', username: 'david.k', role: 'Project Manager', email: 'david.k@safesecure.com', businessUnit: 'Engineering', loginAccess: 'Disabled', lastLogin: '05-18-26' }
+  ];
+
+  getActiveUsersCount(): number {
+    return this.users.filter(u => u.loginAccess === 'Enabled').length;
+  }
+
+  getRoleBadgeClass(role: string): string {
+    const r = (role || '').toLowerCase();
+    if (r.includes('portfolio')) return 'role-lavender';
+    if (r.includes('program')) return 'role-sky';
+    if (r.includes('project') || r.includes('analyst')) return 'role-greyblue';
+    return 'role-cream';
+  }
 
   constructor(public readonly changeDetector: ChangeDetectorRef) { }
 
