@@ -88,12 +88,12 @@ import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular
 
       .agent-mask {
         mask-clip: no-clip;
-        mask-image: url('/assets/dotz-agent-light/ellipse-10-mask.png');
+        mask-image: url('../../../../../assets/dotz-agent-light/ellipse-10-mask.png');
         mask-mode: alpha;
         mask-repeat: no-repeat;
         mask-size: 282.775px 286.918px;
         -webkit-mask-clip: no-clip;
-        -webkit-mask-image: url('/assets/dotz-agent-light/ellipse-10-mask.png');
+        -webkit-mask-image: url('../../../../../assets/dotz-agent-light/ellipse-10-mask.png');
         -webkit-mask-repeat: no-repeat;
         -webkit-mask-size: 282.775px 286.918px;
       }

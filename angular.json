@@ -27,6 +27,11 @@
                 "glob": "**/*",
                 "input": "src/assets",
                 "output": "assets"
+              },
+              {
+                "glob": "web.config",
+                "input": "src",
+                "output": "."
               }
             ],
             "styles": [
@@ -44,6 +49,8 @@
                 }
               ],
               "outputHashing": "all",
+              "baseHref": "/tasama/",
+              "deployUrl": "/tasama/",
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
