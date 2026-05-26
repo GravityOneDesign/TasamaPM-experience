@@ -4792,9 +4792,9 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     const q = this.glossarySearchQuery.trim().toLowerCase();
     if (!q) return list;
 
-    return list.filter(item => 
-      item.systemLabel.toLowerCase().includes(q) || 
-      item.customLabel.toLowerCase().includes(q) || 
+    return list.filter(item =>
+      item.systemLabel.toLowerCase().includes(q) ||
+      item.customLabel.toLowerCase().includes(q) ||
       item.contextualHelp.toLowerCase().includes(q)
     );
   }
@@ -4825,13 +4825,13 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
       list[idx].systemLabel = this.editingSystemLabel.trim();
       list[idx].customLabel = this.editingCustomLabel.trim();
       list[idx].contextualHelp = this.editingContextualHelp.trim();
-      
+
       // trigger change detection by re-assigning array
       if (this.activeGlossaryTab === 'p3m') this.p3mGlossary = [...list];
       else if (this.activeGlossaryTab === 'risk') this.riskGlossary = [...list];
       else if (this.activeGlossaryTab === 'benefits') this.benefitsGlossary = [...list];
     }
-    
+
     this.editingGlossaryId = null;
     this.changeDetector.markForCheck();
   }
@@ -5084,7 +5084,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
 
   saveWorkflowStep(): void {
     if (!this.newStepName) return;
-    
+
     const stepData = {
       name: this.newStepName,
       isMandatory: this.newStepMandatory,
@@ -5105,7 +5105,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
       this.workflowSteps.push(stepData);
       this.newStepExpandedIndex = this.workflowSteps.length - 1;
     }
-    
+
     this.isAddingWorkflowStep = false;
     this.editingStepIndex = null;
     this.changeDetector.markForCheck();
@@ -5310,7 +5310,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
       this.workflowDescription = card.description;
       this.workflowType = card.workflowType || 'Project stage closure';
       this.workflowApplicability = card.workflowApplicability || '';
-      
+
       // Load steps if present, otherwise fallback to mapping string items
       if (card.workflowStepsData) {
         this.workflowSteps = JSON.parse(JSON.stringify(card.workflowStepsData));
@@ -5506,7 +5506,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     if (val && this.selectedCard) {
       this.selectedCard.items = [...this.selectedCard.items, val];
       this.newPriorityName = '';
-      
+
       // Update parent list
       const idx = this.projectSetupCards.findIndex(c => c.id === 'priority');
       if (idx !== -1) {
@@ -5519,7 +5519,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
   deletePriorityItem(index: number): void {
     if (this.selectedCard) {
       this.selectedCard.items = this.selectedCard.items.filter((_, i) => i !== index);
-      
+
       // Update parent list
       const idx = this.projectSetupCards.findIndex(c => c.id === 'priority');
       if (idx !== -1) {
@@ -5542,7 +5542,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
       this.selectedCard.items = [...this.selectedCard.items];
       this.editingPriorityIndex = null;
       this.editingPriorityValue = '';
-      
+
       // Update parent list
       const idx = this.projectSetupCards.findIndex(c => c.id === 'priority');
       if (idx !== -1) {
@@ -5582,7 +5582,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
   divisions: string[] = [];
   brands: string[] = [];
   sections: string[] = [];
-  
+
   openGroupMenuIndex: number | null = null;
   openDivisionIndex: { groupIndex: number; divisionIndex: number } | null = null;
   openBranchIndex: { groupIndex: number; divisionIndex: number; branchIndex: number } | null = null;
@@ -5652,17 +5652,17 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     loginAccess: 'Enabled' | 'Disabled';
     lastLogin?: string;
   }> = [
-    { name: 'Fatima Qahtani', username: 'fatima.q', role: 'Portfolio Manager', email: 'fatima.q@safesecure.com', businessUnit: 'Portfolio Management', loginAccess: 'Enabled', lastLogin: '05-26-26' },
-    { name: 'Sarah Jenkins', username: 'sarah.j', role: 'Program Manager', email: 'sarah.j@safesecure.com', businessUnit: 'Program Management', loginAccess: 'Enabled', lastLogin: '05-26-26' },
-    { name: 'Saeed Al-Mansoori', username: 'saeed.m', role: 'Program Manager', email: 'saeed.m@safesecure.com', businessUnit: 'Program Management', loginAccess: 'Enabled', lastLogin: '05-25-26' },
-    { name: 'John Doe', username: 'john.d', role: 'Administrator', email: 'john.doe@safesecure.com', businessUnit: 'IT Operations', loginAccess: 'Enabled', lastLogin: '05-26-26' },
-    { name: 'Jane Smith', username: 'jane.s', role: 'Risk Analyst', email: 'jane.smith@safesecure.com', businessUnit: 'Risk Management', loginAccess: 'Disabled', lastLogin: '05-20-26' },
-    { name: 'Alex Johnson', username: 'alex.j', role: 'Financial Manager', email: 'alex.j@safesecure.com', businessUnit: 'Finance', loginAccess: 'Enabled', lastLogin: '05-24-26' },
-    { name: 'Yasmin Al-Farsi', username: 'yasmin.f', role: 'Project Manager', email: 'yasmin.f@safesecure.com', businessUnit: 'Asset Management', loginAccess: 'Enabled', lastLogin: '05-26-26' },
-    { name: 'Marcus Aurelius', username: 'marcus.a', role: 'Executive Sponsor', email: 'marcus.a@safesecure.com', businessUnit: 'Executive Office', loginAccess: 'Enabled', lastLogin: '05-23-26' },
-    { name: 'Elena Rostova', username: 'elena.r', role: 'Business Analyst', email: 'elena.r@safesecure.com', businessUnit: 'Strategy & Growth', loginAccess: 'Enabled', lastLogin: '05-26-26' },
-    { name: 'David Kim', username: 'david.k', role: 'Project Manager', email: 'david.k@safesecure.com', businessUnit: 'Engineering', loginAccess: 'Disabled', lastLogin: '05-18-26' }
-  ];
+      { name: 'Fatima Qahtani', username: 'fatima.q', role: 'Portfolio Manager', email: 'fatima.q@safesecure.com', businessUnit: 'Portfolio Management', loginAccess: 'Enabled', lastLogin: '05-26-26' },
+      { name: 'Sarah Jenkins', username: 'sarah.j', role: 'Program Manager', email: 'sarah.j@safesecure.com', businessUnit: 'Program Management', loginAccess: 'Enabled', lastLogin: '05-26-26' },
+      { name: 'Saeed Al-Mansoori', username: 'saeed.m', role: 'Program Manager', email: 'saeed.m@safesecure.com', businessUnit: 'Program Management', loginAccess: 'Enabled', lastLogin: '05-25-26' },
+      { name: 'John Doe', username: 'john.d', role: 'Administrator', email: 'john.doe@safesecure.com', businessUnit: 'IT Operations', loginAccess: 'Enabled', lastLogin: '05-26-26' },
+      { name: 'Jane Smith', username: 'jane.s', role: 'Risk Analyst', email: 'jane.smith@safesecure.com', businessUnit: 'Risk Management', loginAccess: 'Disabled', lastLogin: '05-20-26' },
+      { name: 'Alex Johnson', username: 'alex.j', role: 'Financial Manager', email: 'alex.j@safesecure.com', businessUnit: 'Finance', loginAccess: 'Enabled', lastLogin: '05-24-26' },
+      { name: 'Yasmin Al-Farsi', username: 'yasmin.f', role: 'Project Manager', email: 'yasmin.f@safesecure.com', businessUnit: 'Asset Management', loginAccess: 'Enabled', lastLogin: '05-26-26' },
+      { name: 'Marcus Aurelius', username: 'marcus.a', role: 'Executive Sponsor', email: 'marcus.a@safesecure.com', businessUnit: 'Executive Office', loginAccess: 'Enabled', lastLogin: '05-23-26' },
+      { name: 'Elena Rostova', username: 'elena.r', role: 'Business Analyst', email: 'elena.r@safesecure.com', businessUnit: 'Strategy & Growth', loginAccess: 'Enabled', lastLogin: '05-26-26' },
+      { name: 'David Kim', username: 'david.k', role: 'Project Manager', email: 'david.k@safesecure.com', businessUnit: 'Engineering', loginAccess: 'Disabled', lastLogin: '05-18-26' }
+    ];
 
   getActiveUsersCount(): number {
     return this.users.filter(u => u.loginAccess === 'Enabled').length;
@@ -5699,7 +5699,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     });
     this.selectedGroupIndex = this.groupObjects.length - 1;
     this.editingGroupIndex = this.selectedGroupIndex;
-    
+
     this.isAddingGroup = true;
     this.newGroupName = '';
     this.newGroupOwner = '';
@@ -5745,7 +5745,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
       group.name = val;
       group.owner = this.newGroupOwner;
       group.purpose = this.newGroupPurpose;
-      
+
       // Save branches and sections entered in the drawer nested list builder
       group.divisions = this.drawerBranches.map(db => ({
         name: db.name || 'Branch',
@@ -5754,7 +5754,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
           sections: []
         }))
       }));
-      
+
       this.syncLegacyArrays();
     }
     this.isAddingGroup = false;
@@ -5835,10 +5835,10 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     this.openGroupMenuIndex = null;
     this.openDivisionIndex = null;
     this.openSectionIndex = null;
-    if (this.openBranchIndex && 
-        this.openBranchIndex.groupIndex === groupIndex && 
-        this.openBranchIndex.divisionIndex === divisionIndex && 
-        this.openBranchIndex.branchIndex === branchIndex) {
+    if (this.openBranchIndex &&
+      this.openBranchIndex.groupIndex === groupIndex &&
+      this.openBranchIndex.divisionIndex === divisionIndex &&
+      this.openBranchIndex.branchIndex === branchIndex) {
       this.openBranchIndex = null;
     } else {
       this.openBranchIndex = { groupIndex, divisionIndex, branchIndex };
@@ -5907,7 +5907,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     if (!q) {
       this.filteredOwnerUsers = [];
     } else {
-      this.filteredOwnerUsers = this.users.filter(u => 
+      this.filteredOwnerUsers = this.users.filter(u =>
         (u.name || '').toLowerCase().includes(q)
       );
     }
@@ -5924,7 +5924,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     if (!q) {
       this.filteredBranchOwnerUsers = [];
     } else {
-      this.filteredBranchOwnerUsers = this.users.filter(u => 
+      this.filteredBranchOwnerUsers = this.users.filter(u =>
         (u.name || '').toLowerCase().includes(q)
       );
     }
@@ -5941,7 +5941,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     if (!q) {
       this.filteredSectionOwnerUsers = [];
     } else {
-      this.filteredSectionOwnerUsers = this.users.filter(u => 
+      this.filteredSectionOwnerUsers = this.users.filter(u =>
         (u.name || '').toLowerCase().includes(q)
       );
     }
@@ -6023,11 +6023,11 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     this.openGroupMenuIndex = null;
     this.openDivisionIndex = null;
     this.openBranchIndex = null;
-    if (this.openSectionIndex && 
-        this.openSectionIndex.groupIndex === groupIndex && 
-        this.openSectionIndex.divisionIndex === divisionIndex && 
-        this.openSectionIndex.branchIndex === branchIndex && 
-        this.openSectionIndex.sectionIndex === sectionIndex) {
+    if (this.openSectionIndex &&
+      this.openSectionIndex.groupIndex === groupIndex &&
+      this.openSectionIndex.divisionIndex === divisionIndex &&
+      this.openSectionIndex.branchIndex === branchIndex &&
+      this.openSectionIndex.sectionIndex === sectionIndex) {
       this.openSectionIndex = null;
     } else {
       this.openSectionIndex = { groupIndex, divisionIndex, branchIndex, sectionIndex };
