@@ -1906,9 +1906,6 @@ export interface TaxonomyCard {
       color: #64748b;
     }
 
-    .standards-cat-btn.active .cat-count {
-      display: none;
-    }
 
     /* Right cards panel */
     .standards-cards-panel {
