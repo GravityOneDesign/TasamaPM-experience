@@ -15,6 +15,7 @@ export interface TaxonomyCard {
   icon: string;
   items: string[];
   needsAttention?: boolean;
+  workflowStepsData?: any[];
 }
 
 @Component({
@@ -1291,6 +1292,334 @@ export interface TaxonomyCard {
         </div>
       </app-pm-console-plan-drawer>
     }
+    
+    @if (isCreatingWorkflow) {
+      <app-pm-console-plan-drawer
+        eyebrow=""
+        title="Create Workflow"
+        description=""
+        submitLabel="Create"
+        cancelLabel="Cancel"
+        (close)="closeWorkflowDrawer()"
+        (submitForm)="saveWorkflow($event)"
+      >
+        <div planDrawerBody class="standards-drawer-body">
+          <div class="standards-drawer-form" style="padding-top: 16px;">
+            <!-- Type field -->
+            <div class="form-group" style="margin-bottom: 24px;">
+              <label class="form-label" style="display: flex; align-items: center; gap: 4px; font-weight: 500; font-size: 13px; color: #334155; margin-bottom: 8px;">
+                Type<span style="color: #e11d48;">*</span>
+                <span pmConsoleIcon="info" style="font-size: 14px; color: #94a3b8; cursor: pointer;"></span>
+              </label>
+              <div style="position: relative;">
+                <select class="form-control" [(ngModel)]="workflowType" [disabled]="!!editingWorkflowId" (change)="workflowApplicability = ''" style="width: 100%; height: 40px; border-radius: 8px; border: 1px solid #cbd5e1; padding: 0 12px; font-size: 14px; color: #475569; appearance: none; background: #ffffff; outline: none; cursor: pointer;">
+                  <option value="" disabled selected>Select</option>
+                  @for (type of workflowTypes; track type) {
+                    <option [value]="type">{{ type }}</option>
+                  }
+                </select>
+                <span pmConsoleIcon="chevron-down" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #64748b;"></span>
+              </div>
+            </div>
+
+            @if (workflowType) {
+              <!-- Applicable for field -->
+              <div class="form-group" style="margin-bottom: 24px;">
+                <label class="form-label" style="font-weight: 500; font-size: 13px; color: #334155; margin-bottom: 12px; display: block;">Applicable for</label>
+                @if (editingWorkflowId) {
+                  <div style="font-size: 13px; color: #475569; padding: 10px 14px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    {{ workflowApplicability || 'None selected' }}
+                  </div>
+                } @else {
+                  <div style="display: flex; flex-direction: column; gap: 8px;">
+                    @for (option of currentApplicabilityOptions; track option) {
+                      <button 
+                        type="button" 
+                        class="workflow-pill" 
+                        [class.active]="workflowApplicability === option"
+                        (click)="workflowApplicability = option"
+                      >
+                        {{ option }}
+                      </button>
+                    }
+                  </div>
+                  <p style="font-size: 11px; color: #94a3b8; margin: 8px 0 0 0; display: flex; align-items: center; gap: 4px;">
+                    <span pmConsoleIcon="info" style="font-size: 12px;"></span>
+                    Type and Applicable cannot be changed after creating.
+                  </p>
+                }
+              </div>
+
+              <!-- Steps Section -->
+              <div class="steps-section" style="border-top: 1px solid #e2e8f0; padding-top: 24px;">
+                <!-- Accordions for existing steps -->
+                <div class="steps-list" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
+                  @for (step of workflowSteps; track step.name; let i = $index) {
+                    <div class="step-accordion" style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                      <div 
+                        class="step-accordion-header" 
+                        style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f8fafc; cursor: pointer; font-size: 13px; font-weight: 500; color: #334155;"
+                      >
+                        <div style="display: flex; align-items: center; gap: 8px; flex: 1;" (click)="toggleStepAccordion(i)">
+                          <span pmConsoleIcon="git-commit" style="color: #64748b; font-size: 16px;"></span>
+                          {{ step.name }}
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <button type="button" (click)="editWorkflowStep(i, $event)" style="background: transparent; border: none; color: #2563eb; font-size: 12px; font-weight: 500; cursor: pointer; padding: 4px 8px;">Edit</button>
+                          <span [pmConsoleIcon]="newStepExpandedIndex === i ? 'chevron-up' : 'chevron-down'" style="color: #64748b;" (click)="toggleStepAccordion(i)"></span>
+                        </div>
+                      </div>
+                      @if (newStepExpandedIndex === i) {
+                        <div class="step-accordion-body" style="padding: 16px; background: #ffffff; border-top: 1px solid #e2e8f0; font-size: 13px; color: #475569;">
+                          <p style="margin: 0 0 8px 0;"><strong>Mandatory:</strong> {{ step.isMandatory ? 'Yes' : 'No' }}</p>
+                          <p style="margin: 0 0 8px 0;"><strong>On Reject:</strong> {{ step.rejectAction === 'restart' ? 'Restart the workflow' : 'Stay on same step' }}</p>
+                          <p style="margin: 0;"><strong>AI Component:</strong> {{ step.aiComponent === 'yes' ? 'Yes' : (step.aiComponent === 'no' ? 'No' : 'Not Required') }}</p>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+
+                @if (!isAddingWorkflowStep && workflowApplicability) {
+                  <button 
+                    type="button" 
+                    class="tb-btn" 
+                    (click)="openAddStepForm()"
+                    style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border: 1px dashed #cbd5e1; border-radius: 8px; background: #f8fafc; color: #3b82f6; font-size: 13px; font-weight: 500; cursor: pointer; width: 100%; justify-content: center; transition: all 0.2s;"
+                  >
+                    <span pmConsoleIcon="plus" style="font-size: 14px;"></span>
+                    Add step
+                  </button>
+                } @else if (isAddingWorkflowStep) {
+                <!-- HUGE Step Form -->
+                <div class="step-form-container" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; background: #ffffff;">
+                  
+                  <!-- Basic Details -->
+                  <div style="margin-bottom: 24px;">
+                    <div style="font-size: 12px; color: #2563eb; font-weight: 500; margin-bottom: 12px;">Basic Details</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 16px;">
+                      <div>
+                        <label style="font-size: 11px; color: #2563eb; display: block; margin-bottom: 6px;">Name</label>
+                        <input type="text" [(ngModel)]="newStepName" style="width: 100%; height: 32px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 0 8px; font-size: 12px; outline: none; box-sizing: border-box;" />
+                      </div>
+                      <div>
+                        <label style="font-size: 11px; color: #2563eb; display: block; margin-bottom: 6px;">Mandatory Step ?</label>
+                        <input type="checkbox" [(ngModel)]="newStepMandatory" style="width: 14px; height: 14px; border: 1px solid #cbd5e1; border-radius: 3px;" />
+                      </div>
+                    </div>
+                    <div>
+                      <label style="font-size: 11px; color: #2563eb; display: block; margin-bottom: 8px;">If the step rejected, then</label>
+                      <div style="display: flex; gap: 16px; align-items: center;">
+                        <label style="font-size: 12px; color: #334155; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                          <input type="radio" name="rejectAction" value="restart" [(ngModel)]="newStepRejectAction" />
+                          Restart the workflow
+                        </label>
+                        <label style="font-size: 12px; color: #334155; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                          <input type="radio" name="rejectAction" value="stay" [(ngModel)]="newStepRejectAction" />
+                          Stay on same step
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- AI component -->
+                  <div style="margin-bottom: 24px; border-top: 1px dashed #e2e8f0; padding-top: 16px;">
+                    <div style="font-size: 12px; color: #2563eb; font-weight: 500; margin-bottom: 12px;">AI component</div>
+                    <div style="display: flex; gap: 16px; align-items: center;">
+                      <label style="font-size: 12px; color: #334155; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                        <input type="radio" name="aiComp" value="yes" [(ngModel)]="newStepAiComponent" /> Yes
+                      </label>
+                      <label style="font-size: 12px; color: #334155; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                        <input type="radio" name="aiComp" value="no" [(ngModel)]="newStepAiComponent" /> No
+                      </label>
+                      <label style="font-size: 12px; color: #334155; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                        <input type="radio" name="aiComp" value="not_required" [(ngModel)]="newStepAiComponent" /> Not Required
+                      </label>
+                    </div>
+                  </div>
+
+                  <!-- Configure Actions -->
+                  <div style="margin-bottom: 24px; border-top: 1px dashed #e2e8f0; padding-top: 16px;">
+                    <div style="font-size: 12px; color: #334155; font-weight: 500; margin-bottom: 12px;">Configure Actions</div>
+                    <button type="button" style="background: #2563eb; color: #ffffff; border: none; border-radius: 4px; padding: 6px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 12px; cursor: pointer;">
+                      Add New <span pmConsoleIcon="chevron-down" style="font-size: 14px;"></span>
+                    </button>
+                    <div style="border: 1px solid #e2e8f0; border-radius: 4px; overflow: hidden;">
+                      <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                        <thead>
+                          <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                            <th style="padding: 10px; text-align: left; font-weight: 600; color: #475569;">USER NAME/ROLE</th>
+                            <th style="padding: 10px; text-align: left; font-weight: 600; color: #475569;">NAME</th>
+                            <th style="padding: 10px; text-align: left; font-weight: 600; color: #475569;">ACTION TYPE</th>
+                            <th style="padding: 10px; text-align: left; font-weight: 600; color: #475569;">EMAIL NOTIFICATION</th>
+                            <th style="padding: 10px; text-align: left; font-weight: 600; color: #475569;">DELETE</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td colspan="5" style="padding: 12px; text-align: center; color: #94a3b8; font-style: italic;">No record found</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <!-- Email Notifications setup -->
+                  <div style="border-top: 1px dashed #e2e8f0; padding-top: 16px;">
+                    <div style="font-size: 12px; color: #334155; font-weight: 500; margin-bottom: 16px;">Email Notifications setup</div>
+                    
+                    <!-- When Submitted -->
+                    <div class="step-accordion" style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; margin-bottom: 12px;">
+                      <div class="step-accordion-header" (click)="toggleEmailAccordion('submitted')" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f8fafc; cursor: pointer; font-size: 13px; font-weight: 500; color: #334155;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <span pmConsoleIcon="mail" style="color: #64748b; font-size: 16px;"></span>
+                          When Submitted
+                        </div>
+                        <span [pmConsoleIcon]="emailAccordionOpen === 'submitted' ? 'chevron-up' : 'chevron-down'" style="color: #64748b;"></span>
+                      </div>
+                      @if (emailAccordionOpen === 'submitted') {
+                        <div class="step-accordion-body" style="padding: 16px; background: #ffffff; border-top: 1px solid #e2e8f0;">
+                          <div style="font-size: 11px; color: #334155; margin-bottom: 6px;">Email template</div>
+                          <div style="border: 1px solid #cbd5e1; border-radius: 4px; overflow: hidden; background: #ffffff;">
+                            <div style="background: #f8fafc; border-bottom: 1px solid #cbd5e1; padding: 6px 8px; display: flex; gap: 12px; align-items: center; color: #475569;">
+                              <span pmConsoleIcon="bold" style="font-size: 14px; cursor: pointer;"></span>
+                              <span pmConsoleIcon="italic" style="font-size: 14px; cursor: pointer;"></span>
+                              <div style="width: 1px; height: 14px; background: #cbd5e1;"></div>
+                              <span pmConsoleIcon="list" style="font-size: 14px; cursor: pointer;"></span>
+                              <span style="font-family: serif; font-size: 16px; font-weight: bold; line-height: 1; cursor: pointer;">"</span>
+                              <div style="width: 1px; height: 14px; background: #cbd5e1;"></div>
+                              <span pmConsoleIcon="link" style="font-size: 14px; cursor: pointer;"></span>
+                              <span pmConsoleIcon="image" style="font-size: 14px; cursor: pointer;"></span>
+                            </div>
+                            <textarea style="width: 100%; height: 80px; border: none; padding: 8px; font-size: 13px; outline: none; resize: vertical; box-sizing: border-box;"></textarea>
+                          </div>
+                        </div>
+                      }
+                    </div>
+
+                    <!-- When Approved -->
+                    <div class="step-accordion" style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; margin-bottom: 12px;">
+                      <div class="step-accordion-header" (click)="toggleEmailAccordion('approved')" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f8fafc; cursor: pointer; font-size: 13px; font-weight: 500; color: #334155;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <span pmConsoleIcon="mail" style="color: #64748b; font-size: 16px;"></span>
+                          When Approved/Endorsed/Reviewed
+                        </div>
+                        <span [pmConsoleIcon]="emailAccordionOpen === 'approved' ? 'chevron-up' : 'chevron-down'" style="color: #64748b;"></span>
+                      </div>
+                      @if (emailAccordionOpen === 'approved') {
+                        <div class="step-accordion-body" style="padding: 16px; background: #ffffff; border-top: 1px solid #e2e8f0;">
+                          <div style="display: flex; gap: 16px; margin-bottom: 12px;">
+                             <label style="font-size: 11px; color: #334155; display: flex; align-items: center; gap: 6px;"><input type="radio" name="appLink" checked> Link Users</label>
+                             <label style="font-size: 11px; color: #334155; display: flex; align-items: center; gap: 6px;"><input type="radio" name="appLink"> Link Roles</label>
+                          </div>
+                          <div style="position: relative; width: 100%; margin-bottom: 12px;">
+                            <div (click)="isApprovedDropdownOpen = !isApprovedDropdownOpen" style="border: 1px solid #cbd5e1; border-radius: 4px; min-height: 32px; padding: 4px 8px; background: #ffffff; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; cursor: pointer;">
+                              @if (approvedSelectedRoles.length === 0) {
+                                <span style="color: #94a3b8; font-size: 12px; padding: 2px 4px;">Select</span>
+                              }
+                              @for (role of approvedSelectedRoles; track role) {
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 2px 6px; font-size: 12px; display: flex; align-items: center; gap: 4px; color: #334155;">
+                                  <span (click)="removeRole('approved', role, $event)" style="color: #2563eb; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px;">&times;</span>
+                                  {{ role }}
+                                </div>
+                              }
+                              <div style="flex-grow: 1; min-width: 20px;"></div>
+                              <span pmConsoleIcon="chevron-down" style="color: #64748b; font-size: 14px;"></span>
+                            </div>
+                            @if (isApprovedDropdownOpen) {
+                              <div style="position: absolute; top: 100%; left: 0; right: 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 4px; margin-top: 4px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); z-index: 10; max-height: 200px; overflow-y: auto;">
+                                <div style="padding: 8px 12px; font-size: 12px; font-weight: 600; color: #64748b; border-bottom: 1px solid #e2e8f0;">Project Roles</div>
+                                @for (role of availableRoles; track role) {
+                                  <div (click)="toggleRole('approved', role)" style="padding: 8px 12px; font-size: 13px; color: #334155; cursor: pointer; transition: background 0.2s;" [style.background]="approvedSelectedRoles.includes(role) ? '#f8fafc' : 'transparent'" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background=this.getAttribute('data-active') === 'true' ? '#f8fafc' : 'transparent'" [attr.data-active]="approvedSelectedRoles.includes(role) ? 'true' : 'false'">
+                                    {{ role }}
+                                  </div>
+                                }
+                              </div>
+                            }
+                          </div>
+                          <div style="font-size: 11px; color: #334155; margin-bottom: 6px;">Email template</div>
+                          <div style="border: 1px solid #cbd5e1; border-radius: 4px; overflow: hidden; background: #ffffff;">
+                            <div style="background: #f8fafc; border-bottom: 1px solid #cbd5e1; padding: 6px 8px; display: flex; gap: 12px; align-items: center; color: #475569;">
+                              <span pmConsoleIcon="bold" style="font-size: 14px; cursor: pointer;"></span>
+                              <span pmConsoleIcon="italic" style="font-size: 14px; cursor: pointer;"></span>
+                              <div style="width: 1px; height: 14px; background: #cbd5e1;"></div>
+                              <span pmConsoleIcon="list" style="font-size: 14px; cursor: pointer;"></span>
+                              <span style="font-family: serif; font-size: 16px; font-weight: bold; line-height: 1; cursor: pointer;">"</span>
+                            </div>
+                            <textarea style="width: 100%; height: 80px; border: none; padding: 8px; font-size: 13px; outline: none; resize: vertical; box-sizing: border-box;"></textarea>
+                          </div>
+                        </div>
+                      }
+                    </div>
+
+                    <!-- When Rejected -->
+                    <div class="step-accordion" style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                      <div class="step-accordion-header" (click)="toggleEmailAccordion('rejected')" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f8fafc; cursor: pointer; font-size: 13px; font-weight: 500; color: #334155;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <span pmConsoleIcon="mail" style="color: #64748b; font-size: 16px;"></span>
+                          When Sent back/Rejected
+                        </div>
+                        <span [pmConsoleIcon]="emailAccordionOpen === 'rejected' ? 'chevron-up' : 'chevron-down'" style="color: #64748b;"></span>
+                      </div>
+                      @if (emailAccordionOpen === 'rejected') {
+                        <div class="step-accordion-body" style="padding: 16px; background: #ffffff; border-top: 1px solid #e2e8f0;">
+                          <div style="display: flex; gap: 16px; margin-bottom: 12px;">
+                             <label style="font-size: 11px; color: #334155; display: flex; align-items: center; gap: 6px;"><input type="radio" name="rejLink" checked> Link Users</label>
+                             <label style="font-size: 11px; color: #334155; display: flex; align-items: center; gap: 6px;"><input type="radio" name="rejLink"> Link Roles</label>
+                          </div>
+                          <div style="position: relative; width: 100%; margin-bottom: 12px;">
+                            <div (click)="isRejectedDropdownOpen = !isRejectedDropdownOpen" style="border: 1px solid #cbd5e1; border-radius: 4px; min-height: 32px; padding: 4px 8px; background: #ffffff; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; cursor: pointer;">
+                              @if (rejectedSelectedRoles.length === 0) {
+                                <span style="color: #94a3b8; font-size: 12px; padding: 2px 4px;">Select</span>
+                              }
+                              @for (role of rejectedSelectedRoles; track role) {
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 2px 6px; font-size: 12px; display: flex; align-items: center; gap: 4px; color: #334155;">
+                                  <span (click)="removeRole('rejected', role, $event)" style="color: #2563eb; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px;">&times;</span>
+                                  {{ role }}
+                                </div>
+                              }
+                              <div style="flex-grow: 1; min-width: 20px;"></div>
+                              <span pmConsoleIcon="chevron-down" style="color: #64748b; font-size: 14px;"></span>
+                            </div>
+                            @if (isRejectedDropdownOpen) {
+                              <div style="position: absolute; top: 100%; left: 0; right: 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 4px; margin-top: 4px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); z-index: 10; max-height: 200px; overflow-y: auto;">
+                                <div style="padding: 8px 12px; font-size: 12px; font-weight: 600; color: #64748b; border-bottom: 1px solid #e2e8f0;">Project Roles</div>
+                                @for (role of availableRoles; track role) {
+                                  <div (click)="toggleRole('rejected', role)" style="padding: 8px 12px; font-size: 13px; color: #334155; cursor: pointer; transition: background 0.2s;" [style.background]="rejectedSelectedRoles.includes(role) ? '#f8fafc' : 'transparent'" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background=this.getAttribute('data-active') === 'true' ? '#f8fafc' : 'transparent'" [attr.data-active]="rejectedSelectedRoles.includes(role) ? 'true' : 'false'">
+                                    {{ role }}
+                                  </div>
+                                }
+                              </div>
+                            }
+                          </div>
+                          <div style="font-size: 11px; color: #334155; margin-bottom: 6px;">Email template</div>
+                          <div style="border: 1px solid #cbd5e1; border-radius: 4px; overflow: hidden; background: #ffffff;">
+                            <div style="background: #f8fafc; border-bottom: 1px solid #cbd5e1; padding: 6px 8px; display: flex; gap: 12px; align-items: center; color: #475569;">
+                              <span pmConsoleIcon="bold" style="font-size: 14px; cursor: pointer;"></span>
+                              <span pmConsoleIcon="italic" style="font-size: 14px; cursor: pointer;"></span>
+                              <div style="width: 1px; height: 14px; background: #cbd5e1;"></div>
+                              <span pmConsoleIcon="list" style="font-size: 14px; cursor: pointer;"></span>
+                              <span style="font-family: serif; font-size: 16px; font-weight: bold; line-height: 1; cursor: pointer;">"</span>
+                            </div>
+                            <textarea style="width: 100%; height: 80px; border: none; padding: 8px; font-size: 13px; outline: none; resize: vertical; box-sizing: border-box;"></textarea>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+
+                  <div style="display: flex; justify-content: flex-start; gap: 12px; margin-top: 32px;">
+                    <button type="button" (click)="saveWorkflowStep()" style="background: #2563eb; color: white; border: none; border-radius: 4px; padding: 8px 24px; font-size: 13px; font-weight: 500; cursor: pointer;">{{ editingStepIndex !== null ? 'Save' : 'Add' }}</button>
+                    <button type="button" (click)="cancelAddStep()" style="background: transparent; color: #2563eb; border: 1px solid #2563eb; border-radius: 4px; padding: 8px 24px; font-size: 13px; font-weight: 500; cursor: pointer;">Cancel</button>
+                  </div>
+                </div>
+              }
+            </div>
+            @}
+          </div>
+        </div>
+      </app-pm-console-plan-drawer>
+    }
   `,
   styles: [`
     :host {
@@ -2408,10 +2737,34 @@ export interface TaxonomyCard {
     }
 
     .add-workflow-btn .btn-icon {
-      font-size: 16px;
-      display: inline-flex;
+      font-size: 14px;
     }
 
+    /* Workflow Pills */
+    .workflow-pill {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-size: 13px;
+      color: #475569;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+      display: block;
+      width: fit-content;
+    }
+    .workflow-pill:hover {
+      background: #f1f5f9;
+    }
+    .workflow-pill.active {
+      background: #f5f6ff;
+      border-color: #10069f;
+      color: #10069f;
+      font-weight: 500;
+    }
+
+    /* Priority Drawer Table */
     /* Standards Side Drawer custom styles */
     .standards-drawer-body {
       padding: 8px 0;
@@ -2893,16 +3246,199 @@ export class PortfolioWorkspaceFrameworkComponent {
     { id: 'program-plan', title: 'Program Plan', icon: 'sliders', description: 'Configure and manage stage-gate workflows for program planning.', items: ['Phase 1: Initiation', 'Phase 2: Planning & Setup', 'Phase 3: Active Monitoring', 'Phase 4: Stage Gate Review', 'Phase 5: Closure'] }
   ];
 
+  isCreatingWorkflow = false;
+  workflowType = '';
+  workflowApplicability = '';
+  workflowTypes = ['Type 1', 'Type 2', 'Type 3'];
+  workflowApplicabilityOptions = [
+    'All projects',
+    'Standalone project within a portfolio',
+    'Project within a program',
+    'Project without a program or portfolio'
+  ];
+
+  get currentApplicabilityOptions(): string[] {
+    if (this.workflowType === 'Type 2') {
+      return ['All projects', 'Standalone project within a portfolio'];
+    } else if (this.workflowType === 'Type 3') {
+      return ['All projects', 'Project within a program'];
+    }
+    return this.workflowApplicabilityOptions;
+  }
+
+  isAddingWorkflowStep = false;
+  workflowSteps: any[] = [];
+  newStepName = '';
+  newStepMandatory = false;
+  newStepRejectAction = 'restart';
+  newStepAiComponent = 'not_required';
+  newStepExpandedIndex = -1;
+
+  emailAccordionOpen: string = '';
+
+  availableRoles = ['Project Manager', 'Project Sponsor', 'PMO Contact', 'Delivery Manager', 'Initiator(Author)'];
+  approvedSelectedRoles: string[] = [];
+  rejectedSelectedRoles: string[] = [];
+  isApprovedDropdownOpen = false;
+  isRejectedDropdownOpen = false;
+
+  editingWorkflowId: string | null = null;
+  editingStepIndex: number | null = null;
+
   addNewWorkflow(): void {
-    const nextId = `workflow-${this.workflowCards.length + 1}`;
-    const newWorkflow: TaxonomyCard = {
-      id: nextId,
-      title: `Custom Workflow ${this.workflowCards.length + 1}`,
-      icon: 'activity',
-      description: 'Custom user-defined project workflow governance steps.',
-      items: ['Step 1: Draft', 'Step 2: Review', 'Step 3: Approved']
+    this.isCreatingWorkflow = true;
+    this.editingWorkflowId = null;
+    this.workflowType = '';
+    this.workflowApplicability = '';
+    this.workflowSteps = [];
+    this.isAddingWorkflowStep = false;
+    this.editingStepIndex = null;
+    this.changeDetector.markForCheck();
+  }
+
+  closeWorkflowDrawer(): void {
+    this.isCreatingWorkflow = false;
+    this.editingWorkflowId = null;
+    this.changeDetector.markForCheck();
+  }
+
+  openAddStepForm(): void {
+    this.isAddingWorkflowStep = true;
+    this.editingStepIndex = null;
+    this.newStepName = '';
+    this.newStepMandatory = false;
+    this.newStepRejectAction = 'restart';
+    this.newStepAiComponent = 'not_required';
+    this.approvedSelectedRoles = [];
+    this.rejectedSelectedRoles = [];
+    this.isApprovedDropdownOpen = false;
+    this.isRejectedDropdownOpen = false;
+    this.changeDetector.markForCheck();
+  }
+
+  editWorkflowStep(index: number, event: Event): void {
+    event.stopPropagation();
+    const step = this.workflowSteps[index];
+    this.newStepName = step.name;
+    this.newStepMandatory = step.isMandatory || false;
+    this.newStepRejectAction = step.rejectAction || 'restart';
+    this.newStepAiComponent = step.aiComponent || 'not_required';
+    this.approvedSelectedRoles = step.approvedRoles || [];
+    this.rejectedSelectedRoles = step.rejectedRoles || [];
+    this.isApprovedDropdownOpen = false;
+    this.isRejectedDropdownOpen = false;
+    this.editingStepIndex = index;
+    this.isAddingWorkflowStep = true;
+    this.newStepExpandedIndex = -1;
+    this.changeDetector.markForCheck();
+  }
+
+  cancelAddStep(): void {
+    this.isAddingWorkflowStep = false;
+    this.editingStepIndex = null;
+    this.changeDetector.markForCheck();
+  }
+
+  saveWorkflowStep(): void {
+    if (!this.newStepName) return;
+    
+    const stepData = {
+      name: this.newStepName,
+      isMandatory: this.newStepMandatory,
+      rejectAction: this.newStepRejectAction,
+      aiComponent: this.newStepAiComponent,
+      approvedRoles: [...this.approvedSelectedRoles],
+      rejectedRoles: [...this.rejectedSelectedRoles]
     };
-    this.workflowCards = [...this.workflowCards, newWorkflow];
+
+    if (this.editingStepIndex !== null) {
+      this.workflowSteps[this.editingStepIndex] = stepData;
+      this.newStepExpandedIndex = this.editingStepIndex;
+    } else {
+      this.workflowSteps.push(stepData);
+      this.newStepExpandedIndex = this.workflowSteps.length - 1;
+    }
+    
+    this.isAddingWorkflowStep = false;
+    this.editingStepIndex = null;
+    this.changeDetector.markForCheck();
+  }
+
+  toggleStepAccordion(index: number): void {
+    if (this.newStepExpandedIndex === index) {
+      this.newStepExpandedIndex = -1;
+    } else {
+      this.newStepExpandedIndex = index;
+    }
+    this.changeDetector.markForCheck();
+  }
+
+  toggleEmailAccordion(section: string): void {
+    if (this.emailAccordionOpen === section) {
+      this.emailAccordionOpen = '';
+    } else {
+      this.emailAccordionOpen = section;
+    }
+    this.changeDetector.markForCheck();
+  }
+
+  toggleRole(type: 'approved' | 'rejected', role: string): void {
+    if (type === 'approved') {
+      const index = this.approvedSelectedRoles.indexOf(role);
+      if (index === -1) {
+        this.approvedSelectedRoles.push(role);
+      } else {
+        this.approvedSelectedRoles.splice(index, 1);
+      }
+    } else {
+      const index = this.rejectedSelectedRoles.indexOf(role);
+      if (index === -1) {
+        this.rejectedSelectedRoles.push(role);
+      } else {
+        this.rejectedSelectedRoles.splice(index, 1);
+      }
+    }
+    this.changeDetector.markForCheck();
+  }
+
+  removeRole(type: 'approved' | 'rejected', role: string, event: Event): void {
+    event.stopPropagation();
+    if (type === 'approved') {
+      this.approvedSelectedRoles = this.approvedSelectedRoles.filter(r => r !== role);
+    } else {
+      this.rejectedSelectedRoles = this.rejectedSelectedRoles.filter(r => r !== role);
+    }
+    this.changeDetector.markForCheck();
+  }
+
+  saveWorkflow(event?: Event): void {
+    if (event) {
+      event.preventDefault();
+    }
+    if (!this.workflowType || !this.workflowApplicability) return;
+
+    if (this.editingWorkflowId) {
+      const idx = this.workflowCards.findIndex(c => c.id === this.editingWorkflowId);
+      if (idx !== -1) {
+        this.workflowCards[idx].title = this.workflowType;
+        this.workflowCards[idx].description = `Applicable for: ${this.workflowApplicability}`;
+        this.workflowCards[idx].items = this.workflowSteps.map(s => s.name);
+        this.workflowCards[idx].workflowStepsData = JSON.parse(JSON.stringify(this.workflowSteps));
+      }
+    } else {
+      const nextId = `workflow-${this.workflowCards.length + 1}-${Date.now()}`;
+      const newWorkflow: TaxonomyCard = {
+        id: nextId,
+        title: this.workflowType,
+        icon: 'activity',
+        description: `Applicable for: ${this.workflowApplicability}`,
+        items: this.workflowSteps.map(s => s.name),
+        workflowStepsData: JSON.parse(JSON.stringify(this.workflowSteps))
+      };
+      this.workflowCards = [...this.workflowCards, newWorkflow];
+    }
+    this.isCreatingWorkflow = false;
+    this.editingWorkflowId = null;
     this.changeDetector.markForCheck();
   }
 
@@ -3007,6 +3543,32 @@ export class PortfolioWorkspaceFrameworkComponent {
   drawerStatus = 'Active';
 
   openCardDrawer(card: TaxonomyCard, group: string): void {
+    if (group === 'Workflow Designer') {
+      this.isCreatingWorkflow = true;
+      this.editingWorkflowId = card.id;
+      this.workflowType = card.title;
+      // Extract applicability from description, assuming format: "Applicable for: X"
+      const descMatch = card.description.match(/Applicable for: (.*)/);
+      this.workflowApplicability = descMatch ? descMatch[1] : '';
+      
+      // Load steps if present, otherwise fallback to mapping string items
+      if (card.workflowStepsData) {
+        this.workflowSteps = JSON.parse(JSON.stringify(card.workflowStepsData));
+      } else {
+        this.workflowSteps = card.items.map(itemName => ({
+          name: itemName,
+          isMandatory: false,
+          rejectAction: 'restart',
+          aiComponent: 'not_required'
+        }));
+      }
+
+      this.isAddingWorkflowStep = false;
+      this.editingStepIndex = null;
+      this.changeDetector.markForCheck();
+      return;
+    }
+
     this.selectedCard = JSON.parse(JSON.stringify(card));
     this.selectedCardGroup = group;
     this.newDrawerItem = '';
