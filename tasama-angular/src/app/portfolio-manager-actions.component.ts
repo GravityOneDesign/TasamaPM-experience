@@ -1,4 +1,4 @@
-import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
+import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PmConsoleWorkCalendarComponent, PmConsoleCalendarCell, PmConsoleCalendarItem, PmConsoleCalendarFilter } from './shared/pm-console-work-calendar.component';
 import { PmConsoleIconService } from './pm-console-icon.service';
@@ -39,98 +39,100 @@ interface PortfolioWorkTargetGroup {
       <!-- Toolbar row -->
       <div class="workspace-control-row actions-control-row">
         <!-- Heading -->
-        <h2 class="workspace-action-title">Portfolio Name</h2>
+        <h2 class="workspace-action-title">{{ workspaceTitle }}</h2>
 
         <!-- Search input -->
         <label class="workspace-search">
           <span class="icon" aria-hidden="true"><i data-lucide="search"></i></span>
           <input
             type="search"
-            [placeholder]="'Search actions...'"
+            [placeholder]="searchPlaceholder"
             aria-label="Search actions"
             (input)="onSearchChange($event)"
           />
         </label>
 
         <!-- Program / Project selector -->
-        <div class="portfolio-target-picker" aria-label="Portfolio work target selector">
-          <details class="work-filter-dropdown target-picker-dropdown">
-            <summary [attr.aria-label]="'Select program or project: ' + selectedTargetOption.label">
-              <span class="work-filter-selected-icon">
-                <span class="icon" aria-hidden="true">
-                  <i [attr.data-lucide]="targetIconName(selectedTargetOption)"></i>
+        @if (showTargetPicker) {
+          <div class="portfolio-target-picker" aria-label="Portfolio work target selector">
+            <details class="work-filter-dropdown target-picker-dropdown">
+              <summary [attr.aria-label]="'Select program or project: ' + selectedTargetOption.label">
+                <span class="work-filter-selected-icon">
+                  <span class="icon" aria-hidden="true">
+                    <i [attr.data-lucide]="targetIconName(selectedTargetOption)"></i>
+                  </span>
                 </span>
-              </span>
-              <span>{{ selectedTargetOption.label }}</span>
-              <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-            </summary>
-            <div class="work-filter-menu target-picker-menu" role="menu">
-              <label class="target-picker-search" (click)="$event.stopPropagation()">
-                <span pmConsoleIcon="search" aria-hidden="true"></span>
-                <input
-                  type="search"
-                  placeholder="Search programs or projects"
-                  aria-label="Search programs or projects"
-                  [value]="targetSearchQuery"
-                  (input)="onTargetSearchChange($event)"
-                />
-              </label>
+                <span>{{ selectedTargetOption.label }}</span>
+                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+              </summary>
+              <div class="work-filter-menu target-picker-menu" role="menu">
+                <label class="target-picker-search" (click)="$event.stopPropagation()">
+                  <span pmConsoleIcon="search" aria-hidden="true"></span>
+                  <input
+                    type="search"
+                    placeholder="Search programs or projects"
+                    aria-label="Search programs or projects"
+                    [value]="targetSearchQuery"
+                    (input)="onTargetSearchChange($event)"
+                  />
+                </label>
 
-              <button
-                class="target-picker-option all-target"
-                [class.active]="selectedTargetId === allTargetOption.id"
-                type="button"
-                role="menuitemradio"
-                [attr.aria-checked]="selectedTargetId === allTargetOption.id"
-                (click)="selectTarget(allTargetOption.id, $event)"
-              >
-                <span class="target-option-copy">
-                  <strong>{{ allTargetOption.label }}</strong>
-                  <small>{{ actionItems.length }} actions</small>
-                </span>
-              </button>
+                <button
+                  class="target-picker-option all-target"
+                  [class.active]="selectedTargetId === allTargetOption.id"
+                  type="button"
+                  role="menuitemradio"
+                  [attr.aria-checked]="selectedTargetId === allTargetOption.id"
+                  (click)="selectTarget(allTargetOption.id, $event)"
+                >
+                  <span class="target-option-copy">
+                    <strong>{{ allTargetOption.label }}</strong>
+                    <small>{{ actionItems.length }} actions</small>
+                  </span>
+                </button>
 
-              @if (hasFilteredTargetOptions) {
-                @for (group of filteredTargetGroups; track group.id) {
-                  @if (group.options.length) {
-                    <details
-                      class="target-picker-group"
-                      [attr.aria-label]="group.label"
-                      [open]="isTargetGroupExpanded(group.id)"
-                      (toggle)="onTargetGroupToggle(group.id, $event)"
-                    >
-                      <summary class="target-picker-group-label" (click)="$event.stopPropagation()">
-                        <span>{{ group.label }}</span>
-                        <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
-                      </summary>
-                      @for (target of group.options; track target.id) {
-                        <button
-                          class="target-picker-option"
-                          [class.active]="selectedTargetId === target.id"
-                          type="button"
-                          role="menuitemradio"
-                          [attr.aria-checked]="selectedTargetId === target.id"
-                          (click)="selectTarget(target.id, $event)"
-                        >
-                          <span class="target-option-copy">
-                            <strong>{{ target.label }}</strong>
-                            @if (target.parentLabel) {
-                              <small>{{ target.parentLabel }}</small>
-                            } @else {
-                              <small>{{ target.type === 'program' ? targetCountLabel(target) : 'Standalone project' }}</small>
-                            }
-                          </span>
-                        </button>
-                      }
-                    </details>
+                @if (hasFilteredTargetOptions) {
+                  @for (group of filteredTargetGroups; track group.id) {
+                    @if (group.options.length) {
+                      <details
+                        class="target-picker-group"
+                        [attr.aria-label]="group.label"
+                        [open]="isTargetGroupExpanded(group.id)"
+                        (toggle)="onTargetGroupToggle(group.id, $event)"
+                      >
+                        <summary class="target-picker-group-label" (click)="$event.stopPropagation()">
+                          <span>{{ group.label }}</span>
+                          <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
+                        </summary>
+                        @for (target of group.options; track target.id) {
+                          <button
+                            class="target-picker-option"
+                            [class.active]="selectedTargetId === target.id"
+                            type="button"
+                            role="menuitemradio"
+                            [attr.aria-checked]="selectedTargetId === target.id"
+                            (click)="selectTarget(target.id, $event)"
+                          >
+                            <span class="target-option-copy">
+                              <strong>{{ target.label }}</strong>
+                              @if (target.parentLabel) {
+                                <small>{{ target.parentLabel }}</small>
+                              } @else {
+                                <small>{{ target.type === 'program' ? targetCountLabel(target) : 'Standalone project' }}</small>
+                              }
+                            </span>
+                          </button>
+                        }
+                      </details>
+                    }
                   }
+                } @else {
+                  <div class="target-picker-empty">No programs or projects found.</div>
                 }
-              } @else {
-                <div class="target-picker-empty">No programs or projects found.</div>
-              }
-            </div>
-          </details>
-        </div>
+              </div>
+            </details>
+          </div>
+        }
 
         <!-- Filter dropdown -->
         <div class="board-filter action-board-filter" aria-label="Action filters">
@@ -197,7 +199,7 @@ interface PortfolioWorkTargetGroup {
       <!-- Views container -->
       <div class="workspace-body">
         <!-- Board view -->
-        <div class="board-view" [class.is-hidden]="activeView !== 'board'" data-work-view="board">
+        <div class="board-view" [class.is-hidden]="activeView !== 'board'" [class.has-detail-panel]="showBoardDetailPanel" data-work-view="board">
           <div class="kanban-board">
             @for (column of visibleBoardColumns; track column.column) {
               <section class="kanban-column {{ column.tone }}">
@@ -480,6 +482,15 @@ interface PortfolioWorkTargetGroup {
   `],
 })
 export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDestroy {
+  @Input() workspaceTitle = 'Portfolio Name';
+  @Input() searchPlaceholder = 'Search actions...';
+  @Input() actionItems: readonly PortfolioActionItem[] = portfolioActionItems;
+  @Input() boardFilters: readonly PortfolioBoardFilter[] = portfolioBoardFilters;
+  @Input() showTargetPicker = true;
+  @Input() openItemsInDrawer = true;
+  @Input() showBoardDetailPanel = false;
+  @Input() todayKey = '2026-05-12';
+
   activeView: 'calendar' | 'board' = 'calendar';
   calendarMonth = new Date(2026, 4, 1); // May 2026
   selectedFilter = 'all';
@@ -487,8 +498,6 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
   searchQuery = '';
   targetSearchQuery = '';
 
-  readonly boardFilters = portfolioBoardFilters;
-  readonly actionItems = portfolioActionItems;
   readonly allTargetOption: PortfolioWorkTargetOption = {
     id: 'all',
     label: 'All programs and projects',
@@ -596,6 +605,7 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
   }
 
   openActionDrawer(item: PortfolioActionItem): void {
+    if (!this.openItemsInDrawer) return;
     this.actionDrawer.open(item);
     this.iconsHydrated = false;
     this.changeDetector.markForCheck();
@@ -720,7 +730,7 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
         key,
         day: date.getDate(),
         current,
-        today: key === '2026-05-12',
+        today: key === this.todayKey,
         items: current ? this.visibleMonthItems.filter((item) => item.date === key) : [],
       };
     });

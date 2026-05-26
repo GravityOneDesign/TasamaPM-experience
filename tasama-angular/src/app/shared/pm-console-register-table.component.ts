@@ -35,7 +35,7 @@ export interface PmConsoleRegisterTableMenuItem {
 }
 
 export interface PmConsoleRegisterTableCell {
-  kind: 'text' | 'primary' | 'status' | 'budget' | 'person' | 'action' | 'iconAction' | 'menu' | 'checkbox' | 'tags';
+  kind: 'text' | 'primary' | 'status' | 'budget' | 'person' | 'action' | 'iconAction' | 'menu' | 'checkbox' | 'tags' | 'trend';
   text?: string;
   title?: string;
   subtitle?: string;
@@ -52,7 +52,12 @@ export interface PmConsoleRegisterTableCell {
   checked?: boolean;
   muted?: boolean;
   strong?: boolean;
+  wrap?: boolean;
+  clampLines?: number;
   ariaLabel?: string;
+  prefixIcon?: string;
+  tag?: string;
+  tagTone?: string;
 }
 
 export interface PmConsoleRegisterTableRow {
@@ -164,6 +169,14 @@ let registerTableInstance = 0;
         color: #777777;
       }
 
+      .pm-register-cell-text.wrap {
+        display: -webkit-box;
+        line-clamp: var(--register-cell-line-clamp, 2);
+        -webkit-line-clamp: var(--register-cell-line-clamp, 2);
+        -webkit-box-orient: vertical;
+        white-space: normal;
+      }
+
       .pm-register-primary-button {
         align-items: flex-start;
         background: transparent;
@@ -199,6 +212,33 @@ let registerTableInstance = 0;
         text-overflow: ellipsis;
         white-space: nowrap;
         width: 100%;
+      }
+
+      .pm-register-primary-icon {
+        color: #687182;
+        display: inline-flex;
+        height: 16px;
+        width: 16px;
+      }
+
+      .pm-register-primary-icon .icon {
+        height: 14px;
+        width: 14px;
+      }
+
+      .pm-register-primary-tag {
+        background: #f4f7fb;
+        border: 1px solid #e3e8f0;
+        border-radius: 999px;
+        color: #4f596a;
+        display: inline-flex;
+        font-size: 10.5px;
+        font-weight: 500;
+        line-height: 1;
+        margin-top: 4px;
+        padding: 5px 9px;
+        white-space: nowrap;
+        width: fit-content;
       }
 
       .pm-register-person {
@@ -460,7 +500,13 @@ let registerTableInstance = 0;
                               @if (cell.subtitle) {
                                 <span>{{ cell.subtitle }}</span>
                               }
+                              @if (cell.prefixIcon) {
+                                <span class="pm-register-primary-icon" [pmConsoleIcon]="cell.prefixIcon" aria-hidden="true"></span>
+                              }
                               <strong>{{ cell.title || cell.text }}</strong>
+                              @if (cell.tag) {
+                                <span class="pm-register-primary-tag {{ cell.tagTone || '' }}">{{ cell.tag }}</span>
+                              }
                             </button>
                           }
                           @case ('status') {
@@ -521,7 +567,15 @@ let registerTableInstance = 0;
                             </span>
                           }
                           @default {
-                            <span class="pm-register-cell-text" [class.strong]="cell.strong" [class.muted]="cell.muted">{{ cell.text || cell.label }}</span>
+                            <span
+                              class="pm-register-cell-text"
+                              [class.strong]="cell.strong"
+                              [class.muted]="cell.muted"
+                              [class.wrap]="cell.wrap"
+                              [style.--register-cell-line-clamp]="cell.clampLines || null"
+                            >
+                              {{ cell.text || cell.label }}
+                            </span>
                           }
                         }
                       }

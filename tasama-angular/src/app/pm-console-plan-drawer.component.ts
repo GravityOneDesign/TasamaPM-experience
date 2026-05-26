@@ -40,8 +40,16 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
           </section>
 
           <footer class="plan-entry-drawer-footer">
-            <button class="plan-entry-drawer-cancel" type="button" (click)="close.emit()">{{ cancelLabel }}</button>
-            <button class="plan-entry-drawer-submit" type="submit" [disabled]="submitDisabled">{{ submitLabel }}</button>
+            <span class="plan-entry-drawer-footer-prefix">
+              <ng-content select="[planDrawerFooterPrefix]"></ng-content>
+            </span>
+            @if (submitFirst) {
+              <button class="plan-entry-drawer-submit" type="submit" [disabled]="submitDisabled">{{ submitLabel }}</button>
+              <button class="plan-entry-drawer-cancel" type="button" (click)="close.emit()">{{ cancelLabel }}</button>
+            } @else {
+              <button class="plan-entry-drawer-cancel" type="button" (click)="close.emit()">{{ cancelLabel }}</button>
+              <button class="plan-entry-drawer-submit" type="submit" [disabled]="submitDisabled">{{ submitLabel }}</button>
+            }
           </footer>
         </form>
       </aside>
@@ -210,6 +218,13 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
         padding: 11px 16px 13px;
       }
 
+      .plan-entry-drawer-footer-prefix {
+        align-items: center;
+        display: flex;
+        margin-right: auto;
+        min-width: 0;
+      }
+
       .plan-entry-drawer-cancel,
       .plan-entry-drawer-submit {
         align-items: center;
@@ -266,6 +281,7 @@ export class PmConsolePlanDrawerComponent {
   @Input() summary = '';
   @Input() submitLabel = 'Save';
   @Input() cancelLabel = 'Cancel';
+  @Input() submitFirst = false;
   @Input() submitDisabled = false;
   @Input() closeAriaLabel = 'Close drawer';
   @Input() ariaLabel = '';

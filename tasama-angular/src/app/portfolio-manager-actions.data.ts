@@ -18,12 +18,14 @@ export interface PortfolioActionItem {
   project: string;       // target workspace/entity name, e.g. 'Vision 2030'
   targetType: 'portfolio' | 'program' | 'project';
   type: string;          // e.g. 'Review Plan', 'Review Risk', 'Review Benefit', 'Review Stagegate Assesment'
-  kind: 'report' | 'risk' | 'benefit' | 'milestone' | 'task' | 'dependency'; // mapped for filters
+  kind: 'report' | 'risk' | 'benefit' | 'milestone' | 'task' | 'dependency' | 'plan' | 'change' | 'governance'; // mapped for filters
   tone: 'green' | 'red' | 'blue' | 'neutral'; // tone color class
   owner: string;         // initials, e.g. 'FA'
   meta: string;          // due label, e.g. 'Overdue by 5 days'
   cta: string;           // action label, e.g. 'Submit'
   column: 'Overdue' | 'This week' | 'Upcoming';
+  detailItems?: readonly PortfolioActionItem[];
+  detailSummary?: string;
 }
 
 export interface PortfolioBoardColumn {

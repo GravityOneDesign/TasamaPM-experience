@@ -1,6 +1,6 @@
 # Tasama Project Bible
 
-Last updated: 2026-05-25
+Last updated: 2026-05-26
 
 This file is the long-term handoff, memory, architecture guide, and AI-agent operating manual for the Tasama project. It exists so another coding agent, developer, or design engineer can restart work in a different tool and still understand the project language, product context, structure, and constraints.
 
@@ -119,6 +119,8 @@ The root component is `tasama-angular/src/app/app.component.ts`. It owns the top
 - `login`
 - `onboarding`
 - `console`
+- `portfolio`
+- `pmo`
 - `persona`
 - `executive`
 
@@ -128,7 +130,9 @@ Top-level flow:
 - Login emits a selected persona id.
 - Project Manager mounts the PM console shell directly.
 - Executive mounts the Executive root directly.
-- Program Manager, PMO, and Portfolio Manager currently mount a placeholder shell.
+- Portfolio Manager mounts the Portfolio Manager shell directly.
+- PMO mounts the PMO governance shell directly.
+- Program Manager currently mounts a placeholder shell.
 - The onboarding screen can mount PM console in guided-tour or PMO-assignment states.
 
 There is no URL route map yet. If routing is introduced later, preserve persona ownership by routing each persona to its own root shell rather than wiring new persona screens through the PM console content component.
@@ -161,7 +165,9 @@ Current persona states:
 
 - Project Manager has a real PM console entry.
 - Executive has a dedicated root experience in `src/app/executive`.
-- Program Manager, PMO, and Portfolio Manager are placeholders and should receive persona-owned shells/folders when implemented.
+- Portfolio Manager has a dedicated shell entry.
+- PMO has a dedicated PMO governance shell entry.
+- Program Manager is still a placeholder and should receive a persona-owned shell/folder when implemented.
 
 ## Persona Ownership Rules
 
@@ -184,13 +190,16 @@ Program Manager:
 
 PMO:
 
-- Currently a placeholder.
-- PMO concepts already appear in PM onboarding and assignment flows, but the PMO persona itself must not be implemented as a page mode inside the PM console.
+- Owns the PMO governance shell mounted from login.
+- Current root component is `PmoGovernanceShellComponent`.
+- PMO-owned feature files live as `tasama-angular/src/app/pmo-*.ts` with PMO decision-intelligence imagery in `tasama-angular/src/assets/pmo-decision-intelligence`.
+- PMO concepts also appear in PM onboarding and assignment flows, but the PMO persona itself must not be implemented as a page mode inside the PM console.
 
 Portfolio Manager:
 
-- Currently a placeholder.
-- Future implementation should get its own shell and folder. Reuse shared tables/cards/toolbars where appropriate, but do not mount portfolio workflows inside PM-only front-door switches.
+- Owns the Portfolio Manager shell and workspace components.
+- Current root component is `PortfolioManagerShellComponent`.
+- Reuse shared tables/cards/toolbars where appropriate, but do not mount portfolio workflows inside PM-only front-door switches.
 
 ## Glossary
 
@@ -570,11 +579,12 @@ Current shared component inventory:
 - `pm-console-toolbar.component.ts`: shared toolbar shell.
 - `pm-console-row-action-menu.component.ts`: row popover action menu.
 - `pm-console-register-table.component.ts`: configurable register table with selection, search, filter/export/add controls, column visibility, empty state, and row/cell action events.
+- `pm-console-expandable-search.component.ts`: compact expandable search control used by PMO governance workspaces.
 - `pm-console-field.component.ts`: generic field supporting text, number, date, password, search, textarea, select, and money.
 - `pm-console-date-field.component.ts`: date display/input wrapper.
 - `pm-console-mode-tabs.component.ts`: segmented/tabs pattern with icons and fixed widths.
 - `pm-console-side-nav.component.ts`: left rail nav.
-- `pm-console-top-bar.component.ts`: PM top bar.
+- `pm-console-top-bar.component.ts`: shared top bar with configurable console title and profile display.
 - `pm-console-project-dropdown.component.ts`: project switcher popover.
 - `pm-console-project-cover-cropper.component.ts`: cover upload/cropper using canvas output.
 - `pm-console-frontdoor-overview.component.ts`: PM front-door overview hero/card.
@@ -876,6 +886,12 @@ When a user asks for UI from Figma:
 - Visually verify if feasible.
 
 ## Memory Log
+
+2026-05-26:
+
+- Linked the PMO login persona on `main` to `PmoGovernanceShellComponent` instead of the generic placeholder, preserving Project Manager, Portfolio Manager, Executive, and Program Manager entry behavior.
+- Added the PMO-owned governance/front-door/decision-intelligence files and PMO decision-intelligence artwork to `main`.
+- Added default-preserving shared/component inputs needed by the PMO shell: configurable top bar title/profile display, expandable search, field help icons, register table wrapped cells, submit-first drawer footers, hidden register tabs, and configurable Portfolio action workspace inputs.
 
 2026-05-25:
 

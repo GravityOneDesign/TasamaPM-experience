@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, HostListener } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PmConsoleIconComponent } from '../shared/pm-console-icon.component';
@@ -32,40 +32,42 @@ type SubTab = 'projects' | 'risks' | 'benefits';
   template: `
     <div class="workspace-registers-tab">
 
-      <!-- Sub-tab bar -->
-      <div class="sub-tabs">
-        <button
-          class="pm-register-tab"
-          [class.is-active]="activeSubTab === 'projects'"
-          type="button"
-          (click)="setSubTab('projects')"
-        >
-          <span>Program & Project Register</span>
-        </button>
-        <button
-          class="pm-register-tab"
-          [class.is-active]="activeSubTab === 'risks'"
-          type="button"
-          (click)="setSubTab('risks')"
-        >
-          <span>Risk Register</span>
-        </button>
-        <button
-          class="pm-register-tab"
-          [class.is-active]="activeSubTab === 'benefits'"
-          type="button"
-          (click)="setSubTab('benefits')"
-        >
-          <span>Benefits Register</span>
-        </button>
-        <button
-          class="pm-register-tab"
-          type="button"
-          [disabled]="true"
-        >
-          <span>Issues Register</span>
-        </button>
-      </div>
+      @if (showRegisterTabs) {
+        <!-- Sub-tab bar -->
+        <div class="sub-tabs">
+          <button
+            class="pm-register-tab"
+            [class.is-active]="activeSubTab === 'projects'"
+            type="button"
+            (click)="setSubTab('projects')"
+          >
+            <span>Program & Project Register</span>
+          </button>
+          <button
+            class="pm-register-tab"
+            [class.is-active]="activeSubTab === 'risks'"
+            type="button"
+            (click)="setSubTab('risks')"
+          >
+            <span>Risk Register</span>
+          </button>
+          <button
+            class="pm-register-tab"
+            [class.is-active]="activeSubTab === 'benefits'"
+            type="button"
+            (click)="setSubTab('benefits')"
+          >
+            <span>Benefits Register</span>
+          </button>
+          <button
+            class="pm-register-tab"
+            type="button"
+            [disabled]="true"
+          >
+            <span>Issues Register</span>
+          </button>
+        </div>
+      }
 
       <!-- Tab Outlet -->
       @switch (activeSubTab) {
@@ -829,6 +831,8 @@ type SubTab = 'projects' | 'risks' | 'benefits';
   `]
 })
 export class PortfolioWorkspaceRegistersComponent {
+  @Input() showRegisterTabs = true;
+
   activeSubTab: SubTab = 'projects';
   expandedProgramIds = new Set<string>(); // default closed by default
   searchQuery = '';
