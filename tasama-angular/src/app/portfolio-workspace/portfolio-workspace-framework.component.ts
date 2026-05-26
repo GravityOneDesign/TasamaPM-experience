@@ -262,49 +262,164 @@ export interface TaxonomyCard {
               <p>Configure team members, access roles, and system permission levels.</p>
             </div>
             
-            <button class="add-user-btn" type="button" (click)="openAddUserForm()">
-              <span pmConsoleIcon="plus"></span>
-              <span>Add User</span>
-            </button>
+            <div class="user-header-actions">
+              <button class="export-btn" type="button" (click)="exportUsers()">
+                <span pmConsoleIcon="download"></span>
+                <span>Export</span>
+              </button>
+              <button class="add-user-btn" type="button" (click)="openAddUserForm()">
+                <span pmConsoleIcon="plus"></span>
+                <span>Add User</span>
+              </button>
+            </div>
           </div>
 
-          <!-- Sleek Add User Inline Form -->
-          @if (isAddingUser) {
-            <div class="user-inline-form-card animation-slide-in">
-              <div class="form-grid">
-                <div class="form-field">
-                  <label for="userName">Name</label>
-                  <input id="userName" type="text" [(ngModel)]="newUserName" placeholder="Fatima Qahtani" />
-                </div>
-                <div class="form-field">
-                  <label for="userUsername">User Name</label>
-                  <input id="userUsername" type="text" [(ngModel)]="newUserUsername" placeholder="fatima.q" />
-                </div>
-                <div class="form-field">
-                  <label for="userRole">Role(s)</label>
-                  <input id="userRole" type="text" [(ngModel)]="newUserRole" placeholder="Portfolio Manager" />
-                </div>
-                <div class="form-field">
-                  <label for="userEmail">Email</label>
-                  <input id="userEmail" type="email" [(ngModel)]="newUserEmail" placeholder="fatima@client.co" />
-                </div>
-                <div class="form-field">
-                  <label for="userBU">Business Unit</label>
-                  <input id="userBU" type="text" [(ngModel)]="newUserBU" placeholder="Safe Security" />
-                </div>
-                <div class="form-field">
-                  <label for="userAccess">Login Access</label>
-                  <select id="userAccess" [(ngModel)]="newUserAccess">
-                    <option value="Enabled">Enabled</option>
-                    <option value="Disabled">Disabled</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-actions">
-                <button class="form-submit-btn" type="button" (click)="addUser()">Save User</button>
-                <button class="form-cancel-btn" type="button" (click)="isAddingUser = false">Cancel</button>
-              </div>
+          <!-- Total Users Summary Bar -->
+          <div class="total-users-bar">
+            <div class="total-users-bar-inner">
+              <span class="total-users-icon-wrap">
+                <span pmConsoleIcon="users" class="total-users-icon"></span>
+              </span>
+              <span class="total-users-label">Total Users</span>
+              <span class="total-users-count">{{ maxUsers }}</span>
             </div>
+          </div>
+
+          <!-- Add User Side Drawer (uses platform-standard shell) -->
+          @if (isAddingUser) {
+            <app-pm-console-plan-drawer
+              eyebrow="USER MANAGEMENT"
+              [title]="editingUserIndex !== null ? 'Edit user details' : 'Add a new User'"
+              description="Manage and configure user access and controls"
+              [submitLabel]="editingUserIndex !== null ? 'Save' : 'Add'"
+              cancelLabel="Cancel"
+              (close)="closeAddUserDrawer()"
+              (submitForm)="addUser(); $event.preventDefault()"
+            >
+              <!-- Form content projected into the drawer body -->
+              <div planDrawerBody class="ud-form">
+
+                <!-- Row 1: Username + Login Access -->
+                <div class="ud-row ud-row-2col">
+                  <div class="ud-field">
+                    <label for="udUsername" class="ud-label">Username <span class="ud-required">*</span></label>
+                    <input id="udUsername" type="text" class="ud-input" placeholder="test@example.com" [(ngModel)]="drawerUsername" />
+                  </div>
+                  <div class="ud-field">
+                    <label class="ud-label">Login Access</label>
+                    <div class="ud-checkbox-row">
+                      <span class="ud-checkbox-box" [class.ud-checkbox-box--checked]="drawerLoginAccess" (click)="drawerLoginAccess = !drawerLoginAccess"></span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Row 2: First Name + Last Name -->
+                <div class="ud-row ud-row-2col">
+                  <div class="ud-field">
+                    <label for="udFirstName" class="ud-label">First Name <span class="ud-required">*</span></label>
+                    <input id="udFirstName" type="text" class="ud-input" placeholder="First Name" [(ngModel)]="drawerFirstName" />
+                  </div>
+                  <div class="ud-field">
+                    <label for="udLastName" class="ud-label">Last Name <span class="ud-required">*</span></label>
+                    <input id="udLastName" type="text" class="ud-input" placeholder="Last Name" [(ngModel)]="drawerLastName" />
+                  </div>
+                </div>
+
+                <!-- Row 3: User Role -->
+                <div class="ud-field">
+                  <label for="udUserRole" class="ud-label">User Role <span class="ud-required">*</span></label>
+                  <input id="udUserRole" type="text" class="ud-input" placeholder="Select one or more internal roles" [(ngModel)]="drawerUserRole" />
+                </div>
+
+                <!-- Row 4: Email Notification -->
+                <div class="ud-field">
+                  <label class="ud-label">Email Notification</label>
+                  <div class="ud-radio-group">
+                    <label class="ud-radio-label">
+                      <input type="radio" name="udEmailNotif" value="yes" [(ngModel)]="drawerEmailNotification" class="ud-radio" /> Yes
+                    </label>
+                    <label class="ud-radio-label">
+                      <input type="radio" name="udEmailNotif" value="no" [(ngModel)]="drawerEmailNotification" class="ud-radio" /> No
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Row 5: Group -->
+                <div class="ud-field">
+                  <label for="udGroup" class="ud-label">Group</label>
+                  <div class="ud-select-wrap">
+                    <select id="udGroup" class="ud-select ud-select--pill" [(ngModel)]="drawerGroup">
+                      <option value="Asset Management">Asset Management</option>
+                      <option value="Risk Management">Risk Management</option>
+                      <option value="Portfolio Management">Portfolio Management</option>
+                    </select>
+                    <span pmConsoleIcon="chevron-down" class="ud-select-chevron"></span>
+                  </div>
+                </div>
+
+                <!-- Row 6: Division / Branch / Section -->
+                <div class="ud-row ud-row-3col">
+                  <div class="ud-field">
+                    <label for="udDivision" class="ud-label">Division</label>
+                    <div class="ud-select-wrap">
+                      <select id="udDivision" class="ud-select ud-select--pill" [(ngModel)]="drawerDivision">
+                        <option value="All">All</option>
+                        @for (d of divisions; track d) { <option [value]="d">{{ d }}</option> }
+                      </select>
+                      <span pmConsoleIcon="chevron-down" class="ud-select-chevron"></span>
+                    </div>
+                  </div>
+                  <div class="ud-field">
+                    <label for="udBranch" class="ud-label">Branch</label>
+                    <div class="ud-select-wrap">
+                      <select id="udBranch" class="ud-select ud-select--pill" [(ngModel)]="drawerBranch">
+                        <option value="All">All</option>
+                        @for (b of brands; track b) { <option [value]="b">{{ b }}</option> }
+                      </select>
+                      <span pmConsoleIcon="chevron-down" class="ud-select-chevron"></span>
+                    </div>
+                  </div>
+                  <div class="ud-field">
+                    <label for="udSection" class="ud-label">Section</label>
+                    <div class="ud-select-wrap">
+                      <select id="udSection" class="ud-select ud-select--pill" [(ngModel)]="drawerSection">
+                        <option value="All">All</option>
+                        @for (s of sections; track s) { <option [value]="s">{{ s }}</option> }
+                      </select>
+                      <span pmConsoleIcon="chevron-down" class="ud-select-chevron"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </app-pm-console-plan-drawer>
+          }
+
+          <!-- Change Password Side Drawer (uses platform-standard shell) -->
+          @if (isChangingPassword) {
+            <app-pm-console-plan-drawer
+              eyebrow="USER MANAGEMENT"
+              title="Change User Password"
+              description="Manage and configure user access and controls"
+              submitLabel="Save"
+              cancelLabel="Cancel"
+              (close)="closeChangePasswordDrawer()"
+              (submitForm)="changePassword(); $event.preventDefault()"
+            >
+              <!-- Form content projected into the drawer body -->
+              <div planDrawerBody class="ud-form">
+                <!-- New Password Field -->
+                <div class="ud-field">
+                  <label for="udNewPassword" class="ud-label">New Password <span class="ud-required">*</span></label>
+                  <input id="udNewPassword" type="password" class="ud-input" placeholder="Enter new password" [(ngModel)]="drawerNewPassword" />
+                </div>
+
+                <!-- Confirm New Password Field -->
+                <div class="ud-field">
+                  <label for="udConfirmPassword" class="ud-label">Confirm New Password <span class="ud-required">*</span></label>
+                  <input id="udConfirmPassword" type="password" class="ud-input" placeholder="Confirm new password" [(ngModel)]="drawerConfirmPassword" />
+                </div>
+              </div>
+            </app-pm-console-plan-drawer>
           }
 
           <!-- Custom Premium User Table -->
@@ -312,17 +427,13 @@ export interface TaxonomyCard {
             <table class="user-table">
               <thead>
                 <tr>
-                  <th style="width: 22%;">Name</th>
-                  <th style="width: 15%;" class="sortable">
-                    User Name 
-                    <span class="sort-icon-wrapper active">
-                      <span pmConsoleIcon="triangle" class="sort-icon-triangle"></span>
-                    </span>
-                  </th>
-                  <th style="width: 15%;">Role(s)</th>
-                  <th style="width: 20%;">Email</th>
-                  <th style="width: 15%;">Business Unit</th>
-                  <th style="width: 8%;">Login Access</th>
+                  <th style="width: 20%;">Name</th>
+                  <th style="width: 13%;">User Name</th>
+                  <th style="width: 12%;">Role(s)</th>
+                  <th style="width: 18%;">Email</th>
+                  <th style="width: 13%;">Business Unit</th>
+                  <th style="width: 9%;">Login Access</th>
+                  <th style="width: 10%;">Last Login</th>
                   <th style="width: 5%; text-align: center;">More Action</th>
                 </tr>
               </thead>
@@ -347,16 +458,35 @@ export interface TaxonomyCard {
                           {{ user.loginAccess }}
                         </span>
                       </td>
-                      <td style="text-align: center;">
-                        <button class="user-row-delete-btn" type="button" (click)="removeUser(i)" aria-label="Remove user">
-                          <span pmConsoleIcon="trash-2"></span>
-                        </button>
+                      <td class="last-login-cell">{{ user.lastLogin || '—' }}</td>
+                      <td class="user-action-cell">
+                        <div class="user-action-wrap">
+                          <button
+                            class="user-dots-btn"
+                            type="button"
+                            aria-label="More actions"
+                            (click)="toggleUserMenu($event, i)"
+                          >
+                            <span class="user-dots-btn-dot"></span>
+                            <span class="user-dots-btn-dot"></span>
+                            <span class="user-dots-btn-dot"></span>
+                          </button>
+
+                          @if (openUserMenuIndex === i) {
+                            <div class="user-action-menu" role="menu">
+                              <button class="user-action-item" type="button" role="menuitem" (click)="openEditUserForm(i)">Edit</button>
+                              <button class="user-action-item" type="button" role="menuitem" (click)="removeUser(i); closeUserMenu()">Delete</button>
+                              <button class="user-action-item" type="button" role="menuitem" (click)="closeUserMenu()">Print</button>
+                              <button class="user-action-item" type="button" role="menuitem" (click)="openChangePasswordForm(i)">Change Password</button>
+                            </div>
+                          }
+                        </div>
                       </td>
                     </tr>
                   }
                 } @else {
                   <tr>
-                    <td colspan="7" class="table-empty-cell">
+                    <td colspan="8" class="table-empty-cell">
                       <div class="table-empty-container">
                         <span pmConsoleIcon="users" class="table-empty-icon"></span>
                         <h4>No Users Configured</h4>
@@ -2049,6 +2179,39 @@ export interface TaxonomyCard {
       margin: 0;
     }
 
+    .user-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .export-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #10069f;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 16px;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(16, 6, 159, 0.12);
+      transition: all 0.2s ease;
+    }
+
+    .export-btn:hover {
+      background: #1b10bd;
+      box-shadow: 0 4px 8px rgba(16, 6, 159, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .export-btn span[pmConsoleIcon] {
+      font-size: 14px;
+      display: inline-flex;
+    }
+
     .add-user-btn {
       display: inline-flex;
       align-items: center;
@@ -2076,91 +2239,249 @@ export interface TaxonomyCard {
       display: inline-flex;
     }
 
-    /* User Inline Form Card */
-    .user-inline-form-card {
+    /* Total Users Bar */
+    .total-users-bar {
       background: #f8fafc;
       border: 1px solid #dfe4ee;
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+      border-radius: 10px;
+      padding: 14px 20px;
+    }
+
+    .total-users-bar-inner {
       display: flex;
-      flex-direction: column;
-      gap: 16px;
+      align-items: center;
+      gap: 12px;
     }
 
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
+    .total-users-icon-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      background: rgba(16, 6, 159, 0.08);
+      border-radius: 6px;
+      color: #10069f;
     }
 
-    .form-field {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+    .total-users-icon {
+      font-size: 15px;
+      display: inline-flex;
     }
 
-    .form-field label {
-      font-size: 12px;
-      font-weight: 600;
-      color: #64748b;
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
-    }
-
-    .form-field input, .form-field select {
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
+    .total-users-label {
       font-size: 13.5px;
-      padding: 8px 12px;
-      outline: none;
-      background: #ffffff;
-      color: #334155;
-      transition: all 0.15s ease;
-    }
-
-    .form-field input:focus, .form-field select:focus {
-      border-color: #10069f;
-      box-shadow: 0 0 0 3px rgba(16, 6, 159, 0.1);
-    }
-
-    .form-actions {
-      display: flex;
-      gap: 10px;
-      justify-content: flex-end;
-    }
-
-    .form-submit-btn {
-      background: #10069f;
-      color: #ffffff;
-      border: none;
-      border-radius: 8px;
-      font-size: 13px;
       font-weight: 600;
-      padding: 8px 16px;
-      cursor: pointer;
-      transition: background 0.15s ease;
-    }
-
-    .form-submit-btn:hover {
-      background: #1b10bd;
-    }
-
-    .form-cancel-btn {
-      background: transparent;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      color: #64748b;
-      font-size: 13px;
-      font-weight: 500;
-      padding: 8px 16px;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    .form-cancel-btn:hover {
-      background: #e2e8f0;
       color: #334155;
+    }
+
+    .total-users-count {
+      font-size: 14px;
+      font-weight: 700;
+      color: #10069f;
+      margin-left: 4px;
+    }
+
+    /* =============================================
+       User Drawer form field styles (ud-*)
+       The drawer chrome (overlay, width, header,
+       footer, close button) comes from the shared
+       PmConsolePlanDrawerComponent.
+       ============================================= */
+
+    .ud-form {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Two-column row */
+    .ud-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .ud-row-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .ud-row-3col {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    /* Field wrapper */
+    .ud-field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Label — Montserrat 14px/500 #0A0A0A as per Figma */
+    .ud-label {
+      font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 14px;
+      color: #0a0a0a;
+    }
+
+    .ud-required {
+      color: #fb2c36;
+      margin-left: 1px;
+    }
+
+    /* Text input — Figma: 36px h, 8px radius, rgba(0,0,0,0.15) border */
+    .ud-input {
+      height: 36px;
+      padding: 4px 12px;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      border-radius: 8px;
+      font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      color: #0a0a0a;
+      background: #ffffff;
+      outline: none;
+      width: 100%;
+      box-sizing: border-box;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .ud-input::placeholder {
+      color: #717182;
+    }
+
+    .ud-input:focus {
+      border-color: #10069f;
+      box-shadow: 0 0 0 3px rgba(16, 6, 159, 0.08);
+    }
+
+    /* Checkbox — styled square as per Figma */
+    .ud-checkbox-row {
+      height: 36px;
+      display: flex;
+      align-items: center;
+    }
+
+    .ud-checkbox-box {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 1px solid rgba(0, 0, 0, 0.10);
+      background: #f3f3f5;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.12s, border-color 0.12s;
+    }
+
+    .ud-checkbox-box--checked {
+      background: #10069f;
+      border-color: #10069f;
+    }
+
+    .ud-checkbox-box--checked::after {
+      content: '';
+      display: block;
+      width: 9px;
+      height: 5px;
+      border-left: 2px solid #fff;
+      border-bottom: 2px solid #fff;
+      transform: rotate(-45deg) translate(0px, -1px);
+    }
+
+    /* Radio buttons */
+    .ud-radio-group {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .ud-radio-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      color: #0a0a0a;
+      cursor: pointer;
+    }
+
+    .ud-radio {
+      width: 16px;
+      height: 16px;
+      accent-color: #10069f;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* Select wrapper — positions chevron */
+    .ud-select-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Bordered select (Group) — same as text input */
+    .ud-select {
+      appearance: none;
+      -webkit-appearance: none;
+      height: 36px;
+      padding: 8px 32px 8px 12px;
+      border-radius: 8px;
+      font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      color: #717182;
+      width: 100%;
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      box-sizing: border-box;
+    }
+
+    .ud-select--bordered {
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      background: #ffffff;
+    }
+
+    .ud-select--bordered:focus {
+      border-color: #10069f;
+      box-shadow: 0 0 0 3px rgba(16, 6, 159, 0.08);
+    }
+
+    /* Pill select (Division / Branch / Section) — #F3F3F5 bg, no visible border */
+    .ud-select--pill {
+      border: 1px solid transparent;
+      background: #f3f3f5;
+      color: #0a0a0a;
+      font-weight: 500;
+    }
+
+    .ud-select--pill:focus {
+      border-color: #10069f;
+      box-shadow: 0 0 0 3px rgba(16, 6, 159, 0.08);
+    }
+
+    .ud-select-chevron {
+      position: absolute;
+      right: 10px;
+      pointer-events: none;
+      color: #717182;
+      font-size: 13px;
+      display: inline-flex;
+      opacity: 0.5;
     }
 
     /* Table Wrapper & Table */
@@ -2169,13 +2490,14 @@ export interface TaxonomyCard {
       border: 1px solid #dfe4ee;
       border-radius: 12px;
       box-shadow: 0 1px 3px rgba(25, 33, 61, 0.04);
-      overflow: hidden;
+      overflow: visible;
       width: 100%;
     }
 
     .user-table {
       width: 100%;
-      border-collapse: collapse;
+      border-collapse: separate;
+      border-spacing: 0;
       text-align: left;
     }
 
@@ -2188,6 +2510,14 @@ export interface TaxonomyCard {
       padding: 14px 16px;
       text-transform: uppercase;
       letter-spacing: 0.04em;
+    }
+
+    .user-table th:first-child {
+      border-top-left-radius: 12px;
+    }
+
+    .user-table th:last-child {
+      border-top-right-radius: 12px;
     }
 
     .user-table th.sortable {
@@ -2221,6 +2551,14 @@ export interface TaxonomyCard {
 
     .user-table tr:last-child td {
       border-bottom: none;
+    }
+
+    .user-table tr:last-child td:first-child {
+      border-bottom-left-radius: 12px;
+    }
+
+    .user-table tr:last-child td:last-child {
+      border-bottom-right-radius: 12px;
     }
 
     .user-table tr:hover td {
@@ -2323,6 +2661,89 @@ export interface TaxonomyCard {
     .user-row-delete-btn:hover {
       background: #fee2e2;
       color: #ef4444;
+    }
+
+    /* 3-dot more-action button */
+    .user-action-cell {
+      text-align: center;
+      position: relative;
+    }
+
+    .user-action-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .user-dots-btn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      transition: background 0.15s;
+    }
+
+    .user-dots-btn:hover {
+      background: #f1f5f9;
+    }
+
+    .user-dots-btn-dot {
+      display: block;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #475569;
+      flex-shrink: 0;
+    }
+
+    /* Dropdown menu */
+    .user-action-menu {
+      position: absolute;
+      top: calc(100% + 4px);
+      right: 0;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(25, 33, 61, 0.13), 0 1px 4px rgba(25, 33, 61, 0.06);
+      border: 1px solid #e8eaf0;
+      padding: 8px 0;
+      min-width: 180px;
+      z-index: 100;
+      animation: menuFadeIn 0.12s ease forwards;
+    }
+
+    @keyframes menuFadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .user-action-item {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: none;
+      padding: 12px 20px;
+      font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      color: #10069f;
+      cursor: pointer;
+      transition: background 0.12s;
+      white-space: nowrap;
+    }
+
+    .user-action-item:hover {
+      background: #f4f6fc;
+    }
+
+    .last-login-cell {
+      color: #64748b;
+      font-size: 13px;
     }
 
     /* Empty state table row cell */
@@ -3820,14 +4241,28 @@ export class PortfolioWorkspaceFrameworkComponent {
   brands: string[] = [];
   sections: string[] = [];
 
-  // User Management
+  // User Management Drawer
   isAddingUser = false;
-  newUserName = '';
-  newUserUsername = '';
-  newUserRole = '';
-  newUserEmail = '';
-  newUserBU = '';
-  newUserAccess: 'Enabled' | 'Disabled' = 'Enabled';
+  openUserMenuIndex: number | null = null;
+  editingUserIndex: number | null = null;
+  drawerUsername = '';
+  drawerFirstName = '';
+  drawerLastName = '';
+  drawerUserRole = '';
+  drawerLoginAccess = false;
+  drawerEmailNotification: 'yes' | 'no' = 'yes';
+  drawerGroup = 'Asset Management';
+  drawerDivision = 'All';
+  drawerBranch = 'All';
+  drawerSection = 'All';
+
+  // Change Password Drawer
+  isChangingPassword = false;
+  changePasswordUserIndex: number | null = null;
+  drawerNewPassword = '';
+  drawerConfirmPassword = '';
+
+  maxUsers = 10;
 
   users: Array<{
     name: string;
@@ -3836,6 +4271,7 @@ export class PortfolioWorkspaceFrameworkComponent {
     email: string;
     businessUnit: string;
     loginAccess: 'Enabled' | 'Disabled';
+    lastLogin?: string;
   }> = [];
 
   constructor(private readonly changeDetector: ChangeDetectorRef) { }
@@ -3915,48 +4351,160 @@ export class PortfolioWorkspaceFrameworkComponent {
 
   // User Management Methods
   openAddUserForm(): void {
+    this.editingUserIndex = null;
+    this.drawerUsername = '';
+    this.drawerFirstName = '';
+    this.drawerLastName = '';
+    this.drawerUserRole = '';
+    this.drawerLoginAccess = false;
+    this.drawerEmailNotification = 'yes';
+    this.drawerGroup = 'Asset Management';
+    this.drawerDivision = 'All';
+    this.drawerBranch = 'All';
+    this.drawerSection = 'All';
     this.isAddingUser = true;
-    this.newUserName = '';
-    this.newUserUsername = '';
-    this.newUserRole = '';
-    this.newUserEmail = '';
-    this.newUserBU = '';
-    this.newUserAccess = 'Enabled';
+    this.changeDetector.markForCheck();
+  }
+
+  openEditUserForm(index: number): void {
+    const user = this.users[index];
+    if (!user) return;
+    this.editingUserIndex = index;
+
+    // Split name into first and last name
+    const nameParts = (user.name || '').trim().split(/\s+/);
+    this.drawerFirstName = nameParts[0] || '';
+    this.drawerLastName = nameParts.slice(1).join(' ') || '';
+
+    this.drawerUsername = user.username || '';
+    this.drawerUserRole = user.role || '';
+    this.drawerLoginAccess = user.loginAccess === 'Enabled';
+    this.drawerEmailNotification = 'yes';
+    this.drawerGroup = user.businessUnit || 'Asset Management';
+    this.drawerDivision = 'All';
+    this.drawerBranch = 'All';
+    this.drawerSection = 'All';
+
+    this.isAddingUser = true;
+    this.closeUserMenu();
+  }
+
+  closeAddUserDrawer(): void {
+    this.isAddingUser = false;
+    this.editingUserIndex = null;
     this.changeDetector.markForCheck();
   }
 
   addUser(): void {
-    const name = this.newUserName.trim();
-    const username = this.newUserUsername.trim();
-    const role = this.newUserRole.trim() || 'Team Member';
-    const email = this.newUserEmail.trim();
-    const businessUnit = this.newUserBU.trim() || 'Safe Security';
-    const loginAccess = this.newUserAccess;
+    const firstName = this.drawerFirstName.trim();
+    const lastName = this.drawerLastName.trim();
+    const username = this.drawerUsername.trim();
+    const role = this.drawerUserRole.trim() || 'Team Member';
+    const name = [firstName, lastName].filter(Boolean).join(' ') || username;
+    const loginAccess: 'Enabled' | 'Disabled' = this.drawerLoginAccess ? 'Enabled' : 'Disabled';
 
-    if (name && username && email) {
-      this.users = [...this.users, {
-        name,
-        username,
-        role,
-        email,
-        businessUnit,
-        loginAccess
-      }];
+    if (username) {
+      if (this.editingUserIndex !== null) {
+        // Edit existing user
+        const updatedUsers = [...this.users];
+        updatedUsers[this.editingUserIndex] = {
+          ...updatedUsers[this.editingUserIndex],
+          name,
+          username,
+          role,
+          email: username,
+          businessUnit: this.drawerGroup,
+          loginAccess
+        };
+        this.users = updatedUsers;
+      } else {
+        // Add new user
+        this.users = [...this.users, {
+          name,
+          username,
+          role,
+          email: username,
+          businessUnit: this.drawerGroup,
+          loginAccess
+        }];
+      }
     }
 
     this.isAddingUser = false;
-    this.newUserName = '';
-    this.newUserUsername = '';
-    this.newUserRole = '';
-    this.newUserEmail = '';
-    this.newUserBU = '';
-    this.newUserAccess = 'Enabled';
+    this.editingUserIndex = null;
+    this.changeDetector.markForCheck();
+  }
+
+  openChangePasswordForm(index: number): void {
+    const user = this.users[index];
+    if (!user) return;
+    this.changePasswordUserIndex = index;
+    this.drawerNewPassword = '';
+    this.drawerConfirmPassword = '';
+    this.isChangingPassword = true;
+    this.closeUserMenu();
+  }
+
+  closeChangePasswordDrawer(): void {
+    this.isChangingPassword = false;
+    this.changePasswordUserIndex = null;
+    this.changeDetector.markForCheck();
+  }
+
+  changePassword(): void {
+    const newPass = this.drawerNewPassword.trim();
+    const confPass = this.drawerConfirmPassword.trim();
+    if (!newPass || newPass !== confPass) {
+      alert('Passwords do not match or are empty.');
+      return;
+    }
+    // Simulate successful password update
+    this.isChangingPassword = false;
+    this.changePasswordUserIndex = null;
     this.changeDetector.markForCheck();
   }
 
   removeUser(index: number): void {
-    this.users = this.users.filter((_, i) => i !== index);
+    if (confirm('Are you sure?')) {
+      this.users = this.users.filter((_, i) => i !== index);
+      if (this.openUserMenuIndex === index) this.openUserMenuIndex = null;
+      this.changeDetector.markForCheck();
+    }
+  }
+
+  toggleUserMenu(event: Event, index: number): void {
+    event.stopPropagation();
+    this.openUserMenuIndex = this.openUserMenuIndex === index ? null : index;
     this.changeDetector.markForCheck();
+  }
+
+  closeUserMenu(): void {
+    this.openUserMenuIndex = null;
+    this.changeDetector.markForCheck();
+  }
+
+  @HostListener('click')
+  onHostClick(): void {
+    if (this.openUserMenuIndex !== null) {
+      this.openUserMenuIndex = null;
+      this.changeDetector.markForCheck();
+    }
+  }
+
+  exportUsers(): void {
+    if (this.users.length === 0) return;
+    const headers = ['Name', 'User Name', 'Role(s)', 'Email', 'Business Unit', 'Login Access', 'Last Login'];
+    const rows = this.users.map(u => [
+      u.name, u.username, u.role, u.email, u.businessUnit, u.loginAccess, u.lastLogin ?? ''
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'users-export.csv';
+    link.click();
+    URL.revokeObjectURL(url);
   }
 
   getCardItemsPreview(items: string[]): string {

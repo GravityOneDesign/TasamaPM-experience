@@ -59,7 +59,7 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
         inset: 0;
         pointer-events: none;
         position: fixed;
-        z-index: 81;
+        z-index: 1200;
       }
 
       .plan-entry-drawer-backdrop {
