@@ -16,6 +16,8 @@ export interface TaxonomyCard {
   items: string[];
   needsAttention?: boolean;
   workflowStepsData?: any[];
+  workflowType?: string;
+  workflowApplicability?: string;
 }
 
 @Component({
@@ -706,10 +708,24 @@ export interface TaxonomyCard {
               <h2>Workflow Designer</h2>
               <p>Build and manage workflows</p>
             </div>
-            <button class="add-workflow-btn" type="button" (click)="addNewWorkflow()">
-              <span pmConsoleIcon="plus" class="btn-icon"></span>
-              <span>Add new</span>
-            </button>
+            <div class="add-workflow-btn-wrap" style="position: relative;">
+              <button class="add-workflow-btn" type="button" (click)="toggleAddWorkflowMenu($event)">
+                <span pmConsoleIcon="plus" class="btn-icon"></span>
+                <span>Add new</span>
+                <span pmConsoleIcon="chevron-down" style="font-size: 13px; margin-left: 4px;"></span>
+              </button>
+              @if (isAddWorkflowMenuOpen) {
+                <div class="add-workflow-dropdown animation-fade" role="menu">
+                  <div class="add-workflow-dropdown-label">Select Workflow Type</div>
+                  <button type="button" class="add-workflow-dropdown-item" role="menuitem" (click)="addNewWorkflow('Project stage closure')">
+                    Project stage closure
+                  </button>
+                  <button type="button" class="add-workflow-dropdown-item" role="menuitem" (click)="addNewWorkflow('KPI Measure Tracking')">
+                    KPI Measure Tracking
+                  </button>
+                </div>
+              }
+            </div>
           </div>
 
           <div class="standards-sections-stack">
@@ -1622,326 +1638,474 @@ export interface TaxonomyCard {
     @if (isCreatingWorkflow) {
       <app-pm-console-plan-drawer
         eyebrow=""
-        title="Create Workflow"
-        description=""
+        title="Workflow Designer"
+        description="Project Report"
         submitLabel="Create"
         cancelLabel="Cancel"
+        panelClass="workflow-custom-drawer"
+        [submitDisabled]="!workflowName"
         (close)="closeWorkflowDrawer()"
         (submitForm)="saveWorkflow($event)"
       >
-        <div planDrawerBody class="standards-drawer-body">
-          <div class="standards-drawer-form" style="padding-top: 16px;">
-            <!-- Type field -->
-            <div class="form-group" style="margin-bottom: 24px;">
-              <label class="form-label" style="display: flex; align-items: center; gap: 4px; font-weight: 500; font-size: 13px; color: #334155; margin-bottom: 8px;">
-                Type<span style="color: #e11d48;">*</span>
-                <span pmConsoleIcon="info" style="font-size: 14px; color: #94a3b8; cursor: pointer;"></span>
-              </label>
-              <div style="position: relative;">
-                <select class="form-control" [(ngModel)]="workflowType" [disabled]="!!editingWorkflowId" (change)="workflowApplicability = ''" style="width: 100%; height: 40px; border-radius: 8px; border: 1px solid #cbd5e1; padding: 0 12px; font-size: 14px; color: #475569; appearance: none; background: #ffffff; outline: none; cursor: pointer;">
-                  <option value="" disabled selected>Select</option>
-                  @for (type of workflowTypes; track type) {
-                    <option [value]="type">{{ type }}</option>
-                  }
-                </select>
-                <span pmConsoleIcon="chevron-down" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #64748b;"></span>
-              </div>
+        <div planDrawerBody class="workflow-drawer-wrapper">
+          <!-- Tabs row: shown for Project stage closure, placed just below description -->
+          @if (workflowType === 'Project stage closure') {
+            <div class="workflow-drawer-tabs">
+              <button
+                type="button"
+                class="workflow-drawer-tab"
+                [class.active]="workflowActiveTab === 'standard'"
+                (click)="workflowActiveTab = 'standard'"
+              >
+                <span pmConsoleIcon="calendar" class="tab-icon"></span>
+                Standard Workflow
+              </button>
+              <button
+                type="button"
+                class="workflow-drawer-tab"
+                [class.active]="workflowActiveTab === 'custom'"
+                (click)="workflowActiveTab = 'custom'"
+              >
+                <span pmConsoleIcon="sidebar" class="tab-icon" style="transform: rotate(90deg);"></span>
+                Customised Workflow
+              </button>
             </div>
+          }
+          <!-- White content area -->
+          <div class="workflow-drawer-content-area" [class.no-tabs]="workflowType !== 'Project stage closure'">
+            <!-- Workflow Name + Description fields (shared for both tabs / both types) -->
+            <div class="workflow-form-fields">
+              <div class="workflow-field-group">
+                <label class="workflow-field-label">Workflow Name <span class="required-star">*</span></label>
+                <input
+                  type="text"
+                  class="workflow-field-input"
+                  placeholder="Enter workflow name"
+                  [(ngModel)]="workflowName"
+                />
+              </div>
+              <div class="workflow-field-group">
+                <label class="workflow-field-label">Description</label>
+                <textarea
+                  class="workflow-field-textarea"
+                  placeholder="Enter a brief description of this workflow"
+                  rows="4"
+                  [(ngModel)]="workflowDescription"
+                ></textarea>
+              </div>
 
-            @if (workflowType) {
-              <!-- Applicable for field -->
-              <div class="form-group" style="margin-bottom: 24px;">
-                <label class="form-label" style="font-weight: 500; font-size: 13px; color: #334155; margin-bottom: 12px; display: block;">Applicable for</label>
-                @if (editingWorkflowId) {
-                  <div style="font-size: 13px; color: #475569; padding: 10px 14px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
-                    {{ workflowApplicability || 'None selected' }}
+              <!-- Conditional Dropdowns -->
+              @if (workflowType === 'Project stage closure' && workflowActiveTab === 'custom') {
+                <div class="workflow-field-group">
+                  <label class="workflow-field-label">Applicability</label>
+                  <div class="ud-select-wrap" style="position: relative;">
+                    <select class="workflow-field-select" [(ngModel)]="workflowApplicability">
+                      <option value="">Select applicability</option>
+                      <option value="Project within program">Project within program</option>
+                      <option value="Standalone">Standalone</option>
+                    </select>
+                    <span pmConsoleIcon="chevron-down" class="ud-select-chevron" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #64748b; font-size: 16px;"></span>
                   </div>
-                } @else {
-                  <div style="display: flex; flex-direction: column; gap: 8px;">
-                    @for (option of currentApplicabilityOptions; track option) {
-                      <button 
-                        type="button" 
-                        class="workflow-pill" 
-                        [class.active]="workflowApplicability === option"
-                        (click)="workflowApplicability = option"
-                      >
-                        {{ option }}
-                      </button>
-                    }
+                </div>
+              } @else if (workflowType === 'KPI Measure Tracking') {
+                <div class="workflow-field-group">
+                  <label class="workflow-field-label">Cascading Type</label>
+                  <div class="ud-select-wrap" style="position: relative;">
+                    <select class="workflow-field-select" [(ngModel)]="workflowApplicability">
+                      <option value="">Select type</option>
+                      <option value="Cascaded">Cascaded</option>
+                      <option value="Non-cascading">Non-cascading</option>
+                    </select>
+                    <span pmConsoleIcon="chevron-down" class="ud-select-chevron" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #64748b; font-size: 16px;"></span>
                   </div>
-                  <p style="font-size: 11px; color: #94a3b8; margin: 8px 0 0 0; display: flex; align-items: center; gap: 4px;">
-                    <span pmConsoleIcon="info" style="font-size: 12px;"></span>
-                    Type and Applicable cannot be changed after creating.
-                  </p>
+                </div>
+              }
+
+              <!-- Step Details Header -->
+              <div class="workflow-step-details-header">
+                <h3 class="workflow-step-details-title">Step Details</h3>
+                @if (!isAddingWorkflowStep) {
+                  <button type="button" class="workflow-add-step-btn" (click)="openAddStepForm()">
+                    <span pmConsoleIcon="plus" class="btn-icon"></span>
+                    Add step
+                  </button>
                 }
               </div>
 
-              <!-- Steps Section -->
-              <div class="steps-section" style="border-top: 1px solid #e2e8f0; padding-top: 24px;">
-                <!-- Accordions for existing steps -->
-                <div class="steps-list" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
-                  @for (step of workflowSteps; track step.name; let i = $index) {
-                    <div class="step-accordion" style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
-                      <div 
-                        class="step-accordion-header" 
-                        style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f8fafc; cursor: pointer; font-size: 13px; font-weight: 500; color: #334155;"
-                      >
-                        <div style="display: flex; align-items: center; gap: 8px; flex: 1;" (click)="toggleStepAccordion(i)">
-                          <span pmConsoleIcon="git-commit" style="color: #64748b; font-size: 16px;"></span>
-                          {{ step.name }}
+              @if (!isAddingWorkflowStep) {
+                <!-- Steps List -->
+                @if (workflowSteps.length > 0) {
+                  <div class="workflow-steps-list" style="margin-top: 16px; display: flex; flex-direction: column; gap: 12px;">
+                    @for (step of workflowSteps; track $index; let idx = $index) {
+                      <div class="workflow-step-card" [class.expanded]="newStepExpandedIndex === idx" style="border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; overflow: hidden; transition: all 0.2s;">
+                        <!-- Step Header -->
+                        <div class="workflow-step-card-header" (click)="toggleStepAccordion(idx)" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; cursor: pointer; background: #f8fafc; hover: background: #f1f5f9;">
+                          <div style="display: flex; align-items: center; gap: 12px;">
+                            <div class="step-badge" style="width: 24px; height: 24px; border-radius: 50%; background: #10069f; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600;">
+                              {{ idx + 1 }}
+                            </div>
+                            <span class="step-name" style="font-weight: 600; color: #1e293b; font-size: 14px;">{{ step.name }}</span>
+                            @if (step.isMandatory) {
+                              <span class="mandatory-badge" style="background: rgba(225, 29, 72, 0.08); color: #e11d48; border: 1px solid rgba(225, 29, 72, 0.15); font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 500;">Mandatory</span>
+                            }
+                          </div>
+                          
+                          <div style="display: flex; align-items: center; gap: 8px;" (click)="$event.stopPropagation()">
+                            <button type="button" class="priority-action-btn" (click)="editWorkflowStep(idx, $event)" title="Edit step" style="color: #64748b; background: transparent; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px;">
+                              <span pmConsoleIcon="edit-2"></span>
+                            </button>
+                            <button type="button" class="priority-action-btn delete" (click)="workflowSteps.splice(idx, 1); changeDetector.markForCheck()" title="Delete step" style="color: #ef4444; background: transparent; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px;">
+                              <span pmConsoleIcon="trash-2"></span>
+                            </button>
+                            <span [pmConsoleIcon]="newStepExpandedIndex === idx ? 'chevron-up' : 'chevron-down'" style="font-size: 16px; color: #64748b; margin-left: 8px; cursor: pointer;" (click)="toggleStepAccordion(idx)"></span>
+                          </div>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                          <button type="button" (click)="editWorkflowStep(i, $event)" style="background: transparent; border: none; color: #2563eb; font-size: 12px; font-weight: 500; cursor: pointer; padding: 4px 8px;">Edit</button>
-                          <span [pmConsoleIcon]="newStepExpandedIndex === i ? 'chevron-up' : 'chevron-down'" style="color: #64748b;" (click)="toggleStepAccordion(i)"></span>
-                        </div>
-                      </div>
-                      @if (newStepExpandedIndex === i) {
-                        <div class="step-accordion-body" style="padding: 16px; background: #ffffff; border-top: 1px solid #e2e8f0; font-size: 13px; color: #475569;">
-                          <p style="margin: 0 0 8px 0;"><strong>Mandatory:</strong> {{ step.isMandatory ? 'Yes' : 'No' }}</p>
-                          <p style="margin: 0 0 8px 0;"><strong>On Reject:</strong> {{ step.rejectAction === 'restart' ? 'Restart the workflow' : 'Stay on same step' }}</p>
-                          <p style="margin: 0;"><strong>AI Component:</strong> {{ step.aiComponent === 'yes' ? 'Yes' : (step.aiComponent === 'no' ? 'No' : 'Not Required') }}</p>
-                        </div>
-                      }
-                    </div>
-                  }
-                </div>
 
-                @if (!isAddingWorkflowStep && workflowApplicability) {
-                  <button 
-                    type="button" 
-                    class="tb-btn" 
-                    (click)="openAddStepForm()"
-                    style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border: 1px dashed #cbd5e1; border-radius: 8px; background: #f8fafc; color: #3b82f6; font-size: 13px; font-weight: 500; cursor: pointer; width: 100%; justify-content: center; transition: all 0.2s;"
-                  >
-                    <span pmConsoleIcon="plus" style="font-size: 14px;"></span>
-                    Add step
-                  </button>
-                } @else if (isAddingWorkflowStep) {
-                <!-- HUGE Step Form -->
-                <div class="step-form-container" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; background: #ffffff;">
+                        <!-- Step Accordion Body -->
+                        @if (newStepExpandedIndex === idx) {
+                          <div class="workflow-step-card-body" style="padding: 16px; border-top: 1px solid #cbd5e1; background: #ffffff; font-size: 13px; color: #475569; display: flex; flex-direction: column; gap: 10px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                              <div><strong>Reject Action:</strong> <span style="text-transform: capitalize;">{{ step.rejectAction }}</span></div>
+                              <div><strong>AI Component:</strong> <span style="text-transform: capitalize;">{{ step.aiComponent?.replace('_', ' ') }}</span></div>
+                            </div>
+                            @if (step.submittedRoles && step.submittedRoles.length > 0) {
+                              <div>
+                                <strong>Submitted Roles (Notification):</strong>
+                                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;">
+                                  @for (role of step.submittedRoles; track role) {
+                                    <span class="role-badge" style="font-size: 11px;">{{ role }}</span>
+                                  }
+                                </div>
+                              </div>
+                            }
+                            @if (step.approvedRoles && step.approvedRoles.length > 0) {
+                              <div>
+                                <strong>Approved Roles (Notification):</strong>
+                                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;">
+                                  @for (role of step.approvedRoles; track role) {
+                                    <span class="role-badge" style="font-size: 11px;">{{ role }}</span>
+                                  }
+                                </div>
+                              </div>
+                            }
+                            @if (step.rejectedRoles && step.rejectedRoles.length > 0) {
+                              <div>
+                                <strong>Rejected Roles (Notification):</strong>
+                                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;">
+                                  @for (role of step.rejectedRoles; track role) {
+                                    <span class="role-badge" style="font-size: 11px;">{{ role }}</span>
+                                  }
+                                </div>
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <div class="workflow-steps-empty" style="text-align: center; padding: 32px 16px; border: 1.5px dashed #cbd5e1; border-radius: 12px; margin-top: 16px;">
+                    <span pmConsoleIcon="sliders" style="font-size: 28px; color: #94a3b8; display: block; margin-bottom: 8px;"></span>
+                    <p style="font-size: 13.5px; color: #64748b; margin: 0 0 4px 0; font-weight: 500;">No Steps Defined</p>
+                    <p style="font-size: 12px; color: #94a3b8; margin: 0;">Click '+ Add Step' to define the sequence for this workflow.</p>
+                  </div>
+                }
+              }
+
+              @if (isAddingWorkflowStep) {
+                <div class="step-form-container" style="margin-top: 16px; border: 1px solid #cbd5e1; border-radius: 12px; background: #ffffff; padding: 24px; display: flex; flex-direction: column; gap: 24px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);">
                   
-                  <!-- Basic Details -->
-                  <div style="margin-bottom: 24px;">
-                    <div style="font-size: 12px; color: #2563eb; font-weight: 500; margin-bottom: 12px;">Basic Details</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 16px;">
-                      <div>
-                        <label style="font-size: 11px; color: #2563eb; display: block; margin-bottom: 6px;">Name</label>
-                        <input type="text" [(ngModel)]="newStepName" style="width: 100%; height: 32px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 0 8px; font-size: 12px; outline: none; box-sizing: border-box;" />
-                      </div>
-                      <div>
-                        <label style="font-size: 11px; color: #2563eb; display: block; margin-bottom: 6px;">Mandatory Step ?</label>
-                        <input type="checkbox" [(ngModel)]="newStepMandatory" style="width: 14px; height: 14px; border: 1px solid #cbd5e1; border-radius: 3px;" />
-                      </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: -4px;">
+                    <h4 style="font-size: 15px; font-weight: 600; color: #10069f; margin: 0;">
+                      {{ editingStepIndex !== null ? 'Edit Step Details' : 'New Step Details' }}
+                    </h4>
+                  </div>
+
+                  <!-- Basic Details Section -->
+                  <div class="form-section-block" style="display: flex; flex-direction: column; gap: 16px;">
+                    <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; border-left: 3px solid #10069f; padding-left: 8px;">
+                      Basic Details
                     </div>
-                    <div>
-                      <label style="font-size: 11px; color: #2563eb; display: block; margin-bottom: 8px;">If the step rejected, then</label>
-                      <div style="display: flex; gap: 16px; align-items: center;">
-                        <label style="font-size: 12px; color: #334155; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                          <input type="radio" name="rejectAction" value="restart" [(ngModel)]="newStepRejectAction" />
-                          Restart the workflow
-                        </label>
-                        <label style="font-size: 12px; color: #334155; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                          <input type="radio" name="rejectAction" value="stay" [(ngModel)]="newStepRejectAction" />
-                          Stay on same step
+                    
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; align-items: flex-end;">
+                      <div class="workflow-field-group">
+                        <label class="workflow-field-label">Step Name <span class="required-star">*</span></label>
+                        <input type="text" class="workflow-field-input" placeholder="Enter step name" [(ngModel)]="newStepName" />
+                      </div>
+                      
+                      <div style="height: 40px; display: flex; align-items: center;">
+                        <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 500; color: #334155; cursor: pointer;">
+                          <input type="checkbox" [(ngModel)]="newStepMandatory" style="width: 18px; height: 18px; accent-color: #10069f; cursor: pointer;" />
+                          Mandatory Step
                         </label>
                       </div>
                     </div>
                   </div>
 
-                  <!-- AI component -->
-                  <div style="margin-bottom: 24px; border-top: 1px dashed #e2e8f0; padding-top: 16px;">
-                    <div style="font-size: 12px; color: #2563eb; font-weight: 500; margin-bottom: 12px;">AI component</div>
-                    <div style="display: flex; gap: 16px; align-items: center;">
-                      <label style="font-size: 12px; color: #334155; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                        <input type="radio" name="aiComp" value="yes" [(ngModel)]="newStepAiComponent" /> Yes
+                  <!-- Reject Action Section -->
+                  <div class="form-section-block" style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; border-left: 3px solid #10069f; padding-left: 8px;">
+                      If the step is rejected, then
+                    </div>
+                    
+                    <div class="ud-radio-group" style="margin-top: 4px;">
+                      <label class="ud-radio-label">
+                        <input type="radio" name="newStepRejectAction" value="restart" [(ngModel)]="newStepRejectAction" class="ud-radio" />
+                        <span>Restart the workflow</span>
                       </label>
-                      <label style="font-size: 12px; color: #334155; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                        <input type="radio" name="aiComp" value="no" [(ngModel)]="newStepAiComponent" /> No
-                      </label>
-                      <label style="font-size: 12px; color: #334155; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                        <input type="radio" name="aiComp" value="not_required" [(ngModel)]="newStepAiComponent" /> Not Required
+                      <label class="ud-radio-label" style="margin-left: 24px;">
+                        <input type="radio" name="newStepRejectAction" value="stay" [(ngModel)]="newStepRejectAction" class="ud-radio" />
+                        <span>Stay on the current step</span>
                       </label>
                     </div>
                   </div>
 
-                  <!-- Configure Actions -->
-                  <div style="margin-bottom: 24px; border-top: 1px dashed #e2e8f0; padding-top: 16px;">
-                    <div style="font-size: 12px; color: #334155; font-weight: 500; margin-bottom: 12px;">Configure Actions</div>
-                    <button type="button" style="background: #2563eb; color: #ffffff; border: none; border-radius: 4px; padding: 6px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 12px; cursor: pointer;">
-                      Add New <span pmConsoleIcon="chevron-down" style="font-size: 14px;"></span>
-                    </button>
-                    <div style="border: 1px solid #e2e8f0; border-radius: 4px; overflow: hidden;">
-                      <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                  <!-- AI Component Section -->
+                  <div class="form-section-block" style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; border-left: 3px solid #10069f; padding-left: 8px;">
+                      AI component
+                    </div>
+                    
+                    <div class="ud-radio-group" style="margin-top: 4px;">
+                      <label class="ud-radio-label">
+                        <input type="radio" name="newStepAiComponent" value="yes" [(ngModel)]="newStepAiComponent" class="ud-radio" />
+                        <span>Yes</span>
+                      </label>
+                      <label class="ud-radio-label" style="margin-left: 24px;">
+                        <input type="radio" name="newStepAiComponent" value="no" [(ngModel)]="newStepAiComponent" class="ud-radio" />
+                        <span>No</span>
+                      </label>
+                      <label class="ud-radio-label" style="margin-left: 24px;">
+                        <input type="radio" name="newStepAiComponent" value="not_required" [(ngModel)]="newStepAiComponent" class="ud-radio" />
+                        <span>Not Required</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <!-- Configure Actions Section -->
+                  <div class="form-section-block" style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; border-left: 3px solid #10069f; padding-left: 8px;">
+                        Configure Actions
+                      </div>
+                      
+                      <!-- Add New Action Dropdown -->
+                      <div class="ud-select-wrap" style="width: 140px; position: relative;">
+                        <select class="workflow-field-select" style="height: 32px; padding: 0 8px; font-size: 12.5px;" disabled>
+                          <option value="">Add New</option>
+                        </select>
+                        <span pmConsoleIcon="chevron-down" class="ud-select-chevron" style="font-size: 12px; right: 8px;"></span>
+                      </div>
+                    </div>
+
+                    <!-- Configured Actions Table -->
+                    <div class="user-table-wrapper" style="border-radius: 8px; overflow: hidden; margin-top: 4px;">
+                      <table class="user-table" style="margin: 0; width: 100%;">
                         <thead>
-                          <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
-                            <th style="padding: 10px; text-align: left; font-weight: 600; color: #475569;">USER NAME/ROLE</th>
-                            <th style="padding: 10px; text-align: left; font-weight: 600; color: #475569;">NAME</th>
-                            <th style="padding: 10px; text-align: left; font-weight: 600; color: #475569;">ACTION TYPE</th>
-                            <th style="padding: 10px; text-align: left; font-weight: 600; color: #475569;">EMAIL NOTIFICATION</th>
-                            <th style="padding: 10px; text-align: left; font-weight: 600; color: #475569;">DELETE</th>
+                          <tr>
+                            <th style="padding: 8px 12px; font-size: 11px; width: 40%; background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">Action Name</th>
+                            <th style="padding: 8px 12px; font-size: 11px; width: 40%; background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">Trigger Condition</th>
+                            <th style="padding: 8px 12px; font-size: 11px; width: 20%; background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; text-align: center;">Status</th>
                           </tr>
                         </thead>
                         <tbody>
                           <tr>
-                            <td colspan="5" style="padding: 12px; text-align: center; color: #94a3b8; font-style: italic;">No record found</td>
+                            <td colspan="3" style="text-align: center; padding: 20px; color: #94a3b8; font-style: italic; font-size: 12.5px;">
+                              No custom actions configured for this step.
+                            </td>
                           </tr>
                         </tbody>
                       </table>
                     </div>
                   </div>
 
-                  <!-- Email Notifications setup -->
-                  <div style="border-top: 1px dashed #e2e8f0; padding-top: 16px;">
-                    <div style="font-size: 12px; color: #334155; font-weight: 500; margin-bottom: 16px;">Email Notifications setup</div>
-                    
-                    <!-- When Submitted -->
-                    <div class="step-accordion" style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; margin-bottom: 12px;">
-                      <div class="step-accordion-header" (click)="toggleEmailAccordion('submitted')" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f8fafc; cursor: pointer; font-size: 13px; font-weight: 500; color: #334155;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                          <span pmConsoleIcon="mail" style="color: #64748b; font-size: 16px;"></span>
-                          When Submitted
-                        </div>
-                        <span [pmConsoleIcon]="emailAccordionOpen === 'submitted' ? 'chevron-up' : 'chevron-down'" style="color: #64748b;"></span>
+                    <!-- Email Notifications Setup Accordions -->
+                    <div class="form-section-block" style="display: flex; flex-direction: column; gap: 12px;">
+                      <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; border-left: 3px solid #10069f; padding-left: 8px; margin-bottom: 4px;">
+                        Email Notifications setup
                       </div>
-                      @if (emailAccordionOpen === 'submitted') {
-                        <div class="step-accordion-body" style="padding: 16px; background: #ffffff; border-top: 1px solid #e2e8f0;">
-                          <div style="font-size: 11px; color: #334155; margin-bottom: 6px;">Email template</div>
-                          <div style="border: 1px solid #cbd5e1; border-radius: 4px; overflow: hidden; background: #ffffff;">
-                            <div style="background: #f8fafc; border-bottom: 1px solid #cbd5e1; padding: 6px 8px; display: flex; gap: 12px; align-items: center; color: #475569;">
-                              <span pmConsoleIcon="bold" style="font-size: 14px; cursor: pointer;"></span>
-                              <span pmConsoleIcon="italic" style="font-size: 14px; cursor: pointer;"></span>
-                              <div style="width: 1px; height: 14px; background: #cbd5e1;"></div>
-                              <span pmConsoleIcon="list" style="font-size: 14px; cursor: pointer;"></span>
-                              <span style="font-family: serif; font-size: 16px; font-weight: bold; line-height: 1; cursor: pointer;">"</span>
-                              <div style="width: 1px; height: 14px; background: #cbd5e1;"></div>
-                              <span pmConsoleIcon="link" style="font-size: 14px; cursor: pointer;"></span>
-                              <span pmConsoleIcon="image" style="font-size: 14px; cursor: pointer;"></span>
-                            </div>
-                            <textarea style="width: 100%; height: 80px; border: none; padding: 8px; font-size: 13px; outline: none; resize: vertical; box-sizing: border-box;"></textarea>
-                          </div>
-                        </div>
-                      }
-                    </div>
 
-                    <!-- When Approved -->
-                    <div class="step-accordion" style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; margin-bottom: 12px;">
-                      <div class="step-accordion-header" (click)="toggleEmailAccordion('approved')" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f8fafc; cursor: pointer; font-size: 13px; font-weight: 500; color: #334155;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                          <span pmConsoleIcon="mail" style="color: #64748b; font-size: 16px;"></span>
-                          When Approved/Endorsed/Reviewed
+                      <!-- Accordion 0: Submitted -->
+                      <div class="notification-accordion" style="border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; overflow: visible; margin-bottom: 8px;">
+                        <div class="accordion-trigger" (click)="toggleEmailAccordion('submitted')" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; background: #f8fafc; border-radius: 8px 8px 0 0;">
+                          <span style="font-size: 13.5px; font-weight: 600; color: #334155;">When step is submitted</span>
+                          <span [pmConsoleIcon]="emailAccordionOpen === 'submitted' ? 'chevron-up' : 'chevron-down'" style="font-size: 16px; color: #64748b;"></span>
                         </div>
-                        <span [pmConsoleIcon]="emailAccordionOpen === 'approved' ? 'chevron-up' : 'chevron-down'" style="color: #64748b;"></span>
+                        
+                        @if (emailAccordionOpen === 'submitted') {
+                          <div class="accordion-content" style="padding: 16px; border-top: 1px solid #cbd5e1; display: flex; flex-direction: column; gap: 14px; overflow: visible; position: relative; z-index: 60;">
+                            <div class="workflow-field-group">
+                              <label class="workflow-field-label">Email template</label>
+                              <div class="rich-editor-container">
+                                <div class="rich-editor-toolbar">
+                                  <button type="button" class="toolbar-btn bold-btn" title="Bold">B</button>
+                                  <button type="button" class="toolbar-btn italic-btn" title="Italic">I</button>
+                                  <span class="toolbar-divider"></span>
+                                  <button type="button" class="toolbar-btn" title="Number List"><span pmConsoleIcon="list-ordered"></span></button>
+                                  <button type="button" class="toolbar-btn" title="Bullet List"><span pmConsoleIcon="list"></span></button>
+                                  <span class="toolbar-divider"></span>
+                                  <button type="button" class="toolbar-btn" title="Quote"><span pmConsoleIcon="quote"></span></button>
+                                  <span class="toolbar-divider"></span>
+                                  <button type="button" class="toolbar-btn" title="Copy"><span pmConsoleIcon="copy"></span></button>
+                                  <button type="button" class="toolbar-btn" title="Cut"><span pmConsoleIcon="scissors"></span></button>
+                                  <button type="button" class="toolbar-btn" title="Paste"><span pmConsoleIcon="clipboard"></span></button>
+                                  <span class="toolbar-divider"></span>
+                                  <button type="button" class="toolbar-btn" title="Undo"><span pmConsoleIcon="corner-up-left"></span></button>
+                                  <button type="button" class="toolbar-btn" title="Redo"><span pmConsoleIcon="corner-up-right"></span></button>
+                                </div>
+                                <textarea class="rich-editor-textarea" placeholder="Enter email template..." [(ngModel)]="newStepSubmittedEmail" rows="4" style="min-height: 80px;"></textarea>
+                              </div>
+                            </div>
+                          </div>
+                        }
                       </div>
+
+                      <!-- Accordion 1: Approved -->
+                      <div class="notification-accordion" style="border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; overflow: visible;">
+                      <div class="accordion-trigger" (click)="toggleEmailAccordion('approved')" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; background: #f8fafc; border-radius: 8px 8px 0 0;">
+                        <span style="font-size: 13.5px; font-weight: 600; color: #334155;">When step is approved</span>
+                        <span [pmConsoleIcon]="emailAccordionOpen === 'approved' ? 'chevron-up' : 'chevron-down'" style="font-size: 16px; color: #64748b;"></span>
+                      </div>
+                      
                       @if (emailAccordionOpen === 'approved') {
-                        <div class="step-accordion-body" style="padding: 16px; background: #ffffff; border-top: 1px solid #e2e8f0;">
-                          <div style="display: flex; gap: 16px; margin-bottom: 12px;">
-                             <label style="font-size: 11px; color: #334155; display: flex; align-items: center; gap: 6px;"><input type="radio" name="appLink" checked> Link Users</label>
-                             <label style="font-size: 11px; color: #334155; display: flex; align-items: center; gap: 6px;"><input type="radio" name="appLink"> Link Roles</label>
-                          </div>
-                          <div style="position: relative; width: 100%; margin-bottom: 12px;">
-                            <div (click)="isApprovedDropdownOpen = !isApprovedDropdownOpen" style="border: 1px solid #cbd5e1; border-radius: 4px; min-height: 32px; padding: 4px 8px; background: #ffffff; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; cursor: pointer;">
-                              @if (approvedSelectedRoles.length === 0) {
-                                <span style="color: #94a3b8; font-size: 12px; padding: 2px 4px;">Select</span>
-                              }
-                              @for (role of approvedSelectedRoles; track role) {
-                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 2px 6px; font-size: 12px; display: flex; align-items: center; gap: 4px; color: #334155;">
-                                  <span (click)="removeRole('approved', role, $event)" style="color: #2563eb; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px;">&times;</span>
-                                  {{ role }}
+                        <div class="accordion-content" style="padding: 16px; border-top: 1px solid #cbd5e1; display: flex; flex-direction: column; gap: 14px; overflow: visible; position: relative; z-index: 50;">
+                          <div class="workflow-field-group" style="overflow: visible; position: relative;">
+                            <label class="workflow-field-label">Recipient Roles</label>
+                            
+                            <!-- Custom dropdown triggering approved roles multi-select -->
+                            <div class="multiselect-dropdown-container" style="position: relative; overflow: visible;">
+                              <div class="multiselect-trigger" (click)="isApprovedDropdownOpen = !isApprovedDropdownOpen; isRejectedDropdownOpen = false; isSubmittedDropdownOpen = false; $event.stopPropagation()" style="min-height: 38px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 36px 6px 12px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; background: #ffffff; cursor: pointer; position: relative;">
+                                @if (approvedSelectedRoles.length === 0) {
+                                  <span style="color: #94a3b8; font-size: 13px;">Select roles to notify</span>
+                                }
+                                @for (role of approvedSelectedRoles; track role) {
+                                  <span class="role-badge" style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px; background: #f1f5f9; border: 1px solid #cbd5e1; font-size: 11px; color: #334155; font-weight: 500;">
+                                    {{ role }}
+                                    <span pmConsoleIcon="x" style="font-size: 10px; cursor: pointer; color: #94a3b8;" (click)="removeRole('approved', role, $event)"></span>
+                                  </span>
+                                }
+                                <span pmConsoleIcon="chevron-down" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 14px;"></span>
+                              </div>
+
+                              @if (isApprovedDropdownOpen) {
+                                <div class="multiselect-dropdown-menu" style="position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); z-index: 100; max-height: 200px; overflow-y: auto; padding: 6px 0;">
+                                  @for (role of availableRoles; track role) {
+                                    <div class="multiselect-item" (click)="toggleRole('approved', role); $event.stopPropagation()" style="padding: 8px 12px; display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: #334155; transition: background 0.15s;">
+                                      <input type="checkbox" [checked]="approvedSelectedRoles.includes(role)" style="pointer-events: none;" />
+                                      <span>{{ role }}</span>
+                                    </div>
+                                  }
                                 </div>
                               }
-                              <div style="flex-grow: 1; min-width: 20px;"></div>
-                              <span pmConsoleIcon="chevron-down" style="color: #64748b; font-size: 14px;"></span>
                             </div>
-                            @if (isApprovedDropdownOpen) {
-                              <div style="position: absolute; top: 100%; left: 0; right: 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 4px; margin-top: 4px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); z-index: 10; max-height: 200px; overflow-y: auto;">
-                                <div style="padding: 8px 12px; font-size: 12px; font-weight: 600; color: #64748b; border-bottom: 1px solid #e2e8f0;">Project Roles</div>
-                                @for (role of availableRoles; track role) {
-                                  <div (click)="toggleRole('approved', role)" style="padding: 8px 12px; font-size: 13px; color: #334155; cursor: pointer; transition: background 0.2s;" [style.background]="approvedSelectedRoles.includes(role) ? '#f8fafc' : 'transparent'" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background=this.getAttribute('data-active') === 'true' ? '#f8fafc' : 'transparent'" [attr.data-active]="approvedSelectedRoles.includes(role) ? 'true' : 'false'">
-                                    {{ role }}
-                                  </div>
-                                }
-                              </div>
-                            }
                           </div>
-                          <div style="font-size: 11px; color: #334155; margin-bottom: 6px;">Email template</div>
-                          <div style="border: 1px solid #cbd5e1; border-radius: 4px; overflow: hidden; background: #ffffff;">
-                            <div style="background: #f8fafc; border-bottom: 1px solid #cbd5e1; padding: 6px 8px; display: flex; gap: 12px; align-items: center; color: #475569;">
-                              <span pmConsoleIcon="bold" style="font-size: 14px; cursor: pointer;"></span>
-                              <span pmConsoleIcon="italic" style="font-size: 14px; cursor: pointer;"></span>
-                              <div style="width: 1px; height: 14px; background: #cbd5e1;"></div>
-                              <span pmConsoleIcon="list" style="font-size: 14px; cursor: pointer;"></span>
-                              <span style="font-family: serif; font-size: 16px; font-weight: bold; line-height: 1; cursor: pointer;">"</span>
+
+                          <div class="workflow-field-group">
+                            <label class="workflow-field-label">Email template</label>
+                            <div class="rich-editor-container">
+                              <div class="rich-editor-toolbar">
+                                <button type="button" class="toolbar-btn bold-btn" title="Bold">B</button>
+                                <button type="button" class="toolbar-btn italic-btn" title="Italic">I</button>
+                                <span class="toolbar-divider"></span>
+                                <button type="button" class="toolbar-btn" title="Number List"><span pmConsoleIcon="list-ordered"></span></button>
+                                <button type="button" class="toolbar-btn" title="Bullet List"><span pmConsoleIcon="list"></span></button>
+                                <span class="toolbar-divider"></span>
+                                <button type="button" class="toolbar-btn" title="Quote"><span pmConsoleIcon="quote"></span></button>
+                                <span class="toolbar-divider"></span>
+                                <button type="button" class="toolbar-btn" title="Copy"><span pmConsoleIcon="copy"></span></button>
+                                <button type="button" class="toolbar-btn" title="Cut"><span pmConsoleIcon="scissors"></span></button>
+                                <button type="button" class="toolbar-btn" title="Paste"><span pmConsoleIcon="clipboard"></span></button>
+                                <span class="toolbar-divider"></span>
+                                <button type="button" class="toolbar-btn" title="Undo"><span pmConsoleIcon="corner-up-left"></span></button>
+                                <button type="button" class="toolbar-btn" title="Redo"><span pmConsoleIcon="corner-up-right"></span></button>
+                              </div>
+                              <textarea class="rich-editor-textarea" placeholder="Enter email template..." [(ngModel)]="newStepApprovedEmail" rows="4" style="min-height: 80px;"></textarea>
                             </div>
-                            <textarea style="width: 100%; height: 80px; border: none; padding: 8px; font-size: 13px; outline: none; resize: vertical; box-sizing: border-box;"></textarea>
                           </div>
                         </div>
                       }
                     </div>
 
-                    <!-- When Rejected -->
-                    <div class="step-accordion" style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
-                      <div class="step-accordion-header" (click)="toggleEmailAccordion('rejected')" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f8fafc; cursor: pointer; font-size: 13px; font-weight: 500; color: #334155;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                          <span pmConsoleIcon="mail" style="color: #64748b; font-size: 16px;"></span>
-                          When Sent back/Rejected
-                        </div>
-                        <span [pmConsoleIcon]="emailAccordionOpen === 'rejected' ? 'chevron-up' : 'chevron-down'" style="color: #64748b;"></span>
+                    <!-- Accordion 2: Rejected -->
+                    <div class="notification-accordion" style="border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; overflow: visible; margin-top: 8px;">
+                      <div class="accordion-trigger" (click)="toggleEmailAccordion('rejected')" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; background: #f8fafc; border-radius: 8px 8px 0 0;">
+                        <span style="font-size: 13.5px; font-weight: 600; color: #334155;">When step is rejected</span>
+                        <span [pmConsoleIcon]="emailAccordionOpen === 'rejected' ? 'chevron-up' : 'chevron-down'" style="font-size: 16px; color: #64748b;"></span>
                       </div>
+                      
                       @if (emailAccordionOpen === 'rejected') {
-                        <div class="step-accordion-body" style="padding: 16px; background: #ffffff; border-top: 1px solid #e2e8f0;">
-                          <div style="display: flex; gap: 16px; margin-bottom: 12px;">
-                             <label style="font-size: 11px; color: #334155; display: flex; align-items: center; gap: 6px;"><input type="radio" name="rejLink" checked> Link Users</label>
-                             <label style="font-size: 11px; color: #334155; display: flex; align-items: center; gap: 6px;"><input type="radio" name="rejLink"> Link Roles</label>
-                          </div>
-                          <div style="position: relative; width: 100%; margin-bottom: 12px;">
-                            <div (click)="isRejectedDropdownOpen = !isRejectedDropdownOpen" style="border: 1px solid #cbd5e1; border-radius: 4px; min-height: 32px; padding: 4px 8px; background: #ffffff; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; cursor: pointer;">
-                              @if (rejectedSelectedRoles.length === 0) {
-                                <span style="color: #94a3b8; font-size: 12px; padding: 2px 4px;">Select</span>
-                              }
-                              @for (role of rejectedSelectedRoles; track role) {
-                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 2px 6px; font-size: 12px; display: flex; align-items: center; gap: 4px; color: #334155;">
-                                  <span (click)="removeRole('rejected', role, $event)" style="color: #2563eb; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px;">&times;</span>
-                                  {{ role }}
+                        <div class="accordion-content" style="padding: 16px; border-top: 1px solid #cbd5e1; display: flex; flex-direction: column; gap: 14px; overflow: visible; position: relative; z-index: 40;">
+                          <div class="workflow-field-group" style="overflow: visible; position: relative;">
+                            <label class="workflow-field-label">Recipient Roles</label>
+                            
+                            <!-- Custom dropdown triggering rejected roles multi-select -->
+                            <div class="multiselect-dropdown-container" style="position: relative; overflow: visible;">
+                              <div class="multiselect-trigger" (click)="isRejectedDropdownOpen = !isRejectedDropdownOpen; isApprovedDropdownOpen = false; isSubmittedDropdownOpen = false; $event.stopPropagation()" style="min-height: 38px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 36px 6px 12px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; background: #ffffff; cursor: pointer; position: relative;">
+                                @if (rejectedSelectedRoles.length === 0) {
+                                  <span style="color: #94a3b8; font-size: 13px;">Select roles to notify</span>
+                                }
+                                @for (role of rejectedSelectedRoles; track role) {
+                                  <span class="role-badge" style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px; background: #f1f5f9; border: 1px solid #cbd5e1; font-size: 11px; color: #334155; font-weight: 500;">
+                                    {{ role }}
+                                    <span pmConsoleIcon="x" style="font-size: 10px; cursor: pointer; color: #94a3b8;" (click)="removeRole('rejected', role, $event)"></span>
+                                  </span>
+                                }
+                                <span pmConsoleIcon="chevron-down" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 14px;"></span>
+                              </div>
+
+                              @if (isRejectedDropdownOpen) {
+                                <div class="multiselect-dropdown-menu" style="position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); z-index: 100; max-height: 200px; overflow-y: auto; padding: 6px 0;">
+                                  @for (role of availableRoles; track role) {
+                                    <div class="multiselect-item" (click)="toggleRole('rejected', role); $event.stopPropagation()" style="padding: 8px 12px; display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: #334155; transition: background 0.15s;">
+                                      <input type="checkbox" [checked]="rejectedSelectedRoles.includes(role)" style="pointer-events: none;" />
+                                      <span>{{ role }}</span>
+                                    </div>
+                                  }
                                 </div>
                               }
-                              <div style="flex-grow: 1; min-width: 20px;"></div>
-                              <span pmConsoleIcon="chevron-down" style="color: #64748b; font-size: 14px;"></span>
                             </div>
-                            @if (isRejectedDropdownOpen) {
-                              <div style="position: absolute; top: 100%; left: 0; right: 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 4px; margin-top: 4px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); z-index: 10; max-height: 200px; overflow-y: auto;">
-                                <div style="padding: 8px 12px; font-size: 12px; font-weight: 600; color: #64748b; border-bottom: 1px solid #e2e8f0;">Project Roles</div>
-                                @for (role of availableRoles; track role) {
-                                  <div (click)="toggleRole('rejected', role)" style="padding: 8px 12px; font-size: 13px; color: #334155; cursor: pointer; transition: background 0.2s;" [style.background]="rejectedSelectedRoles.includes(role) ? '#f8fafc' : 'transparent'" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background=this.getAttribute('data-active') === 'true' ? '#f8fafc' : 'transparent'" [attr.data-active]="rejectedSelectedRoles.includes(role) ? 'true' : 'false'">
-                                    {{ role }}
-                                  </div>
-                                }
-                              </div>
-                            }
                           </div>
-                          <div style="font-size: 11px; color: #334155; margin-bottom: 6px;">Email template</div>
-                          <div style="border: 1px solid #cbd5e1; border-radius: 4px; overflow: hidden; background: #ffffff;">
-                            <div style="background: #f8fafc; border-bottom: 1px solid #cbd5e1; padding: 6px 8px; display: flex; gap: 12px; align-items: center; color: #475569;">
-                              <span pmConsoleIcon="bold" style="font-size: 14px; cursor: pointer;"></span>
-                              <span pmConsoleIcon="italic" style="font-size: 14px; cursor: pointer;"></span>
-                              <div style="width: 1px; height: 14px; background: #cbd5e1;"></div>
-                              <span pmConsoleIcon="list" style="font-size: 14px; cursor: pointer;"></span>
-                              <span style="font-family: serif; font-size: 16px; font-weight: bold; line-height: 1; cursor: pointer;">"</span>
+
+                          <div class="workflow-field-group">
+                            <label class="workflow-field-label">Email template</label>
+                            <div class="rich-editor-container">
+                              <div class="rich-editor-toolbar">
+                                <button type="button" class="toolbar-btn bold-btn" title="Bold">B</button>
+                                <button type="button" class="toolbar-btn italic-btn" title="Italic">I</button>
+                                <span class="toolbar-divider"></span>
+                                <button type="button" class="toolbar-btn" title="Number List"><span pmConsoleIcon="list-ordered"></span></button>
+                                <button type="button" class="toolbar-btn" title="Bullet List"><span pmConsoleIcon="list"></span></button>
+                                <span class="toolbar-divider"></span>
+                                <button type="button" class="toolbar-btn" title="Quote"><span pmConsoleIcon="quote"></span></button>
+                                <span class="toolbar-divider"></span>
+                                <button type="button" class="toolbar-btn" title="Copy"><span pmConsoleIcon="copy"></span></button>
+                                <button type="button" class="toolbar-btn" title="Cut"><span pmConsoleIcon="scissors"></span></button>
+                                <button type="button" class="toolbar-btn" title="Paste"><span pmConsoleIcon="clipboard"></span></button>
+                                <span class="toolbar-divider"></span>
+                                <button type="button" class="toolbar-btn" title="Undo"><span pmConsoleIcon="corner-up-left"></span></button>
+                                <button type="button" class="toolbar-btn" title="Redo"><span pmConsoleIcon="corner-up-right"></span></button>
+                              </div>
+                              <textarea class="rich-editor-textarea" placeholder="Enter email template..." [(ngModel)]="newStepRejectedEmail" rows="4" style="min-height: 80px;"></textarea>
                             </div>
-                            <textarea style="width: 100%; height: 80px; border: none; padding: 8px; font-size: 13px; outline: none; resize: vertical; box-sizing: border-box;"></textarea>
                           </div>
                         </div>
                       }
                     </div>
                   </div>
 
-                  <div style="display: flex; justify-content: flex-start; gap: 12px; margin-top: 32px;">
-                    <button type="button" (click)="saveWorkflowStep()" style="background: #2563eb; color: white; border: none; border-radius: 4px; padding: 8px 24px; font-size: 13px; font-weight: 500; cursor: pointer;">{{ editingStepIndex !== null ? 'Save' : 'Add' }}</button>
-                    <button type="button" (click)="cancelAddStep()" style="background: transparent; color: #2563eb; border: 1px solid #2563eb; border-radius: 4px; padding: 8px 24px; font-size: 13px; font-weight: 500; cursor: pointer;">Cancel</button>
+                  <!-- Form Action Buttons -->
+                  <div style="display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #e2e8f0; padding-top: 16px; margin-top: 8px;">
+                    <button type="button" class="workflow-field-button-secondary" (click)="cancelAddStep()" style="height: 38px; padding: 0 20px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; font-weight: 500; color: #475569; background: #ffffff; cursor: pointer; transition: background 0.15s;">
+                      Cancel
+                    </button>
+                    <button type="button" class="workflow-field-button-primary" (click)="saveWorkflowStep()" [disabled]="!newStepName" style="height: 38px; padding: 0 24px; border: none; border-radius: 8px; font-size: 13.5px; font-weight: 600; color: #ffffff; background: #10069f; cursor: pointer; transition: background 0.15s;" [style.opacity]="newStepName ? 1 : 0.6">
+                      {{ editingStepIndex !== null ? 'Save Step' : 'Add Step' }}
+                    </button>
                   </div>
+
                 </div>
               }
             </div>
-            @}
           </div>
         </div>
       </app-pm-console-plan-drawer>
@@ -1951,6 +2115,190 @@ export interface TaxonomyCard {
     :host {
       display: contents;
     }
+
+    /* Workflow Designer dropdown */
+    .add-workflow-dropdown {
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(16, 24, 40, 0.12);
+      min-width: 220px;
+      z-index: 200;
+      overflow: hidden;
+    }
+    .add-workflow-dropdown-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 12px 16px 6px;
+    }
+    .add-workflow-dropdown-item {
+      display: block;
+      width: 100%;
+      padding: 10px 16px;
+      background: transparent;
+      border: none;
+      text-align: left;
+      font-size: 13.5px;
+      color: #334155;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .add-workflow-dropdown-item:hover {
+      background: #f1f5f9;
+    }
+    /* Workflow Designer custom drawer */
+    ::ng-deep .workflow-custom-drawer .plan-entry-drawer-head {
+      border-bottom: none;
+      padding-bottom: 0;
+      background: #f1f5f9;
+    }
+    ::ng-deep .workflow-custom-drawer .plan-entry-drawer-body {
+      padding: 0;
+      background: #f1f5f9;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .workflow-drawer-wrapper {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      flex-grow: 1;
+    }
+    .workflow-drawer-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 12px 20px 0;
+    }
+    .workflow-drawer-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: 12px 12px 0 0;
+      background: transparent;
+      border: none;
+      color: #64748b;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .workflow-drawer-tab.active {
+      background: #ffffff;
+      color: #10069f;
+    }
+    .workflow-drawer-tab .tab-icon { font-size: 16px; }
+    .workflow-drawer-content-area {
+      background: #ffffff;
+      flex-grow: 1;
+      width: 100%;
+      overflow-y: auto;
+    }
+    .workflow-drawer-content-area.no-tabs {
+      border-radius: 8px 8px 0 0;
+      margin-top: 16px;
+    }
+    .workflow-form-fields {
+      padding: 24px 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .workflow-field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .workflow-field-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #334155;
+    }
+    .required-star {
+      color: #e11d48;
+    }
+    .workflow-field-input,
+    .workflow-field-select {
+      height: 40px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 0 12px;
+      font-size: 14px;
+      color: #1e293b;
+      background: #ffffff;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      width: 100%;
+      box-sizing: border-box;
+      appearance: none;
+    }
+    .workflow-field-input:focus,
+    .workflow-field-select:focus {
+      border-color: #10069f;
+      box-shadow: 0 0 0 3px rgba(16, 6, 159, 0.08);
+    }
+    .workflow-field-textarea {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 14px;
+      color: #1e293b;
+      background: #ffffff;
+      outline: none;
+      resize: vertical;
+      font-family: inherit;
+      line-height: 1.5;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .workflow-field-textarea:focus {
+      border-color: #10069f;
+      box-shadow: 0 0 0 3px rgba(16, 6, 159, 0.08);
+    }
+    .workflow-step-details-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px;
+      padding-top: 24px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .workflow-step-details-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0;
+    }
+    .workflow-add-step-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: #10069f;
+      color: #ffffff;
+      border: none;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .workflow-add-step-btn:hover {
+      background: #0d0481;
+    }
+    .workflow-add-step-btn .btn-icon {
+      font-size: 16px;
+    }
+    /* end Workflow Designer */
+
 
     .project-plan-title {
       display: flex;
@@ -4062,6 +4410,45 @@ export interface TaxonomyCard {
       color: #475569 !important;
       max-width: 100% !important;
     }
+
+    /* Step Details accordions and form styles */
+    .workflow-step-card-header:hover {
+      background: #f1f5f9 !important;
+    }
+    .workflow-step-card.expanded {
+      border-color: #10069f !important;
+      box-shadow: 0 4px 12px rgba(16, 6, 159, 0.06);
+    }
+    .notification-accordion {
+      transition: all 0.25s ease-in-out;
+    }
+    .accordion-trigger:hover {
+      background: #f1f5f9 !important;
+    }
+    .multiselect-trigger:hover {
+      border-color: #10069f !important;
+    }
+    .multiselect-item {
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #334155;
+      transition: background 0.15s;
+    }
+    .multiselect-item:hover {
+      background: #f1f5f9;
+      color: #10069f;
+    }
+    .workflow-field-button-secondary:hover {
+      background: #f8fafc !important;
+      border-color: #cbd5e1 !important;
+    }
+    .workflow-field-button-primary:hover:not([disabled]) {
+      background: #0d0481 !important;
+    }
   `]
 })
 export class PortfolioWorkspaceFrameworkComponent implements OnInit {
@@ -4291,6 +4678,9 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     this.openDivisionIndex = null;
     this.openBranchIndex = null;
     this.openSectionIndex = null;
+    this.isSubmittedDropdownOpen = false;
+    this.isApprovedDropdownOpen = false;
+    this.isRejectedDropdownOpen = false;
   }
 
 
@@ -4356,6 +4746,10 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
   ];
 
   isCreatingWorkflow = false;
+  isAddWorkflowMenuOpen = false;
+  workflowActiveTab: 'standard' | 'custom' = 'standard';
+  workflowName = '';
+  workflowDescription = '';
   workflowType = '';
   workflowApplicability = '';
   workflowTypes = ['Type 1', 'Type 2', 'Type 3'];
@@ -4386,18 +4780,41 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
   emailAccordionOpen: string = '';
 
   availableRoles = ['Project Manager', 'Project Sponsor', 'PMO Contact', 'Delivery Manager', 'Initiator(Author)'];
+  submittedSelectedRoles: string[] = [];
   approvedSelectedRoles: string[] = [];
   rejectedSelectedRoles: string[] = [];
+  isSubmittedDropdownOpen = false;
   isApprovedDropdownOpen = false;
   isRejectedDropdownOpen = false;
+  newStepSubmittedEmail = '';
+  newStepApprovedEmail = '';
+  newStepRejectedEmail = '';
 
   editingWorkflowId: string | null = null;
   editingStepIndex: number | null = null;
 
-  addNewWorkflow(): void {
+  toggleAddWorkflowMenu(event: Event): void {
+    event.stopPropagation();
+    this.isAddWorkflowMenuOpen = !this.isAddWorkflowMenuOpen;
+    this.changeDetector.markForCheck();
+  }
+
+  @HostListener('document:click')
+  closeAddWorkflowMenuOnClick(): void {
+    if (this.isAddWorkflowMenuOpen) {
+      this.isAddWorkflowMenuOpen = false;
+      this.changeDetector.markForCheck();
+    }
+  }
+
+  addNewWorkflow(type?: string): void {
+    this.isAddWorkflowMenuOpen = false;
     this.isCreatingWorkflow = true;
     this.editingWorkflowId = null;
-    this.workflowType = '';
+    this.workflowType = type || '';
+    this.workflowActiveTab = 'standard';
+    this.workflowName = '';
+    this.workflowDescription = '';
     this.workflowApplicability = '';
     this.workflowSteps = [];
     this.isAddingWorkflowStep = false;
@@ -4418,10 +4835,15 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     this.newStepMandatory = false;
     this.newStepRejectAction = 'restart';
     this.newStepAiComponent = 'not_required';
+    this.submittedSelectedRoles = [];
     this.approvedSelectedRoles = [];
     this.rejectedSelectedRoles = [];
+    this.isSubmittedDropdownOpen = false;
     this.isApprovedDropdownOpen = false;
     this.isRejectedDropdownOpen = false;
+    this.newStepSubmittedEmail = '';
+    this.newStepApprovedEmail = '';
+    this.newStepRejectedEmail = '';
     this.changeDetector.markForCheck();
   }
 
@@ -4432,10 +4854,15 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     this.newStepMandatory = step.isMandatory || false;
     this.newStepRejectAction = step.rejectAction || 'restart';
     this.newStepAiComponent = step.aiComponent || 'not_required';
+    this.submittedSelectedRoles = step.submittedRoles || [];
     this.approvedSelectedRoles = step.approvedRoles || [];
     this.rejectedSelectedRoles = step.rejectedRoles || [];
+    this.isSubmittedDropdownOpen = false;
     this.isApprovedDropdownOpen = false;
     this.isRejectedDropdownOpen = false;
+    this.newStepSubmittedEmail = step.submittedEmail || '';
+    this.newStepApprovedEmail = step.approvedEmail || '';
+    this.newStepRejectedEmail = step.rejectedEmail || '';
     this.editingStepIndex = index;
     this.isAddingWorkflowStep = true;
     this.newStepExpandedIndex = -1;
@@ -4456,8 +4883,12 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
       isMandatory: this.newStepMandatory,
       rejectAction: this.newStepRejectAction,
       aiComponent: this.newStepAiComponent,
+      submittedRoles: [...this.submittedSelectedRoles],
       approvedRoles: [...this.approvedSelectedRoles],
-      rejectedRoles: [...this.rejectedSelectedRoles]
+      rejectedRoles: [...this.rejectedSelectedRoles],
+      submittedEmail: this.newStepSubmittedEmail,
+      approvedEmail: this.newStepApprovedEmail,
+      rejectedEmail: this.newStepRejectedEmail
     };
 
     if (this.editingStepIndex !== null) {
@@ -4491,8 +4922,15 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     this.changeDetector.markForCheck();
   }
 
-  toggleRole(type: 'approved' | 'rejected', role: string): void {
-    if (type === 'approved') {
+  toggleRole(type: 'submitted' | 'approved' | 'rejected', role: string): void {
+    if (type === 'submitted') {
+      const index = this.submittedSelectedRoles.indexOf(role);
+      if (index === -1) {
+        this.submittedSelectedRoles.push(role);
+      } else {
+        this.submittedSelectedRoles.splice(index, 1);
+      }
+    } else if (type === 'approved') {
       const index = this.approvedSelectedRoles.indexOf(role);
       if (index === -1) {
         this.approvedSelectedRoles.push(role);
@@ -4510,9 +4948,11 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     this.changeDetector.markForCheck();
   }
 
-  removeRole(type: 'approved' | 'rejected', role: string, event: Event): void {
+  removeRole(type: 'submitted' | 'approved' | 'rejected', role: string, event: Event): void {
     event.stopPropagation();
-    if (type === 'approved') {
+    if (type === 'submitted') {
+      this.submittedSelectedRoles = this.submittedSelectedRoles.filter(r => r !== role);
+    } else if (type === 'approved') {
       this.approvedSelectedRoles = this.approvedSelectedRoles.filter(r => r !== role);
     } else {
       this.rejectedSelectedRoles = this.rejectedSelectedRoles.filter(r => r !== role);
@@ -4524,25 +4964,29 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     if (event) {
       event.preventDefault();
     }
-    if (!this.workflowType || !this.workflowApplicability) return;
+    if (!this.workflowName) return;
 
     if (this.editingWorkflowId) {
       const idx = this.workflowCards.findIndex(c => c.id === this.editingWorkflowId);
       if (idx !== -1) {
-        this.workflowCards[idx].title = this.workflowType;
-        this.workflowCards[idx].description = `Applicable for: ${this.workflowApplicability}`;
+        this.workflowCards[idx].title = this.workflowName;
+        this.workflowCards[idx].description = this.workflowDescription;
         this.workflowCards[idx].items = this.workflowSteps.map(s => s.name);
         this.workflowCards[idx].workflowStepsData = JSON.parse(JSON.stringify(this.workflowSteps));
+        this.workflowCards[idx].workflowType = this.workflowType;
+        this.workflowCards[idx].workflowApplicability = this.workflowApplicability;
       }
     } else {
       const nextId = `workflow-${this.workflowCards.length + 1}-${Date.now()}`;
       const newWorkflow: TaxonomyCard = {
         id: nextId,
-        title: this.workflowType,
+        title: this.workflowName,
         icon: 'activity',
-        description: `Applicable for: ${this.workflowApplicability}`,
+        description: this.workflowDescription,
         items: this.workflowSteps.map(s => s.name),
-        workflowStepsData: JSON.parse(JSON.stringify(this.workflowSteps))
+        workflowStepsData: JSON.parse(JSON.stringify(this.workflowSteps)),
+        workflowType: this.workflowType,
+        workflowApplicability: this.workflowApplicability
       };
       this.workflowCards = [...this.workflowCards, newWorkflow];
     }
@@ -4655,10 +5099,10 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     if (group === 'Workflow Designer') {
       this.isCreatingWorkflow = true;
       this.editingWorkflowId = card.id;
-      this.workflowType = card.title;
-      // Extract applicability from description, assuming format: "Applicable for: X"
-      const descMatch = card.description.match(/Applicable for: (.*)/);
-      this.workflowApplicability = descMatch ? descMatch[1] : '';
+      this.workflowName = card.title;
+      this.workflowDescription = card.description;
+      this.workflowType = card.workflowType || 'Project stage closure';
+      this.workflowApplicability = card.workflowApplicability || '';
       
       // Load steps if present, otherwise fallback to mapping string items
       if (card.workflowStepsData) {
@@ -4976,7 +5420,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     lastLogin?: string;
   }> = [];
 
-  constructor(private readonly changeDetector: ChangeDetectorRef) { }
+  constructor(public readonly changeDetector: ChangeDetectorRef) { }
 
   setSection(id: string): void {
     this.activeSectionId = id;
