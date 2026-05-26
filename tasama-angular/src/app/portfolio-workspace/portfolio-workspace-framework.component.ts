@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, HostListener, Output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, HostListener, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PmConsoleIconComponent } from '../shared/pm-console-icon.component';
@@ -59,200 +59,390 @@ export interface TaxonomyCard {
       
       @if (activeSectionId === 'org-structure') {
         <div class="org-structure-container animation-fade">
-          <div class="org-structure-intro">
-            <h2>Organisational Structure</h2>
-            <p>Configure divisions, brands, and sections to define the portfolio's hierarchical architecture.</p>
-          </div>
-
-          <div class="org-columns-grid">
-            
-            <!-- Division Column -->
-            <div class="org-column-card">
-              <header class="org-column-header division-header">
-                <span class="org-column-icon-wrapper">
-                  <span pmConsoleIcon="network" class="org-column-icon"></span>
-                </span>
-                <div class="org-column-title-group">
-                  <h3>Divisions</h3>
-                  <span class="org-item-count" [class.empty]="divisions.length === 0">
-                    {{ divisions.length }} {{ divisions.length === 1 ? 'division' : 'divisions' }}
-                  </span>
-                </div>
-              </header>
-
-              <div class="org-column-body">
-                @if (divisions.length > 0) {
-                  <ul class="org-item-list">
-                    @for (item of divisions; track item; let i = $index) {
-                      <li class="org-item-row animation-slide-in">
-                        <span class="org-item-bullet division-bullet"></span>
-                        <span class="org-item-name">{{ item }}</span>
-                        <button class="org-item-delete-btn" type="button" aria-label="Delete division" (click)="removeDivision(i)">
-                          <span pmConsoleIcon="trash-2"></span>
-                        </button>
-                      </li>
-                    }
-                  </ul>
-                } @else {
-                  <div class="org-column-empty">
-                    <span pmConsoleIcon="plus-circle" class="empty-icon"></span>
-                    <p>No divisions defined yet.</p>
-                  </div>
-                }
-
-                @if (isAddingDivision) {
-                  <div class="org-inline-form animation-fade">
-                    <input 
-                      type="text" 
-                      class="org-inline-input" 
-                      placeholder="Division name..." 
-                      [(ngModel)]="newDivisionName"
-                      (keydown.enter)="addDivision()"
-                      (keydown.escape)="isAddingDivision = false"
-                    />
-                    <div class="org-inline-actions">
-                      <button class="org-inline-submit-btn" type="button" (click)="addDivision()">Add</button>
-                      <button class="org-inline-cancel-btn" type="button" (click)="isAddingDivision = false">Cancel</button>
-                    </div>
-                  </div>
-                }
-              </div>
-
-              @if (!isAddingDivision) {
-                <footer class="org-column-footer">
-                  <button class="org-add-btn" type="button" (click)="startAddDivision()">
-                    <span pmConsoleIcon="plus"></span>
-                    <span>Add division</span>
-                  </button>
-                </footer>
-              }
+          @if (groupObjects.length === 0) {
+            <div class="org-structure-intro">
+              <h2>Organisational Structure</h2>
+              <p>Configure groups, divisions, brands, and sections to define the portfolio's hierarchical architecture.</p>
             </div>
 
-            <!-- Brand Column -->
-            <div class="org-column-card">
-              <header class="org-column-header brand-header">
-                <span class="org-column-icon-wrapper">
-                  <span pmConsoleIcon="award" class="org-column-icon"></span>
-                </span>
-                <div class="org-column-title-group">
-                  <h3>Brands</h3>
-                  <span class="org-item-count" [class.empty]="brands.length === 0">
-                    {{ brands.length }} {{ brands.length === 1 ? 'brand' : 'brands' }}
-                  </span>
-                </div>
-              </header>
-
-              <div class="org-column-body">
-                @if (brands.length > 0) {
-                  <ul class="org-item-list">
-                    @for (item of brands; track item; let i = $index) {
-                      <li class="org-item-row animation-slide-in">
-                        <span class="org-item-bullet brand-bullet"></span>
-                        <span class="org-item-name">{{ item }}</span>
-                        <button class="org-item-delete-btn" type="button" aria-label="Delete brand" (click)="removeBrand(i)">
-                          <span pmConsoleIcon="trash-2"></span>
-                        </button>
-                      </li>
-                    }
-                  </ul>
-                } @else {
-                  <div class="org-column-empty">
-                    <span pmConsoleIcon="plus-circle" class="empty-icon"></span>
-                    <p>No brands defined yet.</p>
-                  </div>
-                }
-
-                @if (isAddingBrand) {
-                  <div class="org-inline-form animation-fade">
-                    <input 
-                      type="text" 
-                      class="org-inline-input" 
-                      placeholder="Brand name..." 
-                      [(ngModel)]="newBrandName"
-                      (keydown.enter)="addBrand()"
-                      (keydown.escape)="isAddingBrand = false"
-                    />
-                    <div class="org-inline-actions">
-                      <button class="org-inline-submit-btn" type="button" (click)="addBrand()">Add</button>
-                      <button class="org-inline-cancel-btn" type="button" (click)="isAddingBrand = false">Cancel</button>
-                    </div>
-                  </div>
-                }
+            <div class="org-empty-state-wrapper">
+              <div class="org-empty-circle">
+                <span pmConsoleIcon="building" class="org-empty-icon"></span>
               </div>
-
-              @if (!isAddingBrand) {
-                <footer class="org-column-footer">
-                  <button class="org-add-btn" type="button" (click)="startAddBrand()">
-                    <span pmConsoleIcon="plus"></span>
-                    <span>Add brand</span>
-                  </button>
-                </footer>
-              }
+              <h3>Build your organisational structure</h3>
+              <p>Start by adding your first Group. From there, you can branch out to include specific divisions, branches, and sections to accurately map your hierarchy.</p>
+              <button id="org-empty-add-division-btn" class="org-empty-btn" type="button" (click)="openAddGroupDrawer()">
+                <span pmConsoleIcon="plus"></span>
+                <span>Add Group</span>
+              </button>
+            </div>
+          } @else {
+            <div class="org-structure-header-row">
+              <div class="org-structure-intro">
+                <h2>Organisational Structure</h2>
+                <p>Configure groups, divisions, brands, and sections to define the portfolio's hierarchical architecture.</p>
+              </div>
+              <button id="org-header-add-division-btn" class="org-header-add-btn" type="button" (click)="openAddGroupDrawer()">
+                <span pmConsoleIcon="plus"></span>
+                <span>Add Group</span>
+              </button>
             </div>
 
-            <!-- Section Column -->
-            <div class="org-column-card">
-              <header class="org-column-header section-header">
-                <span class="org-column-icon-wrapper">
-                  <span pmConsoleIcon="layers" class="org-column-icon"></span>
-                </span>
-                <div class="org-column-title-group">
-                  <h3>Sections</h3>
-                  <span class="org-item-count" [class.empty]="sections.length === 0">
-                    {{ sections.length }} {{ sections.length === 1 ? 'section' : 'sections' }}
-                  </span>
-                </div>
-              </header>
-
-              <div class="org-column-body">
-                @if (sections.length > 0) {
-                  <ul class="org-item-list">
-                    @for (item of sections; track item; let i = $index) {
-                      <li class="org-item-row animation-slide-in">
-                        <span class="org-item-bullet section-bullet"></span>
-                        <span class="org-item-name">{{ item }}</span>
-                        <button class="org-item-delete-btn" type="button" aria-label="Delete section" (click)="removeSection(i)">
-                          <span pmConsoleIcon="trash-2"></span>
-                        </button>
-                      </li>
-                    }
-                  </ul>
-                } @else {
-                  <div class="org-column-empty">
-                    <span pmConsoleIcon="plus-circle" class="empty-icon"></span>
-                    <p>No sections defined yet.</p>
+            <!-- Horizontal Groups Tabs Row -->
+            <div class="groups-tabs-row">
+              @for (group of groupObjects; track $index; let gIdx = $index) {
+                <div 
+                  class="group-card pointer animation-fade" 
+                  [class.active]="selectedGroupIndex === gIdx"
+                  (click)="selectGroup(gIdx)"
+                >
+                  <div class="group-card-icon-wrap">
+                    <span pmConsoleIcon="folder" class="group-card-icon"></span>
                   </div>
-                }
-
-                @if (isAddingSection) {
-                  <div class="org-inline-form animation-fade">
-                    <input 
-                      type="text" 
-                      class="org-inline-input" 
-                      placeholder="Section name..." 
-                      [(ngModel)]="newSectionName"
-                      (keydown.enter)="addSection()"
-                      (keydown.escape)="isAddingSection = false"
+                  <div class="group-card-title-area">
+                    <input
+                      [id]="'org-group-input-' + gIdx"
+                      type="text"
+                      class="group-card-input"
+                      [placeholder]="'Group Name'"
+                      [(ngModel)]="group.name"
+                      (ngModelChange)="syncLegacyArrays()"
+                      (click)="selectedGroupIndex === gIdx ? $event.stopPropagation() : selectGroup(gIdx)"
                     />
-                    <div class="org-inline-actions">
-                      <button class="org-inline-submit-btn" type="button" (click)="addSection()">Add</button>
-                      <button class="org-inline-cancel-btn" type="button" (click)="isAddingSection = false">Cancel</button>
-                    </div>
+                    @if (group.owner) {
+                      <span class="group-card-owner-badge">Owner: {{ group.owner }}</span>
+                    }
                   </div>
-                }
-              </div>
-
-              @if (!isAddingSection) {
-                <footer class="org-column-footer">
-                  <button class="org-add-btn" type="button" (click)="startAddSection()">
-                    <span pmConsoleIcon="plus"></span>
-                    <span>Add section</span>
-                  </button>
-                </footer>
+                  
+                  <div class="division-action-menu-wrap" (click)="$event.stopPropagation()">
+                    <button 
+                      [id]="'org-group-menu-btn-' + gIdx"
+                      type="button" 
+                      class="division-action-trigger flat-dots-trigger" 
+                      (click)="toggleGroupMenu($event, gIdx)"
+                      title="Actions"
+                    >
+                      <span pmConsoleIcon="more-vertical"></span>
+                    </button>
+                    
+                    @if (openGroupMenuIndex === gIdx) {
+                      <div class="division-dropdown-menu animation-fade" role="menu">
+                        <button 
+                          [id]="'org-group-edit-action-' + gIdx"
+                          type="button" 
+                          class="division-dropdown-item" 
+                          (click)="openEditGroupDrawer(gIdx); openGroupMenuIndex = null"
+                        >
+                          <span pmConsoleIcon="eye" class="item-icon"></span>
+                          <span>View Details</span>
+                        </button>
+                        <button 
+                          [id]="'org-group-delete-action-' + gIdx"
+                          type="button" 
+                          class="division-dropdown-item delete" 
+                          (click)="removeGroup(gIdx)"
+                        >
+                          <span pmConsoleIcon="trash-2" class="item-icon"></span>
+                          <span>Delete</span>
+                        </button>
+                      </div>
+                    }
+                  </div>
+                </div>
               }
+
+              <!-- Add Group tab button -->
+              <button 
+                id="org-add-group-btn" 
+                class="add-group-tab-card" 
+                type="button" 
+                (click)="openAddGroupDrawer()"
+              >
+                <span pmConsoleIcon="plus"></span>
+                <span>Add Group</span>
+              </button>
             </div>
 
-          </div>
+            <!-- Active Group Content Panel -->
+            @if (groupObjects[selectedGroupIndex]) {
+              <div class="active-group-details animation-fade" style="margin-top: 8px; width: 100%;">
+                <!-- Divisions under the active Group -->
+                <div class="divisions-list-stack" style="gap: 36px; display: flex; flex-direction: column;">
+                  @for (div of groupObjects[selectedGroupIndex].divisions; track $index; let dIdx = $index) {
+                    <div class="division-section animation-fade">
+                      <!-- Division Header Card -->
+                      <div class="division-card">
+                        <div class="division-card-icon-wrap">
+                          <span pmConsoleIcon="git-branch" class="division-card-icon"></span>
+                        </div>
+                        <input
+                          [id]="'org-division-input-' + selectedGroupIndex + '-' + dIdx"
+                          type="text"
+                          class="division-card-input"
+                          [placeholder]="'Division Name'"
+                          [(ngModel)]="div.name"
+                          (ngModelChange)="syncLegacyArrays()"
+                        />
+                        <div class="division-action-menu-wrap">
+                          <button 
+                            [id]="'org-division-menu-btn-' + selectedGroupIndex + '-' + dIdx"
+                            type="button" 
+                            class="division-action-trigger flat-dots-trigger" 
+                            (click)="toggleDivisionMenu($event, selectedGroupIndex, dIdx)"
+                            title="Actions"
+                          >
+                            <span pmConsoleIcon="more-vertical"></span>
+                          </button>
+                          
+                          @if (openDivisionIndex && openDivisionIndex.groupIndex === selectedGroupIndex && openDivisionIndex.divisionIndex === dIdx) {
+                            <div class="division-dropdown-menu animation-fade" role="menu">
+                              <button 
+                                [id]="'org-division-delete-action-' + selectedGroupIndex + '-' + dIdx"
+                                type="button" 
+                                class="division-dropdown-item delete" 
+                                (click)="removeDivision(selectedGroupIndex, dIdx)"
+                              >
+                                <span pmConsoleIcon="trash-2" class="item-icon"></span>
+                                <span>Delete</span>
+                              </button>
+                            </div>
+                          }
+                        </div>
+                      </div>
+
+                      <!-- Branches Row (horizontal columns grid) -->
+                      <div class="branches-row-flex">
+                        @for (branch of div.branches; track $index; let bIdx = $index) {
+                          <div class="branch-column-card animation-fade">
+                            <!-- Branch Header Card -->
+                            <div class="branch-card-header-box">
+                              <div class="branch-card-icon-wrap">
+                                <span pmConsoleIcon="git-branch" class="branch-card-icon"></span>
+                              </div>
+                              <input
+                                [id]="'org-branch-input-' + selectedGroupIndex + '-' + dIdx + '-' + bIdx"
+                                type="text"
+                                class="branch-card-input"
+                                [placeholder]="'Branch Name'"
+                                [(ngModel)]="branch.name"
+                                (ngModelChange)="syncLegacyArrays()"
+                              />
+                              
+                              <div class="division-action-menu-wrap">
+                                <button 
+                                  [id]="'org-branch-menu-btn-' + selectedGroupIndex + '-' + dIdx + '-' + bIdx"
+                                  type="button" 
+                                  class="division-action-trigger flat-dots-trigger" 
+                                  (click)="toggleBranchMenu($event, selectedGroupIndex, dIdx, bIdx)"
+                                  title="Actions"
+                                >
+                                  <span pmConsoleIcon="more-vertical"></span>
+                                </button>
+                                
+                                @if (openBranchIndex && openBranchIndex.groupIndex === selectedGroupIndex && openBranchIndex.divisionIndex === dIdx && openBranchIndex.branchIndex === bIdx) {
+                                  <div class="division-dropdown-menu animation-fade" role="menu">
+                                    <button 
+                                      [id]="'org-branch-delete-action-' + selectedGroupIndex + '-' + dIdx + '-' + bIdx"
+                                      type="button" 
+                                      class="division-dropdown-item delete" 
+                                      (click)="removeBranch(selectedGroupIndex, dIdx, bIdx)"
+                                    >
+                                      <span pmConsoleIcon="trash-2" class="item-icon"></span>
+                                      <span>Delete</span>
+                                    </button>
+                                  </div>
+                                }
+                              </div>
+                            </div>
+
+                            <!-- Vertically stacked sections list inside branch -->
+                            <div class="sections-list-wrap">
+                              @for (sec of branch.sections; track $index; let sIdx = $index) {
+                                <div class="section-card animation-fade">
+                                  <input
+                                    [id]="'org-section-input-' + selectedGroupIndex + '-' + dIdx + '-' + bIdx + '-' + sIdx"
+                                    type="text"
+                                    class="section-item-input"
+                                    [placeholder]="'Section'"
+                                    [(ngModel)]="sec.name"
+                                    (ngModelChange)="syncLegacyArrays()"
+                                  />
+                                  
+                                  <div class="division-action-menu-wrap">
+                                    <button 
+                                      [id]="'org-section-menu-btn-' + selectedGroupIndex + '-' + dIdx + '-' + bIdx + '-' + sIdx"
+                                      type="button" 
+                                      class="division-action-trigger flat-dots-trigger" 
+                                      (click)="toggleSectionMenu($event, selectedGroupIndex, dIdx, bIdx, sIdx)"
+                                      title="Actions"
+                                    >
+                                      <span pmConsoleIcon="more-vertical"></span>
+                                    </button>
+                                    
+                                    @if (openSectionIndex && 
+                                         openSectionIndex.groupIndex === selectedGroupIndex && 
+                                         openSectionIndex.divisionIndex === dIdx && 
+                                         openSectionIndex.branchIndex === bIdx && 
+                                         openSectionIndex.sectionIndex === sIdx) {
+                                      <div class="division-dropdown-menu animation-fade" role="menu">
+                                        <button 
+                                          [id]="'org-section-delete-action-' + selectedGroupIndex + '-' + dIdx + '-' + bIdx + '-' + sIdx"
+                                          type="button" 
+                                          class="division-dropdown-item delete" 
+                                          (click)="removeSection(selectedGroupIndex, dIdx, bIdx, sIdx)"
+                                        >
+                                          <span pmConsoleIcon="trash-2" class="item-icon"></span>
+                                          <span>Delete</span>
+                                        </button>
+                                      </div>
+                                    }
+                                  </div>
+                                </div>
+                              }
+                            </div>
+
+                            <!-- Add Section CTA at the bottom of the branch column -->
+                            <button 
+                              [id]="'org-add-section-btn-' + selectedGroupIndex + '-' + dIdx + '-' + bIdx"
+                              class="section-text-cta-btn"
+                              type="button"
+                              (click)="addSection(selectedGroupIndex, dIdx, bIdx)"
+                            >
+                              <span pmConsoleIcon="plus"></span>
+                              <span>Add Section</span>
+                            </button>
+                          </div>
+                        }
+
+                        <!-- Add Branch CTA button at the end of the flex row -->
+                        <div class="branch-cta-end">
+                          <button 
+                            [id]="'org-add-branch-btn-' + selectedGroupIndex + '-' + dIdx" 
+                            class="branch-text-cta-btn" 
+                            type="button" 
+                            (click)="addBranch(selectedGroupIndex, dIdx)"
+                          >
+                            <span pmConsoleIcon="plus"></span>
+                            <span>Add Branches</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  }
+
+                  <!-- Add Division CTA at the bottom of the group's divisions list -->
+                  <button 
+                    [id]="'org-add-division-btn-' + selectedGroupIndex"
+                    class="section-text-cta-btn"
+                    type="button"
+                    (click)="addDivisionToGroup(selectedGroupIndex)"
+                    style="margin-top: 8px;"
+                  >
+                    <span pmConsoleIcon="plus"></span>
+                    <span>Add Division</span>
+                  </button>
+                </div>
+              </div>
+            }
+          }
+
+          <!-- Add Group Side Drawer (uses platform-standard shell) -->
+          @if (isAddingGroup) {
+            <app-pm-console-plan-drawer
+              eyebrow="ORGANISATIONAL STRUCTURE"
+              [title]="editingGroupIndex !== null ? 'Group Details' : 'Add New Group'"
+              description="Configure group details, purpose, and environment factors."
+              [submitLabel]="editingGroupIndex !== null ? 'Save' : 'Add'"
+              cancelLabel="Cancel"
+              (close)="closeAddGroupDrawer()"
+              (submitForm)="saveGroup(); $event.preventDefault()"
+            >
+              <!-- Drawer body content projected into planDrawerBody -->
+              <div planDrawerBody class="ud-form">
+                <!-- Row 1: Group Name + Owner selection -->
+                <div class="ud-row ud-row-2col">
+                  <div class="ud-field">
+                    <label for="groupName" class="ud-label">Group <span class="ud-required">*</span></label>
+                    <input 
+                      id="groupName" 
+                      type="text" 
+                      class="ud-input" 
+                      placeholder="Enter Group name" 
+                      [(ngModel)]="newGroupName" 
+                    />
+                  </div>
+                  <div class="ud-field">
+                    <label for="groupOwner" class="ud-label">Owner</label>
+                    <div class="ud-select-wrap">
+                      <select id="groupOwner" class="ud-select ud-select--pill" [(ngModel)]="newGroupOwner">
+                        <option value="">Select Owner</option>
+                        <option value="John Doe">John Doe</option>
+                        <option value="Jane Smith">Jane Smith</option>
+                        <option value="Alex Johnson">Alex Johnson</option>
+                        <option value="Sarah Lee">Sarah Lee</option>
+                        @for (u of users; track u.username) {
+                          <option [value]="u.name">{{ u.name }}</option>
+                        }
+                      </select>
+                      <span pmConsoleIcon="chevron-down" class="ud-select-chevron"></span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Purpose Field (with custom toolbar) -->
+                <div class="ud-field">
+                  <label class="ud-label">Purpose</label>
+                  <div class="rich-editor-container">
+                    <div class="rich-editor-toolbar">
+                      <button type="button" class="toolbar-btn bold-btn" title="Bold">B</button>
+                      <button type="button" class="toolbar-btn italic-btn" title="Italic">I</button>
+                      <span class="toolbar-divider"></span>
+                      <button type="button" class="toolbar-btn" title="Number List"><span pmConsoleIcon="list-ordered"></span></button>
+                      <button type="button" class="toolbar-btn" title="Bullet List"><span pmConsoleIcon="list"></span></button>
+                      <span class="toolbar-divider"></span>
+                      <button type="button" class="toolbar-btn" title="Copy"><span pmConsoleIcon="copy"></span></button>
+                      <button type="button" class="toolbar-btn" title="Cut"><span pmConsoleIcon="scissors"></span></button>
+                      <button type="button" class="toolbar-btn" title="Paste"><span pmConsoleIcon="clipboard"></span></button>
+                      <span class="toolbar-divider"></span>
+                      <button type="button" class="toolbar-btn" title="Undo"><span pmConsoleIcon="corner-up-left"></span></button>
+                      <button type="button" class="toolbar-btn" title="Redo"><span pmConsoleIcon="corner-up-right"></span></button>
+                    </div>
+                    <textarea 
+                      class="rich-editor-textarea" 
+                      placeholder="Enter purpose details..." 
+                      [(ngModel)]="newGroupPurpose"
+                    ></textarea>
+                  </div>
+                </div>
+
+                <!-- Environment Factors Field (with custom toolbar) -->
+                <div class="ud-field">
+                  <label class="ud-label">Environment Factors</label>
+                  <div class="rich-editor-container">
+                    <div class="rich-editor-toolbar">
+                      <button type="button" class="toolbar-btn bold-btn" title="Bold">B</button>
+                      <button type="button" class="toolbar-btn italic-btn" title="Italic">I</button>
+                      <span class="toolbar-divider"></span>
+                      <button type="button" class="toolbar-btn" title="Number List"><span pmConsoleIcon="list-ordered"></span></button>
+                      <button type="button" class="toolbar-btn" title="Bullet List"><span pmConsoleIcon="list"></span></button>
+                      <span class="toolbar-divider"></span>
+                      <button type="button" class="toolbar-btn" title="Copy"><span pmConsoleIcon="copy"></span></button>
+                      <button type="button" class="toolbar-btn" title="Cut"><span pmConsoleIcon="scissors"></span></button>
+                      <button type="button" class="toolbar-btn" title="Paste"><span pmConsoleIcon="clipboard"></span></button>
+                      <span class="toolbar-divider"></span>
+                      <button type="button" class="toolbar-btn" title="Undo"><span pmConsoleIcon="corner-up-left"></span></button>
+                      <button type="button" class="toolbar-btn" title="Redo"><span pmConsoleIcon="corner-up-right"></span></button>
+                    </div>
+                    <textarea 
+                      class="rich-editor-textarea" 
+                      placeholder="Enter environment factors..." 
+                      [(ngModel)]="newGroupEnvFactors"
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+            </app-pm-console-plan-drawer>
+          }
         </div>
       } @else if (activeSectionId === 'user-management') {
         <div class="user-management-container animation-fade">
@@ -349,9 +539,15 @@ export interface TaxonomyCard {
                   <label for="udGroup" class="ud-label">Group</label>
                   <div class="ud-select-wrap">
                     <select id="udGroup" class="ud-select ud-select--pill" [(ngModel)]="drawerGroup">
-                      <option value="Asset Management">Asset Management</option>
-                      <option value="Risk Management">Risk Management</option>
-                      <option value="Portfolio Management">Portfolio Management</option>
+                      <option value="All">All</option>
+                      @for (g of groups; track g) {
+                        <option [value]="g">{{ g }}</option>
+                      }
+                      @if (groups.length === 0) {
+                        <option value="Asset Management">Asset Management</option>
+                        <option value="Risk Management">Risk Management</option>
+                        <option value="Portfolio Management">Portfolio Management</option>
+                      }
                     </select>
                     <span pmConsoleIcon="chevron-down" class="ud-select-chevron"></span>
                   </div>
@@ -1844,10 +2040,17 @@ export interface TaxonomyCard {
     .org-structure-container {
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 24px;
       width: 100%;
       height: 100%;
       color: #202633;
+    }
+
+    .org-structure-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
     }
 
     .org-structure-intro h2 {
@@ -1863,286 +2066,735 @@ export interface TaxonomyCard {
       margin: 0;
     }
 
-    .org-columns-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-      align-items: start;
-    }
-
-    .org-column-card {
+    /* Centered Empty State */
+    .org-empty-state-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 64px 32px;
       background: #ffffff;
       border: 1px solid #dfe4ee;
       border-radius: 12px;
+      min-height: 380px;
       box-shadow: 0 1px 3px rgba(25, 33, 61, 0.04);
+      margin-top: 16px;
+    }
+
+    .org-empty-circle {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #eff6ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .org-empty-icon {
+      font-size: 24px;
+      color: #2563eb;
+      display: inline-flex;
+    }
+
+    .org-empty-state-wrapper h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0 0 8px 0;
+    }
+
+    .org-empty-state-wrapper p {
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: #64748b;
+      max-width: 440px;
+      margin: 0 0 24px 0;
+    }
+
+    /* Action Buttons */
+    .org-empty-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 20px;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.16);
+      transition: all 0.2s ease;
+    }
+
+    .org-empty-btn:hover {
+      background: #1d4ed8;
+      box-shadow: 0 4px 8px rgba(37, 99, 235, 0.24);
+      transform: translateY(-1px);
+    }
+
+    .org-header-add-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 16px;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.16);
+      transition: all 0.2s ease;
+    }
+
+    .org-header-add-btn:hover {
+      background: #1d4ed8;
+      box-shadow: 0 4px 8px rgba(37, 99, 235, 0.24);
+      transform: translateY(-1px);
+    }
+
+
+
+    .division-action-menu-wrap {
+      position: relative;
+      display: inline-block;
+      overflow: visible;
+    }
+
+    .division-action-trigger {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: #475569;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+
+    .division-action-trigger:hover {
+      background: #f1f5f9;
+      color: #1e293b;
+    }
+
+    .division-action-trigger:focus-visible {
+      background: #e2e8f0;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .division-dropdown-menu {
+      position: absolute;
+      right: 0;
+      top: 36px;
+      background: #ffffff;
+      border: 1px solid #dfe4ee;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(25, 33, 61, 0.08);
+      z-index: 100;
+      min-width: 110px;
+      padding: 4px 0;
       display: flex;
       flex-direction: column;
-      min-height: 380px;
-      overflow: hidden;
-      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+      gap: 2px;
     }
 
-    .org-column-card:hover {
-      box-shadow: 0 4px 12px rgba(25, 33, 61, 0.06);
-      border-color: #cbd5e1;
-    }
-
-    .org-column-header {
-      align-items: center;
-      border-bottom: 1px solid #f1f5f9;
+    .division-dropdown-item {
       display: flex;
-      gap: 12px;
-      padding: 16px;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      border: none;
+      background: transparent;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: #334155;
+      text-align: left;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s ease;
+      outline: none;
     }
 
-    .org-column-icon-wrapper {
-      align-items: center;
-      border-radius: 8px;
+    .division-dropdown-item:hover {
+      background: #f1f5f9;
+    }
+
+    .division-dropdown-item .item-icon {
+      font-size: 13px;
+      color: #64748b;
+      display: inline-flex;
+    }
+
+    .division-dropdown-item.delete {
+      color: #ef4444;
+    }
+
+    .division-dropdown-item.delete:hover {
+      background: #fee2e2;
+    }
+
+    .division-dropdown-item.delete .item-icon {
+      color: #ef4444;
+    }
+
+    /* Group Cards & Layout */
+    .groups-tabs-row {
       display: flex;
-      height: 36px;
+      flex-direction: row;
+      gap: 16px;
+      overflow-x: auto;
+      padding: 8px 4px 16px 4px;
+      margin-top: 12px;
+      margin-bottom: 4px;
+      align-items: center;
+      width: 100%;
+    }
+
+    .groups-tabs-row::-webkit-scrollbar {
+      height: 6px;
+    }
+    .groups-tabs-row::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 3px;
+    }
+    .groups-tabs-row::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    .groups-tabs-row::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    .add-group-tab-card {
+      display: flex;
+      align-items: center;
       justify-content: center;
-      width: 36px;
+      gap: 8px;
+      height: 70px;
+      width: 180px;
+      flex: 0 0 180px;
+      border: 1.5px dashed #cbd5e1;
+      border-radius: 16px;
+      background: transparent;
+      color: #64748b;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+      outline: none;
     }
 
-    .division-header .org-column-icon-wrapper {
-      background: rgba(16, 6, 159, 0.08);
+    .add-group-tab-card:hover {
+      border-color: #10069f;
       color: #10069f;
+      background: #f4f6fc;
+      box-shadow: 0 4px 12px rgba(16, 6, 159, 0.05);
     }
 
-    .brand-header .org-column-icon-wrapper {
-      background: rgba(13, 148, 136, 0.08);
-      color: #0d9488;
+    .groups-list-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+      margin-top: 24px;
+      width: 100%;
     }
 
-    .section-header .org-column-icon-wrapper {
-      background: rgba(225, 29, 72, 0.08);
-      color: #e11d48;
+    .group-section {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 100%;
     }
 
-    .org-column-icon {
+    .group-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 14px 20px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 16px;
+      width: 320px;
+      flex: 0 0 320px;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+    }
+
+    .group-card.pointer {
+      cursor: pointer;
+    }
+
+    .group-card:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    }
+
+    .group-card.active {
+      background: #f4f6fc;
+      border: 1.5px solid #10069f;
+      box-shadow: 0 4px 16px rgba(16, 6, 159, 0.08);
+    }
+
+    .group-card.active:hover {
+      background: #f4f6fc;
+      border-color: #0b0482;
+      box-shadow: 0 6px 20px rgba(16, 6, 159, 0.12);
+    }
+
+    .group-card-icon-wrap {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: #f1f5f9;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+
+    .group-card.active .group-card-icon-wrap {
+      background: #10069f;
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(16, 6, 159, 0.2);
+    }
+
+    .group-card-icon {
       font-size: 18px;
       display: inline-flex;
     }
 
-    .org-column-title-group h3 {
-      font-size: 14px;
+    .group-card-title-area {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      width: 100%;
+    }
+
+    .group-card-input {
+      font-size: 16px;
       font-weight: 600;
-      color: #252a34;
-      margin: 0;
+      color: #475569;
+      border: 1px solid transparent;
+      background: transparent;
+      border-radius: 6px;
+      padding: 4px 8px;
+      outline: none;
+      width: 100%;
+      box-sizing: border-box;
+      transition: all 0.15s ease;
+      cursor: inherit;
     }
 
-    .org-item-count {
-      font-size: 11px;
+    .group-card.active .group-card-input {
+      color: #10069f;
+    }
+
+    .group-card-input:hover {
+      background: rgba(241, 245, 249, 0.8);
+      border-color: #cbd5e1;
+    }
+
+    .group-card.active .group-card-input:hover {
+      background: rgba(255, 255, 255, 0.6);
+      border-color: #cbd5e1;
+    }
+
+    .group-card-input:focus {
+      background: #ffffff;
+      border-color: #64748b;
+      box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.12);
+    }
+
+    .group-card.active .group-card-input:focus {
+      border-color: #10069f;
+      box-shadow: 0 0 0 3px rgba(16, 6, 159, 0.08);
+    }
+
+    .group-card-owner-badge {
+      font-size: 11.5px;
       font-weight: 500;
-      color: #687182;
+      color: #64748b;
+      padding-left: 8px;
+      margin-top: 1px;
     }
 
-    .org-item-count.empty {
-      color: #94a3b8;
+    .group-card.active .group-card-owner-badge {
+      color: #10069f;
     }
 
-    .org-column-body {
-      display: flex;
-      flex-direction: column;
-      flex-grow: 1;
-      padding: 16px;
-      gap: 12px;
-    }
-
-    .org-column-empty {
-      align-items: center;
-      border: 1px dashed #e2e8f0;
+    /* Rich editor styled panels in drawer */
+    .rich-editor-container {
+      border: 1px solid #dfe4ee;
       border-radius: 8px;
+      background: #ffffff;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      justify-content: center;
-      padding: 32px 16px;
-      text-align: center;
-      color: #94a3b8;
-      flex-grow: 1;
-    }
-
-    .org-column-empty .empty-icon {
-      font-size: 24px;
-      color: #cbd5e1;
-    }
-
-    .org-column-empty p {
-      font-size: 12.5px;
-      margin: 0;
-    }
-
-    .org-item-list {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .org-item-row {
-      align-items: center;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      display: flex;
-      gap: 10px;
-      padding: 10px 12px;
-      position: relative;
+      overflow: hidden;
+      margin-top: 6px;
       transition: all 0.2s ease;
     }
 
-    .org-item-row:hover {
-      background: #ffffff;
-      border-color: #cbd5e1;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    .rich-editor-container:focus-within {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
     }
 
-    .org-item-bullet {
-      border-radius: 50%;
-      height: 6px;
-      width: 6px;
+    .rich-editor-toolbar {
+      background: #f8fafc;
+      border-bottom: 1px solid #dfe4ee;
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .toolbar-btn {
+      background: transparent;
+      border: none;
+      border-radius: 4px;
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #475569;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .toolbar-btn:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .toolbar-btn.bold-btn {
+      font-weight: 800;
+    }
+
+    .toolbar-btn.italic-btn {
+      font-style: italic;
+      font-family: serif;
+      font-size: 14px;
+    }
+
+    .toolbar-divider {
+      width: 1px;
+      height: 16px;
+      background: #cbd5e1;
+      margin: 0 6px;
+    }
+
+    .rich-editor-textarea {
+      border: none;
+      outline: none;
+      background: transparent;
+      padding: 12px;
+      font-size: 13px;
+      color: #334155;
+      min-height: 120px;
+      font-family: inherit;
+      resize: vertical;
+      width: 100%;
+      box-sizing: border-box;
+      line-height: 1.5;
+    }
+
+    /* Division Cards & Layout */
+    .divisions-list-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 36px;
+      margin-top: 24px;
+    }
+
+    .division-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+    }
+
+    .division-card {
+      background: #f4f6fc;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      max-width: 400px;
+      width: 100%;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+    }
+
+    .division-card:hover {
+      box-shadow: 0 4px 12px rgba(25, 33, 61, 0.04);
+      border-color: #cbd5e1;
+    }
+
+    .division-card-icon-wrap, .branch-card-icon-wrap {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: #ffffff;
+      color: #10069f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
       flex-shrink: 0;
     }
 
-    .division-bullet {
-      background-color: #10069f;
+    .division-card-icon, .branch-card-icon {
+      font-size: 16px;
+      display: inline-flex;
     }
 
-    .brand-bullet {
-      background-color: #0d9488;
-    }
-
-    .section-bullet {
-      background-color: #e11d48;
-    }
-
-    .org-item-name {
-      font-size: 13px;
-      font-weight: 500;
-      color: #334155;
-      flex-grow: 1;
-      word-break: break-all;
-    }
-
-    .org-item-delete-btn {
-      align-items: center;
-      background: transparent;
-      border: none;
-      color: #94a3b8;
-      cursor: pointer;
-      display: flex;
-      height: 24px;
-      justify-content: center;
-      padding: 0;
-      width: 24px;
-      border-radius: 4px;
-      opacity: 0;
-      transition: all 0.2s ease;
-    }
-
-    .org-item-row:hover .org-item-delete-btn {
-      opacity: 1;
-    }
-
-    .org-item-delete-btn:hover {
-      background: #fee2e2;
-      color: #ef4444;
-    }
-
-    .org-inline-form {
-      border: 1px solid #10069f;
-      background: #ffffff;
-      border-radius: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      padding: 10px;
-      box-shadow: 0 4px 6px -1px rgba(16, 6, 159, 0.05);
-    }
-
-    .org-inline-input {
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
-      font-size: 13px;
-      padding: 8px 10px;
-      width: 100%;
-      outline: none;
-      transition: border-color 0.15s ease;
-    }
-
-    .org-inline-input:focus {
-      border-color: #10069f;
-    }
-
-    .org-inline-actions {
-      display: flex;
-      gap: 6px;
-      justify-content: flex-end;
-    }
-
-    .org-inline-submit-btn {
-      background: #10069f;
-      border: none;
-      border-radius: 6px;
-      color: #ffffff;
-      cursor: pointer;
-      font-size: 12px;
+    .division-card-input {
+      font-size: 15px;
       font-weight: 600;
-      padding: 6px 12px;
-      transition: background 0.15s ease;
-    }
-
-    .org-inline-submit-btn:hover {
-      background: #1b10bd;
-    }
-
-    .org-inline-cancel-btn {
+      color: #0f172a;
+      border: 1px solid transparent;
       background: transparent;
-      border: 1px solid #cbd5e1;
       border-radius: 6px;
-      color: #64748b;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 500;
-      padding: 5px 12px;
+      padding: 6px 10px;
+      outline: none;
+      flex-grow: 1;
+      width: 100%;
+      box-sizing: border-box;
       transition: all 0.15s ease;
     }
 
-    .org-inline-cancel-btn:hover {
-      background: #f1f5f9;
-      color: #334155;
+    .division-card-input:hover {
+      background: rgba(255, 255, 255, 0.6);
+      border-color: #cbd5e1;
     }
 
-    .org-column-footer {
-      border-top: 1px solid #f1f5f9;
-      padding: 12px 16px;
-      background: #f8fafc;
+    .division-card-input:focus {
+      background: #ffffff;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
     }
 
-    .org-add-btn {
-      align-items: center;
-      background: transparent;
-      border: 1px dashed #cbd5e1;
-      border-radius: 8px;
-      color: #10069f;
-      cursor: pointer;
+    /* Flat Action Dots Button (No stroke / Flat) */
+    .flat-dots-trigger {
+      border: none !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      outline: none !important;
+      width: 32px !important;
+      height: 32px !important;
+      border-radius: 50% !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      cursor: pointer !important;
+      color: #64748b !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .flat-dots-trigger:hover {
+      background: #e2e8f0 !important;
+      color: #0f172a !important;
+    }
+
+    .flat-dots-trigger:focus-visible {
+      background: #e2e8f0 !important;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+    }
+
+    /* Branch Container Columns and Layout */
+    .branches-row-flex {
       display: flex;
-      font-size: 13px;
-      font-weight: 600;
-      gap: 8px;
-      height: 36px;
-      justify-content: center;
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 20px;
+      overflow-x: auto;
+      padding: 8px 4px 20px 4px;
       width: 100%;
+      scroll-behavior: smooth;
+    }
+
+    .branch-column-card {
+      background: #ffffff;
+      border: 1px solid #dfe4ee;
+      border-radius: 20px;
+      padding: 20px;
+      width: 290px;
+      min-width: 290px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 2px 5px rgba(25, 33, 61, 0.02);
+      box-sizing: border-box;
+      flex-shrink: 0;
       transition: all 0.2s ease;
     }
 
-    .org-add-btn:hover {
-      background: rgba(16, 6, 159, 0.04);
-      border-color: #10069f;
-      border-style: solid;
+    .branch-column-card:hover {
+      box-shadow: 0 4px 12px rgba(25, 33, 61, 0.05);
+      border-color: #cbd5e1;
+    }
+
+    .branch-card-header-box {
+      background: #f4f6fc;
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .branch-card-input {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #0f172a;
+      border: 1px solid transparent;
+      background: transparent;
+      border-radius: 6px;
+      padding: 4px 8px;
+      outline: none;
+      flex-grow: 1;
+      width: 100%;
+      box-sizing: border-box;
+      transition: all 0.15s ease;
+    }
+
+    .branch-card-input:hover {
+      background: rgba(255, 255, 255, 0.6);
+      border-color: #cbd5e1;
+    }
+
+    .branch-card-input:focus {
+      background: #ffffff;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    /* Sections vertical list inside Branch */
+    .sections-list-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .section-card {
+      background: #ffffff;
+      border: 1px solid #dfe4ee;
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+    }
+
+    .section-card:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+    }
+
+    .section-item-input {
+      border: none;
+      background: transparent;
+      padding: 4px 8px;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: #334155;
+      outline: none;
+      flex-grow: 1;
+      width: 100%;
+      box-sizing: border-box;
+      transition: all 0.15s ease;
+    }
+
+    .section-item-input:hover {
+      background: #f8fafc;
+      border-radius: 6px;
+    }
+
+    .section-item-input:focus {
+      background: #f1f5f9;
+      border-radius: 6px;
+    }
+
+    /* Add CTAs buttons */
+    .section-text-cta-btn {
+      background: transparent;
+      border: none;
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      transition: all 0.2s ease;
+      outline: none;
+      width: fit-content;
+      margin-top: 4px;
+    }
+
+    .section-text-cta-btn:hover {
+      color: #10069f;
+    }
+
+    .branch-text-cta-btn {
+      background: transparent;
+      border: none;
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      transition: all 0.2s ease;
+      outline: none;
+      height: 40px;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    .branch-text-cta-btn:hover {
+      color: #10069f;
+      background: #f8fafc;
+    }
+
+    .branch-cta-end {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      margin-top: 8px;
     }
 
     @keyframes slideIn {
@@ -3412,10 +4064,42 @@ export interface TaxonomyCard {
     }
   `]
 })
-export class PortfolioWorkspaceFrameworkComponent {
+export class PortfolioWorkspaceFrameworkComponent implements OnInit {
   @Output() readonly back = new EventEmitter<void>();
 
   activeSectionId = 'org-structure';
+
+  groupObjects: Array<{
+    name: string;
+    owner?: string;
+    purpose?: string;
+    environmentFactors?: string;
+    divisions: Array<{
+      name: string;
+      branches: Array<{
+        name: string;
+        sections: Array<{ name: string }>;
+      }>;
+    }>;
+  }> = [];
+
+  ngOnInit(): void {
+    if (this.divisions.length > 0) {
+      this.groupObjects = [{
+        name: 'Group #1',
+        owner: 'John Doe',
+        purpose: 'Default Group Purpose',
+        environmentFactors: 'Default Environment Factors',
+        divisions: this.divisions.map(name => ({
+          name: name,
+          branches: []
+        }))
+      }];
+      this.syncLegacyArrays();
+    } else {
+      this.groupObjects = [];
+    }
+  }
 
   // Glossary category sidebar state
   activeGlossaryTab = 'p3m';
@@ -3603,6 +4287,10 @@ export class PortfolioWorkspaceFrameworkComponent {
   onDocumentClick(): void {
     this.activeActionMenuIndex = null;
     this.activeGlossaryActionId = null;
+    this.openGroupMenuIndex = null;
+    this.openDivisionIndex = null;
+    this.openBranchIndex = null;
+    this.openSectionIndex = null;
   }
 
 
@@ -4237,9 +4925,23 @@ export class PortfolioWorkspaceFrameworkComponent {
   newBrandName = '';
   newSectionName = '';
 
+  selectedGroupIndex = 0;
+  groups: string[] = [];
   divisions: string[] = [];
   brands: string[] = [];
   sections: string[] = [];
+  
+  openGroupMenuIndex: number | null = null;
+  openDivisionIndex: { groupIndex: number; divisionIndex: number } | null = null;
+  openBranchIndex: { groupIndex: number; divisionIndex: number; branchIndex: number } | null = null;
+  openSectionIndex: { groupIndex: number; divisionIndex: number; branchIndex: number; sectionIndex: number } | null = null;
+
+  isAddingGroup = false;
+  editingGroupIndex: number | null = null;
+  newGroupName = '';
+  newGroupOwner = '';
+  newGroupPurpose = '';
+  newGroupEnvFactors = '';
 
   // User Management Drawer
   isAddingUser = false;
@@ -4286,6 +4988,219 @@ export class PortfolioWorkspaceFrameworkComponent {
     return sec ? sec.label : 'Framework Configuration';
   }
 
+  // Group Sidedrawer Actions
+  openAddGroupDrawer(): void {
+    this.editingGroupIndex = null;
+    this.isAddingGroup = true;
+    this.newGroupName = '';
+    this.newGroupOwner = '';
+    this.newGroupPurpose = '';
+    this.newGroupEnvFactors = '';
+    this.changeDetector.markForCheck();
+  }
+
+  openEditGroupDrawer(index: number): void {
+    this.editingGroupIndex = index;
+    const group = this.groupObjects[index];
+    this.newGroupName = group.name;
+    this.newGroupOwner = group.owner || '';
+    this.newGroupPurpose = group.purpose || '';
+    this.newGroupEnvFactors = group.environmentFactors || '';
+    this.isAddingGroup = true;
+    this.changeDetector.markForCheck();
+  }
+
+  closeAddGroupDrawer(): void {
+    this.isAddingGroup = false;
+    this.editingGroupIndex = null;
+    this.changeDetector.markForCheck();
+  }
+
+  saveGroup(): void {
+    const val = this.newGroupName.trim();
+    if (val) {
+      if (this.editingGroupIndex !== null) {
+        const group = this.groupObjects[this.editingGroupIndex];
+        group.name = val;
+        group.owner = this.newGroupOwner;
+        group.purpose = this.newGroupPurpose;
+        group.environmentFactors = this.newGroupEnvFactors;
+        this.syncLegacyArrays();
+      } else {
+        this.groupObjects = [...this.groupObjects, {
+          name: val,
+          owner: this.newGroupOwner,
+          purpose: this.newGroupPurpose,
+          environmentFactors: this.newGroupEnvFactors,
+          divisions: []
+        }];
+        this.selectedGroupIndex = this.groupObjects.length - 1;
+        this.syncLegacyArrays();
+      }
+    }
+    this.isAddingGroup = false;
+    this.editingGroupIndex = null;
+  }
+
+  removeGroup(index: number): void {
+    this.groupObjects = this.groupObjects.filter((_, i) => i !== index);
+    if (this.selectedGroupIndex >= this.groupObjects.length) {
+      this.selectedGroupIndex = Math.max(0, this.groupObjects.length - 1);
+    }
+    this.syncLegacyArrays();
+  }
+
+  selectGroup(index: number): void {
+    this.selectedGroupIndex = index;
+    this.changeDetector.markForCheck();
+  }
+
+  toggleGroupMenu(event: Event, index: number): void {
+    event.stopPropagation();
+    this.openGroupMenuIndex = this.openGroupMenuIndex === index ? null : index;
+    this.openDivisionIndex = null;
+    this.openBranchIndex = null;
+    this.openSectionIndex = null;
+    this.changeDetector.markForCheck();
+  }
+
+  // Division Actions
+  addDivisionCard(): void {
+    this.openAddGroupDrawer();
+  }
+
+  addDivisionToGroup(groupIndex: number): void {
+    const group = this.groupObjects[groupIndex];
+    const nextNum = group.divisions.length + 1;
+    group.divisions = [...group.divisions, { name: `Division #${nextNum}`, branches: [] }];
+    this.syncLegacyArrays();
+  }
+
+  removeDivision(groupIndex: number, divisionIndex: number): void {
+    const group = this.groupObjects[groupIndex];
+    group.divisions = group.divisions.filter((_, idx) => idx !== divisionIndex);
+    this.syncLegacyArrays();
+  }
+
+  toggleDivisionMenu(event: Event, groupIndex: number, divisionIndex: number): void {
+    event.stopPropagation();
+    this.openGroupMenuIndex = null;
+    this.openBranchIndex = null;
+    this.openSectionIndex = null;
+    if (this.openDivisionIndex && this.openDivisionIndex.groupIndex === groupIndex && this.openDivisionIndex.divisionIndex === divisionIndex) {
+      this.openDivisionIndex = null;
+    } else {
+      this.openDivisionIndex = { groupIndex, divisionIndex };
+    }
+    this.changeDetector.markForCheck();
+  }
+
+  editDivision(groupIndex: number, divisionIndex: number): void {
+    this.openDivisionIndex = null;
+    setTimeout(() => {
+      const inputEl = document.getElementById(`org-division-input-${groupIndex}-${divisionIndex}`) as HTMLInputElement | null;
+      if (inputEl) {
+        inputEl.focus();
+        inputEl.select();
+      }
+    }, 50);
+    this.changeDetector.markForCheck();
+  }
+
+  // Branch Actions
+  addBranch(groupIndex: number, divisionIndex: number): void {
+    const div = this.groupObjects[groupIndex].divisions[divisionIndex];
+    const nextNum = div.branches.length + 1;
+    div.branches = [...div.branches, { name: `Branch #${nextNum}`, sections: [] }];
+    this.syncLegacyArrays();
+  }
+
+  removeBranch(groupIndex: number, divisionIndex: number, branchIndex: number): void {
+    const div = this.groupObjects[groupIndex].divisions[divisionIndex];
+    div.branches = div.branches.filter((_, idx) => idx !== branchIndex);
+    this.syncLegacyArrays();
+  }
+
+  toggleBranchMenu(event: Event, groupIndex: number, divisionIndex: number, branchIndex: number): void {
+    event.stopPropagation();
+    this.openGroupMenuIndex = null;
+    this.openDivisionIndex = null;
+    this.openSectionIndex = null;
+    if (this.openBranchIndex && 
+        this.openBranchIndex.groupIndex === groupIndex && 
+        this.openBranchIndex.divisionIndex === divisionIndex && 
+        this.openBranchIndex.branchIndex === branchIndex) {
+      this.openBranchIndex = null;
+    } else {
+      this.openBranchIndex = { groupIndex, divisionIndex, branchIndex };
+    }
+    this.changeDetector.markForCheck();
+  }
+
+  // Section Actions
+  addSection(groupIndex: number, divisionIndex: number, branchIndex: number): void {
+    const branch = this.groupObjects[groupIndex].divisions[divisionIndex].branches[branchIndex];
+    const nextNum = branch.sections.length + 1;
+    branch.sections = [...branch.sections, { name: `Section #${nextNum}` }];
+    this.syncLegacyArrays();
+  }
+
+  removeSection(groupIndex: number, divisionIndex: number, branchIndex: number, sectionIndex: number): void {
+    const branch = this.groupObjects[groupIndex].divisions[divisionIndex].branches[branchIndex];
+    branch.sections = branch.sections.filter((_, idx) => idx !== sectionIndex);
+    this.syncLegacyArrays();
+  }
+
+  toggleSectionMenu(event: Event, groupIndex: number, divisionIndex: number, branchIndex: number, sectionIndex: number): void {
+    event.stopPropagation();
+    this.openGroupMenuIndex = null;
+    this.openDivisionIndex = null;
+    this.openBranchIndex = null;
+    if (this.openSectionIndex && 
+        this.openSectionIndex.groupIndex === groupIndex && 
+        this.openSectionIndex.divisionIndex === divisionIndex && 
+        this.openSectionIndex.branchIndex === branchIndex && 
+        this.openSectionIndex.sectionIndex === sectionIndex) {
+      this.openSectionIndex = null;
+    } else {
+      this.openSectionIndex = { groupIndex, divisionIndex, branchIndex, sectionIndex };
+    }
+    this.changeDetector.markForCheck();
+  }
+
+  // Synchronisation
+  syncLegacyArrays(): void {
+    const groupList: string[] = [];
+    const divisionList: string[] = [];
+    const brandList: string[] = [];
+    const sectionList: string[] = [];
+    for (const group of this.groupObjects) {
+      if (group.name.trim() !== '') {
+        groupList.push(group.name);
+      }
+      for (const div of group.divisions) {
+        if (div.name.trim() !== '') {
+          divisionList.push(div.name);
+        }
+        for (const br of div.branches) {
+          if (br.name.trim() !== '') {
+            brandList.push(br.name);
+          }
+          for (const sec of br.sections) {
+            if (sec.name.trim() !== '') {
+              sectionList.push(sec.name);
+            }
+          }
+        }
+      }
+    }
+    this.groups = groupList;
+    this.divisions = divisionList;
+    this.brands = brandList;
+    this.sections = sectionList;
+    this.changeDetector.markForCheck();
+  }
+
   startAddDivision(): void {
     this.isAddingDivision = true;
     this.newDivisionName = '';
@@ -4294,16 +5209,12 @@ export class PortfolioWorkspaceFrameworkComponent {
 
   addDivision(): void {
     const val = this.newDivisionName.trim();
-    if (val) {
-      this.divisions = [...this.divisions, val];
+    if (val && this.groupObjects.length > 0) {
+      this.groupObjects[0].divisions = [...this.groupObjects[0].divisions, { name: val, branches: [] }];
+      this.syncLegacyArrays();
     }
     this.isAddingDivision = false;
     this.newDivisionName = '';
-    this.changeDetector.markForCheck();
-  }
-
-  removeDivision(index: number): void {
-    this.divisions = this.divisions.filter((_, i) => i !== index);
     this.changeDetector.markForCheck();
   }
 
@@ -4328,26 +5239,7 @@ export class PortfolioWorkspaceFrameworkComponent {
     this.changeDetector.markForCheck();
   }
 
-  startAddSection(): void {
-    this.isAddingSection = true;
-    this.newSectionName = '';
-    this.changeDetector.markForCheck();
-  }
 
-  addSection(): void {
-    const val = this.newSectionName.trim();
-    if (val) {
-      this.sections = [...this.sections, val];
-    }
-    this.isAddingSection = false;
-    this.newSectionName = '';
-    this.changeDetector.markForCheck();
-  }
-
-  removeSection(index: number): void {
-    this.sections = this.sections.filter((_, i) => i !== index);
-    this.changeDetector.markForCheck();
-  }
 
   // User Management Methods
   openAddUserForm(): void {
