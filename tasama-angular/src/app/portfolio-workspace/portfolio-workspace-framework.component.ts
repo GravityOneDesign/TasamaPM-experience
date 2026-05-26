@@ -60,391 +60,536 @@ export interface TaxonomyCard {
     <main class="portfolio-workspace-body" style="grid-row: 2; overflow-y: auto; background: #ffffff; padding: 24px; display: flex; flex-direction: column;">
       
       @if (activeSectionId === 'org-structure') {
-        <div class="org-structure-container animation-fade">
-          @if (groupObjects.length === 0) {
+        <div class="org-structure-container animation-fade" style="display: flex; flex-direction: column; width: 100%; height: 100%;">
+          
+          <!-- Top Header Section with Add Division Button -->
+          <div class="org-structure-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <div class="org-structure-intro">
-              <h2>Organisational Structure</h2>
-              <p>Configure groups, divisions, brands, and sections to define the portfolio's hierarchical architecture.</p>
+              <h2 style="font-size: 20px; font-weight: 600; color: #0b0b0b; margin: 0 0 6px 0;">Organisational Structure</h2>
+              <p style="font-size: 13.5px; color: #687182; margin: 0;">Configure divisions, branches, and sections to define the portfolio's hierarchical architecture.</p>
             </div>
+            
+            <!-- Requirement 3: Add Division Button in the Top Right -->
+            <button 
+              id="org-header-add-division-btn" 
+              class="org-header-add-btn" 
+              type="button" 
+              (click)="openAddGroupDrawer()"
+              style="background: #10069f; color: #ffffff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; font-size: 13.5px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 6, 159, 0.15);"
+            >
+              <span pmConsoleIcon="plus"></span>
+              <span>Add Division</span>
+            </button>
+          </div>
 
-            <div class="org-empty-state-wrapper">
-              <div class="org-empty-circle">
-                <span pmConsoleIcon="building" class="org-empty-icon"></span>
+          @if (groupObjects.length === 0) {
+            <!-- Empty state when no Divisions exist -->
+            <div class="org-empty-state-wrapper" style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px; border: 1px dashed #cbd5e1; border-radius: 16px; background: #fafafa; margin-top: 12px;">
+              <div class="org-empty-circle" style="width: 64px; height: 64px; border-radius: 50%; background: #EEF2FF; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; color: #10069f;">
+                <span pmConsoleIcon="building" class="org-empty-icon" style="font-size: 28px;"></span>
               </div>
-              <h3>Build your organisational structure</h3>
-              <p>Start by adding your first Group. From there, you can branch out to include specific divisions, branches, and sections to accurately map your hierarchy.</p>
-              <button id="org-empty-add-division-btn" class="org-empty-btn" type="button" (click)="openAddGroupDrawer()">
+              <h3 style="font-size: 18px; font-weight: 600; color: #1e293b; margin: 0 0 8px 0;">Build your organisational structure</h3>
+              <p style="font-size: 14px; color: #64748b; margin: 0 0 20px 0; max-width: 480px; text-align: center;">Start by adding your first Division. From there, you can branch out to include specific branches and sections to accurately map your hierarchy.</p>
+              <button 
+                id="org-empty-add-division-btn" 
+                class="org-empty-btn" 
+                type="button" 
+                (click)="openAddGroupDrawer()"
+                style="background: #10069f; color: #ffffff; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 10px rgba(16, 6, 159, 0.15);"
+              >
                 <span pmConsoleIcon="plus"></span>
-                <span>Add Group</span>
+                <span>Add Division</span>
               </button>
             </div>
           } @else {
-            <div class="org-structure-header-row">
-              <div class="org-structure-intro">
-                <h2>Organisational Structure</h2>
-                <p>Configure groups, divisions, brands, and sections to define the portfolio's hierarchical architecture.</p>
+            
+            <!-- Requirement: Tabs should not appear until 2 or more divisions have been added -->
+            @if (groupObjects.length >= 2) {
+              <!-- Requirement 6 & 1: Level of Flat Tabs (underlined, plain text, borderless) below heading and subheading -->
+              <div class="groups-tabs-row" style="display: flex; flex-direction: row; gap: 24px; border-bottom: 2px solid #e2e8f0; padding: 0; margin-bottom: 16px; width: 100%; overflow-x: auto; scrollbar-width: none;">
+                @for (group of groupObjects; track $index; let gIdx = $index) {
+                  <button 
+                    type="button"
+                    class="division-tab-btn pointer animation-fade" 
+                    [class.active]="selectedGroupIndex === gIdx"
+                    (click)="selectGroup(gIdx)"
+                    style="background: transparent; border: none; padding: 12px 4px; cursor: pointer; font-weight: 600; font-size: 15px; transition: all 0.2s ease; border-bottom: 3.5px solid transparent; color: #64748b; outline: none; margin-bottom: -2px; display: inline-flex; align-items: center;"
+                    [style.border-bottom-color]="selectedGroupIndex === gIdx ? '#10069f' : 'transparent'"
+                    [style.color]="selectedGroupIndex === gIdx ? '#10069f' : '#64748b'"
+                  >
+                    <span>{{ group.name }}</span>
+                  </button>
+                }
               </div>
-              <button id="org-header-add-division-btn" class="org-header-add-btn" type="button" (click)="openAddGroupDrawer()">
-                <span pmConsoleIcon="plus"></span>
-                <span>Add Group</span>
-              </button>
-            </div>
+            }
 
-            <!-- Horizontal Groups Tabs Row -->
-            <div class="groups-tabs-row">
-              @for (group of groupObjects; track $index; let gIdx = $index) {
-                <div 
-                  class="group-card pointer animation-fade" 
-                  [class.active]="selectedGroupIndex === gIdx"
-                  (click)="selectGroup(gIdx)"
-                >
-                  <div class="group-card-icon-wrap">
-                    <span pmConsoleIcon="folder" class="group-card-icon"></span>
-                  </div>
-                  <div class="group-card-title-area">
-                    <input
-                      [id]="'org-group-input-' + gIdx"
-                      type="text"
-                      class="group-card-input"
-                      [placeholder]="'Group Name'"
-                      [(ngModel)]="group.name"
-                      (ngModelChange)="syncLegacyArrays()"
-                      (click)="selectedGroupIndex === gIdx ? $event.stopPropagation() : selectGroup(gIdx)"
-                    />
-                    @if (group.owner) {
-                      <span class="group-card-owner-badge">Owner: {{ group.owner }}</span>
-                    }
+            <!-- Active Division Hierarchy Area -->
+            @if (groupObjects[selectedGroupIndex]) {
+              <div class="active-group-details animation-fade" style="display: flex; flex-direction: column; gap: 24px; width: 100%;">
+                
+                <!-- Requirement 2 & 3: Division Card equal width (290px), linear gradient background, circular pill, no owner -->
+                <div class="division-card" style="background: linear-gradient(135deg, #F4F5FF 0%, #FFFFFF 100%); border: 1.5px solid #E0E4EC; border-radius: 16px; padding: 16px 20px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 290px; min-width: 290px; min-height: 86px; box-sizing: border-box; position: relative; box-shadow: 0 4px 12px rgba(25, 33, 61, 0.03);">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                    <!-- Pill style aligned with image 3 -->
+                    <span class="pill-division" style="background: #D5E3FF; color: #10069f; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 100px; width: fit-content; text-transform: none; line-height: 1;">Division</span>
+                    
+                    <div style="position: relative; margin-top: -4px; margin-right: -8px;">
+                      <button 
+                        type="button" 
+                        class="flat-dots-trigger"
+                        (click)="toggleGroupMenu($event, selectedGroupIndex)"
+                        style="border: none; background: transparent; cursor: pointer; color: #64748b; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%;"
+                      >
+                        <span pmConsoleIcon="more-vertical" style="font-size: 16px;"></span>
+                      </button>
+                      @if (openGroupMenuIndex === selectedGroupIndex) {
+                        <div class="division-dropdown-menu animation-fade" role="menu" style="position: absolute; top: 100%; right: 0; z-index: 100; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); width: 140px; padding: 4px 0;">
+                          <button 
+                            type="button" 
+                            class="division-dropdown-item" 
+                            (click)="openEditGroupDrawer(selectedGroupIndex); openGroupMenuIndex = null"
+                            style="display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 12px; border: none; background: transparent; text-align: left; font-size: 13px; font-weight: 500; color: #334155; cursor: pointer;"
+                          >
+                            <span pmConsoleIcon="eye" class="item-icon"></span>
+                            <span>View Details</span>
+                          </button>
+                        </div>
+                      }
+                    </div>
                   </div>
                   
-                  <div class="division-action-menu-wrap" (click)="$event.stopPropagation()">
-                    <button 
-                      [id]="'org-group-menu-btn-' + gIdx"
-                      type="button" 
-                      class="division-action-trigger flat-dots-trigger" 
-                      (click)="toggleGroupMenu($event, gIdx)"
-                      title="Actions"
-                    >
-                      <span pmConsoleIcon="more-vertical"></span>
-                    </button>
-                    
-                    @if (openGroupMenuIndex === gIdx) {
-                      <div class="division-dropdown-menu animation-fade" role="menu">
-                        <button 
-                          [id]="'org-group-edit-action-' + gIdx"
-                          type="button" 
-                          class="division-dropdown-item" 
-                          (click)="openEditGroupDrawer(gIdx); openGroupMenuIndex = null"
-                        >
-                          <span pmConsoleIcon="eye" class="item-icon"></span>
-                          <span>View Details</span>
-                        </button>
-                        <button 
-                          [id]="'org-group-delete-action-' + gIdx"
-                          type="button" 
-                          class="division-dropdown-item delete" 
-                          (click)="removeGroup(gIdx)"
-                        >
-                          <span pmConsoleIcon="trash-2" class="item-icon"></span>
-                          <span>Delete</span>
-                        </button>
-                      </div>
-                    }
-                  </div>
+                  <h4 style="font-size: 16px; font-weight: 700; color: #000000; margin: 4px 0 0 0; word-break: break-word;">{{ groupObjects[selectedGroupIndex].name }}</h4>
                 </div>
-              }
 
-              <!-- Add Group tab button -->
-              <button 
-                id="org-add-group-btn" 
-                class="add-group-tab-card" 
-                type="button" 
-                (click)="openAddGroupDrawer()"
-              >
-                <span pmConsoleIcon="plus"></span>
-                <span>Add Group</span>
-              </button>
-            </div>
-
-            <!-- Active Group Content Panel -->
-            @if (groupObjects[selectedGroupIndex]) {
-              <div class="active-group-details animation-fade" style="margin-top: 8px; width: 100%;">
-                <!-- Divisions under the active Group -->
-                <div class="divisions-list-stack" style="gap: 36px; display: flex; flex-direction: column;">
+                <!-- Horizontal Branches Flex Row -->
+                <div class="branches-row-flex" style="display: flex; flex-direction: row; gap: 24px; align-items: flex-start; overflow-x: auto; padding: 8px 4px 24px 4px; width: 100%;">
+                  
                   @for (div of groupObjects[selectedGroupIndex].divisions; track $index; let dIdx = $index) {
-                    <div class="division-section animation-fade">
-                      <!-- Division Header Card -->
-                      <div class="division-card">
-                        <div class="division-card-icon-wrap">
-                          <span pmConsoleIcon="git-branch" class="division-card-icon"></span>
-                        </div>
-                        <input
-                          [id]="'org-division-input-' + selectedGroupIndex + '-' + dIdx"
-                          type="text"
-                          class="division-card-input"
-                          [placeholder]="'Division Name'"
-                          [(ngModel)]="div.name"
-                          (ngModelChange)="syncLegacyArrays()"
-                        />
-                        <div class="division-action-menu-wrap">
-                          <button 
-                            [id]="'org-division-menu-btn-' + selectedGroupIndex + '-' + dIdx"
-                            type="button" 
-                            class="division-action-trigger flat-dots-trigger" 
-                            (click)="toggleDivisionMenu($event, selectedGroupIndex, dIdx)"
-                            title="Actions"
-                          >
-                            <span pmConsoleIcon="more-vertical"></span>
-                          </button>
+                    <!-- Branch Column without background/border/padding to vertically stack cards -->
+                    <div class="branch-column-card animation-fade" style="display: flex; flex-direction: column; gap: 12px; min-width: 290px; width: 290px; box-sizing: border-box; background: transparent; border: none; padding: 0; box-shadow: none;">
+                      
+                      <!-- Branch Header Card with gradient background, circular E6ECF8 pill, no owner -->
+                      <div class="branch-card-header-box" style="background: linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%); border: 1.5px solid #E0E4EC; border-radius: 16px; padding: 16px 20px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 290px; min-width: 290px; min-height: 86px; box-shadow: 0 4px 12px rgba(25, 33, 61, 0.03); position: relative; box-sizing: border-box;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                          <!-- Pill style aligned with requirement 4 -->
+                          <span class="pill-branch" style="background: #E6ECF8; color: #10069f; font-size: 11px; font-weight: 600; padding: 3.5px 10px; border-radius: 100px; width: fit-content; text-transform: none; line-height: 1;">Branch</span>
                           
-                          @if (openDivisionIndex && openDivisionIndex.groupIndex === selectedGroupIndex && openDivisionIndex.divisionIndex === dIdx) {
-                            <div class="division-dropdown-menu animation-fade" role="menu">
-                              <button 
-                                [id]="'org-division-delete-action-' + selectedGroupIndex + '-' + dIdx"
-                                type="button" 
-                                class="division-dropdown-item delete" 
-                                (click)="removeDivision(selectedGroupIndex, dIdx)"
-                              >
-                                <span pmConsoleIcon="trash-2" class="item-icon"></span>
-                                <span>Delete</span>
-                              </button>
-                            </div>
-                          }
+                          <div style="position: relative; margin-top: -4px; margin-right: -8px;">
+                            <button 
+                              type="button" 
+                              class="flat-dots-trigger"
+                              (click)="toggleDivisionMenu($event, selectedGroupIndex, dIdx)"
+                              style="border: none; background: transparent; cursor: pointer; color: #64748b; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%;"
+                            >
+                              <span pmConsoleIcon="more-vertical" style="font-size: 14px;"></span>
+                            </button>
+                            @if (openDivisionIndex && openDivisionIndex.groupIndex === selectedGroupIndex && openDivisionIndex.divisionIndex === dIdx) {
+                              <div class="division-dropdown-menu animation-fade" role="menu" style="position: absolute; top: 100%; right: 0; z-index: 100; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); width: 120px; padding: 4px 0;">
+                                <button 
+                                  type="button" 
+                                  class="division-dropdown-item" 
+                                  (click)="openEditBranchDrawer(dIdx, dIdx); openDivisionIndex = null"
+                                  style="display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 12px; border: none; background: transparent; text-align: left; font-size: 12.5px; color: #334155; cursor: pointer;"
+                                >
+                                  <span>Edit</span>
+                                </button>
+                                <button 
+                                  type="button" 
+                                  class="division-dropdown-item delete" 
+                                  (click)="removeDivision(selectedGroupIndex, dIdx); openDivisionIndex = null"
+                                  style="display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 12px; border: none; background: transparent; text-align: left; font-size: 12.5px; color: #ef4444; cursor: pointer;"
+                                >
+                                  <span>Delete</span>
+                                </button>
+                              </div>
+                            }
+                          </div>
                         </div>
+                        
+                        <h4 style="font-size: 16px; font-weight: 700; color: #000000; margin: 4px 0 0 0; word-break: break-word;">{{ div.name }}</h4>
                       </div>
 
-                      <!-- Branches Row (horizontal columns grid) -->
-                      <div class="branches-row-flex">
-                        @for (branch of div.branches; track $index; let bIdx = $index) {
-                          <div class="branch-column-card animation-fade">
-                            <!-- Branch Header Card -->
-                            <div class="branch-card-header-box">
-                              <div class="branch-card-icon-wrap">
-                                <span pmConsoleIcon="git-branch" class="branch-card-icon"></span>
-                              </div>
-                              <input
-                                [id]="'org-branch-input-' + selectedGroupIndex + '-' + dIdx + '-' + bIdx"
-                                type="text"
-                                class="branch-card-input"
-                                [placeholder]="'Branch Name'"
-                                [(ngModel)]="branch.name"
-                                (ngModelChange)="syncLegacyArrays()"
-                              />
+                      <!-- Vertically Stacked Sections inside Branch -->
+                      <div class="sections-list-wrap" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+                        @for (br of div.branches; track $index; let bIdx = $index) {
+                          <!-- Section Card with updated padding and gradient -->
+                          <div class="section-card animation-fade" style="background: linear-gradient(135deg, #FFFBF0 0%, #FFFFFF 100%); border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 16px 20px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 290px; min-width: 290px; min-height: 86px; box-shadow: 0 4px 12px rgba(25, 33, 61, 0.03); box-sizing: border-box; position: relative;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                              <!-- Pill style aligned with requirement 4 -->
+                              <span class="pill-section" style="background: #FFF8EB; border: 1px solid #FFEECF; color: #92400E; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 100px; width: fit-content; text-transform: none; line-height: 1;">Section</span>
                               
-                              <div class="division-action-menu-wrap">
+                              <div style="position: relative; margin-top: -2px; margin-right: -6px;">
                                 <button 
-                                  [id]="'org-branch-menu-btn-' + selectedGroupIndex + '-' + dIdx + '-' + bIdx"
                                   type="button" 
-                                  class="division-action-trigger flat-dots-trigger" 
+                                  class="flat-dots-trigger"
                                   (click)="toggleBranchMenu($event, selectedGroupIndex, dIdx, bIdx)"
-                                  title="Actions"
+                                  style="border: none; background: transparent; cursor: pointer; color: #94a3b8; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 50%;"
                                 >
-                                  <span pmConsoleIcon="more-vertical"></span>
+                                  <span pmConsoleIcon="more-vertical" style="font-size: 12px;"></span>
                                 </button>
-                                
                                 @if (openBranchIndex && openBranchIndex.groupIndex === selectedGroupIndex && openBranchIndex.divisionIndex === dIdx && openBranchIndex.branchIndex === bIdx) {
-                                  <div class="division-dropdown-menu animation-fade" role="menu">
+                                  <div class="division-dropdown-menu animation-fade" role="menu" style="position: absolute; top: 100%; right: 0; z-index: 100; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); width: 100px; padding: 4px 0;">
                                     <button 
-                                      [id]="'org-branch-delete-action-' + selectedGroupIndex + '-' + dIdx + '-' + bIdx"
                                       type="button" 
                                       class="division-dropdown-item delete" 
-                                      (click)="removeBranch(selectedGroupIndex, dIdx, bIdx)"
+                                      (click)="removeBranch(selectedGroupIndex, dIdx, bIdx); openBranchIndex = null"
+                                      style="display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 12px; border: none; background: transparent; text-align: left; font-size: 11.5px; color: #ef4444; cursor: pointer;"
                                     >
-                                      <span pmConsoleIcon="trash-2" class="item-icon"></span>
                                       <span>Delete</span>
                                     </button>
                                   </div>
                                 }
                               </div>
                             </div>
-
-                            <!-- Vertically stacked sections list inside branch -->
-                            <div class="sections-list-wrap">
-                              @for (sec of branch.sections; track $index; let sIdx = $index) {
-                                <div class="section-card animation-fade">
-                                  <input
-                                    [id]="'org-section-input-' + selectedGroupIndex + '-' + dIdx + '-' + bIdx + '-' + sIdx"
-                                    type="text"
-                                    class="section-item-input"
-                                    [placeholder]="'Section'"
-                                    [(ngModel)]="sec.name"
-                                    (ngModelChange)="syncLegacyArrays()"
-                                  />
-                                  
-                                  <div class="division-action-menu-wrap">
-                                    <button 
-                                      [id]="'org-section-menu-btn-' + selectedGroupIndex + '-' + dIdx + '-' + bIdx + '-' + sIdx"
-                                      type="button" 
-                                      class="division-action-trigger flat-dots-trigger" 
-                                      (click)="toggleSectionMenu($event, selectedGroupIndex, dIdx, bIdx, sIdx)"
-                                      title="Actions"
-                                    >
-                                      <span pmConsoleIcon="more-vertical"></span>
-                                    </button>
-                                    
-                                    @if (openSectionIndex && 
-                                         openSectionIndex.groupIndex === selectedGroupIndex && 
-                                         openSectionIndex.divisionIndex === dIdx && 
-                                         openSectionIndex.branchIndex === bIdx && 
-                                         openSectionIndex.sectionIndex === sIdx) {
-                                      <div class="division-dropdown-menu animation-fade" role="menu">
-                                        <button 
-                                          [id]="'org-section-delete-action-' + selectedGroupIndex + '-' + dIdx + '-' + bIdx + '-' + sIdx"
-                                          type="button" 
-                                          class="division-dropdown-item delete" 
-                                          (click)="removeSection(selectedGroupIndex, dIdx, bIdx, sIdx)"
-                                        >
-                                          <span pmConsoleIcon="trash-2" class="item-icon"></span>
-                                          <span>Delete</span>
-                                        </button>
-                                      </div>
-                                    }
-                                  </div>
-                                </div>
-                              }
-                            </div>
-
-                            <!-- Add Section CTA at the bottom of the branch column -->
-                            <button 
-                              [id]="'org-add-section-btn-' + selectedGroupIndex + '-' + dIdx + '-' + bIdx"
-                              class="section-text-cta-btn"
-                              type="button"
-                              (click)="addSection(selectedGroupIndex, dIdx, bIdx)"
-                            >
-                              <span pmConsoleIcon="plus"></span>
-                              <span>Add Section</span>
-                            </button>
+                            
+                            <h4 style="font-size: 16px; font-weight: 700; color: #000000; margin: 4px 0 0 0; word-break: break-word;">{{ br.name }}</h4>
                           </div>
                         }
-
-                        <!-- Add Branch CTA button at the end of the flex row -->
-                        <div class="branch-cta-end">
-                          <button 
-                            [id]="'org-add-branch-btn-' + selectedGroupIndex + '-' + dIdx" 
-                            class="branch-text-cta-btn" 
-                            type="button" 
-                            (click)="addBranch(selectedGroupIndex, dIdx)"
-                          >
-                            <span pmConsoleIcon="plus"></span>
-                            <span>Add Branches</span>
-                          </button>
-                        </div>
+                        
+                        <!-- Requirement 5: Dashed stroke container below sections in each branch -->
+                        <button 
+                          type="button" 
+                          (click)="openAddSectionDrawer(dIdx, dIdx)"
+                          style="background: transparent; border: 1.5px dashed #cbd5e1; border-radius: 16px; padding: 16px 20px; display: flex; align-items: center; justify-content: center; gap: 8px; color: #64748b; font-size: 14px; font-weight: 600; cursor: pointer; width: 290px; min-width: 290px; min-height: 86px; transition: all 0.2s ease; box-sizing: border-box;"
+                          onmouseover="this.style.borderColor='#10069f'; this.style.color='#10069f'; this.style.background='#f4f6fc';"
+                          onmouseout="this.style.borderColor='#cbd5e1'; this.style.color='#64748b'; this.style.background='transparent';"
+                        >
+                          <span pmConsoleIcon="plus"></span>
+                          <span>Add Section</span>
+                        </button>
                       </div>
+
                     </div>
                   }
-
-                  <!-- Add Division CTA at the bottom of the group's divisions list -->
+                  
+                  <!-- Requirement 4: Stroke Container to the right of Branch cards labeled 'Add Branch' -->
                   <button 
-                    [id]="'org-add-division-btn-' + selectedGroupIndex"
-                    class="section-text-cta-btn"
-                    type="button"
-                    (click)="addDivisionToGroup(selectedGroupIndex)"
-                    style="margin-top: 8px;"
+                    type="button" 
+                    (click)="openAddBranchDrawer(selectedGroupIndex)"
+                    style="background: transparent; border: 1.5px dashed #cbd5e1; border-radius: 16px; min-width: 290px; width: 290px; min-height: 86px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 16px 20px; color: #64748b; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-sizing: border-box;"
+                    onmouseover="this.style.borderColor='#10069f'; this.style.color='#10069f'; this.style.background='#f4f6fc';"
+                    onmouseout="this.style.borderColor='#cbd5e1'; this.style.color='#64748b'; this.style.background='transparent';"
                   >
-                    <span pmConsoleIcon="plus"></span>
-                    <span>Add Division</span>
+                    <span pmConsoleIcon="plus" style="font-size: 20px;"></span>
+                    <span>Add Branch</span>
                   </button>
+
                 </div>
+
               </div>
             }
+
           }
 
-          <!-- Add Group Side Drawer (uses platform-standard shell) -->
+          <!-- Drawer 1: Repurposed Division Drawer (originally Group) -->
           @if (isAddingGroup) {
             <app-pm-console-plan-drawer
               eyebrow="ORGANISATIONAL STRUCTURE"
-              [title]="editingGroupIndex !== null ? 'Group Details' : 'Add New Group'"
-              description="Configure group details, purpose, and environment factors."
-              [submitLabel]="editingGroupIndex !== null ? 'Save' : 'Add'"
+              [title]="editingGroupIndex !== null && groupObjects[editingGroupIndex]?.name !== 'Ne division' ? 'Division Details' : 'Add New Division'"
+              description="Configure division details, owner, purpose, and child branches & sections."
+              [submitLabel]="editingGroupIndex !== null && groupObjects[editingGroupIndex]?.name !== 'Ne division' ? 'Save' : 'Add'"
               cancelLabel="Cancel"
               (close)="closeAddGroupDrawer()"
               (submitForm)="saveGroup(); $event.preventDefault()"
             >
-              <!-- Drawer body content projected into planDrawerBody -->
-              <div planDrawerBody class="ud-form">
-                <!-- Row 1: Group Name + Owner selection -->
-                <div class="ud-row ud-row-2col">
+              <div planDrawerBody class="ud-form" style="display: flex; flex-direction: column; gap: 20px;">
+                
+                <!-- Division Name + Owner typeahead autocomplete -->
+                <div class="ud-row ud-row-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                   <div class="ud-field">
-                    <label for="groupName" class="ud-label">Group <span class="ud-required">*</span></label>
+                    <label for="divNameInput" class="ud-label" style="font-size: 13.5px; font-weight: 600; color: #334155; margin-bottom: 6px; display: block;">Division Name <span class="ud-required" style="color: #ef4444;">*</span></label>
                     <input 
-                      id="groupName" 
+                      id="divNameInput" 
                       type="text" 
                       class="ud-input" 
-                      placeholder="Enter Group name" 
+                      placeholder="Enter Division name" 
                       [(ngModel)]="newGroupName" 
+                      style="width: 100%; padding: 10px 12px; border: 1px solid #dfe4ee; border-radius: 8px; font-size: 13.5px; box-sizing: border-box;"
                     />
                   </div>
-                  <div class="ud-field">
-                    <label for="groupOwner" class="ud-label">Owner</label>
-                    <div class="ud-select-wrap">
-                      <select id="groupOwner" class="ud-select ud-select--pill" [(ngModel)]="newGroupOwner">
-                        <option value="">Select Owner</option>
-                        <option value="John Doe">John Doe</option>
-                        <option value="Jane Smith">Jane Smith</option>
-                        <option value="Alex Johnson">Alex Johnson</option>
-                        <option value="Sarah Lee">Sarah Lee</option>
-                        @for (u of users; track u.username) {
-                          <option [value]="u.name">{{ u.name }}</option>
+                  
+                  <div class="ud-field" style="position: relative;">
+                    <label for="divOwnerInput" class="ud-label" style="font-size: 13.5px; font-weight: 600; color: #334155; margin-bottom: 6px; display: block;">Owner</label>
+                    <input 
+                      id="divOwnerInput" 
+                      type="text" 
+                      class="ud-input" 
+                      placeholder="Search for an Owner..." 
+                      [(ngModel)]="newGroupOwner"
+                      (focus)="showOwnerSuggestions = true"
+                      (input)="filterOwnerSuggestions()"
+                      style="width: 100%; padding: 10px 12px; border: 1px solid #dfe4ee; border-radius: 8px; font-size: 13.5px; box-sizing: border-box;"
+                    />
+                    
+                    @if (showOwnerSuggestions && filteredOwnerUsers.length > 0) {
+                      <div class="autocomplete-dropdown shadow-lg border" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 999; background: white; border: 1px solid #e2e8f0; border-radius: 8px; max-height: 180px; overflow-y: auto; margin-top: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        @for (u of filteredOwnerUsers; track u.username) {
+                          <div 
+                            class="autocomplete-item" 
+                            style="padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #334155; font-weight: 500;"
+                            onmouseover="this.style.background='#f8fafc';"
+                            onmouseout="this.style.background='white';"
+                            (click)="selectOwner(u.name)"
+                          >
+                            {{ u.name }} <span style="color: #64748b; font-size: 11.5px; font-weight: 400;">— {{ u.role }}</span>
+                          </div>
                         }
-                      </select>
-                      <span pmConsoleIcon="chevron-down" class="ud-select-chevron"></span>
-                    </div>
+                      </div>
+                    }
                   </div>
                 </div>
 
-                <!-- Purpose Field (with custom toolbar) -->
+                <!-- Purpose Rich Editor field -->
                 <div class="ud-field">
-                  <label class="ud-label">Purpose</label>
+                  <label class="ud-label" style="font-size: 13.5px; font-weight: 600; color: #334155; margin-bottom: 6px; display: block;">Purpose</label>
                   <div class="rich-editor-container">
-                    <div class="rich-editor-toolbar">
+                    <div class="rich-editor-toolbar" style="background: #f8fafc; border-bottom: 1px solid #dfe4ee; padding: 6px 12px; display: flex; gap: 4px; align-items: center;">
                       <button type="button" class="toolbar-btn bold-btn" title="Bold">B</button>
                       <button type="button" class="toolbar-btn italic-btn" title="Italic">I</button>
-                      <span class="toolbar-divider"></span>
-                      <button type="button" class="toolbar-btn" title="Number List"><span pmConsoleIcon="list-ordered"></span></button>
+                      <span class="toolbar-divider" style="width: 1px; height: 16px; background: #cbd5e1; margin: 0 4px;"></span>
                       <button type="button" class="toolbar-btn" title="Bullet List"><span pmConsoleIcon="list"></span></button>
-                      <span class="toolbar-divider"></span>
-                      <button type="button" class="toolbar-btn" title="Copy"><span pmConsoleIcon="copy"></span></button>
-                      <button type="button" class="toolbar-btn" title="Cut"><span pmConsoleIcon="scissors"></span></button>
-                      <button type="button" class="toolbar-btn" title="Paste"><span pmConsoleIcon="clipboard"></span></button>
-                      <span class="toolbar-divider"></span>
-                      <button type="button" class="toolbar-btn" title="Undo"><span pmConsoleIcon="corner-up-left"></span></button>
-                      <button type="button" class="toolbar-btn" title="Redo"><span pmConsoleIcon="corner-up-right"></span></button>
                     </div>
                     <textarea 
                       class="rich-editor-textarea" 
                       placeholder="Enter purpose details..." 
                       [(ngModel)]="newGroupPurpose"
+                      style="width: 100%; border: none; padding: 12px; font-size: 13.5px; outline: none; min-height: 100px; box-sizing: border-box;"
                     ></textarea>
                   </div>
                 </div>
 
-                <!-- Environment Factors Field (with custom toolbar) -->
-                <div class="ud-field">
-                  <label class="ud-label">Environment Factors</label>
-                  <div class="rich-editor-container">
-                    <div class="rich-editor-toolbar">
-                      <button type="button" class="toolbar-btn bold-btn" title="Bold">B</button>
-                      <button type="button" class="toolbar-btn italic-btn" title="Italic">I</button>
-                      <span class="toolbar-divider"></span>
-                      <button type="button" class="toolbar-btn" title="Number List"><span pmConsoleIcon="list-ordered"></span></button>
-                      <button type="button" class="toolbar-btn" title="Bullet List"><span pmConsoleIcon="list"></span></button>
-                      <span class="toolbar-divider"></span>
-                      <button type="button" class="toolbar-btn" title="Copy"><span pmConsoleIcon="copy"></span></button>
-                      <button type="button" class="toolbar-btn" title="Cut"><span pmConsoleIcon="scissors"></span></button>
-                      <button type="button" class="toolbar-btn" title="Paste"><span pmConsoleIcon="clipboard"></span></button>
-                      <span class="toolbar-divider"></span>
-                      <button type="button" class="toolbar-btn" title="Undo"><span pmConsoleIcon="corner-up-left"></span></button>
-                      <button type="button" class="toolbar-btn" title="Redo"><span pmConsoleIcon="corner-up-right"></span></button>
-                    </div>
-                    <textarea 
-                      class="rich-editor-textarea" 
-                      placeholder="Enter environment factors..." 
-                      [(ngModel)]="newGroupEnvFactors"
-                    ></textarea>
+                <!-- Child Branches and Sections Nested List Builder -->
+                <div class="ud-field" style="border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                  <label class="ud-label" style="font-size: 14px; font-weight: 700; color: #1e293b; margin-bottom: 12px; display: block;">Branches & Sections (Nested Hierarchy)</label>
+                  
+                  <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px;">
+                    @for (b of drawerBranches; track $index; let bIdx = $index) {
+                      <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 12px;">
+                        
+                        <!-- Branch Input header -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                          <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1;">
+                            <span style="font-size: 12px; font-weight: 700; color: #92400E; text-transform: uppercase; background: #FEF3C7; padding: 1px 6px; border-radius: 4px;">Branch</span>
+                            <input 
+                              type="text" 
+                              placeholder="Enter Branch name" 
+                              [(ngModel)]="b.name" 
+                              style="flex-grow: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"
+                            />
+                          </div>
+                          <button 
+                            type="button" 
+                            (click)="removeBranchFromDrawer(bIdx)"
+                            style="border: none; background: transparent; color: #ef4444; cursor: pointer; display: flex; align-items: center;"
+                            title="Remove Branch"
+                          >
+                            <span pmConsoleIcon="trash-2" style="font-size: 16px;"></span>
+                          </button>
+                        </div>
+
+                        <!-- Nested sections builder -->
+                        <div style="padding-left: 20px; border-left: 2px dashed #cbd5e1; display: flex; flex-direction: column; gap: 8px;">
+                          @for (s of b.sections; track $index; let sIdx = $index) {
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                              <span style="font-size: 11px; font-weight: 700; color: #065F46; text-transform: uppercase; background: #D1FAE5; padding: 1px 5px; border-radius: 3px;">Section</span>
+                              <input 
+                                type="text" 
+                                placeholder="Enter Section name" 
+                                [(ngModel)]="s.name" 
+                                style="flex-grow: 1; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px;"
+                              />
+                              <button 
+                                type="button" 
+                                (click)="removeSectionFromDrawerBranch(bIdx, sIdx)"
+                                style="border: none; background: transparent; color: #94a3b8; cursor: pointer;"
+                              >
+                                <span pmConsoleIcon="x" style="font-size: 14px;"></span>
+                              </button>
+                            </div>
+                          }
+                          
+                          <button 
+                            type="button" 
+                            (click)="addSectionToDrawerBranch(bIdx)"
+                            style="background: transparent; border: none; color: #065F46; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 4px; width: fit-content;"
+                          >
+                            <span pmConsoleIcon="plus"></span>
+                            <span>Add Section</span>
+                          </button>
+                        </div>
+
+                      </div>
+                    }
                   </div>
+
+                  <button 
+                    type="button" 
+                    (click)="addBranchToDrawer()"
+                    style="background: #EEF2FF; border: 1px solid #C7D2FE; color: #4F46E5; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 16px; border-radius: 8px; width: fit-content;"
+                  >
+                    <span pmConsoleIcon="plus"></span>
+                    <span>Add Branch</span>
+                  </button>
                 </div>
+
               </div>
             </app-pm-console-plan-drawer>
           }
+
+          <!-- Drawer 2: Add/Edit Branch Drawer (repurposed isAddingBrand trigger) -->
+          @if (isAddingBrand) {
+            <app-pm-console-plan-drawer
+              eyebrow="ORGANISATIONAL STRUCTURE"
+              [title]="activeBranchIdx !== null ? 'Branch Details' : 'Add New Branch'"
+              description="Configure branch specific information, owner, and operational goals."
+              [submitLabel]="activeBranchIdx !== null ? 'Save' : 'Add'"
+              cancelLabel="Cancel"
+              (close)="closeAddBranchDrawer()"
+              (submitForm)="saveBranchDrawer(); $event.preventDefault()"
+            >
+              <div planDrawerBody class="ud-form" style="display: flex; flex-direction: column; gap: 20px;">
+                
+                <div class="ud-row ud-row-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                  <div class="ud-field">
+                    <label for="branchNameInput" class="ud-label" style="font-size: 13.5px; font-weight: 600; color: #334155; margin-bottom: 6px; display: block;">Branch Name <span class="ud-required" style="color: #ef4444;">*</span></label>
+                    <input 
+                      id="branchNameInput" 
+                      type="text" 
+                      class="ud-input" 
+                      placeholder="Enter Branch name" 
+                      [(ngModel)]="newBranchName" 
+                      style="width: 100%; padding: 10px 12px; border: 1px solid #dfe4ee; border-radius: 8px; font-size: 13.5px; box-sizing: border-box;"
+                    />
+                  </div>
+
+                  <div class="ud-field" style="position: relative;">
+                    <label for="branchOwnerInput" class="ud-label" style="font-size: 13.5px; font-weight: 600; color: #334155; margin-bottom: 6px; display: block;">Owner</label>
+                    <input 
+                      id="branchOwnerInput" 
+                      type="text" 
+                      class="ud-input" 
+                      placeholder="Search for a Branch Owner..." 
+                      [(ngModel)]="newBranchOwner"
+                      (focus)="showBranchOwnerSuggestions = true"
+                      (input)="filterBranchOwnerSuggestions()"
+                      style="width: 100%; padding: 10px 12px; border: 1px solid #dfe4ee; border-radius: 8px; font-size: 13.5px; box-sizing: border-box;"
+                    />
+                    
+                    @if (showBranchOwnerSuggestions && filteredBranchOwnerUsers.length > 0) {
+                      <div class="autocomplete-dropdown shadow-lg border" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 999; background: white; border: 1px solid #e2e8f0; border-radius: 8px; max-height: 180px; overflow-y: auto; margin-top: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        @for (u of filteredBranchOwnerUsers; track u.username) {
+                          <div 
+                            class="autocomplete-item" 
+                            style="padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #334155; font-weight: 500;"
+                            onmouseover="this.style.background='#f8fafc';"
+                            onmouseout="this.style.background='white';"
+                            (click)="selectBranchOwner(u.name)"
+                          >
+                            {{ u.name }} <span style="color: #64748b; font-size: 11.5px; font-weight: 400;">— {{ u.role }}</span>
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <div class="ud-field">
+                  <label class="ud-label" style="font-size: 13.5px; font-weight: 600; color: #334155; margin-bottom: 6px; display: block;">Purpose</label>
+                  <div class="rich-editor-container">
+                    <div class="rich-editor-toolbar" style="background: #f8fafc; border-bottom: 1px solid #dfe4ee; padding: 6px 12px; display: flex; gap: 4px;">
+                      <button type="button" class="toolbar-btn bold-btn" title="Bold">B</button>
+                      <button type="button" class="toolbar-btn italic-btn" title="Italic">I</button>
+                    </div>
+                    <textarea 
+                      class="rich-editor-textarea" 
+                      placeholder="Enter branch goals or purpose details..." 
+                      [(ngModel)]="newBranchPurpose"
+                      style="width: 100%; border: none; padding: 12px; font-size: 13.5px; outline: none; min-height: 100px; box-sizing: border-box;"
+                    ></textarea>
+                  </div>
+                </div>
+
+              </div>
+            </app-pm-console-plan-drawer>
+          }
+
+          <!-- Drawer 3: Add/Edit Section Drawer (isAddingSection trigger) -->
+          @if (isAddingSection) {
+            <app-pm-console-plan-drawer
+              eyebrow="ORGANISATIONAL STRUCTURE"
+              [title]="activeSectionIdx !== null ? 'Section Details' : 'Add New Section'"
+              description="Configure section specific properties, owner, and targets."
+              [submitLabel]="activeSectionIdx !== null ? 'Save' : 'Add'"
+              cancelLabel="Cancel"
+              (close)="closeAddSectionDrawer()"
+              (submitForm)="saveSectionDrawer(); $event.preventDefault()"
+            >
+              <div planDrawerBody class="ud-form" style="display: flex; flex-direction: column; gap: 20px;">
+                
+                <div class="ud-row ud-row-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                  <div class="ud-field">
+                    <label for="sectionNameInput" class="ud-label" style="font-size: 13.5px; font-weight: 600; color: #334155; margin-bottom: 6px; display: block;">Section Name <span class="ud-required" style="color: #ef4444;">*</span></label>
+                    <input 
+                      id="sectionNameInput" 
+                      type="text" 
+                      class="ud-input" 
+                      placeholder="Enter Section name" 
+                      [(ngModel)]="newSectionName" 
+                      style="width: 100%; padding: 10px 12px; border: 1px solid #dfe4ee; border-radius: 8px; font-size: 13.5px; box-sizing: border-box;"
+                    />
+                  </div>
+
+                  <div class="ud-field" style="position: relative;">
+                    <label for="sectionOwnerInput" class="ud-label" style="font-size: 13.5px; font-weight: 600; color: #334155; margin-bottom: 6px; display: block;">Owner</label>
+                    <input 
+                      id="sectionOwnerInput" 
+                      type="text" 
+                      class="ud-input" 
+                      placeholder="Search for a Section Owner..." 
+                      [(ngModel)]="newSectionOwner"
+                      (focus)="showSectionOwnerSuggestions = true"
+                      (input)="filterSectionOwnerSuggestions()"
+                      style="width: 100%; padding: 10px 12px; border: 1px solid #dfe4ee; border-radius: 8px; font-size: 13.5px; box-sizing: border-box;"
+                    />
+                    
+                    @if (showSectionOwnerSuggestions && filteredSectionOwnerUsers.length > 0) {
+                      <div class="autocomplete-dropdown shadow-lg border" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 999; background: white; border: 1px solid #e2e8f0; border-radius: 8px; max-height: 180px; overflow-y: auto; margin-top: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        @for (u of filteredSectionOwnerUsers; track u.username) {
+                          <div 
+                            class="autocomplete-item" 
+                            style="padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #334155; font-weight: 500;"
+                            onmouseover="this.style.background='#f8fafc';"
+                            onmouseout="this.style.background='white';"
+                            (click)="selectSectionOwner(u.name)"
+                          >
+                            {{ u.name }} <span style="color: #64748b; font-size: 11.5px; font-weight: 400;">— {{ u.role }}</span>
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <div class="ud-field">
+                  <label class="ud-label" style="font-size: 13.5px; font-weight: 600; color: #334155; margin-bottom: 6px; display: block;">Purpose</label>
+                  <div class="rich-editor-container">
+                    <div class="rich-editor-toolbar" style="background: #f8fafc; border-bottom: 1px solid #dfe4ee; padding: 6px 12px; display: flex; gap: 4px;">
+                      <button type="button" class="toolbar-btn bold-btn" title="Bold">B</button>
+                      <button type="button" class="toolbar-btn italic-btn" title="Italic">I</button>
+                    </div>
+                    <textarea 
+                      class="rich-editor-textarea" 
+                      placeholder="Enter section targets or purpose details..." 
+                      [(ngModel)]="newSectionPurpose"
+                      style="width: 100%; border: none; padding: 12px; font-size: 13.5px; outline: none; min-height: 100px; box-sizing: border-box;"
+                    ></textarea>
+                  </div>
+                </div>
+
+              </div>
+            </app-pm-console-plan-drawer>
+          }
+
         </div>
       } @else if (activeSectionId === 'user-management') {
         <div class="user-management-container animation-fade">
@@ -2996,24 +3141,14 @@ export interface TaxonomyCard {
     }
 
     .branch-column-card {
-      background: #ffffff;
-      border: 1px solid #dfe4ee;
-      border-radius: 20px;
-      padding: 20px;
       width: 290px;
       min-width: 290px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      box-shadow: 0 2px 5px rgba(25, 33, 61, 0.02);
+      gap: 12px;
       box-sizing: border-box;
       flex-shrink: 0;
       transition: all 0.2s ease;
-    }
-
-    .branch-column-card:hover {
-      box-shadow: 0 4px 12px rgba(25, 33, 61, 0.05);
-      border-color: #cbd5e1;
     }
 
     .branch-card-header-box {
@@ -5439,6 +5574,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
 
   newDivisionName = '';
   newBrandName = '';
+  newBranchName = '';
   newSectionName = '';
 
   selectedGroupIndex = 0;
@@ -5458,6 +5594,30 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
   newGroupOwner = '';
   newGroupPurpose = '';
   newGroupEnvFactors = '';
+
+  // Drawer branch/section nested list builder
+  drawerBranches: Array<{ name: string; sections: Array<{ name: string }> }> = [];
+
+  // Autocomplete state
+  showOwnerSuggestions = false;
+  filteredOwnerUsers: Array<{ name: string; role: string; username: string }> = [];
+
+  // Branch drawer state
+  newBranchOwner = '';
+  newBranchPurpose = '';
+  activeBranchDivIdx: number | null = null;
+  activeBranchIdx: number | null = null; // for edit branch
+  showBranchOwnerSuggestions = false;
+  filteredBranchOwnerUsers: Array<{ name: string; role: string; username: string }> = [];
+
+  // Section drawer state
+  newSectionOwner = '';
+  newSectionPurpose = '';
+  activeSectionDivIdx: number | null = null;
+  activeSectionBranchIdx: number | null = null;
+  activeSectionIdx: number | null = null; // for edit section
+  showSectionOwnerSuggestions = false;
+  filteredSectionOwnerUsers: Array<{ name: string; role: string; username: string }> = [];
 
   // User Management Drawer
   isAddingUser = false;
@@ -5528,14 +5688,23 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     return sec ? sec.label : 'Framework Configuration';
   }
 
-  // Group Sidedrawer Actions
+  // Group Sidedrawer Actions (Now Division Sidedrawer Actions)
   openAddGroupDrawer(): void {
-    this.editingGroupIndex = null;
+    // Implement placeholder tab logic for adding new divisions (Requirement 6)
+    this.groupObjects.push({
+      name: 'Ne division',
+      owner: '',
+      purpose: '',
+      divisions: []
+    });
+    this.selectedGroupIndex = this.groupObjects.length - 1;
+    this.editingGroupIndex = this.selectedGroupIndex;
+    
     this.isAddingGroup = true;
     this.newGroupName = '';
     this.newGroupOwner = '';
     this.newGroupPurpose = '';
-    this.newGroupEnvFactors = '';
+    this.drawerBranches = [];
     this.changeDetector.markForCheck();
   }
 
@@ -5545,41 +5714,52 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     this.newGroupName = group.name;
     this.newGroupOwner = group.owner || '';
     this.newGroupPurpose = group.purpose || '';
-    this.newGroupEnvFactors = group.environmentFactors || '';
+    // Pre-populate nested list view for Branches and Sections specified in drawer
+    this.drawerBranches = (group.divisions || []).map(b => ({
+      name: b.name,
+      sections: (b.branches || []).map(s => ({
+        name: s.name
+      }))
+    }));
     this.isAddingGroup = true;
     this.changeDetector.markForCheck();
   }
 
   closeAddGroupDrawer(): void {
     this.isAddingGroup = false;
+    if (this.editingGroupIndex !== null) {
+      const group = this.groupObjects[this.editingGroupIndex];
+      if (group && group.name === 'Ne division') {
+        this.groupObjects.splice(this.editingGroupIndex, 1);
+        this.selectedGroupIndex = Math.max(0, this.groupObjects.length - 1);
+      }
+    }
     this.editingGroupIndex = null;
     this.changeDetector.markForCheck();
   }
 
   saveGroup(): void {
-    const val = this.newGroupName.trim();
-    if (val) {
-      if (this.editingGroupIndex !== null) {
-        const group = this.groupObjects[this.editingGroupIndex];
-        group.name = val;
-        group.owner = this.newGroupOwner;
-        group.purpose = this.newGroupPurpose;
-        group.environmentFactors = this.newGroupEnvFactors;
-        this.syncLegacyArrays();
-      } else {
-        this.groupObjects = [...this.groupObjects, {
-          name: val,
-          owner: this.newGroupOwner,
-          purpose: this.newGroupPurpose,
-          environmentFactors: this.newGroupEnvFactors,
-          divisions: []
-        }];
-        this.selectedGroupIndex = this.groupObjects.length - 1;
-        this.syncLegacyArrays();
-      }
+    const val = this.newGroupName.trim() || 'New division';
+    if (this.editingGroupIndex !== null) {
+      const group = this.groupObjects[this.editingGroupIndex];
+      group.name = val;
+      group.owner = this.newGroupOwner;
+      group.purpose = this.newGroupPurpose;
+      
+      // Save branches and sections entered in the drawer nested list builder
+      group.divisions = this.drawerBranches.map(db => ({
+        name: db.name || 'Branch',
+        branches: db.sections.map(s => ({
+          name: s.name || 'Section',
+          sections: []
+        }))
+      }));
+      
+      this.syncLegacyArrays();
     }
     this.isAddingGroup = false;
     this.editingGroupIndex = null;
+    this.changeDetector.markForCheck();
   }
 
   removeGroup(index: number): void {
@@ -5604,16 +5784,208 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     this.changeDetector.markForCheck();
   }
 
-  // Division Actions
+  // Branch Autocomplete and Drawer Actions
+  openAddBranchDrawer(divIdx: number): void {
+    this.activeBranchDivIdx = divIdx;
+    this.activeBranchIdx = null;
+    this.newBranchName = '';
+    this.newBranchOwner = '';
+    this.newBranchPurpose = '';
+    this.isAddingBrand = true;
+    this.changeDetector.markForCheck();
+  }
+
+  openEditBranchDrawer(divIdx: number, branchIdx: number): void {
+    this.activeBranchDivIdx = divIdx;
+    this.activeBranchIdx = branchIdx;
+    const branch = this.groupObjects[this.selectedGroupIndex].divisions[divIdx];
+    this.newBranchName = branch.name;
+    this.newBranchOwner = '';
+    this.newBranchPurpose = '';
+    this.isAddingBrand = true;
+    this.changeDetector.markForCheck();
+  }
+
+  closeAddBranchDrawer(): void {
+    this.isAddingBrand = false;
+    this.activeBranchDivIdx = null;
+    this.activeBranchIdx = null;
+    this.changeDetector.markForCheck();
+  }
+
+  saveBranchDrawer(): void {
+    const val = this.newBranchName.trim();
+    if (val && this.activeBranchDivIdx !== null) {
+      const divisionList = this.groupObjects[this.selectedGroupIndex].divisions;
+      if (this.activeBranchIdx !== null) {
+        divisionList[this.activeBranchIdx].name = val;
+      } else {
+        divisionList.push({
+          name: val,
+          branches: []
+        });
+      }
+      this.syncLegacyArrays();
+    }
+    this.closeAddBranchDrawer();
+  }
+
+  toggleBranchMenu(event: Event, groupIndex: number, divisionIndex: number, branchIndex: number): void {
+    event.stopPropagation();
+    this.openGroupMenuIndex = null;
+    this.openDivisionIndex = null;
+    this.openSectionIndex = null;
+    if (this.openBranchIndex && 
+        this.openBranchIndex.groupIndex === groupIndex && 
+        this.openBranchIndex.divisionIndex === divisionIndex && 
+        this.openBranchIndex.branchIndex === branchIndex) {
+      this.openBranchIndex = null;
+    } else {
+      this.openBranchIndex = { groupIndex, divisionIndex, branchIndex };
+    }
+    this.changeDetector.markForCheck();
+  }
+
+  removeBranch(groupIndex: number, divisionIndex: number, branchIndex: number): void {
+    const div = this.groupObjects[groupIndex].divisions[divisionIndex];
+    div.branches = div.branches.filter((_, idx) => idx !== branchIndex);
+    this.syncLegacyArrays();
+  }
+
+  // Section Autocomplete and Drawer Actions
+  openAddSectionDrawer(divIdx: number, branchIdx: number): void {
+    this.activeSectionDivIdx = divIdx;
+    this.activeSectionBranchIdx = branchIdx;
+    this.activeSectionIdx = null;
+    this.newSectionName = '';
+    this.newSectionOwner = '';
+    this.newSectionPurpose = '';
+    this.isAddingSection = true;
+    this.changeDetector.markForCheck();
+  }
+
+  openEditSectionDrawer(divIdx: number, branchIdx: number, sectionIdx: number): void {
+    this.activeSectionDivIdx = divIdx;
+    this.activeSectionBranchIdx = branchIdx;
+    this.activeSectionIdx = sectionIdx;
+    const section = this.groupObjects[this.selectedGroupIndex].divisions[divIdx].branches[branchIdx];
+    this.newSectionName = section.name;
+    this.newSectionOwner = '';
+    this.newSectionPurpose = '';
+    this.isAddingSection = true;
+    this.changeDetector.markForCheck();
+  }
+
+  closeAddSectionDrawer(): void {
+    this.isAddingSection = false;
+    this.activeSectionDivIdx = null;
+    this.activeSectionBranchIdx = null;
+    this.activeSectionIdx = null;
+    this.changeDetector.markForCheck();
+  }
+
+  saveSectionDrawer(): void {
+    const val = this.newSectionName.trim();
+    if (val && this.activeSectionDivIdx !== null && this.activeSectionBranchIdx !== null) {
+      const branchList = this.groupObjects[this.selectedGroupIndex].divisions[this.activeSectionDivIdx].branches;
+      if (this.activeSectionIdx !== null) {
+        branchList[this.activeSectionIdx].name = val;
+      } else {
+        branchList.push({
+          name: val,
+          sections: []
+        });
+      }
+      this.syncLegacyArrays();
+    }
+    this.closeAddSectionDrawer();
+  }
+
+  // Autocomplete suggestions filtering
+  filterOwnerSuggestions(): void {
+    const q = (this.newGroupOwner || '').toLowerCase().trim();
+    if (!q) {
+      this.filteredOwnerUsers = [];
+    } else {
+      this.filteredOwnerUsers = this.users.filter(u => 
+        (u.name || '').toLowerCase().includes(q)
+      );
+    }
+  }
+
+  selectOwner(name: string): void {
+    this.newGroupOwner = name;
+    this.showOwnerSuggestions = false;
+    this.changeDetector.markForCheck();
+  }
+
+  filterBranchOwnerSuggestions(): void {
+    const q = (this.newBranchOwner || '').toLowerCase().trim();
+    if (!q) {
+      this.filteredBranchOwnerUsers = [];
+    } else {
+      this.filteredBranchOwnerUsers = this.users.filter(u => 
+        (u.name || '').toLowerCase().includes(q)
+      );
+    }
+  }
+
+  selectBranchOwner(name: string): void {
+    this.newBranchOwner = name;
+    this.showBranchOwnerSuggestions = false;
+    this.changeDetector.markForCheck();
+  }
+
+  filterSectionOwnerSuggestions(): void {
+    const q = (this.newSectionOwner || '').toLowerCase().trim();
+    if (!q) {
+      this.filteredSectionOwnerUsers = [];
+    } else {
+      this.filteredSectionOwnerUsers = this.users.filter(u => 
+        (u.name || '').toLowerCase().includes(q)
+      );
+    }
+  }
+
+  selectSectionOwner(name: string): void {
+    this.newSectionOwner = name;
+    this.showSectionOwnerSuggestions = false;
+    this.changeDetector.markForCheck();
+  }
+
+  // Drawer branch list builders
+  addBranchToDrawer(): void {
+    this.drawerBranches.push({
+      name: '',
+      sections: []
+    });
+    this.changeDetector.markForCheck();
+  }
+
+  removeBranchFromDrawer(idx: number): void {
+    this.drawerBranches.splice(idx, 1);
+    this.changeDetector.markForCheck();
+  }
+
+  addSectionToDrawerBranch(branchIdx: number): void {
+    this.drawerBranches[branchIdx].sections.push({
+      name: ''
+    });
+    this.changeDetector.markForCheck();
+  }
+
+  removeSectionFromDrawerBranch(branchIdx: number, sectionIdx: number): void {
+    this.drawerBranches[branchIdx].sections.splice(sectionIdx, 1);
+    this.changeDetector.markForCheck();
+  }
+
+  // Legacy Division / Branch / Section helpers
   addDivisionCard(): void {
     this.openAddGroupDrawer();
   }
 
   addDivisionToGroup(groupIndex: number): void {
-    const group = this.groupObjects[groupIndex];
-    const nextNum = group.divisions.length + 1;
-    group.divisions = [...group.divisions, { name: `Division #${nextNum}`, branches: [] }];
-    this.syncLegacyArrays();
+    this.openAddBranchDrawer(groupIndex);
   }
 
   removeDivision(groupIndex: number, divisionIndex: number): void {
@@ -5635,54 +6007,9 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     this.changeDetector.markForCheck();
   }
 
-  editDivision(groupIndex: number, divisionIndex: number): void {
-    this.openDivisionIndex = null;
-    setTimeout(() => {
-      const inputEl = document.getElementById(`org-division-input-${groupIndex}-${divisionIndex}`) as HTMLInputElement | null;
-      if (inputEl) {
-        inputEl.focus();
-        inputEl.select();
-      }
-    }, 50);
-    this.changeDetector.markForCheck();
-  }
-
-  // Branch Actions
-  addBranch(groupIndex: number, divisionIndex: number): void {
-    const div = this.groupObjects[groupIndex].divisions[divisionIndex];
-    const nextNum = div.branches.length + 1;
-    div.branches = [...div.branches, { name: `Branch #${nextNum}`, sections: [] }];
-    this.syncLegacyArrays();
-  }
-
-  removeBranch(groupIndex: number, divisionIndex: number, branchIndex: number): void {
-    const div = this.groupObjects[groupIndex].divisions[divisionIndex];
-    div.branches = div.branches.filter((_, idx) => idx !== branchIndex);
-    this.syncLegacyArrays();
-  }
-
-  toggleBranchMenu(event: Event, groupIndex: number, divisionIndex: number, branchIndex: number): void {
-    event.stopPropagation();
-    this.openGroupMenuIndex = null;
-    this.openDivisionIndex = null;
-    this.openSectionIndex = null;
-    if (this.openBranchIndex && 
-        this.openBranchIndex.groupIndex === groupIndex && 
-        this.openBranchIndex.divisionIndex === divisionIndex && 
-        this.openBranchIndex.branchIndex === branchIndex) {
-      this.openBranchIndex = null;
-    } else {
-      this.openBranchIndex = { groupIndex, divisionIndex, branchIndex };
-    }
-    this.changeDetector.markForCheck();
-  }
-
   // Section Actions
   addSection(groupIndex: number, divisionIndex: number, branchIndex: number): void {
-    const branch = this.groupObjects[groupIndex].divisions[divisionIndex].branches[branchIndex];
-    const nextNum = branch.sections.length + 1;
-    branch.sections = [...branch.sections, { name: `Section #${nextNum}` }];
-    this.syncLegacyArrays();
+    this.openAddSectionDrawer(divisionIndex, branchIndex);
   }
 
   removeSection(groupIndex: number, divisionIndex: number, branchIndex: number, sectionIndex: number): void {
@@ -5715,26 +6042,21 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     const brandList: string[] = [];
     const sectionList: string[] = [];
     for (const group of this.groupObjects) {
-      if (group.name.trim() !== '') {
-        groupList.push(group.name);
+      if (group.name.trim() !== '' && group.name !== 'Ne division') {
+        divisionList.push(group.name);
       }
       for (const div of group.divisions) {
         if (div.name.trim() !== '') {
-          divisionList.push(div.name);
+          brandList.push(div.name);
         }
         for (const br of div.branches) {
           if (br.name.trim() !== '') {
-            brandList.push(br.name);
-          }
-          for (const sec of br.sections) {
-            if (sec.name.trim() !== '') {
-              sectionList.push(sec.name);
-            }
+            sectionList.push(br.name);
           }
         }
       }
     }
-    this.groups = groupList;
+    this.groups = ['Main Group'];
     this.divisions = divisionList;
     this.brands = brandList;
     this.sections = sectionList;
