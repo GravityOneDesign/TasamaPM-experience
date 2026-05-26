@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiBaseUrl: '/api',
+  apiBaseUrl: '',
   sdzBaseUrl: '',
   cdApiBaseUrl: '/cdapi',
   appVersion: '1.0.0',

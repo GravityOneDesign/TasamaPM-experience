@@ -1,11 +1,13 @@
-import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { PmConsoleContentComponent } from '../workspace/workspace.component';
 import { PmConsoleIconService } from '../../../../core/services/icon.service';
-import { PmConsoleMountOptions, ProjectOption } from '../../models/pm-console.types';
+import { P3MProject, PmConsoleMountOptions, ProjectOption } from '../../models/pm-console.types';
 import { PmConsoleNotificationsComponent } from '../notifications/notifications.component';
 import { PmConsoleAgentDockComponent } from '../../../../shared/components/agent/agent-dock/agent-dock.component';
 import { PmConsoleSideNavComponent, type PmConsoleSideNavItem } from '../../../../shared/components/layout/side-nav/side-nav.component';
 import { PmConsoleTopBarComponent } from '../../../../shared/components/layout/top-bar/top-bar.component';
+import { ProjectListService } from '../../services/project-list.service';
+import { Subscription } from 'rxjs';
 
 interface RailItem extends PmConsoleSideNavItem {
   page?: ConsolePage;
@@ -45,6 +47,7 @@ const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
 
       <app-pm-console-content
         [projectOptions]="projects"
+        [apiProjects]="apiProjects"
         [selectedProject]="selectedProject"
         [selectedPage]="selectedPage"
         [selectedView]="selectedView"
@@ -62,19 +65,14 @@ const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
     </div>
   `,
 })
-export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
+export class PmConsoleShellComponent implements OnInit, AfterViewChecked, OnDestroy {
   @Input() initialState: PmConsoleMountOptions = {};
 
-  readonly projects: ProjectOption[] = [
+  projects: ProjectOption[] = [
     { id: 'all', name: 'All projects' },
-    { id: 'UAE Research Map', name: 'UAE Research Map' },
-    { id: 'Global Anti-Scam Taskforce', name: 'Global Anti-Scam Taskforce' },
-    { id: 'Counter Terrorism Operations', name: 'Counter Terrorism Operations' },
-    { id: 'Vision 2030', name: 'Vision 2030' },
-    { id: 'NEOM Integration', name: 'NEOM Integration' },
-    { id: 'Smart City Alpha', name: 'Smart City Alpha' },
-    { id: 'PMO Capability', name: 'PMO Capability' },
   ];
+  apiProjects: P3MProject[] = [];
+  private projectsSub?: Subscription;
 
   readonly topRailItems: RailItem[] = [
     { id: 'home', icon: 'house', label: 'Home', page: 'workspace', home: true },
@@ -112,6 +110,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   constructor(
     private readonly changeDetector: ChangeDetectorRef,
     private readonly iconsService: PmConsoleIconService,
+    private readonly projectListService: ProjectListService,
   ) {}
 
   get isProjectScopedPage(): boolean {
@@ -140,6 +139,7 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
   }
 
   ngOnInit(): void {
+    this.loadProjects();
     this.forgetSideNavExpandedPreference();
     this.selectedProject = this.initialState.projectId || 'all';
     this.selectedPage = (this.initialState.selectedPage as ConsolePage) || 'workspace';
@@ -262,6 +262,24 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
       this.onboardingProjectSetup = Boolean(state.onboardingProjectSetup);
     }
     this.markShellChanged();
+  }
+
+  ngOnDestroy(): void {
+    this.projectsSub?.unsubscribe();
+  }
+
+  private loadProjects(): void {
+    this.projectsSub = this.projectListService.getProjectList().subscribe({
+      next: (response) => {
+        this.apiProjects = response.List;
+        this.projects = this.projectListService.toProjectOptions(response.List);
+        this.markShellChanged();
+      },
+      error: () => {
+        this.projects = [{ id: 'all', name: 'All projects' }];
+        this.apiProjects = [];
+      },
+    });
   }
 
   private markShellChanged(): void {

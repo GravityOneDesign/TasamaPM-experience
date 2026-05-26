@@ -14,13 +14,16 @@ import {
   ViewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, type SafeResourceUrl } from '@angular/platform-browser';
+import { environment } from '../../../../../environments/environment';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { PmConsoleIconService } from '../../../../core/services/icon.service';
 import { PmConsolePlanDrawerComponent } from '../plan/plan-drawer.component';
 import { PmConsolePlanEmptyStateComponent } from '../plan/plan-empty-state.component';
 import { PmConsolePlanTableComponent } from '../plan/plan-table.component';
 import { PmConsoleReportDrawerComponent } from '../report/report-drawer.component';
-import { PmConsoleMountOptions, ProjectOption } from '../../models/pm-console.types';
+import { P3MProject, PmConsoleMountOptions, ProjectOption } from '../../models/pm-console.types';
+import { ProjectListService } from '../../services/project-list.service';
 import { PmConsoleAiGuideChipComponent, pmConsoleAiGuideFor, type PmConsoleAiGuideCopy } from '../../../../shared/components/ui/ai-guide-chip/ai-guide-chip.component';
 import { PmConsoleAgentBannerComponent } from '../../../../shared/components/agent/agent-banner/agent-banner.component';
 import {
@@ -76,7 +79,7 @@ import {
   type PmConsoleCalendarItem,
 } from '../../../../shared/components/ui/work-calendar/work-calendar.component';
 
-type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground';
+type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground' | 'inside-page';
 type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages' | 'quicklinks';
 type ActionWorkspaceView = 'board' | 'calendar';
 type Pm101OverviewMode = 'journey' | 'quicklinks';
@@ -4003,6 +4006,18 @@ const selectedProjectOperationalQuickLinkDescriptions: Record<string, string> = 
   risks: 'Identify threats, assess exposure, and monitor treatments.',
   issues: 'Log blockers, assign owners, and follow resolution progress.',
 };
+const quickLinkInsidePagePaths: Record<string, string> = {
+  'project-plan': '',
+  wbs: 'wbs',
+  dependencies: 'dependencies',
+  resources: 'resources',
+  'project-closure': 'closure',
+  'lessons-learnt': 'lessons',
+  'stage-gate': 'stagegate',
+  'change-request': 'changerequest',
+  risks: 'risk',
+  issues: 'issues',
+};
 const workspaceTableColumns: WorkspaceTableColumn[] = [
   { id: 'project', label: 'Project Name' },
   { id: 'stage', label: 'Stage' },
@@ -4291,7 +4306,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
       </div>
     </ng-template>
 
-    <main class="app-canvas" [class.workspaces-canvas]="selectedPage === 'workspaces'" [class.wbs-canvas]="selectedPage === 'wbs'" [class.project-plan-canvas]="selectedPage === 'project-plan'" [class.playground-canvas]="selectedPage === 'playground'" [class.unassigned-canvas]="frontDoorMode === 'unassigned'" [class.pm101-locked-canvas]="usesPm101DesignShell" [class.pm101-operational-canvas]="usesPm101OperationalLayout" [class.risk-profile-focus-canvas]="riskProfileFocusMode" [class.benefit-profile-focus-canvas]="benefitProfileFocusMode">
+    <main class="app-canvas" [class.workspaces-canvas]="selectedPage === 'workspaces'" [class.wbs-canvas]="selectedPage === 'wbs'" [class.project-plan-canvas]="selectedPage === 'project-plan'" [class.playground-canvas]="selectedPage === 'playground'" [class.inside-page-canvas]="selectedPage === 'inside-page'" [class.unassigned-canvas]="frontDoorMode === 'unassigned'" [class.pm101-locked-canvas]="usesPm101DesignShell" [class.pm101-operational-canvas]="usesPm101OperationalLayout" [class.risk-profile-focus-canvas]="riskProfileFocusMode" [class.benefit-profile-focus-canvas]="benefitProfileFocusMode">
       <div class="page-motion-host" [@pageMotion]="pageMotionKey" [@.disabled]="prefersReducedMotion">
       @switch (selectedPage) {
         @case ('workspaces') {
@@ -8758,6 +8773,22 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
             <div class="playground-shell"><aside class="playground-palette"><h2>Relationships</h2>@for (action of projectQuickActions.slice(4, 13); track action.id) { <button class="playground-palette-item" type="button"><span class="icon" aria-hidden="true"><i [attr.data-lucide]="iconName(action.icon)"></i></span><strong>{{ action.title }}</strong></button> }</aside><div class="playground-surface"><article class="playground-node playground-project-node"><div class="playground-project-copy"><span>Project</span><h2>{{ scopedProjectName }}</h2></div></article></div></div>
           </section>
         }
+        @case ('inside-page') {
+          <section class="inside-page" aria-label="Project workspace">
+            <div class="inside-page-topbar">
+              <button class="inside-page-back" type="button" aria-label="Go back" (click)="closeInsidePage()">
+                <span class="icon" aria-hidden="true"><i data-lucide="chevron-left"></i></span>
+              </button>
+              <div>
+                <span>Project Workspace</span>
+                <h1>{{ scopedProjectName }}</h1>
+              </div>
+            </div>
+            @if (insidePageUrl) {
+              <iframe class="inside-page-frame" [src]="insidePageUrl" title="Project workspace" allowfullscreen></iframe>
+            }
+          </section>
+        }
         @default {
           @if (frontDoorMode === 'unassigned') {
             <section class="unassigned-frontdoor" [class.assignment-ready]="pmoAssignmentReady" [attr.aria-label]="pmoAssignmentReady ? 'Project assigned' : 'No projects assigned yet'">
@@ -9043,6 +9074,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                           [stageLabel]="normalFrontDoorStageLabel"
                           [statusLabel]="normalFrontDoorStatusLabel"
                           [statusTone]="normalFrontDoorStatusTone"
+                          [scheduleLabel]="normalFrontDoorScheduleLabel"
                           [schedulePercent]="normalFrontDoorSchedulePercent"
                           [trendDots]="normalPmOverviewTrendDots"
                           [actions]="normalPmOverviewActions"
@@ -10014,6 +10046,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
 })
 export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, OnDestroy {
   @Input() projectOptions: readonly ProjectOption[] = [];
+  @Input() apiProjects: P3MProject[] = [];
   @Input() selectedProject = 'all';
   @Input() selectedPage: ConsolePage = 'workspace';
   @Input() selectedView: WorkspaceView = 'calendar';
@@ -11146,10 +11179,13 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   private projectPlanLastContentScrollTop = 0;
   private projectPlanHeaderScrollIgnoreUntil = 0;
 
+  insidePageUrl: SafeResourceUrl | null = null;
+
   constructor(
     private readonly iconsService: PmConsoleIconService,
     private readonly changeDetector: ChangeDetectorRef,
     private readonly elementRef: ElementRef<HTMLElement>,
+    private readonly sanitizer: DomSanitizer,
   ) {
     this.clearStoredProjectCovers();
   }
@@ -11983,6 +12019,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   get workspaceHeaderProjectOptions(): readonly ProjectOption[] {
     if (this.onboardingPm101Locked) return this.projectOptions.filter((project) => project.id === 'all');
+    if (this.isNormalFlowPmFrontDoor) return this.projectOptions;
     if (!this.isActionWorkspaceActive) return this.projectOptions.filter((project) => project.id !== 'all');
     return this.projectOptions;
   }
@@ -12009,7 +12046,16 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get normalFrontDoorProjectId(): string {
-    return this.selectedProject === 'all' ? firstAssignedProject.id : this.selectedProject;
+    if (this.selectedProject === 'all') {
+      return this.apiProjects.length > 0
+        ? String(this.apiProjects[0].Id)
+        : firstAssignedProject.id;
+    }
+    return this.selectedProject;
+  }
+
+  get normalFrontDoorApiProject(): P3MProject | undefined {
+    return this.apiProjects.find((p) => String(p.Id) === this.normalFrontDoorProjectId);
   }
 
   get normalFrontDoorProjectRow(): ProjectRow {
@@ -12017,20 +12063,28 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get normalFrontDoorProjectName(): string {
+    const apiProject = this.normalFrontDoorApiProject;
+    if (apiProject) return apiProject.ProjectName;
     return this.normalFrontDoorProjectRow?.title || this.normalFrontDoorProjectId;
   }
 
   get normalFrontDoorStageLabel(): string {
+    const apiProject = this.normalFrontDoorApiProject;
+    if (apiProject) return `${apiProject.Stages} stage`;
     return `${this.normalFrontDoorProjectRow?.stage || firstAssignedProject.stage} stage`;
   }
 
   get normalFrontDoorStatusLabel(): string {
+    const apiProject = this.normalFrontDoorApiProject;
+    if (apiProject) return apiProject.PlanStatus || 'Not Started';
     if (this.normalFrontDoorProjectId === firstAssignedProject.id) return 'On Track';
     const status = this.normalFrontDoorProjectRow?.status || 'On-Track';
     return status.replace('-', ' ');
   }
 
   get normalFrontDoorStatusTone(): string {
+    const apiProject = this.normalFrontDoorApiProject;
+    if (apiProject) return ProjectListService.mapStatusTone(apiProject.ReportStatus);
     if (this.normalFrontDoorProjectId === firstAssignedProject.id) return 'green';
     return this.normalFrontDoorProjectRow?.statusTone || 'green';
   }
@@ -12041,7 +12095,24 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return this.projectCoverArt(this.normalFrontDoorProjectId, fallbackArt);
   }
 
+  get normalFrontDoorScheduleLabel(): string {
+    const apiProject = this.normalFrontDoorApiProject;
+    if (apiProject) {
+      const start = ProjectListService.parseNetDate(apiProject.StartDate);
+      const end = ProjectListService.parseNetDate(apiProject.EndDate);
+      if (start && end) {
+        const fmt = (d: Date) => d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        return `${fmt(start)} – ${fmt(end)}`;
+      }
+    }
+    return 'Project Schedule';
+  }
+
   get normalFrontDoorSchedulePercent(): number {
+    const apiProject = this.normalFrontDoorApiProject;
+    if (apiProject) {
+      return ProjectListService.computeSchedulePercent(apiProject.StartDate, apiProject.EndDate);
+    }
     return normalPmProjectScheduleProgress[this.normalFrontDoorProjectId] ?? 72;
   }
 
@@ -14728,6 +14799,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   goBack(): void {
+    if (this.selectedPage === 'inside-page') {
+      this.closeInsidePage();
+      return;
+    }
     if (this.isProjectScopedSelectedPage() && this.restoreProjectPlanReturnState()) {
       return;
     }
@@ -14758,7 +14833,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   private isProjectScopedSelectedPage(): boolean {
-    return this.selectedPage === 'project-plan' || this.selectedPage === 'wbs' || this.selectedPage === 'playground';
+    return this.selectedPage === 'project-plan' || this.selectedPage === 'wbs' || this.selectedPage === 'playground' || this.selectedPage === 'inside-page';
   }
 
   private restoreProjectPlanReturnState(): boolean {
@@ -14804,6 +14879,12 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       this.showQuickLinksToast('Quick links unlock once PMO assigns your first project.');
       return;
     }
+    const insidePath = quickLinkInsidePagePaths[action.id];
+    if (insidePath !== undefined) {
+      const projectId = this.normalFrontDoorProjectId;
+      this.openInsidePage(projectId, insidePath);
+      return;
+    }
     this.closeProjectPlanDrawers();
     this.closeReport();
     this.closeStageGate();
@@ -14833,9 +14914,24 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       return;
     }
 
-    const action = projectQuickActions.find((item) => item.id === actionId);
-    if (!action) return;
-    this.openQuickAction(action);
+    const projectId = this.normalFrontDoorProjectId;
+    this.openInsidePage(projectId);
+  }
+
+  openInsidePage(projectId: string, pathSuffix = ''): void {
+    const baseUrl = environment.sdzBaseUrl.replace(/\/$/, '');
+    const suffix = pathSuffix ? `/${pathSuffix.replace(/^\//, '')}` : '';
+    const fullUrl = `${baseUrl}/P3M/PortfolioImplementation#workspace/profile/edit/${projectId}${suffix}`;
+    this.insidePageUrl = this.sanitizer.bypassSecurityTrustResourceUrl(fullUrl);
+    this.projectPlanReturnState = this.currentProjectPlanReturnState();
+    this.selectedPage = 'inside-page';
+    this.emitState();
+  }
+
+  closeInsidePage(): void {
+    this.insidePageUrl = null;
+    if (this.restoreProjectPlanReturnState()) return;
+    this.navigate('workspace');
   }
 
   openReport(project: string, reportRow: PmConsoleRegisterTableRow | null = null, drawerMode: ReportDrawerPresentationMode = 'compose'): void {

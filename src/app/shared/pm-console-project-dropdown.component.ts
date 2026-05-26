@@ -10,7 +10,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import { ProjectOption } from '../pm-console.types';
+import { ProjectOption } from '../features/pm-console/models/pm-console.types';
 import { PmConsoleIconComponent } from './pm-console-icon.component';
 
 @Component({
