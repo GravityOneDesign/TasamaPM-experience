@@ -383,16 +383,16 @@ interface PortfolioWorkTargetGroup {
 
     .target-picker-group-label {
       align-items: center;
-      color: var(--brand, #10069f);
+      color: #4c5566;
       cursor: pointer;
       display: flex;
-      font-size: 10px;
-      font-weight: 700;
+      font-size: 11.5px;
+      font-weight: 500;
       gap: 8px;
       justify-content: space-between;
-      letter-spacing: 0.04em;
+      letter-spacing: 0;
       padding: 8px 8px 4px;
-      text-transform: uppercase;
+      text-transform: none;
       user-select: none;
     }
 
@@ -449,8 +449,8 @@ interface PortfolioWorkTargetGroup {
       border-radius: 0;
       color: inherit;
       display: block;
-      font-size: 12px;
-      font-weight: 600;
+      font-size: 11.5px;
+      font-weight: 500;
       height: auto;
       justify-content: flex-start;
       line-height: 16px;
@@ -462,7 +462,7 @@ interface PortfolioWorkTargetGroup {
       color: #737b8c;
       display: block;
       font-size: 11px;
-      font-weight: 500;
+      font-weight: 400;
       line-height: 14px;
     }
 
