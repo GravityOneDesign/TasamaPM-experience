@@ -10,7 +10,14 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
   template: `
     <div class="plan-entry-drawer-shell" aria-hidden="false">
       <button class="plan-entry-drawer-backdrop" type="button" [attr.aria-label]="closeAriaLabel" (click)="close.emit()"></button>
-      <aside class="plan-entry-drawer" [ngClass]="panelClass" role="dialog" aria-modal="true" [attr.aria-label]="ariaLabel || title">
+      <aside
+        class="plan-entry-drawer"
+        [ngClass]="panelClass"
+        [style.--plan-entry-drawer-width]="panelWidth || null"
+        role="dialog"
+        aria-modal="true"
+        [attr.aria-label]="ariaLabel || title"
+      >
         <form class="plan-entry-drawer-form" (submit)="submitForm.emit($event)">
           <header class="plan-entry-drawer-head">
             <div class="plan-entry-drawer-title">
@@ -40,8 +47,16 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
           </section>
 
           <footer class="plan-entry-drawer-footer">
-            <button class="plan-entry-drawer-cancel" type="button" (click)="close.emit()">{{ cancelLabel }}</button>
-            <button class="plan-entry-drawer-submit" type="submit" [disabled]="submitDisabled">{{ submitLabel }}</button>
+            <span class="plan-entry-drawer-footer-prefix">
+              <ng-content select="[planDrawerFooterPrefix]"></ng-content>
+            </span>
+            @if (submitFirst) {
+              <button class="plan-entry-drawer-submit" type="submit" [disabled]="submitDisabled">{{ submitLabel }}</button>
+              <button class="plan-entry-drawer-cancel" type="button" (click)="close.emit()">{{ cancelLabel }}</button>
+            } @else {
+              <button class="plan-entry-drawer-cancel" type="button" (click)="close.emit()">{{ cancelLabel }}</button>
+              <button class="plan-entry-drawer-submit" type="submit" [disabled]="submitDisabled">{{ submitLabel }}</button>
+            }
           </footer>
         </form>
       </aside>
@@ -57,7 +72,7 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
         inset: 0;
         pointer-events: none;
         position: fixed;
-        z-index: 81;
+        z-index: 1000;
       }
 
       .plan-entry-drawer-backdrop {
@@ -81,7 +96,7 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
         position: absolute;
         right: 0;
         top: 0;
-        width: min(640px, calc(100vw - 72px));
+        width: var(--plan-entry-drawer-width, min(640px, calc(100vw - 72px)));
         will-change: opacity;
       }
 
@@ -210,6 +225,13 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
         padding: 11px 16px 13px;
       }
 
+      .plan-entry-drawer-footer-prefix {
+        align-items: center;
+        display: flex;
+        margin-right: auto;
+        min-width: 0;
+      }
+
       .plan-entry-drawer-cancel,
       .plan-entry-drawer-submit {
         align-items: center;
@@ -266,10 +288,12 @@ export class PmConsolePlanDrawerComponent {
   @Input() summary = '';
   @Input() submitLabel = 'Save';
   @Input() cancelLabel = 'Cancel';
+  @Input() submitFirst = false;
   @Input() submitDisabled = false;
   @Input() closeAriaLabel = 'Close drawer';
   @Input() ariaLabel = '';
   @Input() panelClass: string | string[] | Set<string> | Record<string, unknown> = '';
+  @Input() panelWidth = '';
 
   @Output() close = new EventEmitter<void>();
   @Output() submitForm = new EventEmitter<Event>();

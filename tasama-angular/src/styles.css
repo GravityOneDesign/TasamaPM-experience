@@ -6419,7 +6419,7 @@ button.pm-project-table-stat:focus-visible {
 }
 
 .actions-control-row .workspace-search,
-.pm-project-table-toolbar .pm-register-search-field {
+.pm-project-table-toolbar label.pm-register-search-field {
   flex: 0 1 var(--action-control-height, var(--pm-toolbar-control-height, 40px));
   border-radius: var(--action-control-radius, 8px);
   border-color: #e4e7ef;
@@ -6442,8 +6442,8 @@ button.pm-project-table-stat:focus-visible {
 
 .actions-control-row .workspace-search:hover,
 .actions-control-row .workspace-search:focus-within,
-.pm-project-table-toolbar .pm-register-search-field:hover,
-.pm-project-table-toolbar .pm-register-search-field:focus-within {
+.pm-project-table-toolbar label.pm-register-search-field:hover,
+.pm-project-table-toolbar label.pm-register-search-field:focus-within {
   border-color: #d6d8df;
   box-shadow: 0 1px 2px rgba(25, 33, 61, 0.05);
   flex-basis: var(--action-search-expanded-width, 320px);
@@ -6454,7 +6454,7 @@ button.pm-project-table-stat:focus-visible {
 }
 
 .actions-control-row .workspace-search input,
-.pm-project-table-toolbar .pm-register-search-field input {
+.pm-project-table-toolbar label.pm-register-search-field input {
   opacity: 0;
   pointer-events: none;
   transition:
@@ -6465,8 +6465,8 @@ button.pm-project-table-stat:focus-visible {
 
 .actions-control-row .workspace-search:hover input,
 .actions-control-row .workspace-search:focus-within input,
-.pm-project-table-toolbar .pm-register-search-field:hover input,
-.pm-project-table-toolbar .pm-register-search-field:focus-within input {
+.pm-project-table-toolbar label.pm-register-search-field:hover input,
+.pm-project-table-toolbar label.pm-register-search-field:focus-within input {
   opacity: 1;
   pointer-events: auto;
   width: 100%;

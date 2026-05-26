@@ -1,6 +1,6 @@
 # Tasama Project Bible
 
-Last updated: 2026-05-25
+Last updated: 2026-05-26
 
 This file is the long-term handoff, memory, architecture guide, and AI-agent operating manual for the Tasama project. It exists so another coding agent, developer, or design engineer can restart work in a different tool and still understand the project language, product context, structure, and constraints.
 
@@ -31,6 +31,7 @@ The product currently focuses on:
 - PM onboarding and PM 101 flows.
 - Project plan, reporting, stage gate, risk, benefit, dependency, issue, resource, change request, and closure workflows.
 - An Executive front door and executive insights deep dive.
+- A PMO My Workspace surface with portfolio/risk/benefit/issue workspace tabs and a Governance tab for forum, source, record, and report-register surfaces.
 - Persona selection at login for Project Manager, Program Manager, Executive, PMO, and Portfolio Manager.
 
 Core product principle: each persona must have a clear root entry point and ownership boundary. Do not hide one persona inside another persona's dashboard, front door, page switch, or state machine unless the product design explicitly calls for a shared experience.
@@ -128,7 +129,9 @@ Top-level flow:
 - Login emits a selected persona id.
 - Project Manager mounts the PM console shell directly.
 - Executive mounts the Executive root directly.
-- Program Manager, PMO, and Portfolio Manager currently mount a placeholder shell.
+- PMO mounts the PMO governance shell directly, which now opens on a PMO-owned front door before the governance workspace.
+- Program Manager currently mounts a placeholder shell.
+- Portfolio Manager mounts a persona-owned portfolio shell.
 - The onboarding screen can mount PM console in guided-tour or PMO-assignment states.
 
 There is no URL route map yet. If routing is introduced later, preserve persona ownership by routing each persona to its own root shell rather than wiring new persona screens through the PM console content component.
@@ -161,7 +164,9 @@ Current persona states:
 
 - Project Manager has a real PM console entry.
 - Executive has a dedicated root experience in `src/app/executive`.
-- Program Manager, PMO, and Portfolio Manager are placeholders and should receive persona-owned shells/folders when implemented.
+- PMO has a dedicated governance workspace shell at `src/app/pmo-governance-shell.component.ts`.
+- Portfolio Manager has a persona-owned portfolio shell.
+- Program Manager is still a placeholder and should receive a persona-owned shell/folder when implemented.
 
 ## Persona Ownership Rules
 
@@ -184,8 +189,10 @@ Program Manager:
 
 PMO:
 
-- Currently a placeholder.
-- PMO concepts already appear in PM onboarding and assignment flows, but the PMO persona itself must not be implemented as a page mode inside the PM console.
+- Owns the PMO front door and PMO My Workspace at the app root through `PmoGovernanceShellComponent`.
+- The PMO front door is `PmoFrontdoorComponent`, backed by typed fixtures in `pmo-frontdoor.data.ts`, and reuses shared mode tabs, digest panel, action cards, icon wrapper, side nav, top bar, notifications, and agent dock.
+- Uses `PmoGovernanceWorkspaceComponent` for the My Workspace tab frame, Governance lower tabs, Forums, Sources, Records, Reports, forum detail tabs, and record detail navigation.
+- PMO concepts may appear in PM onboarding and assignment flows, but the PMO persona itself must not be implemented as a page mode inside the PM console.
 
 Portfolio Manager:
 
@@ -568,13 +575,14 @@ Current shared component inventory:
 - `pm-console-status-pill.component.ts`: `span[pmConsoleStatusPill]` status/tone pill.
 - `pm-console-table-action.component.ts`: table action button directive/component.
 - `pm-console-toolbar.component.ts`: shared toolbar shell.
-- `pm-console-row-action-menu.component.ts`: row popover action menu.
-- `pm-console-register-table.component.ts`: configurable register table with selection, search, filter/export/add controls, column visibility, empty state, and row/cell action events.
-- `pm-console-field.component.ts`: generic field supporting text, number, date, password, search, textarea, select, and money.
+- `pm-console-expandable-search.component.ts`: hover/focus expanding search control used by register toolbars where compact search should expand without moving the primary action.
+- `pm-console-row-action-menu.component.ts`: row popover action menu with an optional trigger icon input for horizontal or vertical ellipsis variants.
+- `pm-console-register-table.component.ts`: configurable register table with selection, search, filter/export/add controls, column visibility, empty state, row/cell action events, wrapped/icon text cells, and an optional expanded row-detail template.
+- `pm-console-field.component.ts`: generic field supporting text, number, date, password, search, textarea, select, money, mandatory markers, and optional inline help icons.
 - `pm-console-date-field.component.ts`: date display/input wrapper.
 - `pm-console-mode-tabs.component.ts`: segmented/tabs pattern with icons and fixed widths.
 - `pm-console-side-nav.component.ts`: left rail nav.
-- `pm-console-top-bar.component.ts`: PM top bar.
+- `pm-console-top-bar.component.ts`: PM top bar with full-profile or avatar-only display modes.
 - `pm-console-project-dropdown.component.ts`: project switcher popover.
 - `pm-console-project-cover-cropper.component.ts`: cover upload/cropper using canvas output.
 - `pm-console-frontdoor-overview.component.ts`: PM front-door overview hero/card.
@@ -660,6 +668,59 @@ Executive implementation note:
 
 - The executive experience is persona-owned and should remain outside the PM console content state machine.
 - Shared PM primitives may be used if they are neutral and appropriate, but executive screens should not be coupled to PM shell state.
+
+## PMO Governance Architecture
+
+PMO files currently live at the app root and should move into a future `pmo/` folder during a deliberate folder-structure pass.
+
+Root:
+
+- `pmo-governance-shell.component.ts`
+- `pmo-frontdoor.component.ts`
+
+Workspace/data/components:
+
+- `pmo-frontdoor.data.ts`
+- `pmo-governance-workspace.component.ts`
+- `pmo-governance-workspace.data.ts`
+- `pmo-governance-forum-detail-drawer.component.ts`
+- `pmo-governance-forum-overview.component.ts`
+- `pmo-governance-meeting-drawer.component.ts`
+- `pmo-governance-record-detail-drawer.component.ts`
+- `pmo-governance-record-detail.component.ts`
+- `pmo-governance-record-drawer.component.ts`
+- `pmo-governance-report-drawer.component.ts`
+- `pmo-governance-source-drawer.component.ts`
+- `pmo-governance-watchlist-risk-drawer.component.ts`
+
+PMO flow:
+
+- Login with the PMO persona mounts `PmoGovernanceShellComponent` directly from `AppComponent`.
+- The shell opens on the PMO front door by default. `activeSurface` switches between `frontdoor` and `governance`; Home returns to the front door, and the My Workspace rail item or front-door action cards enter the workspace.
+- The PMO front door uses `PmoFrontdoorComponent` plus `pmo-frontdoor.data.ts` for the Figma-derived tabs, digest text, scope metrics, portfolio/program health rows, action cards, and work cards. It composes shared `PmConsoleModeTabsComponent`, `PmConsoleDigestPanelComponent`, `PmConsoleFrontdoorActionCardsComponent`, and `pmConsoleIcon` rather than adding PMO-only tab/card primitives.
+- The shell reuses the Tasama PM top bar, left side nav, notifications panel, and agent dock while keeping PMO content outside the PM console content monolith. The PMO top bar uses the shared top bar's avatar-only profile mode to match the supplied front-door design.
+- PMO My Workspace has top tabs for Portfolio Register, Risk Register, Benefits Register, Issues Register, and Governance. The non-Governance tabs currently show placeholder content until their product surfaces are specified.
+- The Governance top tab contains the lower Forums, Sources, Records, and Reports register tabs; there is no separate Home tab inside the workspace.
+- The Governance Reports lower tab follows the same register toolbar rhythm as PMO table tabs: `PmConsoleExpandableSearchComponent` sits in the right action cluster immediately before the primary Create Report CTA, followed by the report-template table.
+- Create Report in the Governance Reports lower tab opens `PmoGovernanceReportDrawerComponent`, a feature-scoped Tasama side drawer backed by typed report-template draft defaults/options in `pmo-governance-workspace.data.ts`. The drawer captures Report Name, Filters, Records, Division, People, Time Frame, and Group By, then saves a user-created report-template row into the reports table.
+- Create Meeting in the forum-detail Meetings tab uses the feature-scoped `PmoGovernanceMeetingDrawerComponent`, which reuses `PmConsolePlanDrawerComponent` and typed meeting draft defaults from `pmo-governance-workspace.data.ts`.
+- Add Source actions in the PMO Sources register and the forum-detail Sources tab use the feature-scoped `PmoGovernanceSourceDrawerComponent`, which reuses `PmConsolePlanDrawerComponent` and typed source draft defaults/options from `pmo-governance-workspace.data.ts`. The forum-detail variant adds Add Source/Add Existing Source radio controls and starts the Type field on a Select placeholder, matching the governance reference while keeping Tasama styling.
+- Add Record actions in the PMO Records register and the forum-detail Records tab use the feature-scoped `PmoGovernanceRecordDrawerComponent`. It reuses `PmConsolePlanDrawerComponent`, uses typed record draft defaults/options from `pmo-governance-workspace.data.ts`, and styles the Action/Decision choice as Tasama radio controls.
+- Add to Watchlist in the forum-detail Watchlist tab opens `PmoGovernanceWatchlistRiskDrawerComponent`, a wider `PmConsolePlanDrawerComponent` variant with risk-category tabs, search, selectable risk rows, a scroll-only table area, and typed picker fixtures from `pmo-governance-workspace.data.ts`. The shared plan drawer now supports configurable drawer width, projected footer prefix content, and optional submit-first button ordering for picker-style drawers.
+- PMO forum/source/record register action rows use `PmConsoleExpandableSearchComponent` before the primary add action so the primary button remains the rightmost control.
+- PMO register tables should not use pagination, page-size controls, separate chevron-only open columns, or standalone row edit/delete buttons. Keep rows in scrollable table containers, keep primary open behavior on the row or name link when available, and place row-level view/edit/delete actions inside the shared three-dot row action menu or the shared register-table `menu` cell. The shared row-action trigger is plain vertical dots without a circular border/background, matching the PM flow tables.
+- The Forums table emits the selected forum to `PmoGovernanceShellComponent`, which mounts `PmoGovernanceForumDetailDrawerComponent` as a full-frame overlay above the top bar, left rail, agent dock, and workspace. The Governance register stays mounted behind the overlay and the drawer owns its own meetings, sources, records, watchlist, issues, search, and scope state using typed governance fixtures.
+- Forum detail opens on an editable Overview tab before Meetings. `PmoGovernanceForumOverviewComponent` edits forum profile data from `PmoGovernanceForumRow`, including name, type, category, description, created metadata, chair, secretariat, members, and forum ID. It composes existing Tasama primitives such as `PmConsoleFieldComponent`, `pmConsoleIcon`, and `PmConsoleStatusPillComponent`; save events flow through `PmoGovernanceForumDetailDrawerComponent` to `PmoGovernanceShellComponent`, which updates the forum collection passed into `PmoGovernanceWorkspaceComponent`. The Overview profile, identity, and ownership cards stack vertically rather than using a side column. The drawer should not expose a top-level Edit Forum Details action, and forum-detail tabs are left-aligned with the drawer content edge.
+- Forum detail drawer tables should use `PmConsoleRegisterTableComponent` rather than local `<table>` markup. Its Meetings, Sources, Records, and Watchlist tabs use column min-widths that intentionally overflow inside the drawer so the shared table scroll container provides horizontal scrolling when needed. The Watchlist category rail follows the PM report drawer's vertical section-navigation pattern. Picker drawers may use a local scroll table only when the interaction needs controlled multi-select rows and footer selection summaries that the shared register table does not yet own; promote that behavior to the shared table if it appears in another workflow.
+- The All Records table opens `PmoGovernanceRecordDetailDrawerComponent` when a row or row-menu View record action is clicked. The drawer follows the existing PMO forum-detail side-drawer shell: 1040px desktop width cap, grey header, compact tab strip, and card-based Overview/Relationships/Activity sections. Closing the drawer returns focus to the Records register context.
+
+PMO record detail:
+
+- Detail fixture data belongs in `pmo-governance-workspace.data.ts`.
+- The supplied governance HTML reference is represented by `pmoGovernanceRecordDetails.r65`, including overview, ownership, related projects, related sources/recommendations, related risks, empty related sections, and activity log entries.
+- `pmoGovernanceRecordDetailFor(record)` returns the full fixture when available and a typed fallback detail for other records so every record row can open consistently.
+- The detail drawer is feature-scoped, uses Lucide through `pmConsoleIcon`, and keeps the legacy governance information model while applying the compact forum-detail drawer scale, Tasama colors, and tabbed card layout.
+- In drawer mode, the workspace keeps the Records register mounted behind the overlay and uses the component header close control, shared drawer backdrop click, or Escape to dismiss the detail.
 
 ## Design System
 
@@ -876,6 +937,37 @@ When a user asks for UI from Figma:
 - Visually verify if feasible.
 
 ## Memory Log
+
+2026-05-26:
+
+- Reframed the PMO Governance Workspace as PMO My Workspace. `PmoGovernanceWorkspaceComponent` now defaults to a Governance top tab inside My Workspace, adds placeholder top tabs for Portfolio Register, Risk Register, Benefits Register, and Issues Register, removes the old workspace Home tab, and moves Reports into the lower Governance tab row beside Forums, Sources, and Records. The PMO rail label and governance drawer eyebrows now use My Workspace terminology.
+- Added the PMO Figma front door as `PmoFrontdoorComponent` with typed fixture/config data in `pmo-frontdoor.data.ts`; the PMO shell now opens on this front door and switches into the existing governance workspace from rail/action-card events while keeping PMO outside the PM console monolith.
+- Removed PMO Governance pagination/page-size footers from workspace and forum-detail register surfaces; governance tables now rely on scrollable table containers instead of Show entries / Previous / Next controls.
+- Changed the PMO forum detail Overview tab so the Forum information, Forum Identity, and Ownership cards stack vertically instead of using a right-side metadata column.
+- Made the PMO forum detail Overview tab editable using the shared `PmConsoleFieldComponent`, status pill, and Lucide icon wrapper; saved Overview changes now update the shell-owned forum collection and persist when the drawer is closed and reopened, and the forum-detail tab rail is left-aligned.
+- Added the PMO Reports Create Report side drawer. `pmo-governance-report-drawer.component.ts` reuses the shared plan-drawer shell, presents the supplied report-template fields with Tasama styling, and saves created templates back into the Reports table using typed report draft options from `pmo-governance-workspace.data.ts`.
+- Added the forum-detail Add Risks to Watchlist side drawer. `pmo-governance-watchlist-risk-drawer.component.ts` owns the risk-category tabs, search, scroll-only selectable risk table, selected-count footer chip, and typed picker fixtures, while `PmConsolePlanDrawerComponent` now supports wider picker drawers and footer prefix content.
+- Simplified the PMO Reports tab header and empty register surface: removed the Published badge and More header action, replaced the old Show/Search controls with the shared expandable search next to the right-aligned Create Report CTA, and removed bottom report pagination while there is no report data.
+- Updated the forum-detail Add Source drawer variant with Add Source/Add Existing Source radio controls and a blank Type select state while preserving the shared Tasama drawer and main Sources register behavior.
+- Reworked the PMO forum detail Overview tab into `PmoGovernanceForumOverviewComponent`, replacing faux read-only input boxes with compact Tasama read-only sections, existing icon/status-pill primitives, and responsive metadata/ownership panels.
+- Added a PMO Governance forum Create Meeting side drawer. `pmo-governance-meeting-drawer.component.ts` owns Meeting Name and required Meeting Date fields, uses the shared plan drawer shell and Tasama form styling, and is launched from the forum-detail Meetings tab.
+- Updated `PmConsoleRowActionMenuComponent` so the shared trigger uses the PM table plain vertical-dots treatment by default, preventing PMO governance tables from showing rounded icon-button outlines around row menus.
+- Removed chevron-only open action columns and standalone row edit/delete controls from PMO governance tables. Main workspace tables and forum-detail shared register tables now use the shared three-dot row action menu for row-level view/edit/delete actions, and the record detail header no longer exposes a separate Edit Record button.
+- Added shared `PmConsoleExpandableSearchComponent`, wired it into PMO governance register toolbars and the shared register table workspace search, and reordered shared/PMO toolbar actions so primary add buttons remain the rightmost control.
+- Added a PMO Governance Workspace Add Record side drawer. `pmo-governance-record-drawer.component.ts` owns forum, meeting, title, type, owner, due date, and optional detail fields, uses Tasama-styled radio controls for Action/Decision, and is launched from both the main Records register and forum-detail Records tab.
+- Added the PMO forum detail Overview tab as the first forum tab and moved forum profile fields into typed forum fixtures; removed the top-level Edit Forum Details action from the forum detail drawer.
+- Removed the non-reports `View Info` action and the favorite/comment utility buttons from the PMO Governance Workspace page header; the Reports header no longer carries status or utility actions.
+- Added a PMO Governance Workspace Add Source side drawer. `pmo-governance-source-drawer.component.ts` owns the required Type and Source Name fields, uses Lucide icons through `pmConsoleIcon`, and is launched from both the main Sources register and forum-detail Sources tab.
+- Reworked the PMO forum detail drawer tables to reuse `PmConsoleRegisterTableComponent` across Meetings, Sources, Records, and Watchlist; added shared table support for wrapped/icon text cells and expanded row-detail templates; and aligned the Watchlist category rail with the PM create-report drawer's left section navigation.
+- Changed the PMO Governance Workspace forum detail interaction from full-page replacement to a right-side drawer. `pmo-governance-forum-detail-drawer.component.ts` now owns the selected forum tabs and keeps the Home register visible behind the overlay.
+- Promoted the selected forum detail drawer mount from the workspace content frame to `PmoGovernanceShellComponent`, so the backdrop covers the header and left rail and the panel uses the full viewport height.
+- Added a PMO Governance Workspace Add New Forum drawer. The drawer is feature-scoped in `pmo-governance-forum-drawer.component.ts`, reuses the shared `PmConsolePlanDrawerComponent`, and takes typed defaults/options from `pmo-governance-workspace.data.ts`. The shared plan drawer layer now sits above the AI agent launcher so drawer footers remain clickable.
+- Added PMO governance record-detail documentation: the PMO persona now owns a governance shell/workspace, and All Records can open a Tasama-styled record detail page.
+- Documented `pmo-governance-record-detail.component.ts`, `pmoGovernanceRecordDetails`, and `pmoGovernanceRecordDetailFor(record)` as the typed fixture/detail pattern for governance records.
+- Changed the PMO governance record detail interaction from full-page replacement to a right-side drawer so the All Records register remains visible behind the detail overlay.
+- Moved the PMO governance record-detail drawer overlay outside the workspace card frame so it spans the full viewport and dims the top bar and left navigation as well as the content area.
+- Reworked `PmoGovernanceRecordDetailDrawerComponent` to follow the existing PMO forum-detail side-drawer pattern: 1040px drawer width cap, grey header, compact tabs, and card-based Overview/Relationships/Activity sections, replacing the oversized record-detail drawer pass.
+- Tuned the PMO Governance Workspace forum register typography to lighter table/body weights, kept headers one step stronger, and replaced the forum pagination footer with a scrollable table area.
 
 2026-05-25:
 

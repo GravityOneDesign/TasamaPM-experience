@@ -8,8 +8,9 @@ import { PmConsoleShellComponent } from './pm-console-shell.component';
 import { PortfolioManagerShellComponent } from './portfolio-manager-shell.component';
 import { PortfolioManagerMountOptions } from './portfolio-manager.types';
 import { PersonaFlowPlaceholderComponent } from './persona-flow-placeholder.component';
+import { PmoGovernanceShellComponent } from './pmo-governance-shell.component';
 
-type AppView = 'login' | 'onboarding' | 'console' | 'portfolio' | 'persona' | 'executive';
+type AppView = 'login' | 'onboarding' | 'console' | 'portfolio' | 'persona' | 'executive' | 'pmo';
 
 @Component({
   selector: 'app-root',
@@ -20,6 +21,7 @@ type AppView = 'login' | 'onboarding' | 'console' | 'portfolio' | 'persona' | 'e
     PmConsoleLoginComponent,
     PmConsoleOnboardingComponent,
     PmConsoleShellComponent,
+    PmoGovernanceShellComponent,
     PortfolioManagerShellComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -37,6 +39,9 @@ type AppView = 'login' | 'onboarding' | 'console' | 'portfolio' | 'persona' | 'e
         @if (portfolioInitialState; as initialState) {
           <app-portfolio-manager-shell [initialState]="initialState" />
         }
+      }
+      @case ('pmo') {
+        <app-pmo-governance-shell />
       }
       @case ('persona') {
         @if (selectedPersona; as persona) {
@@ -69,6 +74,12 @@ export class AppComponent {
     }
     if (persona.id === 'portfolio-manager' && persona.entryState) {
       this.mountPortfolioConsole(persona.entryState);
+      return;
+    }
+    if (persona.id === 'pmo') {
+      this.consoleInitialState = null;
+      this.portfolioInitialState = null;
+      this.view = 'pmo';
       return;
     }
     if (persona.entryState) {

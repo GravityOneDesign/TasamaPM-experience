@@ -14,6 +14,12 @@ export type PmConsoleFieldType = 'text' | 'number' | 'date' | 'password' | 'sear
       :host {
         display: contents;
       }
+
+      .matrix-field-label .icon {
+        color: #8c94a3;
+        height: 12px;
+        width: 12px;
+      }
     `,
   ],
   template: `
@@ -25,6 +31,9 @@ export type PmConsoleFieldType = 'text' | 'number' | 'date' | 'password' | 'sear
         }
         @if (mandatory) {
           <b>*</b>
+        }
+        @if (help) {
+          <span pmConsoleIcon="circle-help" aria-hidden="true"></span>
         }
       </span>
       @if (description) {
@@ -105,6 +114,7 @@ export class PmConsoleFieldComponent {
   @Input() inputType = '';
   @Input() disabled = false;
   @Input() mandatory = false;
+  @Input() help = false;
   @Input() wide = false;
   @Input() fieldClass = '';
 

@@ -11,6 +11,15 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
       :host {
         display: contents;
       }
+
+      .profile-chip.profile-chip-icon-only {
+        gap: 0;
+        padding: 0;
+      }
+
+      .profile-chip.profile-chip-icon-only .avatar-xl {
+        flex: 0 0 auto;
+      }
     `,
   ],
   template: `
@@ -27,7 +36,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
 
         @if (showConsoleHeader) {
           <span class="brand-divider" aria-hidden="true"></span>
-          <span class="brand-title">Project Manager Console</span>
+          <span class="brand-title">{{ consoleTitle }}</span>
         }
 
         @if (unassigned) {
@@ -52,19 +61,26 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
           <span pmConsoleIcon="bell" aria-hidden="true"></span>
           <span class="notification-badge" aria-hidden="true"></span>
         </button>
-        <button class="profile-chip" type="button">
-          <span class="avatar-xl">MH<i></i></span>
-          <span><strong>Muna Hassan</strong><small>Project Manager</small></span>
+        <button class="profile-chip" [class.profile-chip-icon-only]="profileDisplay === 'avatar'" type="button" aria-label="Current user">
+          <span class="avatar-xl">{{ profileInitials }}<i></i></span>
+          @if (profileDisplay !== 'avatar') {
+            <span><strong>{{ profileName }}</strong><small>{{ profileRole }}</small></span>
+          }
         </button>
       </div>
     </header>
   `,
 })
 export class PmConsoleTopBarComponent {
+  @Input() profileDisplay: 'full' | 'avatar' = 'full';
   @Input() showConsoleHeader = true;
   @Input() unassigned = false;
   @Input() pmoAssignmentReady = false;
   @Input() notificationPanelOpen = false;
+  @Input() consoleTitle = 'Project Manager Console';
+  @Input() profileName = 'Muna Hassan';
+  @Input() profileRole = 'Project Manager';
+  @Input() profileInitials = 'MH';
 
   @Output() readonly homeSelected = new EventEmitter<void>();
   @Output() readonly notificationsToggled = new EventEmitter<void>();

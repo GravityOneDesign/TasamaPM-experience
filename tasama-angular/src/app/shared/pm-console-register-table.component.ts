@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
+  ContentChild,
   Component,
   ElementRef,
   EventEmitter,
@@ -11,8 +12,10 @@ import {
   OnDestroy,
   Output,
   SimpleChanges,
+  TemplateRef,
 } from '@angular/core';
 import { PmConsoleIconComponent } from './pm-console-icon.component';
+import { PmConsoleExpandableSearchComponent } from './pm-console-expandable-search.component';
 import { PmConsoleRowActionMenuComponent } from './pm-console-row-action-menu.component';
 import { PmConsoleStatusPillComponent } from './pm-console-status-pill.component';
 import { PmConsoleToolbarComponent } from './pm-console-toolbar.component';
@@ -52,6 +55,8 @@ export interface PmConsoleRegisterTableCell {
   checked?: boolean;
   muted?: boolean;
   strong?: boolean;
+  wrap?: boolean;
+  clampLines?: number;
   ariaLabel?: string;
 }
 
@@ -60,6 +65,7 @@ export interface PmConsoleRegisterTableRow {
   ariaLabel?: string;
   clickable?: boolean;
   selected?: boolean;
+  expanded?: boolean;
   cells: Record<string, PmConsoleRegisterTableCell>;
 }
 
@@ -79,7 +85,7 @@ let registerTableInstance = 0;
 @Component({
   selector: 'app-pm-console-register-table',
   standalone: true,
-  imports: [CommonModule, PmConsoleIconComponent, PmConsoleRowActionMenuComponent, PmConsoleStatusPillComponent, PmConsoleToolbarComponent],
+  imports: [CommonModule, PmConsoleExpandableSearchComponent, PmConsoleIconComponent, PmConsoleRowActionMenuComponent, PmConsoleStatusPillComponent, PmConsoleToolbarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
@@ -112,6 +118,11 @@ let registerTableInstance = 0;
       .pm-main-register-table {
         min-width: var(--register-table-min-width, 980px);
         width: 100%;
+      }
+
+      .pm-main-register-table-scroll {
+        height: var(--register-table-scroll-height, 100%);
+        min-height: var(--register-table-scroll-min-height, 475px);
       }
 
       .pm-main-register-table-row.is-clickable {
@@ -162,6 +173,39 @@ let registerTableInstance = 0;
 
       .pm-register-cell-text.muted {
         color: #777777;
+      }
+
+      .pm-register-cell-text.wrap {
+        display: -webkit-box;
+        line-clamp: var(--register-cell-line-clamp, 2);
+        -webkit-line-clamp: var(--register-cell-line-clamp, 2);
+        -webkit-box-orient: vertical;
+        white-space: normal;
+      }
+
+      .pm-register-cell-inline {
+        align-items: flex-start;
+        display: grid;
+        gap: 8px;
+        grid-template-columns: 16px minmax(0, 1fr);
+        min-width: 0;
+        width: 100%;
+      }
+
+      .pm-register-cell-inline > .icon {
+        color: var(--register-cell-icon-color, #252a34);
+        height: 16px;
+        margin-top: 1px;
+        width: 16px;
+      }
+
+      .pm-main-register-table-detail-row td {
+        background: #f6f7fa;
+        padding: 0 20px 14px;
+      }
+
+      .pm-main-register-table-detail-row:hover td {
+        background: #f6f7fa;
       }
 
       .pm-register-primary-button {
@@ -347,7 +391,7 @@ let registerTableInstance = 0;
         display: grid;
         gap: 5px;
         justify-items: center;
-        min-height: 160px;
+        min-height: var(--register-empty-min-height, 160px);
         text-align: center;
       }
 
@@ -378,10 +422,13 @@ let registerTableInstance = 0;
           </span>
           @if (showSearch) {
             @if (searchVariant === 'workspace') {
-              <label class="workspace-search pm-register-search-field">
-                <span pmConsoleIcon="search" aria-hidden="true"></span>
-                <input type="search" [attr.aria-label]="computedSearchAriaLabel" [placeholder]="computedSearchPlaceholder" [value]="searchValue" (input)="setSearchValue($event)" />
-              </label>
+              <app-pm-console-expandable-search
+                class="pm-register-expandable-search"
+                [ariaLabel]="computedSearchAriaLabel"
+                [placeholder]="computedSearchPlaceholder"
+                [value]="searchValue"
+                (searchChange)="setSearchValue($event)"
+              />
             } @else {
               <button class="pm-table-tool square" type="button" [attr.aria-label]="'Search ' + itemName"><span pmConsoleIcon="search" aria-hidden="true"></span></button>
             }
@@ -394,12 +441,6 @@ let registerTableInstance = 0;
           }
           @if (showExport) {
             <button class="pm-table-tool" type="button"><span pmConsoleIcon="download" aria-hidden="true"></span><span>Export</span></button>
-          }
-          @if (addButtonLabel) {
-            <button class="pm-table-add-project" type="button" [attr.aria-label]="addButtonAriaLabel || addButtonLabel" (click)="emitAdd($event)">
-              <span [pmConsoleIcon]="addButtonIcon" aria-hidden="true"></span>
-              <span>{{ addButtonLabel }}</span>
-            </button>
           }
           <div class="pm-table-settings-menu" data-register-columns-menu>
             <button class="pm-table-tool square" type="button" aria-label="Table settings" aria-haspopup="dialog" [attr.aria-expanded]="columnMenuOpen" [attr.aria-controls]="columnPickerId" (click)="toggleColumnMenu()"><span pmConsoleIcon="settings" aria-hidden="true"></span></button>
@@ -424,6 +465,12 @@ let registerTableInstance = 0;
               </section>
             }
           </div>
+          @if (addButtonLabel) {
+            <button class="pm-table-add-project" type="button" [attr.aria-label]="addButtonAriaLabel || addButtonLabel" (click)="emitAdd($event)">
+              <span [pmConsoleIcon]="addButtonIcon" aria-hidden="true"></span>
+              <span>{{ addButtonLabel }}</span>
+            </button>
+          }
         </app-pm-console-toolbar>
       }
 
@@ -445,7 +492,16 @@ let registerTableInstance = 0;
           </thead>
           <tbody>
             @for (row of visibleRows; track row.id) {
-              <tr class="pm-main-register-table-row" [class.is-clickable]="row.clickable !== false" role="button" tabindex="0" [attr.aria-label]="row.ariaLabel || 'Open row'" (click)="openRow(row)" (keydown.enter)="openRowFromKeyboard($event, row)" (keydown.space)="openRowFromKeyboard($event, row)">
+              <tr
+                class="pm-main-register-table-row"
+                [class.is-clickable]="row.clickable !== false"
+                [attr.role]="row.clickable === false ? null : 'button'"
+                [attr.tabindex]="row.clickable === false ? null : 0"
+                [attr.aria-label]="row.ariaLabel || 'Open row'"
+                (click)="openRow(row)"
+                (keydown.enter)="openRowFromKeyboard($event, row)"
+                (keydown.space)="openRowFromKeyboard($event, row)"
+              >
                 @if (selectable) {
                   <td class="pm-table-check-cell"><input type="checkbox" [checked]="row.selected" [attr.aria-label]="'Select ' + (row.ariaLabel || 'row')" (click)="$event.stopPropagation()" /></td>
                 }
@@ -521,7 +577,30 @@ let registerTableInstance = 0;
                             </span>
                           }
                           @default {
-                            <span class="pm-register-cell-text" [class.strong]="cell.strong" [class.muted]="cell.muted">{{ cell.text || cell.label }}</span>
+                            @if (cell.icon) {
+                              <span class="pm-register-cell-inline">
+                                <span [pmConsoleIcon]="cell.icon" aria-hidden="true"></span>
+                                <span
+                                  class="pm-register-cell-text"
+                                  [class.strong]="cell.strong"
+                                  [class.muted]="cell.muted"
+                                  [class.wrap]="cell.wrap"
+                                  [style.--register-cell-line-clamp]="cell.clampLines || null"
+                                >
+                                  {{ cell.text || cell.label }}
+                                </span>
+                              </span>
+                            } @else {
+                              <span
+                                class="pm-register-cell-text"
+                                [class.strong]="cell.strong"
+                                [class.muted]="cell.muted"
+                                [class.wrap]="cell.wrap"
+                                [style.--register-cell-line-clamp]="cell.clampLines || null"
+                              >
+                                {{ cell.text || cell.label }}
+                              </span>
+                            }
                           }
                         }
                       }
@@ -529,6 +608,13 @@ let registerTableInstance = 0;
                   </td>
                 }
               </tr>
+              @if (row.expanded && rowDetailTemplate) {
+                <tr class="pm-main-register-table-detail-row">
+                  <td [attr.colspan]="tableColumnSpan()">
+                    <ng-container [ngTemplateOutlet]="rowDetailTemplate" [ngTemplateOutletContext]="{ $implicit: row }"></ng-container>
+                  </td>
+                </tr>
+              }
             } @empty {
               <tr>
                 <td [attr.colspan]="tableColumnSpan()">
@@ -548,6 +634,8 @@ let registerTableInstance = 0;
   `,
 })
 export class PmConsoleRegisterTableComponent implements OnChanges, OnDestroy {
+  @ContentChild('registerTableRowDetail') rowDetailTemplate?: TemplateRef<{ $implicit: PmConsoleRegisterTableRow }>;
+
   @Input() columns: PmConsoleRegisterTableColumn[] = [];
   @Input() rows: PmConsoleRegisterTableRow[] = [];
   @Input() storageKey = '';
@@ -718,8 +806,8 @@ export class PmConsoleRegisterTableComponent implements OnChanges, OnDestroy {
     this.persistColumns();
   }
 
-  setSearchValue(event: Event): void {
-    this.searchValue = (event.target as HTMLInputElement | null)?.value || '';
+  setSearchValue(value: Event | string): void {
+    this.searchValue = typeof value === 'string' ? value : (value.target as HTMLInputElement | null)?.value || '';
   }
 
   cellFor(row: PmConsoleRegisterTableRow, columnId: string): PmConsoleRegisterTableCell | null {
