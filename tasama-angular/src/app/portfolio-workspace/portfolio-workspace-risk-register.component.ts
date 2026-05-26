@@ -104,6 +104,21 @@ const riskTableColumns: PmConsoleRegisterTableColumn[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="risk-register-host animation-slide" aria-label="Risk register">
+      <nav class="risk-scope-tabs" role="tablist" aria-label="Risk scope tabs">
+        @for (option of riskLevelFilterOptions; track option.id) {
+          <button
+            class="risk-scope-tab"
+            type="button"
+            role="tab"
+            [class.is-active]="activeRiskLevelFilter === option.id"
+            [attr.aria-selected]="activeRiskLevelFilter === option.id"
+            (click)="setActiveRiskLevelFilter(option.id)"
+          >
+            {{ option.label }}
+          </button>
+        }
+      </nav>
+
       <div class="risk-table-panel">
         <app-pm-console-register-table
           [columns]="riskTableColumns"
@@ -115,6 +130,7 @@ const riskTableColumns: PmConsoleRegisterTableColumn[] = [
           [showItemLabel]="false"
           groupedByLabel="Grouped By"
           [groupChipLabel]="activeGroupChipLabel"
+          groupedByPlacement="toolbar"
           [selectable]="false"
           searchVariant="workspace"
           [showGroupBy]="activeRiskLevelFilter !== 'portfolio'"
@@ -130,24 +146,7 @@ const riskTableColumns: PmConsoleRegisterTableColumn[] = [
           (groupBy)="enableRiskGrouping()"
           (groupClear)="clearRiskGrouping()"
           (groupToggle)="toggleRiskGroup($event)"
-        >
-          <span registerTableToolbarLabel class="risk-filter-tabs" role="tablist" aria-label="Risk level tabs">
-            @for (option of riskLevelFilterOptions; track option.id) {
-              <button
-                class="risk-filter-tab {{ option.id }}"
-                type="button"
-                role="tab"
-                [id]="'risk-filter-tab-' + option.id"
-                [class.is-active]="activeRiskLevelFilter === option.id"
-                [attr.aria-selected]="activeRiskLevelFilter === option.id"
-                (click)="setActiveRiskLevelFilter(option.id)"
-              >
-                <span>{{ option.label }}</span>
-                <strong>{{ riskCount(option.id) }}</strong>
-              </button>
-            }
-          </span>
-        </app-pm-console-register-table>
+        ></app-pm-console-register-table>
       </div>
 
       @if (isAddRiskDrawerOpen) {
@@ -279,83 +278,176 @@ const riskTableColumns: PmConsoleRegisterTableColumn[] = [
     .risk-register-host {
       display: grid;
       flex: 1;
-      gap: 14px;
-      grid-template-rows: minmax(0, 1fr);
+      gap: 0;
+      grid-template-rows: 48px minmax(0, 1fr);
       min-height: 0;
       min-width: 0;
       overflow: hidden;
       width: 100%;
     }
 
-    .risk-filter-tabs {
-      align-items: center;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .risk-filter-tab {
+    .risk-scope-tabs {
       align-items: center;
       background: #ffffff;
-      border: 1px solid #e3e5e9;
-      border-radius: 999px;
-      color: #4f596a;
+      border-bottom: 1px solid #dddddd;
+      display: flex;
+      gap: 28px;
+      min-width: 0;
+      padding: 0 40px;
+    }
+
+    .risk-scope-tab {
+      align-items: center;
+      background: #ffffff;
+      border: 0;
+      border-bottom: 3px solid transparent;
+      color: #737b8d;
       cursor: pointer;
       display: inline-flex;
       font: inherit;
-      font-size: 12px;
-      font-weight: 600;
-      gap: 8px;
-      height: 32px;
+      font-size: 12.5px;
+      font-weight: 400;
+      height: 48px;
       justify-content: center;
-      padding: 0 13px;
-      transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+      min-width: 76px;
+      padding: 0 10px;
+      transition: border-color 0.15s ease, color 0.15s ease;
       white-space: nowrap;
     }
 
-    .risk-filter-tab:hover {
-      border-color: #cfd5e1;
-      color: #252a34;
+    .risk-scope-tab:hover {
+      color: #10069f;
     }
 
-    .risk-filter-tab.is-active {
-      background: rgba(16, 6, 159, 0.06);
-      border-color: rgba(16, 6, 159, 0.2);
+    .risk-scope-tab.is-active {
+      border-bottom-color: #10069f;
       color: var(--brand, #10069f);
+      font-weight: 500;
     }
 
-    .risk-filter-tab:focus-visible {
+    .risk-scope-tab:focus-visible {
       outline: 2px solid rgba(16, 6, 159, 0.22);
-      outline-offset: 2px;
-    }
-
-    .risk-filter-tab strong {
-      align-items: center;
-      background: #e3e5e9;
-      border-radius: 999px;
-      color: #4f596a;
-      display: inline-flex;
-      flex: 0 0 auto;
-      font-size: 11px;
-      font-weight: 700;
-      height: 20px;
-      justify-content: center;
-      min-width: 20px;
-      padding: 0 7px;
-    }
-
-    .risk-filter-tab.is-active strong {
-      background: #ffffff;
-      color: var(--brand, #10069f);
+      outline-offset: -6px;
     }
 
     .risk-table-panel {
+      background: #f7f8fc;
       min-height: 0;
       min-width: 0;
+      overflow: hidden;
+      padding: 24px 20px 20px;
     }
 
     .risk-table-panel app-pm-console-register-table {
       height: 100%;
+    }
+
+    .risk-table-panel ::ng-deep .pm-main-register-table-view {
+      gap: 16px;
+    }
+
+    .risk-table-panel ::ng-deep .pm-project-table-toolbar.portfolio-risk-register-toolbar {
+      --action-control-height: 40px;
+      --pm-toolbar-control-height: 40px;
+      --pm-toolbar-square-size: 40px;
+      align-items: center;
+      gap: 14px;
+      min-height: 40px;
+    }
+
+    .risk-table-panel ::ng-deep .pm-project-table-toolbar.portfolio-risk-register-toolbar > div {
+      gap: 10px;
+    }
+
+    .risk-table-panel ::ng-deep .portfolio-risk-register-toolbar .pm-register-search-field,
+    .risk-table-panel ::ng-deep .portfolio-risk-register-toolbar .pm-table-tool,
+    .risk-table-panel ::ng-deep .portfolio-risk-register-toolbar .pm-table-add-project {
+      height: 40px;
+      min-height: 40px;
+    }
+
+    .risk-table-panel ::ng-deep .portfolio-risk-register-toolbar .pm-register-search-field,
+    .risk-table-panel ::ng-deep .portfolio-risk-register-toolbar .pm-table-tool.square {
+      width: 40px;
+    }
+
+    .risk-table-panel ::ng-deep .pm-register-grouped-by {
+      font-size: 12px;
+      gap: 8px;
+      line-height: 16px;
+    }
+
+    .risk-table-panel ::ng-deep .pm-register-grouped-chip {
+      background: #eef1f6;
+      border-color: #e8ebf2;
+      border-radius: 999px;
+      color: #546073;
+      font-size: 12px;
+      gap: 6px;
+      height: 32px;
+      padding: 0 10px 0 12px;
+    }
+
+    .risk-table-panel ::ng-deep .pm-register-grouped-chip .pm-register-group-clear .icon {
+      height: 12px;
+      width: 12px;
+    }
+
+    .risk-table-panel ::ng-deep .pm-register-group-clear {
+      height: 16px;
+      width: 16px;
+    }
+
+    .risk-table-panel ::ng-deep .pm-main-register-table-scroll {
+      border-color: #e0e3ea;
+      border-radius: 16px;
+      box-shadow: none;
+      min-height: 0;
+    }
+
+    .risk-table-panel ::ng-deep .pm-main-register-table th,
+    .risk-table-panel ::ng-deep .pm-main-register-table td {
+      font-size: 11px;
+      line-height: 15px;
+    }
+
+    .risk-table-panel ::ng-deep .pm-table-column-header,
+    .risk-table-panel ::ng-deep .pm-register-cell-text,
+    .risk-table-panel ::ng-deep .pm-register-person-copy strong,
+    .risk-table-panel ::ng-deep .pm-register-person-copy small {
+      font-size: 11px;
+      line-height: 15px;
+    }
+
+    .risk-table-panel ::ng-deep .pm-register-primary-button strong,
+    .risk-table-panel ::ng-deep .pm-register-cell-text.strong {
+      font-size: 11.5px !important;
+      line-height: 16px !important;
+    }
+
+    .risk-table-panel ::ng-deep .pm-register-primary-button strong {
+      max-height: 32px;
+    }
+
+    .risk-table-panel ::ng-deep .pm-register-primary-button span {
+      font-size: 10px;
+      line-height: 13px;
+    }
+
+    .risk-table-panel ::ng-deep .pm-register-group-title {
+      font-size: 12px;
+      line-height: 15px;
+    }
+
+    .risk-table-panel ::ng-deep .pm-register-group-count,
+    .risk-table-panel ::ng-deep .pm-table-row-status {
+      font-size: 10.5px;
+      line-height: 13px;
+    }
+
+    .risk-table-panel ::ng-deep .pm-table-chip {
+      font-size: 9.5px;
+      line-height: 12px;
     }
 
     .portfolio-risk-drawer-grid {
@@ -384,17 +476,18 @@ const riskTableColumns: PmConsoleRegisterTableColumn[] = [
     }
 
     @media (max-width: 760px) {
-      .risk-filter-tabs {
-        align-items: stretch;
-        display: flex;
-        flex-direction: column;
-        width: 100%;
+      .risk-register-host {
+        grid-template-rows: auto minmax(0, 1fr);
       }
 
-      .risk-filter-tab {
-        justify-content: space-between;
-        min-width: 0;
-        width: 100%;
+      .risk-scope-tabs {
+        gap: 10px;
+        overflow-x: auto;
+        padding: 0 16px;
+      }
+
+      .risk-scope-tab {
+        height: 56px;
       }
 
       .portfolio-risk-drawer-grid {

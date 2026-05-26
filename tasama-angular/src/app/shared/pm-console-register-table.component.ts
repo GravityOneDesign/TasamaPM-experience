@@ -180,6 +180,7 @@ let registerTableInstance = 0;
         align-items: center;
         display: inline-flex;
         flex: 0 0 auto;
+        gap: 10px;
         min-width: 0;
       }
 
@@ -527,11 +528,22 @@ let registerTableInstance = 0;
     `,
   ],
   template: `
-    <article class="pm-main-register-table-view" [class.without-toolbar]="!showToolbar" [class.has-grouped-by]="hasGroupedByChip">
+    <article class="pm-main-register-table-view" [class.without-toolbar]="!showToolbar" [class.has-grouped-by]="showGroupedByRow">
       @if (showToolbar) {
         <app-pm-console-toolbar [itemLabel]="showItemLabel ? computedItemLabel : ''" [toolbarClass]="toolbarClass">
           <span toolbarLabel class="pm-register-toolbar-label">
             <ng-content select="[registerTableToolbarLabel]"></ng-content>
+            @if (showGroupedByToolbar) {
+              <span class="pm-register-grouped-by" [attr.aria-label]="groupedByLabel + ' ' + groupChipLabel">
+                <span>{{ groupedByLabel }}</span>
+                <span class="pm-register-grouped-chip">
+                  <span>{{ groupChipLabel }}</span>
+                  <button class="pm-register-group-clear" type="button" [attr.aria-label]="'Remove ' + groupChipLabel + ' grouping'" (click)="clearGrouping($event)">
+                    <span pmConsoleIcon="x" aria-hidden="true"></span>
+                  </button>
+                </span>
+              </span>
+            }
           </span>
           @if (showSearch) {
             @if (searchVariant === 'workspace') {
@@ -584,7 +596,7 @@ let registerTableInstance = 0;
         </app-pm-console-toolbar>
       }
 
-      @if (hasGroupedByChip) {
+      @if (showGroupedByRow) {
         <div class="pm-register-grouped-by" [attr.aria-label]="groupedByLabel + ' ' + groupChipLabel">
           <span>{{ groupedByLabel }}</span>
           <span class="pm-register-grouped-chip">
@@ -768,6 +780,7 @@ export class PmConsoleRegisterTableComponent implements OnChanges, OnDestroy {
   @Input() itemLabel = '';
   @Input() groupedByLabel = 'Grouped By';
   @Input() groupChipLabel = '';
+  @Input() groupedByPlacement: 'row' | 'toolbar' = 'row';
   @Input() selectAllLabel = 'Select all rows';
   @Input() toolbarClass: string | string[] | Set<string> | Record<string, unknown> = 'pm-main-register-toolbar';
   @Input() selectable = true;
@@ -860,6 +873,14 @@ export class PmConsoleRegisterTableComponent implements OnChanges, OnDestroy {
 
   get hasGroupedByChip(): boolean {
     return this.hasGroups && Boolean(this.groupChipLabel);
+  }
+
+  get showGroupedByRow(): boolean {
+    return this.hasGroupedByChip && this.groupedByPlacement === 'row';
+  }
+
+  get showGroupedByToolbar(): boolean {
+    return this.hasGroupedByChip && this.groupedByPlacement === 'toolbar';
   }
 
   get visibleGroups(): PmConsoleRegisterTableGroup[] {

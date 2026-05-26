@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PmConsoleIconComponent } from '../shared/pm-console-icon.component';
 import { PmConsoleStatusTrendComponent, type PmConsoleStatusTrendInput } from '../shared/pm-console-status-trend.component';
+import { PmConsolePlanEmptyStateComponent } from '../pm-console-plan-empty-state.component';
 import {
   portfolioProgramRows,
   standaloneProjects,
@@ -15,7 +16,19 @@ import {
 import { PortfolioWorkspaceRiskRegisterComponent } from './portfolio-workspace-risk-register.component';
 import { PortfolioWorkspaceBenefitsRegisterComponent } from './portfolio-workspace-benefits-register.component';
 
-type SubTab = 'projects' | 'risks' | 'benefits';
+type SubTab = 'projects' | 'benefits' | 'risks' | 'issues';
+
+interface RegisterSubTabItem {
+  readonly id: SubTab;
+  readonly label: string;
+}
+
+const registerSubTabs: readonly RegisterSubTabItem[] = [
+  { id: 'projects', label: 'Program & Project Register' },
+  { id: 'benefits', label: 'Benefit' },
+  { id: 'risks', label: 'Risk' },
+  { id: 'issues', label: 'Issues' },
+];
 
 @Component({
   selector: 'app-portfolio-workspace-registers',
@@ -25,54 +38,38 @@ type SubTab = 'projects' | 'risks' | 'benefits';
     FormsModule,
     PmConsoleIconComponent,
     PmConsoleStatusTrendComponent,
+    PmConsolePlanEmptyStateComponent,
     PortfolioWorkspaceRiskRegisterComponent,
     PortfolioWorkspaceBenefitsRegisterComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="workspace-registers-tab">
-      
-      <!-- Sub-tab bar -->
-      <div class="sub-tabs">
-        <button
-          class="pm-register-tab"
-          [class.is-active]="activeSubTab === 'projects'"
-          type="button"
-          (click)="setSubTab('projects')"
-        >
-          <span>Program & Project Register</span>
-        </button>
-        <button
-          class="pm-register-tab"
-          [class.is-active]="activeSubTab === 'risks'"
-          type="button"
-          (click)="setSubTab('risks')"
-        >
-          <span>Risk Register</span>
-        </button>
-        <button
-          class="pm-register-tab"
-          [class.is-active]="activeSubTab === 'benefits'"
-          type="button"
-          (click)="setSubTab('benefits')"
-        >
-          <span>Benefits Register</span>
-        </button>
-        <button
-          class="pm-register-tab"
-          type="button"
-          [disabled]="true"
-        >
-          <span>Issues Register</span>
-        </button>
-      </div>
+      <div class="portfolio-register-shell">
+        <aside class="portfolio-register-nav project-plan-sections plan-builder-nav quick-plan-nav matrix-plan-nav" aria-label="Register sections">
+          <div class="matrix-nav-scroll">
+            <div class="matrix-nav-group">
+              <div class="matrix-nav-list" role="tablist" aria-label="Portfolio registers">
+                @for (tab of registerSubTabs; track tab.id) {
+                  <button
+                    [class.active]="activeSubTab === tab.id"
+                    type="button"
+                    role="tab"
+                    [attr.aria-selected]="activeSubTab === tab.id"
+                    (click)="setSubTab(tab.id)"
+                  >
+                    <span class="matrix-nav-item-label">{{ tab.label }}</span>
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+        </aside>
 
-      <!-- Tab Outlet -->
-      @switch (activeSubTab) {
-        
-        <!-- PROJECT REGISTER -->
-        @case ('projects') {
-          <div class="tab-content-container animation-slide">
+        <main class="portfolio-register-panel">
+          @switch (activeSubTab) {
+            @case ('projects') {
+              <div class="tab-content-container animation-slide">
 
             <div class="register-toolbar">
               <div class="toolbar-left" style="display: flex; align-items: center; gap: 12px;">
@@ -275,28 +272,44 @@ type SubTab = 'projects' | 'risks' | 'benefits';
               </table>
             </div>
           </div>
-        }
+            }
 
-        <!-- RISK REGISTER -->
-        @case ('risks') {
-          <div class="tab-content-container animation-slide">
-            <app-portfolio-workspace-risk-register
-              [risks]="riskData"
-              [programs]="programs"
-              [standaloneProjects]="standaloneList"
-              (riskCreate)="addRisk($event)"
-            />
-          </div>
-        }
+            @case ('benefits') {
+              <div class="tab-content-container animation-slide">
+                <app-portfolio-workspace-benefits-register [benefits]="benefits" />
+              </div>
+            }
 
-        <!-- BENEFITS REGISTER -->
-        @case ('benefits') {
-          <div class="tab-content-container animation-slide">
-            <app-portfolio-workspace-benefits-register [benefits]="benefits" />
-          </div>
-        }
-      }
+            @case ('risks') {
+              <div class="tab-content-container animation-slide">
+                <app-portfolio-workspace-risk-register
+                  [risks]="riskData"
+                  [programs]="programs"
+                  [standaloneProjects]="standaloneList"
+                  (riskCreate)="addRisk($event)"
+                />
+              </div>
+            }
 
+            @case ('issues') {
+              <div class="tab-content-container animation-slide">
+                <div class="portfolio-issues-empty">
+                  <app-pm-console-plan-empty-state
+                    title="Issues register"
+                    description="Track portfolio, program, and project issues that need active resolution."
+                    countLabel="0 issues"
+                    actionLabel="Add issue"
+                    actionAriaLabel="Add issue"
+                    iconName="issues"
+                    emptyTitle="No issues logged yet"
+                    emptyBody="Open blockers, dependency problems, and unresolved decisions will appear here once they are added to the portfolio workspace."
+                  />
+                </div>
+              </div>
+            }
+          }
+        </main>
+      </div>
     </div>
   `,
   styles: [`
@@ -314,57 +327,47 @@ type SubTab = 'projects' | 'risks' | 'benefits';
       height: 100%;
       min-height: 0;
       overflow: hidden;
-      padding: 4px 0 0;
+      padding: 0;
       animation: fadeIn 0.3s ease-out;
     }
 
-    /* Sub-tabs styling */
-    .sub-tabs {
-      position: sticky;
-      top: -10px;
-      z-index: 12;
+    .portfolio-register-shell {
+      background: #f7f7fc;
+      display: grid;
+      flex: 1;
+      grid-template-columns: 252px minmax(0, 1fr);
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .portfolio-register-nav {
+      min-height: 0;
+    }
+
+    .portfolio-register-nav.plan-builder-nav.quick-plan-nav.matrix-plan-nav {
+      width: auto;
+    }
+
+    .portfolio-register-nav.plan-builder-nav.quick-plan-nav.matrix-plan-nav .matrix-nav-list {
+      gap: 10px;
+    }
+
+    .portfolio-register-nav.plan-builder-nav.quick-plan-nav.matrix-plan-nav .matrix-nav-list button:focus {
+      outline: none;
+    }
+
+    .portfolio-register-nav.plan-builder-nav.quick-plan-nav.matrix-plan-nav .matrix-nav-list button:focus-visible {
+      box-shadow: 0 0 0 2px rgba(16, 6, 159, 0.18);
+    }
+
+    .portfolio-register-panel {
       background: #ffffff;
-      border-bottom: 1px solid #edf0f6;
-      margin-bottom: 4px;
       display: flex;
-      gap: 24px;
-    }
-
-    .sub-tabs .pm-register-tab {
-      background: transparent;
-      border: none;
-      padding: 10px 4px 8px 4px;
-      font-size: 13.5px;
-      font-weight: 500;
-      color: #707788;
-      cursor: pointer;
-      position: relative;
-      transition: color 0.2s ease;
-    }
-
-    .sub-tabs .pm-register-tab:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .sub-tabs .pm-register-tab::after {
-      content: '';
-      position: absolute;
-      bottom: -1px;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: transparent;
-      transition: background-color 0.2s ease;
-    }
-
-    .sub-tabs .pm-register-tab.is-active {
-      color: var(--brand, #007aff);
-      font-weight: 600;
-    }
-
-    .sub-tabs .pm-register-tab.is-active::after {
-      background: var(--brand, #007aff);
+      flex-direction: column;
+      min-height: 0;
+      min-width: 0;
+      overflow: hidden;
+      padding: 0;
     }
 
     .tab-content-container {
@@ -374,6 +377,12 @@ type SubTab = 'projects' | 'risks' | 'benefits';
       flex: 1;
       min-height: 0;
       overflow: hidden;
+    }
+
+    .portfolio-issues-empty {
+      min-height: 0;
+      overflow: auto;
+      padding: 4px;
     }
 
     /* Toolbar */
@@ -421,12 +430,13 @@ type SubTab = 'projects' | 'risks' | 'benefits';
 
     .pm-project-table-scroll {
       flex: 1;
-      overflow-y: auto;
+      overflow: auto;
       min-height: 0;
       border: 1px solid #e3e5e9;
       border-radius: 16px;
       background: #ffffff;
       box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+      margin: 12px;
     }
 
     .pm-project-table th {
@@ -587,6 +597,8 @@ type SubTab = 'projects' | 'risks' | 'benefits';
       display: flex;
       align-items: center;
       gap: 8px;
+      flex-wrap: nowrap;
+      min-width: 0;
     }
 
     .title-meta strong {
@@ -648,10 +660,12 @@ type SubTab = 'projects' | 'risks' | 'benefits';
     .manager-name, .owner-name {
       font-size: 13px;
       color: #252a34;
+      white-space: nowrap;
     }
 
     .date-col, .budget-col {
       color: #555555;
+      white-space: nowrap;
     }
 
     .pm-project-table th:last-child,
@@ -683,10 +697,25 @@ type SubTab = 'projects' | 'risks' | 'benefits';
       background: #ffffff;
     }
 
-    /* Table extension to edge */
+    /* Keep register columns spacious; allow horizontal scroll on narrower screens. */
     .pm-project-table {
       width: 100% !important;
-      min-width: 100% !important;
+      min-width: 1680px !important;
+      table-layout: fixed;
+    }
+
+    .pm-project-table th:nth-child(1) { width: 34% !important; }
+    .pm-project-table th:nth-child(2) { width: 16% !important; }
+    .pm-project-table th:nth-child(3) { width: 18% !important; }
+    .pm-project-table th:nth-child(4) { width: 11% !important; }
+    .pm-project-table th:nth-child(5) { width: 11% !important; }
+    .pm-project-table th:nth-child(6) { width: 10% !important; }
+
+    .pm-project-table td:nth-child(3),
+    .pm-project-table td:nth-child(4),
+    .pm-project-table td:nth-child(5),
+    .pm-project-table td:nth-child(6) {
+      white-space: nowrap;
     }
 
     /* Risk / Benefit styling modifications */
@@ -826,10 +855,24 @@ type SubTab = 'projects' | 'risks' | 'benefits';
       stroke-width: 2.5px !important;
       color: #de350b !important;
     }
+
+    @media (max-width: 900px) {
+      .portfolio-register-shell {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto minmax(0, 1fr);
+      }
+
+      .portfolio-register-nav.plan-builder-nav.quick-plan-nav.matrix-plan-nav {
+        border-bottom: 1px solid #dddddd;
+        border-right: 0;
+        width: 100%;
+      }
+    }
   `]
 })
 export class PortfolioWorkspaceRegistersComponent {
-  activeSubTab: SubTab = 'projects';
+  readonly registerSubTabs = registerSubTabs;
+  activeSubTab: SubTab = 'risks';
   expandedProgramIds = new Set<string>(); // default closed by default
   searchQuery = '';
   statusFilter: string | null = null;
