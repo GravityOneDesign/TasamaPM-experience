@@ -960,11 +960,6 @@ export interface TaxonomyCard {
                       </h4>
                       <p>{{ card.description }}</p>
                     </div>
-                    @if (card.items && card.items.length > 0) {
-                      <div class="standards-card-meta">
-                        {{ getCardItemsPreview(card.items) }}
-                      </div>
-                    }
                     <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
                   </button>
                 }
@@ -990,11 +985,6 @@ export interface TaxonomyCard {
                       </h4>
                       <p>{{ card.description }}</p>
                     </div>
-                    @if (card.items && card.items.length > 0) {
-                      <div class="standards-card-meta">
-                        {{ getCardItemsPreview(card.items) }}
-                      </div>
-                    }
                     <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
                   </button>
                 }
@@ -1020,11 +1010,6 @@ export interface TaxonomyCard {
                       </h4>
                       <p>{{ card.description }}</p>
                     </div>
-                    @if (card.items && card.items.length > 0) {
-                      <div class="standards-card-meta">
-                        {{ getCardItemsPreview(card.items) }}
-                      </div>
-                    }
                     <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
                   </button>
                 }
@@ -1050,11 +1035,6 @@ export interface TaxonomyCard {
                       </h4>
                       <p>{{ card.description }}</p>
                     </div>
-                    @if (card.items && card.items.length > 0) {
-                      <div class="standards-card-meta">
-                        {{ getCardItemsPreview(card.items) }}
-                      </div>
-                    }
                     <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
                   </button>
                 }
@@ -1104,11 +1084,6 @@ export interface TaxonomyCard {
                       </h4>
                       <p>{{ card.description }}</p>
                     </div>
-                    @if (card.items && card.items.length > 0) {
-                      <div class="standards-card-meta">
-                        {{ getCardItemsPreview(card.items) }}
-                      </div>
-                    }
                     <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
                   </button>
                 }
@@ -1131,11 +1106,6 @@ export interface TaxonomyCard {
                       </h4>
                       <p>{{ card.description }}</p>
                     </div>
-                    @if (card.items && card.items.length > 0) {
-                      <div class="standards-card-meta">
-                        {{ getCardItemsPreview(card.items) }}
-                      </div>
-                    }
                     <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
                   </button>
                 }
@@ -1158,11 +1128,6 @@ export interface TaxonomyCard {
                       </h4>
                       <p>{{ card.description }}</p>
                     </div>
-                    @if (card.items && card.items.length > 0) {
-                      <div class="standards-card-meta">
-                        {{ getCardItemsPreview(card.items) }}
-                      </div>
-                    }
                     <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
                   </button>
                 }
@@ -1185,11 +1150,6 @@ export interface TaxonomyCard {
                       </h4>
                       <p>{{ card.description }}</p>
                     </div>
-                    @if (card.items && card.items.length > 0) {
-                      <div class="standards-card-meta">
-                        {{ getCardItemsPreview(card.items) }}
-                      </div>
-                    }
                     <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
                   </button>
                 }
@@ -1212,11 +1172,6 @@ export interface TaxonomyCard {
                       </h4>
                       <p>{{ card.description }}</p>
                     </div>
-                    @if (card.items && card.items.length > 0) {
-                      <div class="standards-card-meta">
-                        {{ getCardItemsPreview(card.items) }}
-                      </div>
-                    }
                     <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
                   </button>
                 }
@@ -1269,11 +1224,6 @@ export interface TaxonomyCard {
                       </h4>
                       <p>{{ card.description }}</p>
                     </div>
-                    @if (card.items && card.items.length > 0) {
-                      <div class="standards-card-meta">
-                        {{ getCardItemsPreview(card.items) }}
-                      </div>
-                    }
                     <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
                   </button>
                 }
@@ -1299,11 +1249,6 @@ export interface TaxonomyCard {
                       </h4>
                       <p>{{ card.description }}</p>
                     </div>
-                    @if (card.items && card.items.length > 0) {
-                      <div class="standards-card-meta">
-                        {{ getCardItemsPreview(card.items) }}
-                      </div>
-                    }
                     <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
                   </button>
                 }
