@@ -5,23 +5,32 @@ import {
   pmoFrontdoorDigestSections,
   pmoFrontdoorHealthRows,
   pmoFrontdoorMetrics,
+  pmoFrontdoorQuickLinks,
   pmoFrontdoorTabs,
+  pmoFrontdoorWorkFilters,
   pmoFrontdoorWorkItems,
+  type PmoFrontdoorQuickLink,
   type PmoFrontdoorTab,
 } from './pmo-frontdoor.data';
+import type { ProjectOption } from './pm-console.types';
+import type { PmoGovernanceWorkspaceTarget } from './pmo-governance-workspace.data';
+import { PortfolioManagerActionsComponent } from './portfolio-manager-actions.component';
 import { PmConsoleDigestPanelComponent } from './shared/pm-console-digest-panel.component';
 import { PmConsoleFrontdoorActionCardsComponent } from './shared/pm-console-frontdoor-action-cards.component';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 import { PmConsoleModeTabsComponent } from './shared/pm-console-mode-tabs.component';
+import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-dropdown.component';
 
 @Component({
   selector: 'app-pmo-frontdoor',
   standalone: true,
   imports: [
+    PortfolioManagerActionsComponent,
     PmConsoleDigestPanelComponent,
     PmConsoleFrontdoorActionCardsComponent,
     PmConsoleIconComponent,
     PmConsoleModeTabsComponent,
+    PmConsoleProjectDropdownComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -38,6 +47,16 @@ import { PmConsoleModeTabsComponent } from './shared/pm-console-mode-tabs.compon
                     [activeId]="selectedTab"
                     (tabSelected)="setTab($event)"
                   ></app-pm-console-mode-tabs>
+                </div>
+                <div class="workspace-shell-actions pmo-frontdoor-scope-actions" aria-label="PMO portfolio scope">
+                  <app-pm-console-project-dropdown
+                    label=""
+                    leadingIcon="folder"
+                    ariaLabel="Select PMO portfolio scope"
+                    [options]="portfolioScopeOptions"
+                    [value]="selectedPortfolioScope"
+                    (valueChange)="setPortfolioScope($event)"
+                  ></app-pm-console-project-dropdown>
                 </div>
               </div>
 
@@ -113,30 +132,37 @@ import { PmConsoleModeTabsComponent } from './shared/pm-console-mode-tabs.compon
                     ></app-pm-console-frontdoor-action-cards>
                   </section>
                 } @else if (selectedTab === 'manage-work') {
-                  <section class="pmo-frontdoor-work" aria-label="PMO work queue">
-                    @for (item of workItems; track item.id) {
-                      <button class="pmo-work-card" type="button" (click)="openWorkspace()">
-                        <span class="pmo-work-icon" aria-hidden="true">
-                          <span [pmConsoleIcon]="item.icon"></span>
-                        </span>
-                        <span class="pmo-work-copy">
-                          <strong>{{ item.title }}</strong>
-                          <small>{{ item.description }}</small>
-                        </span>
-                        <span class="pmo-work-meta">{{ item.meta }}</span>
-                      </button>
-                    }
-                  </section>
+                  <app-portfolio-manager-actions
+                    [workspaceTitle]="'Portfolio Management Office'"
+                    searchPlaceholder="Search PMO work..."
+                    [actionItems]="workItems"
+                    [boardFilters]="workFilters"
+                    [showTargetPicker]="false"
+                    [showBoardDetailPanel]="true"
+                    [openItemsInDrawer]="true"
+                    todayKey="2026-05-26"
+                  />
                 } @else {
-                  <section class="pmo-frontdoor-quicklinks" aria-label="PMO quick links">
-                    <app-pm-console-frontdoor-action-cards
-                      ariaLabel="PMO quick links"
-                      projectName="Portfolio Management Office"
-                      [actions]="actions"
-                      ctaMode="arrow"
-                      (actionSelected)="selectAction($event)"
-                    ></app-pm-console-frontdoor-action-cards>
-                  </section>
+                  <div class="pmo-frontdoor-quicklinks quicklinks-view" data-work-view="quicklinks">
+                    <section class="workspace-quick-links-view" aria-label="All Portfolios PMO quick links">
+                      <h2>All Portfolios</h2>
+                      <div class="selected-project-quick-link-grid">
+                        @for (link of quickLinks; track link.id) {
+                          <article class="selected-project-quick-link-card" [attr.data-quick-link-id]="link.id">
+                            <button class="selected-project-quick-link-main" type="button" [attr.aria-label]="link.title + ' for All Portfolios'" (click)="openQuickLink(link)">
+                              <span class="selected-project-quick-link-icon">
+                                <span [pmConsoleIcon]="link.icon" aria-hidden="true"></span>
+                              </span>
+                              <span class="selected-project-quick-link-copy">
+                                <strong>{{ link.title }}</strong>
+                                <small>{{ link.description }}</small>
+                              </span>
+                            </button>
+                          </article>
+                        }
+                      </div>
+                    </section>
+                  </div>
                 }
               </div>
             </section>
@@ -175,6 +201,10 @@ import { PmConsoleModeTabsComponent } from './shared/pm-console-mode-tabs.compon
       .pmo-frontdoor-workspace .pmo-frontdoor-body {
         min-height: 0;
         padding: 16px 16px 24px;
+      }
+
+      .pmo-frontdoor-shell-head .onboarding-operational-tabs {
+        max-width: calc(100% - 288px);
       }
 
       .pmo-frontdoor-overview {
@@ -460,82 +490,28 @@ import { PmConsoleModeTabsComponent } from './shared/pm-console-mode-tabs.compon
         line-height: 14px;
       }
 
-      .pmo-frontdoor-work,
       .pmo-frontdoor-quicklinks {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
         min-width: 0;
+        overflow: auto !important;
       }
 
-      .pmo-frontdoor-work {
-        display: grid;
-        gap: 12px;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+      .pmo-frontdoor-quicklinks .workspace-quick-links-view {
+        padding-top: 0;
       }
 
-      .pmo-work-card {
-        align-items: start;
-        background: #ffffff;
-        border: 1px solid #eeeeee;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(11, 11, 11, 0.05);
-        color: inherit;
-        display: grid;
-        gap: 12px;
-        grid-template-rows: 40px minmax(0, 1fr) auto;
-        min-height: 188px;
-        padding: 12px;
-        text-align: left;
+      .pmo-frontdoor-quicklinks .selected-project-quick-link-grid {
+        align-items: stretch;
+        grid-auto-rows: minmax(130px, auto);
       }
 
-      .pmo-work-card:hover,
-      .pmo-work-card:focus-visible {
-        box-shadow: 0 8px 18px rgba(1, 10, 15, 0.12);
-        outline: 2px solid rgba(16, 6, 159, 0.14);
-        outline-offset: 2px;
-      }
-
-      .pmo-work-icon {
-        align-items: center;
-        background: rgba(16, 6, 159, 0.03);
-        border-radius: 8px;
-        box-shadow:
-          0 1px 1px rgba(1, 10, 15, 0.04),
-          0 2px 4px rgba(1, 10, 15, 0.12);
-        color: #10069f;
-        display: inline-flex;
-        height: 40px;
-        justify-content: center;
-        width: 40px;
-      }
-
-      .pmo-work-icon .icon {
-        height: 22px;
-        width: 22px;
-      }
-
-      .pmo-work-copy {
-        display: grid;
-        gap: 5px;
-        min-width: 0;
-      }
-
-      .pmo-work-copy strong {
-        color: #0b0b0b;
-        font-size: 16px;
-        font-weight: 600;
-        line-height: 22px;
-      }
-
-      .pmo-work-copy small {
-        color: #2f2f2f;
-        font-size: 12px;
-        line-height: 18px;
-      }
-
-      .pmo-work-meta {
-        color: #10069f;
-        font-size: 12px;
-        font-weight: 600;
-        line-height: 16px;
+      .pmo-frontdoor-quicklinks .selected-project-quick-link-card,
+      .pmo-frontdoor-quicklinks .selected-project-quick-link-main {
+        height: 100%;
+        min-height: 0;
       }
 
       app-pm-console-digest-panel ::ng-deep .digest-panel-section-label {
@@ -600,9 +576,16 @@ import { PmConsoleModeTabsComponent } from './shared/pm-console-mode-tabs.compon
 
       @media (max-width: 780px) {
         .pmo-hero-health,
-        .pmo-hero-budget,
-        .pmo-frontdoor-work {
+        .pmo-hero-budget {
           grid-template-columns: minmax(0, 1fr);
+        }
+
+        .pmo-frontdoor-scope-actions {
+          display: none;
+        }
+
+        .pmo-frontdoor-shell-head .onboarding-operational-tabs {
+          max-width: calc(100% - 32px);
         }
 
         .pmo-hero-visual-performance,
@@ -635,15 +618,21 @@ import { PmConsoleModeTabsComponent } from './shared/pm-console-mode-tabs.compon
   ],
 })
 export class PmoFrontdoorComponent implements AfterViewChecked {
-  @Output() readonly workspaceRequested = new EventEmitter<void>();
+  @Output() readonly workspaceRequested = new EventEmitter<PmoGovernanceWorkspaceTarget | undefined>();
+  @Output() readonly reportReviewRequested = new EventEmitter<void>();
+  @Output() readonly decisionIntelligenceRequested = new EventEmitter<void>();
 
   selectedTab: PmoFrontdoorTab = 'overview';
+  selectedPortfolioScope = 'all-portfolios';
   readonly tabs = pmoFrontdoorTabs;
   readonly metrics = pmoFrontdoorMetrics;
   readonly healthRows = pmoFrontdoorHealthRows;
   readonly digestSections = pmoFrontdoorDigestSections;
   readonly actions = pmoFrontdoorActions;
   readonly workItems = pmoFrontdoorWorkItems;
+  readonly workFilters = pmoFrontdoorWorkFilters;
+  readonly quickLinks = pmoFrontdoorQuickLinks;
+  readonly portfolioScopeOptions: readonly ProjectOption[] = [{ id: 'all-portfolios', name: 'All Portfolios' }];
   readonly welcomeIconSrc = './assets/pane-top-icon.svg';
   readonly welcomeSubtitle = ["Here's what's happening across your portfolio today."];
   readonly budgetBars = Array.from({ length: 10 });
@@ -663,12 +652,29 @@ export class PmoFrontdoorComponent implements AfterViewChecked {
     this.iconsHydrated = false;
   }
 
+  setPortfolioScope(scopeId: string): void {
+    this.selectedPortfolioScope = scopeId;
+    this.iconsHydrated = false;
+  }
+
   selectAction(actionId: string): void {
+    if (actionId === 'report-review') {
+      this.reportReviewRequested.emit();
+      return;
+    }
+    if (actionId === 'decision-intelligence') {
+      this.decisionIntelligenceRequested.emit();
+      return;
+    }
     if (actionId) this.openWorkspace();
   }
 
-  openWorkspace(): void {
-    this.workspaceRequested.emit();
+  openQuickLink(link: PmoFrontdoorQuickLink): void {
+    this.openWorkspace(link.target);
+  }
+
+  openWorkspace(target?: PmoGovernanceWorkspaceTarget): void {
+    this.workspaceRequested.emit(target);
   }
 }
 

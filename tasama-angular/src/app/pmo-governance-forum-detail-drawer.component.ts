@@ -3,6 +3,7 @@ import {
   PmoGovernanceForumOverviewComponent,
   type PmoGovernanceForumOverviewDraft,
 } from './pmo-governance-forum-overview.component';
+import { PmoGovernanceIssueDrawerComponent } from './pmo-governance-issue-drawer.component';
 import { PmoGovernanceMeetingDrawerComponent } from './pmo-governance-meeting-drawer.component';
 import { PmoGovernanceRecordDrawerComponent } from './pmo-governance-record-drawer.component';
 import { PmoGovernanceSourceDrawerComponent } from './pmo-governance-source-drawer.component';
@@ -24,6 +25,7 @@ import {
   pmoGovernanceWatchlistRows,
   type PmoGovernanceForumDetailTabId,
   type PmoGovernanceForumRow,
+  type PmoGovernanceIssueDraft,
   type PmoGovernanceMeetingDraft,
   type PmoGovernanceMeetingRow,
   type PmoGovernanceRecordDraft,
@@ -50,6 +52,7 @@ interface PmoGovernanceForumDetailDrawerTab {
     PmConsoleIconComponent,
     PmConsoleRegisterTableComponent,
     PmoGovernanceForumOverviewComponent,
+    PmoGovernanceIssueDrawerComponent,
     PmoGovernanceMeetingDrawerComponent,
     PmoGovernanceRecordDrawerComponent,
     PmoGovernanceSourceDrawerComponent,
@@ -314,7 +317,7 @@ interface PmoGovernanceForumDetailDrawerTab {
             } @else if (activeForumDetailTab === 'issues') {
               <section class="pmo-issues-register" aria-label="Forum issues">
                 <header class="pmo-issues-toolbar">
-                  <button class="pm-table-add-project pmo-add-issue" type="button">
+                  <button class="pm-table-add-project pmo-add-issue" type="button" (click)="openIssueDrawer()">
                     <span pmConsoleIcon="plus" aria-hidden="true"></span>
                     <span>Add Issue</span>
                   </button>
@@ -349,6 +352,10 @@ interface PmoGovernanceForumDetailDrawerTab {
 
       @if (watchlistDrawerOpen) {
         <app-pmo-governance-watchlist-risk-drawer (close)="closeWatchlistDrawer()" (add)="saveWatchlistSelection($event)" />
+      }
+
+      @if (issueDrawerOpen) {
+        <app-pmo-governance-issue-drawer (close)="closeIssueDrawer()" (save)="saveIssueDraft($event)" />
       }
     }
   `,
@@ -1380,6 +1387,7 @@ export class PmoGovernanceForumDetailDrawerComponent implements OnChanges {
   recordDrawerOpen = false;
   meetingDrawerOpen = false;
   watchlistDrawerOpen = false;
+  issueDrawerOpen = false;
   currentForum: PmoGovernanceForumRow | null = null;
 
   ngOnChanges(): void {
@@ -1395,6 +1403,7 @@ export class PmoGovernanceForumDetailDrawerComponent implements OnChanges {
     this.recordDrawerOpen = false;
     this.meetingDrawerOpen = false;
     this.watchlistDrawerOpen = false;
+    this.issueDrawerOpen = false;
   }
 
   @HostListener('document:keydown.escape', ['$event'])
@@ -1406,6 +1415,10 @@ export class PmoGovernanceForumDetailDrawerComponent implements OnChanges {
     }
     if (this.watchlistDrawerOpen) {
       this.closeWatchlistDrawer();
+      return;
+    }
+    if (this.issueDrawerOpen) {
+      this.closeIssueDrawer();
       return;
     }
     if (this.recordDrawerOpen) {
@@ -1558,6 +1571,7 @@ export class PmoGovernanceForumDetailDrawerComponent implements OnChanges {
     this.recordDrawerOpen = false;
     this.meetingDrawerOpen = false;
     this.watchlistDrawerOpen = false;
+    this.issueDrawerOpen = false;
   }
 
   saveForumOverview(draft: PmoGovernanceForumOverviewDraft): void {
@@ -1595,6 +1609,7 @@ export class PmoGovernanceForumDetailDrawerComponent implements OnChanges {
     this.recordDrawerOpen = false;
     this.meetingDrawerOpen = false;
     this.watchlistDrawerOpen = false;
+    this.issueDrawerOpen = false;
     this.sourceDrawerOpen = true;
   }
 
@@ -1611,6 +1626,7 @@ export class PmoGovernanceForumDetailDrawerComponent implements OnChanges {
     this.sourceDrawerOpen = false;
     this.meetingDrawerOpen = false;
     this.watchlistDrawerOpen = false;
+    this.issueDrawerOpen = false;
     this.recordDrawerOpen = true;
   }
 
@@ -1627,6 +1643,7 @@ export class PmoGovernanceForumDetailDrawerComponent implements OnChanges {
     this.sourceDrawerOpen = false;
     this.recordDrawerOpen = false;
     this.watchlistDrawerOpen = false;
+    this.issueDrawerOpen = false;
     this.meetingDrawerOpen = true;
   }
 
@@ -1642,6 +1659,7 @@ export class PmoGovernanceForumDetailDrawerComponent implements OnChanges {
     this.sourceDrawerOpen = false;
     this.recordDrawerOpen = false;
     this.meetingDrawerOpen = false;
+    this.issueDrawerOpen = false;
     this.watchlistDrawerOpen = true;
   }
 
@@ -1652,6 +1670,22 @@ export class PmoGovernanceForumDetailDrawerComponent implements OnChanges {
   saveWatchlistSelection(_selection: PmoGovernanceWatchlistSelection): void {
     this.watchlistDrawerOpen = false;
     this.activeWatchlistCategory = 'risks';
+  }
+
+  openIssueDrawer(): void {
+    this.sourceDrawerOpen = false;
+    this.recordDrawerOpen = false;
+    this.meetingDrawerOpen = false;
+    this.watchlistDrawerOpen = false;
+    this.issueDrawerOpen = true;
+  }
+
+  closeIssueDrawer(): void {
+    this.issueDrawerOpen = false;
+  }
+
+  saveIssueDraft(_draft: PmoGovernanceIssueDraft): void {
+    this.issueDrawerOpen = false;
   }
 
   setForumRecordScope(scope: PmoGovernanceRecordScope): void {

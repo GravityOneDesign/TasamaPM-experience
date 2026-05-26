@@ -121,7 +121,6 @@ type CalendarPopoverPlacement = 'above' | 'below';
                       class="calendar-event {{ item.tone }}"
                       type="button"
                       [attr.aria-label]="calendarEventLabel(item)"
-                      [attr.title]="truncateInlineLabels ? item.label : null"
                       (mouseenter)="showItemPreview(item, $event)"
                       (mouseleave)="hidePreviewSoon()"
                       (focus)="showItemPreview(item, $event)"
@@ -148,6 +147,7 @@ type CalendarPopoverPlacement = 'above' | 'below';
         [attr.aria-label]="previewItem.label + ' details'"
         [style.top.px]="previewTop"
         [style.left.px]="previewLeft"
+        [style.--calendar-hover-arrow-left.px]="previewArrowLeft"
         (mouseenter)="keepPreview()"
         (mouseleave)="hidePreviewSoon()"
         (focusin)="keepPreview()"
@@ -175,6 +175,7 @@ type CalendarPopoverPlacement = 'above' | 'below';
         [attr.aria-label]="dateLabel(previewCell.key) + ' agenda preview'"
         [style.top.px]="previewTop"
         [style.left.px]="previewLeft"
+        [style.--calendar-hover-arrow-left.px]="previewArrowLeft"
         (mouseenter)="keepPreview()"
         (mouseleave)="hidePreviewSoon()"
         (focusin)="keepPreview()"
@@ -497,7 +498,7 @@ type CalendarPopoverPlacement = 'above' | 'below';
         bottom: -6px;
         content: "";
         height: 10px;
-        left: 24px;
+        left: var(--calendar-hover-arrow-left, 24px);
         position: absolute;
         transform: rotate(45deg);
         width: 10px;
@@ -781,6 +782,7 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
   previewCell: PmConsoleCalendarCell | null = null;
   previewTop = 0;
   previewLeft = 0;
+  previewArrowLeft = 24;
   previewPlacement: CalendarPopoverPlacement = 'above';
 
   private previewHideTimer: number | null = null;
@@ -835,6 +837,7 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
     this.previewCell = null;
     this.previewTop = position.top;
     this.previewLeft = position.left;
+    this.previewArrowLeft = position.arrowLeft;
     this.previewPlacement = position.placement;
   }
 
@@ -848,6 +851,7 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
     this.previewCell = cell;
     this.previewTop = position.top;
     this.previewLeft = position.left;
+    this.previewArrowLeft = position.arrowLeft;
     this.previewPlacement = position.placement;
   }
 
@@ -916,10 +920,13 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
 
   actionLabel(item: PmConsoleCalendarItem): string {
     const kind = item.kind || 'task';
+    if (kind === 'plan') return 'Open plan queue';
     if (kind === 'report') return 'Open report';
+    if (kind === 'benefit') return 'Open benefit';
+    if (kind === 'change') return 'Open change queue';
+    if (kind === 'governance') return 'Open governance queue';
     if (kind === 'risk') return 'Open risk';
     if (kind === 'dependency') return 'Open dependency';
-    if (kind === 'benefit') return 'Open benefit';
     if (kind === 'milestone' || kind === 'end-product' || kind === 'management-product') return 'Open schedule';
     return 'Open work item';
   }
@@ -959,16 +966,46 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
     this.previewHideTimer = null;
   }
 
-  private positionFor(anchor: HTMLElement, width: number, estimatedHeight: number): { top: number; left: number; placement: CalendarPopoverPlacement } {
+  private positionFor(anchor: HTMLElement, width: number, estimatedHeight: number): { top: number; left: number; arrowLeft: number; placement: CalendarPopoverPlacement } {
     const rect = anchor.getBoundingClientRect();
     const margin = 12;
     const gap = 8;
+    const arrowInset = 24;
+    const fixedOffset = this.fixedContainingBlockOffset(anchor);
     const placement: CalendarPopoverPlacement = rect.top - estimatedHeight - gap > margin ? 'above' : 'below';
     const rawTop = placement === 'above' ? rect.top - gap : rect.bottom + gap;
     const rawLeft = rect.left + rect.width / 2 - width / 2;
-    const top = placement === 'above' ? Math.max(margin, rawTop) : Math.max(margin, Math.min(rawTop, window.innerHeight - estimatedHeight - margin));
-    const left = Math.max(margin, Math.min(rawLeft, window.innerWidth - width - margin));
-    return { top, left, placement };
+    const visualTop = placement === 'above' ? Math.max(margin, rawTop) : Math.max(margin, Math.min(rawTop, window.innerHeight - estimatedHeight - margin));
+    const visualLeft = Math.max(margin, Math.min(rawLeft, window.innerWidth - width - margin));
+    const anchorCenter = rect.left + rect.width / 2;
+    const arrowLeft = Math.max(arrowInset, Math.min(anchorCenter - visualLeft - 5, width - arrowInset));
+    const top = visualTop - fixedOffset.top;
+    const left = visualLeft - fixedOffset.left;
+    return { top, left, arrowLeft, placement };
+  }
+
+  private fixedContainingBlockOffset(anchor: HTMLElement): { top: number; left: number } {
+    let element = anchor.parentElement;
+    while (element && element !== document.documentElement) {
+      const style = window.getComputedStyle(element);
+      const backdropFilter = style.getPropertyValue('backdrop-filter');
+      const hasContainingBlock =
+        style.transform !== 'none' ||
+        style.perspective !== 'none' ||
+        style.filter !== 'none' ||
+        (backdropFilter && backdropFilter !== 'none') ||
+        /(layout|paint|strict|content)/.test(style.contain) ||
+        /(transform|perspective|filter)/.test(style.willChange);
+
+      if (hasContainingBlock) {
+        const rect = element.getBoundingClientRect();
+        return { top: rect.top, left: rect.left };
+      }
+
+      element = element.parentElement;
+    }
+
+    return { top: 0, left: 0 };
   }
 }
 

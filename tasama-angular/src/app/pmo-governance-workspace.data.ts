@@ -7,6 +7,11 @@ export type PmoGovernanceForumDetailTabId = 'overview' | 'meetings' | 'sources' 
 export type PmoGovernanceWatchlistCategoryId = 'risks' | 'projects' | 'programs';
 export type PmoGovernanceWatchlistRiskPickerCategoryId = 'organisational' | 'project' | 'program' | 'other';
 
+export interface PmoGovernanceWorkspaceTarget {
+  readonly primaryTab: PmoGovernanceTabId;
+  readonly sectionTab?: PmoGovernanceSectionId;
+}
+
 export interface PmoGovernanceTab {
   readonly id: PmoGovernanceTabId | PmoGovernanceSectionId | PmoGovernanceForumDetailTabId;
   readonly label: string;
@@ -210,6 +215,27 @@ export interface PmoGovernanceMeetingDraft {
   meetingDate: string;
 }
 
+export type PmoGovernanceIssuePriority = 'Low' | 'Medium' | 'High' | 'Critical';
+export type PmoGovernanceIssueStatus = 'Open' | 'In Progress' | 'Resolved' | 'Closed';
+
+export interface PmoGovernanceIssueDraft {
+  issue: string;
+  issueDescription: string;
+  issuePriority: PmoGovernanceIssuePriority | '';
+  resolution: string;
+  issueStatus: PmoGovernanceIssueStatus | '';
+  owner: string;
+  dateRaised: string;
+  issueDueDate: string;
+  dateClosed: string;
+}
+
+export interface PmoGovernanceIssueFormOptions {
+  readonly priorityOptions: readonly PmoGovernanceIssuePriority[];
+  readonly statusOptions: readonly PmoGovernanceIssueStatus[];
+  readonly ownerOptions: readonly string[];
+}
+
 export interface PmoGovernanceWatchlistCategory {
   readonly id: PmoGovernanceWatchlistCategoryId;
   readonly label: string;
@@ -257,6 +283,8 @@ export const pmoGovernancePrimaryTabs: readonly PmoGovernanceTab[] = [
   { id: 'issues-register', label: 'Issues Register', icon: 'layout-grid' },
   { id: 'governance', label: 'Governance', icon: 'layout-grid' },
 ];
+
+export const pmoGovernanceDefaultWorkspaceTarget: PmoGovernanceWorkspaceTarget = { primaryTab: 'portfolio-register' };
 
 export const pmoGovernanceSectionTabs: readonly PmoGovernanceTab[] = [
   { id: 'forums', label: 'Forums' },
@@ -343,6 +371,33 @@ const pmoGovernanceMeetingDefaultDraft: PmoGovernanceMeetingDraft = {
 
 export function createPmoGovernanceMeetingDraft(): PmoGovernanceMeetingDraft {
   return { ...pmoGovernanceMeetingDefaultDraft };
+}
+
+export const pmoGovernanceIssueFormOptions: PmoGovernanceIssueFormOptions = {
+  priorityOptions: ['Low', 'Medium', 'High', 'Critical'],
+  statusOptions: ['Open', 'In Progress', 'Resolved', 'Closed'],
+  ownerOptions: ['James T Kirk', 'Chethan Vijayadeva', 'Canning Santos', 'Rohit Sareen', 'Alex Vayne', 'Akshay K', 'Geoff Neideck', 'Chris Stan'],
+};
+
+export function createPmoGovernanceIssueDraft(): PmoGovernanceIssueDraft {
+  const today = pmoGovernanceTodayInputDate();
+  return {
+    issue: '',
+    issueDescription: '',
+    issuePriority: '',
+    resolution: '',
+    issueStatus: '',
+    owner: '',
+    dateRaised: today,
+    issueDueDate: today,
+    dateClosed: today,
+  };
+}
+
+function pmoGovernanceTodayInputDate(): string {
+  const today = new Date();
+  const timezoneOffsetMs = today.getTimezoneOffset() * 60_000;
+  return new Date(today.getTime() - timezoneOffsetMs).toISOString().slice(0, 10);
 }
 
 export const pmoGovernanceReportFormOptions: PmoGovernanceReportFormOptions = {

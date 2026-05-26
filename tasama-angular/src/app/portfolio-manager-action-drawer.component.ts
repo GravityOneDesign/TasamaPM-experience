@@ -74,126 +74,190 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (item; as selected) {
-      @switch (selected.kind) {
-        @case ('report') {
-          @if (activeReportDetails; as details) {
-            <app-pm-console-report-drawer
-              [projectName]="selected.project"
-              [details]="details"
-              [submitted]="false"
-              [presentationMode]="reportPresentationMode"
-              [activeMode]="reportMode"
-              [activeSection]="reportSection"
-              [reportSections]="reportSections"
-              [statusOptions]="reportStatusOptions"
-              [trendOptions]="reportTrendOptions"
-              [overviewCard]="activeReportCards[0] || null"
-              [simpleCards]="activeReportCards"
-              [detailedCards]="activeReportCards"
-              [overviewFields]="activeReportOverviewFields"
-              [scopeProducts]="activeReportScopeProducts"
-              [sectionDetails]="emptySectionDetails"
-              [detailItemMap]="emptyDetailItemMap"
+      @if (activeGroupItems.length) {
+        <div class="portfolio-action-profile-drawer-shell" aria-live="polite">
+          <button class="portfolio-action-profile-backdrop" type="button" (click)="close.emit()" [attr.aria-label]="'Close ' + selected.label + ' drawer'"></button>
+          <aside class="portfolio-action-group-drawer" role="dialog" aria-modal="true" [attr.aria-label]="selected.label + ' action list'">
+            <header class="portfolio-action-group-header">
+              <button class="portfolio-action-group-close" type="button" (click)="close.emit()" aria-label="Close action list">
+                <span pmConsoleIcon="x" aria-hidden="true"></span>
+              </button>
+              <span class="portfolio-action-group-icon {{ selected.tone }}">
+                <span [pmConsoleIcon]="groupIcon(selected)" aria-hidden="true"></span>
+              </span>
+              <div>
+                <small>{{ selected.column }}</small>
+                <h2>{{ selected.label }}</h2>
+                <p>{{ selected.detailSummary || selected.meta }}</p>
+              </div>
+              <strong>{{ activeGroupItems.length }}</strong>
+            </header>
+
+            <section class="portfolio-action-group-summary" aria-label="Action queue summary">
+              <span>
+                <small>Queue type</small>
+                <strong>{{ selected.type }}</strong>
+              </span>
+              <span>
+                <small>Due window</small>
+                <strong>{{ selected.meta }}</strong>
+              </span>
+              <span>
+                <small>Scope</small>
+                <strong>{{ selected.project }}</strong>
+              </span>
+            </section>
+
+            <section class="portfolio-action-group-list" aria-label="Action items">
+              @for (detail of activeGroupItems; track detail.id) {
+                <article class="portfolio-action-group-row">
+                  <span class="portfolio-action-group-row-icon {{ detail.tone }}">
+                    <span [pmConsoleIcon]="groupIcon(detail)" aria-hidden="true"></span>
+                  </span>
+                  <span class="portfolio-action-group-row-copy">
+                    <strong>{{ detail.label }}</strong>
+                    <small>{{ detail.project }} · {{ targetLabel(detail) }}</small>
+                  </span>
+                  <span class="portfolio-action-group-row-meta">
+                    <small>{{ detail.meta }}</small>
+                    <b>{{ detail.owner }}</b>
+                  </span>
+                  <button type="button">
+                    <span>{{ groupActionLabel(detail) }}</span>
+                    <span pmConsoleIcon="arrow-right" aria-hidden="true"></span>
+                  </button>
+                </article>
+              }
+            </section>
+
+            <footer class="portfolio-action-group-footer">
+              <button class="secondary" type="button" (click)="close.emit()">Close</button>
+              <button class="primary" type="button" (click)="close.emit()">Mark queue reviewed</button>
+            </footer>
+          </aside>
+        </div>
+      } @else {
+        @switch (selected.kind) {
+          @case ('report') {
+            @if (activeReportDetails; as details) {
+              <app-pm-console-report-drawer
+                [projectName]="selected.project"
+                [details]="details"
+                [submitted]="false"
+                [presentationMode]="reportPresentationMode"
+                [activeMode]="reportMode"
+                [activeSection]="reportSection"
+                [reportSections]="reportSections"
+                [statusOptions]="reportStatusOptions"
+                [trendOptions]="reportTrendOptions"
+                [overviewCard]="activeReportCards[0] || null"
+                [simpleCards]="activeReportCards"
+                [detailedCards]="activeReportCards"
+                [overviewFields]="activeReportOverviewFields"
+                [scopeProducts]="activeReportScopeProducts"
+                [sectionDetails]="emptySectionDetails"
+                [detailItemMap]="emptyDetailItemMap"
+                (close)="close.emit()"
+                (save)="submitAndClose($event)"
+                (preview)="reportPresentationMode = 'pdf-preview'"
+                (previewBack)="reportPresentationMode = 'compose'"
+                (modeChange)="setReportMode($any($event))"
+                (sectionChange)="reportSection = $event"
+              ></app-pm-console-report-drawer>
+            }
+          }
+          @case ('risk') {
+            @if (activeRiskProfile; as risk) {
+              <div class="portfolio-action-profile-drawer-shell" aria-live="polite">
+                <button class="portfolio-action-profile-backdrop" type="button" (click)="close.emit()" aria-label="Close risk drawer"></button>
+                <aside class="portfolio-action-profile-drawer" role="dialog" aria-modal="true" [attr.aria-label]="'Review risk ' + risk.id">
+                  <app-pm-console-risk-profile
+                    [risk]="risk"
+                    [config]="riskProfileConfig"
+                    [activeTab]="activeRiskProfileTab"
+                    [treatmentDraft]="riskTreatmentDraft"
+                    [projectRiskCount]="1"
+                    (closeProfile)="close.emit()"
+                    (tabChange)="activeRiskProfileTab = $event"
+                    (fieldChange)="updateRiskProfileField($event)"
+                    (sharedRiskChange)="updateRiskSharedRisk($event)"
+                    (matrixChange)="updateRiskProfileMatrix($event)"
+                    (treatmentDraftChange)="updateRiskTreatmentDraft($event)"
+                    (treatmentAdd)="addRiskTreatment()"
+                    (treatmentRemove)="removeRiskTreatment($event)"
+                  ></app-pm-console-risk-profile>
+                </aside>
+              </div>
+            }
+          }
+          @case ('benefit') {
+            @if (activeBenefitProfile; as benefit) {
+              <div class="portfolio-action-profile-drawer-shell" aria-live="polite">
+                <button class="portfolio-action-profile-backdrop" type="button" (click)="close.emit()" aria-label="Close benefit drawer"></button>
+                <aside class="portfolio-action-profile-drawer benefit" role="dialog" aria-modal="true" [attr.aria-label]="'Review benefit ' + benefit.id">
+                  <app-pm-console-benefit-profile
+                    [benefit]="benefit"
+                    [projectOptions]="projectOptions"
+                    [categoryOptions]="benefitProfileOptions.categoryOptions"
+                    [ownerOptions]="benefitProfileOptions.ownerOptions"
+                    [productOptions]="benefitProfileOptions.productOptions"
+                    [strategicObjectiveOptions]="benefitProfileOptions.strategicObjectiveOptions"
+                    (closeProfile)="close.emit()"
+                    (completeProfile)="completeBenefitProfile($event)"
+                    (fieldChange)="updateBenefitProfileField($event)"
+                    (objectiveAdd)="addBenefitObjective($event)"
+                    (recipientAdd)="addBenefitRecipient($event)"
+                    (measureAdd)="addBenefitMeasure($event)"
+                    (removeMeasure)="removeBenefitMeasure($event)"
+                  ></app-pm-console-benefit-profile>
+                </aside>
+              </div>
+            }
+          }
+          @case ('milestone') {
+            @if (stageGateContextForAction(selected); as gate) {
+              <app-portfolio-manager-stage-gate-drawer
+                [project]="gate.profile.project"
+                [gate]="gate.stage.gate"
+                [stageLabel]="gate.stage.label"
+                [status]="gate.status"
+                [checkedCount]="gate.checkedCount"
+                [gateTotal]="gate.profile.gateTotal"
+                [dueLabel]="gate.profile.gateDue"
+                [checkpoint]="gate.profile.checkpoint"
+                [checklist]="gate.profile.checklist"
+                [checklistState]="stageGateChecklistStateFor(gate)"
+                [comment]="stageGateCommentFor(gate)"
+                [attachments]="stageGateAttachmentsFor(gate)"
+                [ariaLabel]="gate.profile.project + ' ' + gate.stage.gate + ' submission'"
+                (close)="close.emit()"
+                (submitGate)="submitStageGateAction($event, gate)"
+                (commentChange)="updateStageGateComment(gate, $event)"
+                (checklistChange)="toggleStageGateChecklistItem(gate, $event.index, $event.checked)"
+                (attachmentsSelected)="addStageGateFiles($event, gate)"
+                (attachmentRemove)="removeStageGateAttachment(gate, $event)"
+              ></app-portfolio-manager-stage-gate-drawer>
+            }
+          }
+          @default {
+            <app-pm-console-plan-drawer
+              [title]="selected.label"
+              eyebrow="Portfolio action"
+              [description]="'Review and close this quick action for ' + selected.project + '.'"
+              [summaryLabel]="selected.project"
+              [summary]="selected.meta"
+              submitLabel="Mark reviewed"
+              cancelLabel="Close"
+              closeAriaLabel="Close action drawer"
               (close)="close.emit()"
-              (save)="submitAndClose($event)"
-              (preview)="reportPresentationMode = 'pdf-preview'"
-              (previewBack)="reportPresentationMode = 'compose'"
-              (modeChange)="setReportMode($any($event))"
-              (sectionChange)="reportSection = $event"
-            ></app-pm-console-report-drawer>
+              (submitForm)="submitAndClose($event)"
+            >
+              <div planDrawerBody class="portfolio-action-review-body">
+                <ng-container [ngTemplateOutlet]="actionContext" [ngTemplateOutletContext]="{ action: selected }"></ng-container>
+                <ng-container [ngTemplateOutlet]="checklist" [ngTemplateOutletContext]="{ items: genericChecklist(selected) }"></ng-container>
+              </div>
+            </app-pm-console-plan-drawer>
           }
-        }
-        @case ('risk') {
-          @if (activeRiskProfile; as risk) {
-            <div class="portfolio-action-profile-drawer-shell" aria-live="polite">
-              <button class="portfolio-action-profile-backdrop" type="button" (click)="close.emit()" aria-label="Close risk drawer"></button>
-              <aside class="portfolio-action-profile-drawer" role="dialog" aria-modal="true" [attr.aria-label]="'Review risk ' + risk.id">
-                <app-pm-console-risk-profile
-                  [risk]="risk"
-                  [config]="riskProfileConfig"
-                  [activeTab]="activeRiskProfileTab"
-                  [treatmentDraft]="riskTreatmentDraft"
-                  [projectRiskCount]="1"
-                  (closeProfile)="close.emit()"
-                  (tabChange)="activeRiskProfileTab = $event"
-                  (fieldChange)="updateRiskProfileField($event)"
-                  (sharedRiskChange)="updateRiskSharedRisk($event)"
-                  (matrixChange)="updateRiskProfileMatrix($event)"
-                  (treatmentDraftChange)="updateRiskTreatmentDraft($event)"
-                  (treatmentAdd)="addRiskTreatment()"
-                  (treatmentRemove)="removeRiskTreatment($event)"
-                ></app-pm-console-risk-profile>
-              </aside>
-            </div>
-          }
-        }
-        @case ('benefit') {
-          @if (activeBenefitProfile; as benefit) {
-            <div class="portfolio-action-profile-drawer-shell" aria-live="polite">
-              <button class="portfolio-action-profile-backdrop" type="button" (click)="close.emit()" aria-label="Close benefit drawer"></button>
-              <aside class="portfolio-action-profile-drawer benefit" role="dialog" aria-modal="true" [attr.aria-label]="'Review benefit ' + benefit.id">
-                <app-pm-console-benefit-profile
-                  [benefit]="benefit"
-                  [projectOptions]="projectOptions"
-                  [categoryOptions]="benefitProfileOptions.categoryOptions"
-                  [ownerOptions]="benefitProfileOptions.ownerOptions"
-                  [productOptions]="benefitProfileOptions.productOptions"
-                  [strategicObjectiveOptions]="benefitProfileOptions.strategicObjectiveOptions"
-                  (closeProfile)="close.emit()"
-                  (completeProfile)="completeBenefitProfile($event)"
-                  (fieldChange)="updateBenefitProfileField($event)"
-                  (objectiveAdd)="addBenefitObjective($event)"
-                  (recipientAdd)="addBenefitRecipient($event)"
-                  (measureAdd)="addBenefitMeasure($event)"
-                  (removeMeasure)="removeBenefitMeasure($event)"
-                ></app-pm-console-benefit-profile>
-              </aside>
-            </div>
-          }
-        }
-        @case ('milestone') {
-          @if (stageGateContextForAction(selected); as gate) {
-            <app-portfolio-manager-stage-gate-drawer
-              [project]="gate.profile.project"
-              [gate]="gate.stage.gate"
-              [stageLabel]="gate.stage.label"
-              [status]="gate.status"
-              [checkedCount]="gate.checkedCount"
-              [gateTotal]="gate.profile.gateTotal"
-              [dueLabel]="gate.profile.gateDue"
-              [checkpoint]="gate.profile.checkpoint"
-              [checklist]="gate.profile.checklist"
-              [checklistState]="stageGateChecklistStateFor(gate)"
-              [comment]="stageGateCommentFor(gate)"
-              [attachments]="stageGateAttachmentsFor(gate)"
-              [ariaLabel]="gate.profile.project + ' ' + gate.stage.gate + ' submission'"
-              (close)="close.emit()"
-              (submitGate)="submitStageGateAction($event, gate)"
-              (commentChange)="updateStageGateComment(gate, $event)"
-              (checklistChange)="toggleStageGateChecklistItem(gate, $event.index, $event.checked)"
-              (attachmentsSelected)="addStageGateFiles($event, gate)"
-              (attachmentRemove)="removeStageGateAttachment(gate, $event)"
-            ></app-portfolio-manager-stage-gate-drawer>
-          }
-        }
-        @default {
-          <app-pm-console-plan-drawer
-            [title]="selected.label"
-            eyebrow="Portfolio action"
-            [description]="'Review and close this quick action for ' + selected.project + '.'"
-            [summaryLabel]="selected.project"
-            [summary]="selected.meta"
-            submitLabel="Mark reviewed"
-            cancelLabel="Close"
-            closeAriaLabel="Close action drawer"
-            (close)="close.emit()"
-            (submitForm)="submitAndClose($event)"
-          >
-            <div planDrawerBody class="portfolio-action-review-body">
-              <ng-container [ngTemplateOutlet]="actionContext" [ngTemplateOutletContext]="{ action: selected }"></ng-container>
-              <ng-container [ngTemplateOutlet]="checklist" [ngTemplateOutletContext]="{ items: genericChecklist(selected) }"></ng-container>
-            </div>
-          </app-pm-console-plan-drawer>
         }
       }
     }
@@ -285,6 +349,294 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
 
       .portfolio-action-profile-drawer.benefit {
         width: min(900px, calc(100vw - 72px));
+      }
+
+      .portfolio-action-group-drawer {
+        animation: motion-drawer-in var(--motion-medium) var(--motion-ease) backwards;
+        background: #ffffff;
+        bottom: 0;
+        box-shadow: -22px 0 50px rgba(25, 33, 61, 0.2);
+        display: grid;
+        grid-template-rows: auto auto minmax(0, 1fr) auto;
+        max-width: calc(100vw - 28px);
+        overflow: hidden;
+        pointer-events: auto;
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: min(720px, calc(100vw - 72px));
+      }
+
+      .portfolio-action-group-header {
+        align-items: start;
+        border-bottom: 1px solid #e4e8f1;
+        display: grid;
+        gap: 14px;
+        grid-template-columns: auto auto minmax(0, 1fr) auto;
+        padding: 22px 24px 20px;
+      }
+
+      .portfolio-action-group-close {
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid #dfe4ee;
+        border-radius: 8px;
+        color: #536071;
+        display: inline-flex;
+        height: 34px;
+        justify-content: center;
+        width: 34px;
+      }
+
+      .portfolio-action-group-close:hover,
+      .portfolio-action-group-close:focus-visible {
+        background: #f7f7ff;
+        border-color: rgba(16, 6, 159, 0.22);
+        color: #10069f;
+        outline: 0;
+      }
+
+      .portfolio-action-group-close .icon {
+        height: 16px;
+        width: 16px;
+      }
+
+      .portfolio-action-group-icon {
+        align-items: center;
+        background: #f5f7fb;
+        border-radius: 10px;
+        color: #536071;
+        display: inline-flex;
+        height: 42px;
+        justify-content: center;
+        width: 42px;
+      }
+
+      .portfolio-action-group-icon.blue,
+      .portfolio-action-group-row-icon.blue {
+        background: #eef4ff;
+        color: #1f4fb8;
+      }
+
+      .portfolio-action-group-icon.green,
+      .portfolio-action-group-row-icon.green {
+        background: #eefbf5;
+        color: #166b49;
+      }
+
+      .portfolio-action-group-icon.red,
+      .portfolio-action-group-row-icon.red {
+        background: #fff0f0;
+        color: #9e2f2f;
+      }
+
+      .portfolio-action-group-icon.neutral,
+      .portfolio-action-group-row-icon.neutral {
+        background: #f5f7fb;
+        color: #536071;
+      }
+
+      .portfolio-action-group-icon .icon {
+        height: 20px;
+        width: 20px;
+      }
+
+      .portfolio-action-group-header small,
+      .portfolio-action-group-header p,
+      .portfolio-action-group-summary small,
+      .portfolio-action-group-row small {
+        color: #657084;
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .portfolio-action-group-header h2 {
+        color: #0b0b0b;
+        font-size: 22px;
+        font-weight: 600;
+        line-height: 1.16;
+        margin: 2px 0 6px;
+      }
+
+      .portfolio-action-group-header p {
+        margin: 0;
+      }
+
+      .portfolio-action-group-header > strong {
+        align-items: center;
+        background: #10069f;
+        border-radius: 999px;
+        color: #ffffff;
+        display: inline-flex;
+        font-size: 13px;
+        font-weight: 600;
+        height: 32px;
+        justify-content: center;
+        min-width: 32px;
+        padding: 0 10px;
+      }
+
+      .portfolio-action-group-summary {
+        background: #fbfcff;
+        border-bottom: 1px solid #e4e8f1;
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        padding: 14px 24px;
+      }
+
+      .portfolio-action-group-summary span {
+        background: #ffffff;
+        border: 1px solid #edf0f6;
+        border-radius: 8px;
+        display: grid;
+        gap: 4px;
+        min-width: 0;
+        padding: 10px 12px;
+      }
+
+      .portfolio-action-group-summary strong {
+        color: #252a34;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .portfolio-action-group-list {
+        align-content: start;
+        display: grid;
+        gap: 10px;
+        grid-auto-rows: max-content;
+        min-height: 0;
+        overflow: auto;
+        padding: 18px 24px 20px;
+      }
+
+      .portfolio-action-group-row {
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid #e4e8f1;
+        border-radius: 8px;
+        display: grid;
+        gap: 12px;
+        grid-template-columns: auto minmax(0, 1fr) minmax(116px, auto) auto;
+        min-height: 72px;
+        padding: 12px;
+      }
+
+      .portfolio-action-group-row-icon {
+        align-items: center;
+        border-radius: 8px;
+        display: inline-flex;
+        height: 34px;
+        justify-content: center;
+        width: 34px;
+      }
+
+      .portfolio-action-group-row-icon .icon {
+        height: 16px;
+        width: 16px;
+      }
+
+      .portfolio-action-group-row-copy,
+      .portfolio-action-group-row-meta {
+        display: grid;
+        gap: 4px;
+        min-width: 0;
+      }
+
+      .portfolio-action-group-row-copy strong {
+        color: #252a34;
+        font-size: 13.5px;
+        font-weight: 600;
+        line-height: 1.25;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .portfolio-action-group-row-meta {
+        justify-items: end;
+        text-align: right;
+      }
+
+      .portfolio-action-group-row-meta b {
+        align-items: center;
+        background: #f2f4f8;
+        border: 1px solid #e3e7ef;
+        border-radius: 999px;
+        color: #667085;
+        display: inline-flex;
+        font-size: 10px;
+        font-weight: 600;
+        height: 24px;
+        justify-content: center;
+        min-width: 24px;
+        padding: 0 6px;
+      }
+
+      .portfolio-action-group-row button {
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid #dfe4ee;
+        border-radius: 8px;
+        color: #303645;
+        display: inline-flex;
+        font-size: 12px;
+        font-weight: 600;
+        gap: 6px;
+        height: 34px;
+        justify-content: center;
+        padding: 0 10px;
+        white-space: nowrap;
+      }
+
+      .portfolio-action-group-row button:hover,
+      .portfolio-action-group-row button:focus-visible {
+        background: #f7f7ff;
+        border-color: rgba(16, 6, 159, 0.22);
+        color: #10069f;
+        outline: 0;
+      }
+
+      .portfolio-action-group-row button .icon {
+        height: 14px;
+        width: 14px;
+      }
+
+      .portfolio-action-group-footer {
+        align-items: center;
+        border-top: 1px solid #e4e8f1;
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        padding: 14px 24px;
+      }
+
+      .portfolio-action-group-footer button {
+        align-items: center;
+        border-radius: 8px;
+        display: inline-flex;
+        font-size: 13px;
+        font-weight: 600;
+        height: 38px;
+        justify-content: center;
+        padding: 0 14px;
+      }
+
+      .portfolio-action-group-footer .secondary {
+        background: #ffffff;
+        border: 1px solid #dfe4ee;
+        color: #303645;
+      }
+
+      .portfolio-action-group-footer .primary {
+        background: #10069f;
+        border: 1px solid #10069f;
+        color: #ffffff;
       }
 
       app-pm-console-risk-profile,
@@ -393,13 +745,36 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
 
       @media (max-width: 760px) {
         .portfolio-action-profile-drawer,
-        .portfolio-action-profile-drawer.benefit {
+        .portfolio-action-profile-drawer.benefit,
+        .portfolio-action-group-drawer {
           max-width: 100vw;
           width: 100vw;
         }
 
         .portfolio-action-context-grid {
           grid-template-columns: 1fr;
+        }
+
+        .portfolio-action-group-header {
+          grid-template-columns: auto minmax(0, 1fr) auto;
+        }
+
+        .portfolio-action-group-close {
+          grid-column: 1;
+        }
+
+        .portfolio-action-group-icon {
+          display: none;
+        }
+
+        .portfolio-action-group-summary,
+        .portfolio-action-group-row {
+          grid-template-columns: 1fr;
+        }
+
+        .portfolio-action-group-row-meta {
+          justify-items: start;
+          text-align: left;
         }
       }
     `,
@@ -426,6 +801,7 @@ export class PortfolioManagerActionDrawerComponent implements OnChanges, OnDestr
   activeReportCards: PortfolioActionReportCard[] = [];
   activeReportOverviewFields: PortfolioActionReportOverviewField[] = [];
   activeReportScopeProducts: PortfolioActionScopeProduct[] = [];
+  activeGroupItems: readonly PortfolioActionItem[] = [];
   reportMode: ReportDetailMode = 'simple';
   reportPresentationMode: ReportDrawerPresentationMode = 'compose';
   reportSection = 'Overview';
@@ -456,6 +832,27 @@ export class PortfolioManagerActionDrawerComponent implements OnChanges, OnDestr
 
   targetLabel(action: PortfolioActionItem): string {
     return `${this.capitalize(action.targetType)} · ${action.project}`;
+  }
+
+  groupIcon(action: PortfolioActionItem): string {
+    if (action.kind === 'plan') return 'file-text';
+    if (action.kind === 'report') return 'chart-column';
+    if (action.kind === 'benefit') return 'circle-check';
+    if (action.kind === 'change') return 'git-pull-request';
+    if (action.kind === 'governance') return 'landmark';
+    if (action.kind === 'milestone') return 'flag';
+    if (action.kind === 'risk') return 'triangle-alert';
+    if (action.kind === 'dependency') return 'network';
+    return 'check-square';
+  }
+
+  groupActionLabel(action: PortfolioActionItem): string {
+    if (action.kind === 'plan') return 'Review';
+    if (action.kind === 'report') return 'Open report';
+    if (action.kind === 'benefit') return 'Review';
+    if (action.kind === 'change') return 'Assess';
+    if (action.kind === 'governance') return 'Open';
+    return action.cta || 'Open';
   }
 
   stageChecklist(action: PortfolioActionItem): PortfolioActionChecklistItem[] {
@@ -677,11 +1074,16 @@ export class PortfolioManagerActionDrawerComponent implements OnChanges, OnDestr
     this.activeReportCards = [];
     this.activeReportOverviewFields = [];
     this.activeReportScopeProducts = [];
+    this.activeGroupItems = [];
     this.reportMode = 'simple';
     this.reportPresentationMode = 'compose';
     this.reportSection = 'Overview';
 
     if (!action) return;
+    if (action.detailItems?.length) {
+      this.activeGroupItems = action.detailItems;
+      return;
+    }
     if (action.kind === 'risk') {
       this.activeRiskProfile = clonePortfolioActionRiskProfile(action.project);
       return;

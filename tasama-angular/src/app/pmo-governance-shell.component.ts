@@ -1,10 +1,21 @@
-import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
+import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, inject } from '@angular/core';
 import { PmConsoleIconService } from './pm-console-icon.service';
 import { PmConsoleNotificationsComponent } from './pm-console-notifications.component';
+import { PortfolioManagerActionDrawerComponent } from './portfolio-manager-action-drawer.component';
+import { PortfolioManagerActionDrawerService } from './portfolio-manager-action-drawer.service';
 import { PmoGovernanceForumDetailDrawerComponent } from './pmo-governance-forum-detail-drawer.component';
 import { PmoGovernanceWorkspaceComponent } from './pmo-governance-workspace.component';
-import { pmoGovernanceForumRows, type PmoGovernanceForumRow } from './pmo-governance-workspace.data';
+import {
+  pmoGovernanceDefaultWorkspaceTarget,
+  pmoGovernanceForumRows,
+  type PmoGovernanceForumRow,
+  type PmoGovernanceWorkspaceTarget,
+} from './pmo-governance-workspace.data';
+import { PmoDecisionIntelligenceComponent } from './pmo-decision-intelligence.component';
 import { PmoFrontdoorComponent } from './pmo-frontdoor.component';
+import { PmoReportReviewDrawerComponent } from './pmo-report-review-drawer.component';
+import { PmoReportReviewProgressComponent } from './pmo-report-review-progress.component';
+import type { PmoReportReviewCard } from './pmo-report-review-progress.data';
 import { PmConsoleAgentDockComponent } from './shared/pm-console-agent-dock.component';
 import { PmConsoleSideNavComponent, type PmConsoleSideNavItem } from './shared/pm-console-side-nav.component';
 import { PmConsoleTopBarComponent } from './shared/pm-console-top-bar.component';
@@ -15,11 +26,15 @@ import { PmConsoleTopBarComponent } from './shared/pm-console-top-bar.component'
   imports: [
     PmoGovernanceForumDetailDrawerComponent,
     PmoGovernanceWorkspaceComponent,
+    PmoDecisionIntelligenceComponent,
     PmoFrontdoorComponent,
+    PmoReportReviewDrawerComponent,
+    PmoReportReviewProgressComponent,
     PmConsoleAgentDockComponent,
     PmConsoleNotificationsComponent,
     PmConsoleSideNavComponent,
     PmConsoleTopBarComponent,
+    PortfolioManagerActionDrawerComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -45,20 +60,48 @@ import { PmConsoleTopBarComponent } from './shared/pm-console-top-bar.component'
       />
 
       @if (activeSurface === 'frontdoor') {
-        <app-pmo-frontdoor (workspaceRequested)="openWorkspace()" />
+        <app-pmo-frontdoor
+          (workspaceRequested)="openWorkspace($event)"
+          (reportReviewRequested)="openReportReview()"
+          (decisionIntelligenceRequested)="openDecisionIntelligence()"
+        />
+      } @else if (activeSurface === 'governance') {
+        <app-pmo-governance-workspace
+          [forums]="forums"
+          [initialTarget]="workspaceTarget"
+          (backSelected)="goHome()"
+          (forumDetailSelected)="openForumDetail($event)"
+        />
+      } @else if (activeSurface === 'decision-intelligence') {
+        <app-pmo-decision-intelligence (backSelected)="goHome()" />
       } @else {
-        <app-pmo-governance-workspace [forums]="forums" (forumDetailSelected)="openForumDetail($event)" />
+        <app-pmo-report-review-progress
+          (backSelected)="goHome()"
+          (reportDrawerRequested)="openReportDrawer($event)"
+        />
       }
       <app-pm-console-notifications [open]="notificationPanelOpen" (closePanel)="closeNotifications()" />
       <app-pm-console-agent-dock />
+      <app-portfolio-manager-action-drawer
+        [item]="activePortfolioActionItem()"
+        (close)="closePortfolioActionDrawer()"
+      ></app-portfolio-manager-action-drawer>
 
       @if (selectedForum; as forum) {
         <app-pmo-governance-forum-detail-drawer [forum]="forum" (forumUpdated)="updateForum($event)" (closeSelected)="closeForumDetail()" />
+      }
+
+      @if (selectedReport; as report) {
+        <app-pmo-report-review-drawer [report]="report" (close)="closeReportDrawer()" />
       }
     </div>
   `,
 })
 export class PmoGovernanceShellComponent implements AfterViewChecked {
+  private readonly portfolioActionDrawer = inject(PortfolioManagerActionDrawerService);
+
+  readonly activePortfolioActionItem = this.portfolioActionDrawer.activeItem;
+
   readonly primaryRailItems: readonly PmConsoleSideNavItem[] = [
     { id: 'home', icon: 'chart-column', label: 'Home' },
     { id: 'governance', icon: 'layout-grid', label: 'My Workspace' },
@@ -69,10 +112,12 @@ export class PmoGovernanceShellComponent implements AfterViewChecked {
     { id: 'sign-out', icon: 'log-out', label: 'Sign out' },
   ];
 
-  activeSurface: 'frontdoor' | 'governance' = 'frontdoor';
+  activeSurface: 'frontdoor' | 'governance' | 'report-review' | 'decision-intelligence' = 'frontdoor';
   forums: readonly PmoGovernanceForumRow[] = pmoGovernanceForumRows;
+  workspaceTarget: PmoGovernanceWorkspaceTarget = pmoGovernanceDefaultWorkspaceTarget;
   notificationPanelOpen = false;
   selectedForum: PmoGovernanceForumRow | null = null;
+  selectedReport: PmoReportReviewCard | null = null;
   sideNavExpanded = false;
   private iconsHydrated = false;
 
@@ -82,7 +127,7 @@ export class PmoGovernanceShellComponent implements AfterViewChecked {
   ) {}
 
   get activeRailItemId(): string {
-    return this.activeSurface === 'frontdoor' ? 'home' : 'governance';
+    return this.activeSurface === 'governance' ? 'governance' : 'home';
   }
 
   ngAfterViewChecked(): void {
@@ -95,6 +140,7 @@ export class PmoGovernanceShellComponent implements AfterViewChecked {
     this.activeSurface = 'frontdoor';
     this.notificationPanelOpen = false;
     this.selectedForum = null;
+    this.selectedReport = null;
     this.markShellChanged();
   }
 
@@ -110,11 +156,36 @@ export class PmoGovernanceShellComponent implements AfterViewChecked {
     }
   }
 
-  openWorkspace(): void {
+  openWorkspace(target: PmoGovernanceWorkspaceTarget | undefined = pmoGovernanceDefaultWorkspaceTarget): void {
+    this.workspaceTarget = target ?? pmoGovernanceDefaultWorkspaceTarget;
     if (this.activeSurface !== 'governance') {
       this.activeSurface = 'governance';
       this.selectedForum = null;
+      this.selectedReport = null;
       this.notificationPanelOpen = false;
+      this.markShellChanged();
+      return;
+    }
+    this.markShellChanged();
+  }
+
+  openReportReview(): void {
+    if (this.activeSurface !== 'report-review') {
+      this.activeSurface = 'report-review';
+      this.selectedForum = null;
+      this.selectedReport = null;
+      this.notificationPanelOpen = false;
+      this.markShellChanged();
+    }
+  }
+
+  openDecisionIntelligence(): void {
+    if (this.activeSurface !== 'decision-intelligence') {
+      this.activeSurface = 'decision-intelligence';
+      this.selectedForum = null;
+      this.selectedReport = null;
+      this.notificationPanelOpen = false;
+      this.resetViewportScroll();
       this.markShellChanged();
     }
   }
@@ -138,6 +209,7 @@ export class PmoGovernanceShellComponent implements AfterViewChecked {
 
   openForumDetail(forum: PmoGovernanceForumRow): void {
     this.selectedForum = this.forums.find((item) => item.id === forum.id) ?? forum;
+    this.selectedReport = null;
     this.notificationPanelOpen = false;
     this.markShellChanged();
   }
@@ -154,8 +226,30 @@ export class PmoGovernanceShellComponent implements AfterViewChecked {
     this.markShellChanged();
   }
 
+  openReportDrawer(report: PmoReportReviewCard): void {
+    this.selectedReport = report;
+    this.selectedForum = null;
+    this.notificationPanelOpen = false;
+    this.markShellChanged();
+  }
+
+  closeReportDrawer(): void {
+    if (!this.selectedReport) return;
+    this.selectedReport = null;
+    this.markShellChanged();
+  }
+
+  closePortfolioActionDrawer(): void {
+    this.portfolioActionDrawer.close();
+    this.markShellChanged();
+  }
+
   private markShellChanged(): void {
     this.iconsHydrated = false;
     this.changeDetector.markForCheck();
+  }
+
+  private resetViewportScroll(): void {
+    window.setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: 'auto' }));
   }
 }

@@ -37,8 +37,15 @@ export interface PmConsoleRegisterTableMenuItem {
   ariaLabel?: string;
 }
 
+export interface PmConsoleRegisterTableTrendItem {
+  label: string;
+  icon?: string;
+  tone?: 'success' | 'warning' | 'danger' | 'neutral';
+  ariaLabel?: string;
+}
+
 export interface PmConsoleRegisterTableCell {
-  kind: 'text' | 'primary' | 'status' | 'budget' | 'person' | 'action' | 'iconAction' | 'menu' | 'checkbox' | 'tags';
+  kind: 'text' | 'primary' | 'status' | 'budget' | 'person' | 'action' | 'iconAction' | 'menu' | 'checkbox' | 'tags' | 'trend';
   text?: string;
   title?: string;
   subtitle?: string;
@@ -48,6 +55,7 @@ export interface PmConsoleRegisterTableCell {
   icon?: string;
   tone?: string;
   items?: string[];
+  trend?: readonly PmConsoleRegisterTableTrendItem[];
   actions?: PmConsoleRegisterTableMenuItem[];
   initials?: string;
   handle?: string;
@@ -58,6 +66,12 @@ export interface PmConsoleRegisterTableCell {
   wrap?: boolean;
   clampLines?: number;
   ariaLabel?: string;
+  prefixIcon?: string;
+  tag?: string;
+  tagTone?: string;
+  indentLevel?: number;
+  alert?: boolean;
+  alertLabel?: string;
 }
 
 export interface PmConsoleRegisterTableRow {
@@ -150,6 +164,16 @@ let registerTableInstance = 0;
         overflow: visible;
       }
 
+      .pm-main-register-table .pm-table-column-cell:not(.is-entering):not(.is-exiting) {
+        min-width: var(--column-open-width, 150px);
+      }
+
+      .pm-main-register-table .pm-table-trend-cell:not(.is-entering):not(.is-exiting) {
+        max-width: 286px;
+        min-width: 286px;
+        width: 286px;
+      }
+
       .pm-main-register-table .pm-table-menu-frame {
         overflow: visible;
         transform: none;
@@ -212,14 +236,70 @@ let registerTableInstance = 0;
         align-items: flex-start;
         background: transparent;
         border: 0;
+        box-sizing: border-box;
         color: #354cb5;
         display: flex;
-        flex-direction: column;
-        gap: 2px;
+        gap: 9px;
         max-width: 100%;
         min-width: 0;
-        padding: 0;
+        padding: 0 0 0 var(--register-primary-indent, 0);
         text-align: left;
+        width: 100%;
+      }
+
+      .pm-register-primary-button.is-static {
+        cursor: default;
+      }
+
+      .pm-register-primary-icon {
+        align-items: center;
+        color: #687182;
+        display: inline-flex;
+        flex: 0 0 auto;
+        height: 18px;
+        justify-content: center;
+        width: 18px;
+      }
+
+      .pm-register-primary-icon .icon {
+        height: 15px;
+        width: 15px;
+      }
+
+      .pm-register-primary-copy {
+        display: grid;
+        flex: 1 1 auto;
+        gap: 3px;
+        min-width: 0;
+      }
+
+      .pm-register-primary-meta {
+        align-items: center;
+        color: #9aa2b1;
+        display: inline-flex;
+        font-size: 11px;
+        font-weight: 500;
+        gap: 5px;
+        line-height: 14px;
+        min-width: 0;
+      }
+
+      .pm-register-primary-alert {
+        color: #d97706;
+        display: inline-flex;
+        flex: 0 0 auto;
+      }
+
+      .pm-register-primary-alert .icon {
+        height: 12px;
+        width: 12px;
+      }
+
+      .pm-register-primary-main {
+        align-items: center;
+        display: flex;
+        gap: 8px;
+        min-width: 0;
       }
 
       .pm-register-primary-button strong {
@@ -228,21 +308,131 @@ let registerTableInstance = 0;
         font-size: 13px;
         font-weight: 600;
         line-height: 18px;
+        min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        width: 100%;
       }
 
-      .pm-register-primary-button span {
-        color: #777777;
-        display: block;
-        font-size: 11px;
-        line-height: 14px;
+      .pm-register-primary-tag {
+        background: #f4f7fb;
+        border: 1px solid #e3e8f0;
+        border-radius: 999px;
+        color: #4f596a;
+        display: inline-flex;
+        flex: 0 0 auto;
+        font-size: 10.5px;
+        font-weight: 500;
+        line-height: 1;
+        padding: 5px 9px;
+        white-space: nowrap;
+      }
+
+      .pm-register-primary-tag.portfolio {
+        background: #e5f4ef;
+        border-color: #cde9df;
+        color: #0f6b57;
+      }
+
+      .pm-register-primary-tag.program {
+        background: #eef2ff;
+        border-color: #dfe5ff;
+        color: #10069f;
+      }
+
+      .pm-register-primary-tag.project {
+        background: #fff3dc;
+        border-color: #ffe2ad;
+        color: #975a16;
+      }
+
+      .pm-register-primary-tag.project-group {
+        background: #eef1f5;
+        border-color: #dfe4ec;
+        color: #4b5565;
+      }
+
+      .pm-register-primary-tag.tag-count {
+        background: #f4f7fb;
+        border-color: #e3e8f0;
+        color: #5f6878;
+      }
+
+      .pm-register-trend-list {
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        display: inline-flex;
+        height: 34px;
+        max-width: 100%;
+        min-width: 0;
+        overflow: hidden;
+        width: min(100%, 204px);
+      }
+
+      .pm-register-trend-pill {
+        align-items: center;
+        color: #404040;
+        display: inline-flex;
+        flex: 1 1 0;
+        font-size: 13px;
+        font-weight: 400;
+        gap: 4px;
+        height: 100%;
+        justify-content: center;
+        line-height: 18px;
+        min-width: 0;
+        padding: 0 6px;
+        position: relative;
+        white-space: nowrap;
+      }
+
+      .pm-register-trend-pill:not(:last-child)::after {
+        background: #dcdfe6;
+        content: "";
+        height: 18px;
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 1px;
+      }
+
+      .pm-register-trend-pill .icon {
+        flex: 0 0 auto;
+        height: 18px;
+        width: 18px;
+      }
+
+      .pm-register-trend-pill .icon svg {
+        stroke-width: 2;
+      }
+
+      .pm-register-trend-pill > span:last-child {
+        color: #404040;
+        flex: 0 0 auto;
+        min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        width: 100%;
+      }
+
+      .pm-register-trend-pill.success .icon {
+        color: var(--green);
+      }
+
+      .pm-register-trend-pill.warning .icon {
+        color: var(--amber);
+      }
+
+      .pm-register-trend-pill.danger .icon {
+        color: var(--red);
+      }
+
+      .pm-register-trend-pill.neutral .icon {
+        color: #9aa1ad;
       }
 
       .pm-register-person {
@@ -267,7 +457,7 @@ let registerTableInstance = 0;
         display: inline-flex;
         flex: 0 0 30px;
         font-size: 11px;
-        font-weight: 700;
+        font-weight: 600;
         height: 30px;
         justify-content: center;
         overflow: hidden;
@@ -288,7 +478,7 @@ let registerTableInstance = 0;
       .pm-register-person-copy strong {
         color: #252a34;
         font-size: 12px;
-        font-weight: 700;
+        font-weight: 600;
         line-height: 16px;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -354,6 +544,17 @@ let registerTableInstance = 0;
 
       .pm-register-icon-action.danger {
         color: #c2413d;
+      }
+
+      .pm-register-icon-action.favorite-active,
+      .pm-register-icon-action.favorite-muted {
+        background: transparent;
+        border: 0;
+        color: #c9d1df;
+      }
+
+      .pm-register-icon-action.favorite-active {
+        color: var(--brand);
       }
 
       .pm-register-icon-action .icon {
@@ -442,6 +643,7 @@ let registerTableInstance = 0;
           @if (showExport) {
             <button class="pm-table-tool" type="button"><span pmConsoleIcon="download" aria-hidden="true"></span><span>Export</span></button>
           }
+          <ng-content select="[registerTableToolbarActions]"></ng-content>
           <div class="pm-table-settings-menu" data-register-columns-menu>
             <button class="pm-table-tool square" type="button" aria-label="Table settings" aria-haspopup="dialog" [attr.aria-expanded]="columnMenuOpen" [attr.aria-controls]="columnPickerId" (click)="toggleColumnMenu()"><span pmConsoleIcon="settings" aria-hidden="true"></span></button>
             @if (columnMenuOpen) {
@@ -482,7 +684,7 @@ let registerTableInstance = 0;
                 <th class="pm-table-check-cell"><input type="checkbox" [attr.aria-label]="selectAllLabel" /></th>
               }
               @for (column of renderedColumns; track column.id) {
-                <th class="pm-table-column-cell {{ column.align ? 'align-' + column.align : '' }}" [class.is-entering]="columnMotionState(column.id) === 'entering'" [class.is-exiting]="columnMotionState(column.id) === 'exiting'" [style.--column-open-width]="columnWidth(column.id)">
+                <th class="pm-table-column-cell {{ column.align ? 'align-' + column.align : '' }}" [class.pm-table-trend-cell]="column.id === 'statusTrend' || column.id === 'trend'" [class.is-entering]="columnMotionState(column.id) === 'entering'" [class.is-exiting]="columnMotionState(column.id) === 'exiting'" [style.--column-open-width]="columnWidth(column.id)">
                   <div class="pm-table-column-frame">
                     <span class="pm-table-column-header">{{ column.label }}</span>
                   </div>
@@ -507,18 +709,65 @@ let registerTableInstance = 0;
                 }
                 @for (column of renderedColumns; track column.id) {
                   @let cell = cellFor(row, column.id);
-                  <td class="pm-table-column-cell {{ column.align ? 'align-' + column.align : '' }}" [class.pm-table-project-cell]="cell?.kind === 'primary'" [class.pm-table-status-cell]="cell?.kind === 'status'" [class.pm-table-actions-cell]="cell?.kind === 'action' || cell?.kind === 'menu'" [class.is-entering]="columnMotionState(column.id) === 'entering'" [class.is-exiting]="columnMotionState(column.id) === 'exiting'" [style.--column-open-width]="columnWidth(column.id)">
+                  <td class="pm-table-column-cell {{ column.align ? 'align-' + column.align : '' }}" [class.pm-table-project-cell]="cell?.kind === 'primary'" [class.pm-table-status-cell]="cell?.kind === 'status'" [class.pm-table-trend-cell]="cell?.kind === 'trend' || column.id === 'statusTrend' || column.id === 'trend'" [class.pm-table-actions-cell]="cell?.kind === 'action' || cell?.kind === 'menu'" [class.is-entering]="columnMotionState(column.id) === 'entering'" [class.is-exiting]="columnMotionState(column.id) === 'exiting'" [style.--column-open-width]="columnWidth(column.id)">
                     <div class="pm-table-column-frame" [class.pm-table-menu-frame]="cell?.kind === 'menu'">
                       @if (cell) {
-                        @switch (cell.kind) {
-                          @case ('primary') {
-                            <button class="pm-register-primary-button" type="button" [attr.aria-label]="cell.ariaLabel || cell.title" (click)="openRow(row); $event.stopPropagation()">
-                              @if (cell.subtitle) {
-                                <span>{{ cell.subtitle }}</span>
-                              }
-                              <strong>{{ cell.title || cell.text }}</strong>
-                            </button>
-                          }
+	                        @switch (cell.kind) {
+	                          @case ('primary') {
+	                            @if (row.clickable === false) {
+	                              <span class="pm-register-primary-button is-static" [style.--register-primary-indent.px]="cell.indentLevel ? cell.indentLevel * 28 : null">
+	                                <span class="pm-register-primary-copy">
+	                                  @if (cell.subtitle || cell.alert) {
+	                                    <span class="pm-register-primary-meta">
+	                                      @if (cell.subtitle) {
+	                                        <span>{{ cell.subtitle }}</span>
+	                                      }
+	                                      @if (cell.alert) {
+	                                        <span class="pm-register-primary-alert" [attr.title]="cell.alertLabel || 'Needs attention'">
+	                                          <span pmConsoleIcon="triangle-alert" aria-hidden="true"></span>
+	                                        </span>
+	                                      }
+	                                    </span>
+	                                  }
+	                                  <span class="pm-register-primary-main">
+	                                    @if (cell.prefixIcon) {
+	                                      <span class="pm-register-primary-icon" [pmConsoleIcon]="cell.prefixIcon" aria-hidden="true"></span>
+	                                    }
+	                                    <strong>{{ cell.title || cell.text }}</strong>
+	                                    @if (cell.tag) {
+	                                      <span class="pm-register-primary-tag {{ cell.tagTone || '' }}">{{ cell.tag }}</span>
+	                                    }
+	                                  </span>
+	                                </span>
+	                              </span>
+	                            } @else {
+	                              <button class="pm-register-primary-button" type="button" [attr.aria-label]="cell.ariaLabel || cell.title" [style.--register-primary-indent.px]="cell.indentLevel ? cell.indentLevel * 28 : null" (click)="openRow(row); $event.stopPropagation()">
+	                                <span class="pm-register-primary-copy">
+	                                  @if (cell.subtitle || cell.alert) {
+	                                    <span class="pm-register-primary-meta">
+	                                      @if (cell.subtitle) {
+	                                        <span>{{ cell.subtitle }}</span>
+	                                      }
+	                                      @if (cell.alert) {
+	                                        <span class="pm-register-primary-alert" [attr.title]="cell.alertLabel || 'Needs attention'">
+	                                          <span pmConsoleIcon="triangle-alert" aria-hidden="true"></span>
+	                                        </span>
+	                                      }
+	                                    </span>
+	                                  }
+	                                  <span class="pm-register-primary-main">
+	                                    @if (cell.prefixIcon) {
+	                                      <span class="pm-register-primary-icon" [pmConsoleIcon]="cell.prefixIcon" aria-hidden="true"></span>
+	                                    }
+	                                    <strong>{{ cell.title || cell.text }}</strong>
+	                                    @if (cell.tag) {
+	                                      <span class="pm-register-primary-tag {{ cell.tagTone || '' }}">{{ cell.tag }}</span>
+	                                    }
+	                                  </span>
+	                                </span>
+	                              </button>
+	                            }
+	                          }
                           @case ('status') {
                             <span [pmConsoleStatusPill]="cell.label || cell.text || ''" baseClass="pm-table-row-status" [tone]="cell.tone || 'neutral'"></span>
                           }
@@ -569,13 +818,23 @@ let registerTableInstance = 0;
                           @case ('checkbox') {
                             <input class="pm-register-checkbox-cell" type="checkbox" [checked]="cell.checked" [attr.aria-label]="cell.ariaLabel || cell.label" (click)="$event.stopPropagation()" />
                           }
-                          @case ('tags') {
-                            <span class="pm-register-tag-list">
-                              @for (item of cell.items || []; track item) {
-                                <span class="pm-register-tag">{{ item }}</span>
-                              }
-                            </span>
-                          }
+	                          @case ('tags') {
+	                            <span class="pm-register-tag-list">
+	                              @for (item of cell.items || []; track item) {
+	                                <span class="pm-register-tag">{{ item }}</span>
+	                              }
+	                            </span>
+	                          }
+	                          @case ('trend') {
+	                            <span class="pm-register-trend-list" [attr.aria-label]="cell.ariaLabel || 'Report status trend'">
+	                              @for (item of cell.trend || []; track item.label) {
+	                                <span class="pm-register-trend-pill {{ item.tone || 'neutral' }}" role="img" [attr.aria-label]="item.ariaLabel || item.label" [attr.title]="item.ariaLabel || item.label">
+	                                  <span [pmConsoleIcon]="item.icon || 'circle'" aria-hidden="true"></span>
+	                                  <span>{{ item.label }}</span>
+	                                </span>
+	                              }
+	                            </span>
+	                          }
                           @default {
                             @if (cell.icon) {
                               <span class="pm-register-cell-inline">

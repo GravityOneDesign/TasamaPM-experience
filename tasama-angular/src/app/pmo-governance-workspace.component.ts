@@ -1,11 +1,19 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, HostListener, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { PmoGovernanceForumDrawerComponent } from './pmo-governance-forum-drawer.component';
 import { PmoGovernanceRecordDetailDrawerComponent } from './pmo-governance-record-detail-drawer.component';
 import { PmoGovernanceRecordDrawerComponent } from './pmo-governance-record-drawer.component';
 import { PmoGovernanceReportDrawerComponent } from './pmo-governance-report-drawer.component';
 import { PmoGovernanceSourceDrawerComponent } from './pmo-governance-source-drawer.component';
+import { PortfolioWorkspaceRegistersComponent } from './portfolio-workspace/portfolio-workspace-registers.component';
 import { PmConsoleExpandableSearchComponent } from './shared/pm-console-expandable-search.component';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
+import {
+  PmConsoleRegisterTableComponent,
+  type PmConsoleRegisterTableActionEvent,
+  type PmConsoleRegisterTableCell,
+  type PmConsoleRegisterTableColumn,
+  type PmConsoleRegisterTableRow,
+} from './shared/pm-console-register-table.component';
 import { PmConsoleRowActionMenuComponent } from './shared/pm-console-row-action-menu.component';
 import {
   pmoGovernanceForumDetailTabs,
@@ -13,6 +21,7 @@ import {
   pmoGovernanceForumRecordRows,
   pmoGovernanceForumSourceRows,
   pmoGovernanceForumRows,
+  pmoGovernanceDefaultWorkspaceTarget,
   pmoGovernancePastMeetingRows,
   pmoGovernancePrimaryTabs,
   pmoGovernanceRecordDetailFor,
@@ -41,6 +50,7 @@ import {
   type PmoGovernanceTabId,
   type PmoGovernanceWatchlistCategoryId,
   type PmoGovernanceWatchlistRow,
+  type PmoGovernanceWorkspaceTarget,
 } from './pmo-governance-workspace.data';
 
 type PmoGovernanceSourceDrawerContext = 'workspace' | 'forum';
@@ -57,6 +67,8 @@ type PmoGovernanceRecordDrawerContext = 'workspace' | 'forum';
     PmoGovernanceRecordDrawerComponent,
     PmoGovernanceReportDrawerComponent,
     PmoGovernanceSourceDrawerComponent,
+    PmConsoleRegisterTableComponent,
+    PortfolioWorkspaceRegistersComponent,
     PmConsoleRowActionMenuComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -66,7 +78,7 @@ type PmoGovernanceRecordDrawerContext = 'workspace' | 'forum';
         <section class="pmo-governance-page" aria-label="My Workspace">
           <header class="pmo-page-header">
             <div class="pmo-title-group">
-              <button class="pmo-back-button" type="button" aria-label="Back">
+              <button class="pmo-back-button" type="button" aria-label="Back to PMO home" (click)="backSelected.emit()">
                 <span pmConsoleIcon="arrow-left" aria-hidden="true"></span>
               </button>
               <div>
@@ -93,7 +105,11 @@ type PmoGovernanceRecordDrawerContext = 'workspace' | 'forum';
               }
             </nav>
 
-            @if (activePrimaryTab === 'governance') {
+            @if (activePrimaryTab === 'portfolio-register') {
+              <section class="pmo-program-register-view" aria-label="Portfolio register">
+                <app-portfolio-workspace-registers [showRegisterTabs]="false"></app-portfolio-workspace-registers>
+              </section>
+            } @else if (activePrimaryTab === 'governance') {
               @if (selectedForum; as forum) {
                 <section hidden class="pmo-forum-detail-view" [attr.aria-label]="forum.forumName + ' forum meetings'">
                   <header class="pmo-forum-detail-header">
@@ -616,106 +632,23 @@ type PmoGovernanceRecordDrawerContext = 'workspace' | 'forum';
                   </div>
                 </div>
 
-                <div class="pmo-table-wrap pmo-scroll-table-wrap">
-                  <table class="pmo-forum-table" aria-label="Governance forums">
-                    <colgroup>
-                      <col class="pmo-col-favorite" />
-                      <col class="pmo-col-forum" />
-                      <col class="pmo-col-id" />
-                      <col class="pmo-col-secretariat" />
-                      <col class="pmo-col-type" />
-                      <col class="pmo-col-category" />
-                      <col class="pmo-col-members" />
-                      <col class="pmo-col-meeting" />
-                      <col class="pmo-col-action" />
-                    </colgroup>
-                    <thead>
-                      <tr>
-                        <th scope="col" aria-label="Favorite"><span pmConsoleIcon="star" aria-hidden="true"></span></th>
-                        <th scope="col">Forum Name</th>
-                        <th scope="col">
-                          <span class="pmo-sort-header">Forum ID<span pmConsoleIcon="arrow-up" aria-hidden="true"></span></span>
-                        </th>
-                        <th scope="col">Secretariat</th>
-                        <th scope="col">Type</th>
-                        <th scope="col">Category</th>
-                        <th scope="col" class="pmo-center">No. Of Members</th>
-                        <th scope="col">Next Meeting On</th>
-                        <th scope="col" aria-label="Actions"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      @for (forum of visibleForums; track forum.id) {
-                        <tr
-                          class="pmo-clickable-row"
-                          tabindex="0"
-                          [attr.aria-label]="'Open ' + forum.forumName + ' forum detail'"
-                          (click)="openForumDetail(forum)"
-                          (keydown.enter)="openForumDetail(forum)"
-                          (keydown.space)="openForumDetail(forum); $event.preventDefault()"
-                        >
-                          <td class="pmo-favorite-cell">
-                            <button class="pmo-favorite-button" [class.is-favorite]="forum.favorite" type="button" [attr.aria-label]="'Favorite ' + forum.forumName" (click)="$event.stopPropagation()">
-                              <span pmConsoleIcon="star" aria-hidden="true"></span>
-                            </button>
-                          </td>
-                          <td>
-                            <button class="pmo-forum-name pmo-forum-link" type="button" (click)="openForumDetail(forum); $event.stopPropagation()">
-                              {{ forum.forumName }}
-                            </button>
-                            <span class="pmo-forum-tag">
-                              <span pmConsoleIcon="tag" aria-hidden="true"></span>
-                              {{ forum.tagCount }}
-                            </span>
-                          </td>
-                          <td>{{ forum.forumId }}</td>
-                          <td>
-                            <span class="pmo-secretariat">{{ forum.secretariat }}</span>
-                            @if (forum.moreOwners) {
-                              <small class="pmo-more-owners">{{ forum.moreOwners }}</small>
-                            }
-                          </td>
-                          <td>
-                            <span class="pmo-type-pill" [class.non-substantiated]="forum.type === 'Non-Substantiated'">{{ forum.type }}</span>
-                          </td>
-                          <td>{{ forum.category }}</td>
-                          <td class="pmo-center">
-                            @if (forum.members === 0) {
-                              <span class="pmo-zero-badge">0</span>
-                            } @else {
-                              {{ forum.members }}
-                            }
-                          </td>
-                          <td><span class="pmo-meeting-badge">{{ forum.nextMeeting }}</span></td>
-                          <td class="pmo-action-cell">
-                            <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + forum.forumName">
-                              <button type="button" role="menuitem" (click)="openForumDetail(forum)">
-                                <span pmConsoleIcon="eye" aria-hidden="true"></span>
-                                <span>View forum</span>
-                              </button>
-                              <button type="button" role="menuitem">
-                                <span pmConsoleIcon="pencil" aria-hidden="true"></span>
-                                <span>Edit forum</span>
-                              </button>
-                              <button class="danger" type="button" role="menuitem">
-                                <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
-                                <span>Delete forum</span>
-                              </button>
-                            </app-pm-console-row-action-menu>
-                          </td>
-                        </tr>
-                      } @empty {
-                        <tr>
-                          <td colspan="9">
-                            <div class="pmo-empty-state">
-                              <strong>No forums match your search</strong>
-                              <span>Try another forum name, owner, or category.</span>
-                            </div>
-                          </td>
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
+                <div class="pmo-table-wrap pmo-scroll-table-wrap pmo-register-table-wrap">
+                  <app-pm-console-register-table
+                    class="pmo-governance-register-table pmo-forum-register-table"
+                    [columns]="forumRegisterColumns"
+                    [rows]="forumRegisterRows"
+                    ariaLabel="Governance forums"
+                    itemName="forums"
+                    [selectable]="false"
+                    [showToolbar]="false"
+                    [showSearch]="false"
+                    [showFilter]="false"
+                    [showExport]="false"
+                    emptyTitle="No forums match your search"
+                    emptyDescription="Try another forum name, owner, or category."
+                    (rowOpen)="openForumRegisterRow($event)"
+                    (cellAction)="handleForumRegisterAction($event)"
+                  ></app-pm-console-register-table>
                 </div>
 
               } @else if (activeSectionTab === 'sources') {
@@ -755,61 +688,21 @@ type PmoGovernanceRecordDrawerContext = 'workspace' | 'forum';
                   </div>
                 </div>
 
-                <div class="pmo-table-wrap">
-                  <table class="pmo-forum-table pmo-source-table" aria-label="Governance sources">
-                    <colgroup>
-                      <col class="pmo-source-col-name" />
-                      <col class="pmo-source-col-type" />
-                      <col class="pmo-source-col-updated" />
-                      <col class="pmo-source-col-count" />
-                      <col class="pmo-source-col-count" />
-                      <col class="pmo-col-action" />
-                    </colgroup>
-                    <thead>
-                      <tr>
-                        <th scope="col">Source</th>
-                        <th scope="col">
-                          <span class="pmo-sort-header">Type<span pmConsoleIcon="arrow-up" aria-hidden="true"></span></span>
-                        </th>
-                        <th scope="col">Last Updated On</th>
-                        <th scope="col" class="pmo-center">Recommendations</th>
-                        <th scope="col" class="pmo-center">Associated Records</th>
-                        <th scope="col" aria-label="Actions"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      @for (source of visibleSources; track source.id) {
-                        <tr>
-                          <td><span class="pmo-forum-name">{{ source.source }}</span></td>
-                          <td>{{ source.type }}</td>
-                          <td>{{ source.lastUpdatedOn }}</td>
-                          <td class="pmo-center">{{ source.recommendations }}</td>
-                          <td class="pmo-center">{{ source.associatedRecords }}</td>
-                          <td class="pmo-action-cell">
-                            <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + source.source">
-                              <button type="button" role="menuitem">
-                                <span pmConsoleIcon="pencil" aria-hidden="true"></span>
-                                <span>Edit source</span>
-                              </button>
-                              <button class="danger" type="button" role="menuitem">
-                                <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
-                                <span>Delete source</span>
-                              </button>
-                            </app-pm-console-row-action-menu>
-                          </td>
-                        </tr>
-                      } @empty {
-                        <tr>
-                          <td colspan="6">
-                            <div class="pmo-empty-state">
-                              <strong>No sources match your search</strong>
-                              <span>Try another source name, type, or date.</span>
-                            </div>
-                          </td>
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
+                <div class="pmo-table-wrap pmo-register-table-wrap">
+                  <app-pm-console-register-table
+                    class="pmo-governance-register-table pmo-source-register-table"
+                    [columns]="sourceRegisterColumns"
+                    [rows]="sourceRegisterRows"
+                    ariaLabel="Governance sources"
+                    itemName="sources"
+                    [selectable]="false"
+                    [showToolbar]="false"
+                    [showSearch]="false"
+                    [showFilter]="false"
+                    [showExport]="false"
+                    emptyTitle="No sources match your search"
+                    emptyDescription="Try another source name, type, or date."
+                  ></app-pm-console-register-table>
                 </div>
 
               } @else if (activeSectionTab === 'records') {
@@ -849,91 +742,22 @@ type PmoGovernanceRecordDrawerContext = 'workspace' | 'forum';
                   </div>
                 </div>
 
-                <div class="pmo-table-wrap">
-                  <table class="pmo-forum-table pmo-record-table" aria-label="Governance records">
-                    <colgroup>
-                      <col class="pmo-col-favorite" />
-                      <col class="pmo-record-col-id" />
-                      <col class="pmo-record-col-title" />
-                      <col class="pmo-record-col-type" />
-                      <col class="pmo-record-col-owner" />
-                      <col class="pmo-record-col-due" />
-                      <col class="pmo-record-col-status" />
-                      <col class="pmo-col-action" />
-                    </colgroup>
-                    <thead>
-                      <tr>
-                        <th scope="col" aria-label="Favorite"><span pmConsoleIcon="star" aria-hidden="true"></span></th>
-                        <th scope="col">
-                          <span class="pmo-sort-header">Record<span pmConsoleIcon="arrow-up" aria-hidden="true"></span></span>
-                        </th>
-                        <th scope="col">Record Title</th>
-                        <th scope="col">Type</th>
-                        <th scope="col">Owner</th>
-                        <th scope="col">Due On</th>
-                        <th scope="col">Status</th>
-                        <th scope="col" aria-label="Actions"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      @for (record of visibleRecords; track record.id) {
-                        <tr
-                          class="pmo-clickable-row"
-                          tabindex="0"
-                          [attr.aria-label]="'Open ' + record.record + ' record detail'"
-                          (click)="openRecordDetail(record)"
-                          (keydown.enter)="openRecordDetail(record)"
-                          (keydown.space)="openRecordDetail(record); $event.preventDefault()"
-                        >
-                          <td class="pmo-favorite-cell">
-                            <button class="pmo-favorite-button" [class.is-favorite]="record.favorite" type="button" [attr.aria-label]="'Favorite ' + record.record" (click)="$event.stopPropagation()">
-                              <span pmConsoleIcon="star" aria-hidden="true"></span>
-                            </button>
-                          </td>
-                          <td><strong class="pmo-record-id">{{ record.record }}</strong></td>
-                          <td><span class="pmo-forum-name pmo-record-title">{{ record.recordTitle }}</span></td>
-                          <td>{{ record.type }}</td>
-                          <td>{{ record.owner }}</td>
-                          <td>
-                            @if (record.dueOn === 'N/A') {
-                              {{ record.dueOn }}
-                            } @else {
-                              <span class="pmo-record-date" [class.is-open]="record.status === 'Open'">{{ record.dueOn }}</span>
-                            }
-                          </td>
-                          <td>
-                            @if (record.status === 'N/A') {
-                              {{ record.status }}
-                            } @else {
-                              <span class="pmo-record-status" [class.is-open]="record.status === 'Open'" [class.is-pending]="record.status === 'Pending closure'">
-                                {{ record.status }}
-                              </span>
-                            }
-                          </td>
-                          <td class="pmo-action-cell">
-                            <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + record.record">
-                              <button type="button" role="menuitem" (click)="openRecordDetail(record)">
-                                <span pmConsoleIcon="eye" aria-hidden="true"></span>
-                                <span>View record</span>
-                              </button>
-                              <button type="button" role="menuitem">
-                                <span pmConsoleIcon="pencil" aria-hidden="true"></span>
-                                <span>Edit record</span>
-                              </button>
-                              <button class="danger" type="button" role="menuitem">
-                                <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
-                                <span>Delete record</span>
-                              </button>
-                            </app-pm-console-row-action-menu>
-                          </td>
-                        </tr>
-                      } @empty {
-                        <tr>
-                          <td colspan="8"><span class="pmo-no-report-data">No data available in table</span></td>
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
+                <div class="pmo-table-wrap pmo-register-table-wrap">
+                  <app-pm-console-register-table
+                    class="pmo-governance-register-table pmo-record-register-table"
+                    [columns]="recordRegisterColumns"
+                    [rows]="recordRegisterRows"
+                    ariaLabel="Governance records"
+                    itemName="records"
+                    [selectable]="false"
+                    [showToolbar]="false"
+                    [showSearch]="false"
+                    [showFilter]="false"
+                    [showExport]="false"
+                    emptyTitle="No data available in table"
+                    (rowOpen)="openRecordRegisterRow($event)"
+                    (cellAction)="handleRecordRegisterAction($event)"
+                  ></app-pm-console-register-table>
                 </div>
 
               } @else if (activeSectionTab === 'reports') {
@@ -960,36 +784,20 @@ type PmoGovernanceRecordDrawerContext = 'workspace' | 'forum';
                     </div>
                   </div>
 
-                  <div class="pmo-table-wrap pmo-report-table-wrap">
-                    <table class="pmo-forum-table pmo-report-table" aria-label="Saved report templates">
-                      <colgroup>
-                        <col class="pmo-report-name-col" />
-                        <col class="pmo-report-group-col" />
-                        <col class="pmo-report-action-col" />
-                      </colgroup>
-                      <thead>
-                        <tr>
-                          <th scope="col">
-                            <span class="pmo-sort-header">Report Name<span pmConsoleIcon="arrow-up" aria-hidden="true"></span></span>
-                          </th>
-                          <th scope="col">Group By</th>
-                          <th scope="col">View/Print</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        @for (report of visibleReports; track report.id) {
-                          <tr>
-                            <td>{{ report.reportName }}</td>
-                            <td>{{ report.groupBy }}</td>
-                            <td>{{ report.viewLabel }}</td>
-                          </tr>
-                        } @empty {
-                          <tr>
-                            <td colspan="3"><span class="pmo-no-report-data">No data available in table</span></td>
-                          </tr>
-                        }
-                      </tbody>
-                    </table>
+                  <div class="pmo-table-wrap pmo-report-table-wrap pmo-register-table-wrap">
+                    <app-pm-console-register-table
+                      class="pmo-governance-register-table pmo-report-register-table"
+                      [columns]="reportRegisterColumns"
+                      [rows]="reportRegisterRows"
+                      ariaLabel="Saved report templates"
+                      itemName="report templates"
+                      [selectable]="false"
+                      [showToolbar]="false"
+                      [showSearch]="false"
+                      [showFilter]="false"
+                      [showExport]="false"
+                      emptyTitle="No data available in table"
+                    ></app-pm-console-register-table>
                   </div>
                 </section>
               }
@@ -1228,6 +1036,11 @@ type PmoGovernanceRecordDrawerContext = 'workspace' | 'forum';
         color: var(--brand);
       }
 
+      .pmo-tab-strip button:focus-visible {
+        outline: 2px solid rgba(16, 6, 159, 0.22);
+        outline-offset: -2px;
+      }
+
       .pmo-tab-strip button.active::after {
         background: var(--brand);
         border-radius: 999px 999px 0 0;
@@ -1322,6 +1135,41 @@ type PmoGovernanceRecordDrawerContext = 'workspace' | 'forum';
         min-height: 0;
         overscroll-behavior: contain;
         overflow: auto;
+      }
+
+      .pmo-register-table-wrap {
+        max-height: none;
+        overflow: visible;
+      }
+
+      .pmo-governance-register-table {
+        --register-empty-min-height: 160px;
+        --register-table-scroll-height: min(532px, calc(100dvh - 292px));
+        --register-table-scroll-min-height: 0;
+        display: block;
+        min-width: 0;
+      }
+
+      :host ::ng-deep .pmo-governance-register-table .pm-main-register-table-scroll {
+        border-color: #dfe4ee;
+        border-radius: 8px;
+        box-shadow: none;
+      }
+
+      :host ::ng-deep .pmo-governance-register-table .pm-project-table {
+        table-layout: auto;
+        width: 100%;
+      }
+
+      :host ::ng-deep .pmo-governance-register-table .pm-project-table th {
+        background: #f6f8fc;
+        color: #252a34;
+        font-weight: 500;
+        height: 52px;
+      }
+
+      :host ::ng-deep .pmo-governance-register-table .pm-project-table td {
+        height: 60px;
       }
 
       .pmo-scroll-table-wrap {
@@ -1704,6 +1552,20 @@ type PmoGovernanceRecordDrawerContext = 'workspace' | 'forum';
       .pmo-empty-state span {
         color: #687182;
         font-size: 12px;
+      }
+
+      .pmo-program-register-view {
+        display: flex;
+        grid-row: 1 / -1;
+        min-height: 0;
+        overflow: hidden;
+        padding: 18px 28px 28px;
+      }
+
+      .pmo-program-register-view app-portfolio-workspace-registers {
+        flex: 1;
+        min-height: 0;
+        width: 100%;
       }
 
       .pmo-register-placeholder {
@@ -2437,8 +2299,10 @@ type PmoGovernanceRecordDrawerContext = 'workspace' | 'forum';
     `,
   ],
 })
-export class PmoGovernanceWorkspaceComponent {
+export class PmoGovernanceWorkspaceComponent implements OnChanges {
   @Input() forums: readonly PmoGovernanceForumRow[] = pmoGovernanceForumRows;
+  @Input() initialTarget: PmoGovernanceWorkspaceTarget = pmoGovernanceDefaultWorkspaceTarget;
+  @Output() readonly backSelected = new EventEmitter<void>();
   @Output() readonly forumDetailSelected = new EventEmitter<PmoGovernanceForumRow>();
 
   readonly primaryTabs = pmoGovernancePrimaryTabs;
@@ -2453,8 +2317,42 @@ export class PmoGovernanceWorkspaceComponent {
   readonly watchlistCategories = pmoGovernanceWatchlistCategories;
   readonly watchlistRows = pmoGovernanceWatchlistRows;
   readonly forumIssueEmptyState = pmoGovernanceForumIssueEmptyState;
+  readonly forumRegisterColumns: PmConsoleRegisterTableColumn[] = [
+    { id: 'favorite', label: '', minWidth: 56, maxWidth: 64, align: 'center' },
+    { id: 'forumName', label: 'Forum Name', minWidth: 280, maxWidth: 390 },
+    { id: 'forumId', label: 'Forum ID', minWidth: 94, maxWidth: 112 },
+    { id: 'secretariat', label: 'Secretariat', minWidth: 170, maxWidth: 220 },
+    { id: 'type', label: 'Type', minWidth: 180, maxWidth: 210 },
+    { id: 'category', label: 'Category', minWidth: 190, maxWidth: 230 },
+    { id: 'members', label: 'No. Of Members', minWidth: 150, maxWidth: 180, align: 'center' },
+    { id: 'nextMeeting', label: 'Next Meeting On', minWidth: 200, maxWidth: 240 },
+    { id: 'rowActions', label: '', minWidth: 64, maxWidth: 76, align: 'center' },
+  ];
+  readonly sourceRegisterColumns: PmConsoleRegisterTableColumn[] = [
+    { id: 'source', label: 'Source', minWidth: 320, maxWidth: 460 },
+    { id: 'type', label: 'Type', minWidth: 150, maxWidth: 190 },
+    { id: 'lastUpdatedOn', label: 'Last Updated On', minWidth: 170, maxWidth: 210 },
+    { id: 'recommendations', label: 'Recommendations', minWidth: 180, maxWidth: 210, align: 'center' },
+    { id: 'associatedRecords', label: 'Associated Records', minWidth: 210, maxWidth: 240, align: 'center' },
+    { id: 'rowActions', label: '', minWidth: 64, maxWidth: 76, align: 'center' },
+  ];
+  readonly recordRegisterColumns: PmConsoleRegisterTableColumn[] = [
+    { id: 'favorite', label: '', minWidth: 56, maxWidth: 64, align: 'center' },
+    { id: 'record', label: 'Record', minWidth: 100, maxWidth: 120 },
+    { id: 'recordTitle', label: 'Record Title', minWidth: 360, maxWidth: 520 },
+    { id: 'type', label: 'Type', minWidth: 140, maxWidth: 170 },
+    { id: 'owner', label: 'Owner', minWidth: 180, maxWidth: 220 },
+    { id: 'dueOn', label: 'Due On', minWidth: 150, maxWidth: 180 },
+    { id: 'status', label: 'Status', minWidth: 160, maxWidth: 190 },
+    { id: 'rowActions', label: '', minWidth: 64, maxWidth: 76, align: 'center' },
+  ];
+  readonly reportRegisterColumns: PmConsoleRegisterTableColumn[] = [
+    { id: 'reportName', label: 'Report Name', minWidth: 360, maxWidth: 520 },
+    { id: 'groupBy', label: 'Group By', minWidth: 220, maxWidth: 300 },
+    { id: 'viewLabel', label: 'View/Print', minWidth: 220, maxWidth: 300 },
+  ];
 
-  activePrimaryTab: PmoGovernanceTabId = 'governance';
+  activePrimaryTab: PmoGovernanceTabId = pmoGovernanceDefaultWorkspaceTarget.primaryTab;
   activeSectionTab: PmoGovernanceSectionId = 'forums';
   activeForumDetailTab: PmoGovernanceForumDetailTabId = 'overview';
   activeWatchlistCategory: PmoGovernanceWatchlistCategoryId = 'risks';
@@ -2479,6 +2377,12 @@ export class PmoGovernanceWorkspaceComponent {
   createdReportTemplates: readonly PmoGovernanceReportTemplateRow[] = [];
   private sourceDrawerContext: PmoGovernanceSourceDrawerContext = 'workspace';
   private recordDrawerContext: PmoGovernanceRecordDrawerContext = 'workspace';
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['initialTarget']) {
+      this.applyWorkspaceTarget(this.initialTarget);
+    }
+  }
 
   get reportTemplates(): readonly PmoGovernanceReportTemplateRow[] {
     return [...this.createdReportTemplates, ...this.baseReportTemplates];
@@ -2509,6 +2413,71 @@ export class PmoGovernanceWorkspaceComponent {
     const scopedRecords = this.recordScope === 'mine' ? [] : this.records;
     if (!query) return scopedRecords;
     return scopedRecords.filter((record) => this.recordSearchValue(record).includes(query));
+  }
+
+  get forumRegisterRows(): PmConsoleRegisterTableRow[] {
+    return this.visibleForums.map((forum) => ({
+      id: forum.id,
+      ariaLabel: `Open ${forum.forumName} forum detail`,
+      clickable: true,
+      cells: {
+        favorite: { kind: 'iconAction', icon: 'star', tone: forum.favorite ? 'favorite-active' : 'favorite-muted', ariaLabel: `Favorite ${forum.forumName}` },
+        forumName: {
+          kind: 'primary',
+          title: forum.forumName,
+          prefixIcon: 'tag',
+          tag: `${forum.tagCount}`,
+          tagTone: 'tag-count',
+          ariaLabel: `Open ${forum.forumName} forum detail`,
+        },
+        forumId: { kind: 'text', text: forum.forumId },
+        secretariat: { kind: 'text', text: this.ownerSummary(forum.secretariat, forum.moreOwners), wrap: true, clampLines: 2 },
+        type: { kind: 'status', label: forum.type, tone: this.forumTypeTone(forum.type) },
+        category: { kind: 'text', text: forum.category || '-', muted: !forum.category || forum.category === '-' },
+        members: this.countCell(forum.members),
+        nextMeeting: { kind: 'status', label: forum.nextMeeting, tone: 'neutral' },
+        rowActions: {
+          kind: 'menu',
+          ariaLabel: `Actions for ${forum.forumName}`,
+          actions: [
+            { id: 'view', label: 'View forum', icon: 'eye' },
+            { id: 'edit', label: 'Edit forum', icon: 'pencil' },
+            { id: 'delete', label: 'Delete forum', icon: 'trash-2', tone: 'danger' },
+          ],
+        },
+      },
+    }));
+  }
+
+  get sourceRegisterRows(): PmConsoleRegisterTableRow[] {
+    return this.visibleSources.map((source) => ({
+      id: source.id,
+      ariaLabel: source.source,
+      clickable: false,
+      cells: this.sourceRegisterCells(source),
+    }));
+  }
+
+  get recordRegisterRows(): PmConsoleRegisterTableRow[] {
+    return this.visibleRecords.map((record) => ({
+      id: record.id,
+      ariaLabel: `Open ${record.record} record detail`,
+      clickable: true,
+      cells: this.recordRegisterCells(record),
+    }));
+  }
+
+  get reportRegisterRows(): PmConsoleRegisterTableRow[] {
+    return this.visibleReports.map((report) => ({
+      id: report.id,
+      ariaLabel: report.reportName,
+      clickable: false,
+      cells: {
+        reportName: { kind: 'text', text: report.reportName, strong: true, wrap: true, clampLines: 2 },
+        groupBy: { kind: 'text', text: report.groupBy },
+        viewLabel: { kind: 'text', text: report.viewLabel },
+      },
+    }));
   }
 
   get visiblePastMeetings(): readonly PmoGovernanceMeetingRow[] {
@@ -2565,6 +2534,16 @@ export class PmoGovernanceWorkspaceComponent {
         this.selectedRecordDetail = null;
       }
     }
+  }
+
+  private applyWorkspaceTarget(target: PmoGovernanceWorkspaceTarget | undefined): void {
+    const nextTarget = target ?? pmoGovernanceDefaultWorkspaceTarget;
+    this.setPrimaryTab(nextTarget.primaryTab);
+    if (nextTarget.primaryTab === 'governance') {
+      this.setSectionTab(nextTarget.sectionTab ?? 'forums');
+      return;
+    }
+    this.activeSectionTab = nextTarget.sectionTab ?? 'forums';
   }
 
   setSectionTab(tabId: PmoGovernanceTabId | PmoGovernanceSectionId | PmoGovernanceForumDetailTabId): void {
@@ -2768,6 +2747,97 @@ export class PmoGovernanceWorkspaceComponent {
 
   setReportSearchQuery(value: Event | string): void {
     this.reportSearchQuery = this.searchInputValue(value);
+  }
+
+  openForumRegisterRow(row: PmConsoleRegisterTableRow): void {
+    const forum = this.forumForRow(row);
+    if (forum) this.openForumDetail(forum);
+  }
+
+  handleForumRegisterAction(event: PmConsoleRegisterTableActionEvent): void {
+    if (event.action?.id !== 'view') return;
+    const forum = this.forumForRow(event.row);
+    if (forum) this.openForumDetail(forum);
+  }
+
+  openRecordRegisterRow(row: PmConsoleRegisterTableRow): void {
+    const record = this.recordForRow(row);
+    if (record) this.openRecordDetail(record);
+  }
+
+  handleRecordRegisterAction(event: PmConsoleRegisterTableActionEvent): void {
+    if (event.action?.id !== 'view') return;
+    const record = this.recordForRow(event.row);
+    if (record) this.openRecordDetail(record);
+  }
+
+  private sourceRegisterCells(source: PmoGovernanceSourceRow): Record<string, PmConsoleRegisterTableCell> {
+    return {
+      source: { kind: 'text', text: source.source, strong: true, wrap: true, clampLines: 2 },
+      type: { kind: 'text', text: source.type },
+      lastUpdatedOn: { kind: 'text', text: source.lastUpdatedOn, muted: source.lastUpdatedOn === '-' },
+      recommendations: { kind: 'text', text: String(source.recommendations) },
+      associatedRecords: { kind: 'text', text: String(source.associatedRecords) },
+      rowActions: {
+        kind: 'menu',
+        ariaLabel: `Actions for ${source.source}`,
+        actions: [
+          { id: 'edit', label: 'Edit source', icon: 'pencil' },
+          { id: 'delete', label: 'Delete source', icon: 'trash-2', tone: 'danger' },
+        ],
+      },
+    };
+  }
+
+  private recordRegisterCells(record: PmoGovernanceRecordRow): Record<string, PmConsoleRegisterTableCell> {
+    return {
+      favorite: { kind: 'iconAction', icon: 'star', tone: record.favorite ? 'favorite-active' : 'favorite-muted', ariaLabel: `Favorite ${record.record}` },
+      record: { kind: 'text', text: record.record, strong: true },
+      recordTitle: { kind: 'text', text: record.recordTitle, strong: true, wrap: true, clampLines: 2 },
+      type: { kind: 'text', text: record.type },
+      owner: { kind: 'text', text: record.owner },
+      dueOn: { kind: 'text', text: record.dueOn, muted: record.dueOn === 'N/A' },
+      status:
+        record.status === 'N/A'
+          ? { kind: 'text', text: record.status, muted: true }
+          : { kind: 'status', label: record.status, tone: this.recordStatusTone(record.status) },
+      rowActions: {
+        kind: 'menu',
+        ariaLabel: `Actions for ${record.record}`,
+        actions: [
+          { id: 'view', label: 'View record', icon: 'eye' },
+          { id: 'edit', label: 'Edit record', icon: 'pencil' },
+          { id: 'delete', label: 'Delete record', icon: 'trash-2', tone: 'danger' },
+        ],
+      },
+    };
+  }
+
+  private forumForRow(row: PmConsoleRegisterTableRow): PmoGovernanceForumRow | undefined {
+    return this.forums.find((forum) => forum.id === row.id);
+  }
+
+  private recordForRow(row: PmConsoleRegisterTableRow): PmoGovernanceRecordRow | undefined {
+    return this.records.find((record) => record.id === row.id);
+  }
+
+  private ownerSummary(name: string, moreOwners: string | undefined): string {
+    return moreOwners ? `${name} ${moreOwners}` : name;
+  }
+
+  private countCell(value: number): PmConsoleRegisterTableCell {
+    return { kind: 'text', text: String(value), muted: value === 0 };
+  }
+
+  private forumTypeTone(type: string): string {
+    return type === 'Substantiated' ? 'green' : 'amber';
+  }
+
+  private recordStatusTone(status: string): string {
+    const normalized = status.toLowerCase();
+    if (normalized.includes('open') || normalized.includes('pending')) return 'amber';
+    if (normalized.includes('closed')) return 'green';
+    return 'neutral';
   }
 
   private searchInputValue(value: Event | string): string {
