@@ -429,9 +429,6 @@ export interface TaxonomyCard {
                 >
                   <div class="cat-content-left">
                     <span class="cat-label">{{ cat.label }}</span>
-                    @if (activeStandardsCategory === cat.id) {
-                      <span class="cat-subtitle">{{ getCategoryCount(cat.id) }} items configured</span>
-                    }
                   </div>
                   <span class="cat-count">{{ getCategoryCount(cat.id) }}</span>
                 </button>
@@ -478,7 +475,7 @@ export interface TaxonomyCard {
                     @if (card.needsAttention) {
                       <span class="attention-dot" title="Needs attention"></span>
                     }
-                    <div class="standards-card-icon-container planning-color">
+                    <div class="standards-card-icon-container setup-color">
                       <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
                     </div>
                     <div class="standards-card-body">
@@ -508,7 +505,7 @@ export interface TaxonomyCard {
                     @if (card.needsAttention) {
                       <span class="attention-dot" title="Needs attention"></span>
                     }
-                    <div class="standards-card-icon-container closure-color">
+                    <div class="standards-card-icon-container setup-color">
                       <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
                     </div>
                     <div class="standards-card-body">
@@ -538,7 +535,7 @@ export interface TaxonomyCard {
                     @if (card.needsAttention) {
                       <span class="attention-dot" title="Needs attention"></span>
                     }
-                    <div class="standards-card-icon-container benefits-color">
+                    <div class="standards-card-icon-container setup-color">
                       <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
                     </div>
                     <div class="standards-card-body">
@@ -565,17 +562,31 @@ export interface TaxonomyCard {
           </div>
         </div>
       } @else if (activeSectionId === 'governance') {
-        <div class="standards-container animation-fade">
-          <div class="standards-intro">
-            <h2>Governance & Controls</h2>
-            <p>Define governance frameworks, prioritisation matrices, change request tolerances, and risk controls.</p>
+        <div class="standards-split-layout animation-fade">
+
+          <!-- Left Sidebar: category nav -->
+          <div class="standards-sidebar" style="padding-top: 48px;">
+            <nav class="standards-category-nav" aria-label="Governance categories">
+              @for (cat of governanceCategories; track cat.id) {
+                <button
+                  type="button"
+                  class="standards-cat-btn"
+                  [class.active]="activeGovernanceCategory === cat.id"
+                  (click)="setGovernanceCategory(cat.id)"
+                >
+                  <div class="cat-content-left">
+                    <span class="cat-label">{{ cat.label }}</span>
+                  </div>
+                  <span class="cat-count">{{ getGovernanceCategoryCount(cat.id) }}</span>
+                </button>
+              }
+            </nav>
           </div>
 
-          <div class="standards-sections-stack">
-            <!-- Section: Change Request Management -->
-            <section class="standards-group">
-              <h3 class="standards-section-heading">Change Request Management</h3>
-              <div class="standards-grid">
+          <!-- Right Panel: cards for the selected category -->
+          <div class="standards-cards-panel">
+            @if (activeGovernanceCategory === 'change-request') {
+              <div class="standards-grid animation-fade">
                 @for (card of changeRequestCards; track card.id) {
                   <button type="button" class="standards-card" (click)="openCardDrawer(card, 'Change Request Management')">
                     <div class="standards-card-icon-container setup-color">
@@ -601,15 +612,11 @@ export interface TaxonomyCard {
                   </button>
                 }
               </div>
-            </section>
-
-            <!-- Section: Stage Gate Management -->
-            <section class="standards-group">
-              <h3 class="standards-section-heading">Stage Gate Management</h3>
-              <div class="standards-grid">
+            } @else if (activeGovernanceCategory === 'stage-gate') {
+              <div class="standards-grid animation-fade">
                 @for (card of stageGateCards; track card.id) {
                   <button type="button" class="standards-card" (click)="openCardDrawer(card, 'Stage Gate Management')">
-                    <div class="standards-card-icon-container planning-color">
+                    <div class="standards-card-icon-container setup-color">
                       <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
                     </div>
                     <div class="standards-card-body">
@@ -632,15 +639,11 @@ export interface TaxonomyCard {
                   </button>
                 }
               </div>
-            </section>
-
-            <!-- Section: Monitoring & Reporting -->
-            <section class="standards-group">
-              <h3 class="standards-section-heading">Monitoring & Reporting</h3>
-              <div class="standards-grid">
+            } @else if (activeGovernanceCategory === 'monitoring-reporting') {
+              <div class="standards-grid animation-fade">
                 @for (card of monitoringReportingCards; track card.id) {
                   <button type="button" class="standards-card" (click)="openCardDrawer(card, 'Monitoring & Reporting')">
-                    <div class="standards-card-icon-container closure-color">
+                    <div class="standards-card-icon-container setup-color">
                       <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
                     </div>
                     <div class="standards-card-body">
@@ -663,15 +666,11 @@ export interface TaxonomyCard {
                   </button>
                 }
               </div>
-            </section>
-
-            <!-- Section: Portfolio & Investment Prioritization -->
-            <section class="standards-group">
-              <h3 class="standards-section-heading">Portfolio & Investment Prioritization</h3>
-              <div class="standards-grid">
+            } @else if (activeGovernanceCategory === 'prioritization') {
+              <div class="standards-grid animation-fade">
                 @for (card of prioritizationCards; track card.id) {
                   <button type="button" class="standards-card" (click)="openCardDrawer(card, 'Portfolio & Investment Prioritization')">
-                    <div class="standards-card-icon-container benefits-color">
+                    <div class="standards-card-icon-container setup-color">
                       <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
                     </div>
                     <div class="standards-card-body">
@@ -694,12 +693,8 @@ export interface TaxonomyCard {
                   </button>
                 }
               </div>
-            </section>
-
-            <!-- Section: Risk Management -->
-            <section class="standards-group">
-              <h3 class="standards-section-heading">Risk Management</h3>
-              <div class="standards-grid">
+            } @else if (activeGovernanceCategory === 'risk-management') {
+              <div class="standards-grid animation-fade">
                 @for (card of riskManagementCards; track card.id) {
                   <button type="button" class="standards-card" (click)="openCardDrawer(card, 'Risk Management')">
                     <div class="standards-card-icon-container setup-color">
@@ -725,21 +720,35 @@ export interface TaxonomyCard {
                   </button>
                 }
               </div>
-            </section>
+            }
           </div>
         </div>
       } @else if (activeSectionId === 'financial') {
-        <div class="standards-container animation-fade">
-          <div class="standards-intro">
-            <h2>Financial & Budget Management</h2>
-            <p>Review and customise the financial structures and accounting cycles across this portfolio.</p>
+        <div class="standards-split-layout animation-fade">
+
+          <!-- Left Sidebar: category nav -->
+          <div class="standards-sidebar" style="padding-top: 48px;">
+            <nav class="standards-category-nav" aria-label="Financial categories">
+              @for (cat of financialCategories; track cat.id) {
+                <button
+                  type="button"
+                  class="standards-cat-btn"
+                  [class.active]="activeFinancialCategory === cat.id"
+                  (click)="setFinancialCategory(cat.id)"
+                >
+                  <div class="cat-content-left">
+                    <span class="cat-label">{{ cat.label }}</span>
+                  </div>
+                  <span class="cat-count">{{ getFinancialCategoryCount(cat.id) }}</span>
+                </button>
+              }
+            </nav>
           </div>
 
-          <div class="standards-sections-stack">
-            <!-- Section: Funding Sources -->
-            <section class="standards-group">
-              <h3 class="standards-section-heading">Funding Sources</h3>
-              <div class="standards-grid">
+          <!-- Right Panel: cards for the selected category -->
+          <div class="standards-cards-panel">
+            @if (activeFinancialCategory === 'funding-sources') {
+              <div class="standards-grid animation-fade">
                 @for (card of fundingSourcesCards; track card.id) {
                   <button type="button" class="standards-card" (click)="openCardDrawer(card, 'Funding Sources')">
                     @if (card.needsAttention) {
@@ -768,18 +777,14 @@ export interface TaxonomyCard {
                   </button>
                 }
               </div>
-            </section>
-
-            <!-- Section: Financial Cycle -->
-            <section class="standards-group">
-              <h3 class="standards-section-heading">Financial Cycle</h3>
-              <div class="standards-grid">
+            } @else if (activeFinancialCategory === 'financial-cycle') {
+              <div class="standards-grid animation-fade">
                 @for (card of financialCycleCards; track card.id) {
                   <button type="button" class="standards-card" (click)="openCardDrawer(card, 'Financial Cycle')">
                     @if (card.needsAttention) {
                       <span class="attention-dot" title="Needs attention"></span>
                     }
-                    <div class="standards-card-icon-container planning-color">
+                    <div class="standards-card-icon-container setup-color">
                       <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
                     </div>
                     <div class="standards-card-body">
@@ -802,7 +807,7 @@ export interface TaxonomyCard {
                   </button>
                 }
               </div>
-            </section>
+            }
           </div>
         </div>
       } @else {
@@ -1052,6 +1057,29 @@ export interface TaxonomyCard {
   styles: [`
     :host {
       display: contents;
+    }
+
+    .project-plan-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .project-plan-title h1 {
+      margin: 0;
+      line-height: 1;
+      transform: translateY(1px); /* slight optical nudge */
+    }
+
+    .project-plan-title .project-plan-back {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      padding: 0;
+      border: none;
+      background: transparent;
+      cursor: pointer;
     }
 
     .framework-content {
@@ -1818,7 +1846,7 @@ export interface TaxonomyCard {
       min-width: 220px;
       flex-shrink: 0;
       background: #ffffff;
-      box-shadow: var(--shadow);
+      border-right: 1px solid #e2e8f0;
       position: relative;
       z-index: 10;
       padding: 16px;
@@ -1843,9 +1871,9 @@ export interface TaxonomyCard {
       background: transparent;
       border: 1px solid transparent;
       border-radius: 8px;
-      font-size: 13.5px;
-      font-weight: 400;
-      color: #475569;
+      font-size: 14px;
+      font-weight: 500;
+      color: #334155;
       cursor: pointer;
       text-align: left;
       transition: all 0.2s ease;
@@ -1853,51 +1881,33 @@ export interface TaxonomyCard {
 
     .standards-cat-btn:hover {
       background: #f8fafc;
-      color: #0f172a;
     }
 
     .standards-cat-btn.active {
       background: #f5f6ff;
       color: #10069f;
       font-weight: 600;
-      border: 1px solid #10069f;
-      align-items: flex-start;
+      border-color: transparent;
+      border-left: 3px solid #10069f;
     }
 
     .cat-content-left {
       display: flex;
-      flex-direction: column;
-      gap: 8px;
+      align-items: center;
     }
 
     .cat-label {
-      font-size: 13.5px;
-    }
-
-    .cat-subtitle {
-      font-size: 11.5px;
-      font-weight: 400;
-      color: #64748b;
+      font-size: 14px;
     }
 
     .cat-count {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
+      font-size: 13px;
       font-weight: 500;
-      color: #334155;
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 3px 10px;
-      margin-top: 2px;
+      color: #64748b;
     }
 
     .standards-cat-btn.active .cat-count {
-      color: #10069f;
-      background: #eef2ff;
-      border-color: #c7d2fe;
+      display: none;
     }
 
     /* Right cards panel */
@@ -1905,6 +1915,10 @@ export interface TaxonomyCard {
       flex: 1;
       min-width: 0;
       overflow-y: auto;
+      padding-top: 8px;
+      padding-bottom: 24px;
+      padding-right: 8px;
+      padding-left: 2px;
     }
 
     .standards-intro h2 {
@@ -1943,43 +1957,43 @@ export interface TaxonomyCard {
 
     .standards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
     }
 
     .standards-card {
       position: relative;
-      background: #f5f6ff;
-      border: 1px solid #dfe4ee;
-      border-radius: 16px;
-      box-shadow: 0 1px 3px rgba(25, 33, 61, 0.03);
+      background: linear-gradient(145deg, #ffffff 40%, #f4f6fb 100%);
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(15, 23, 42, 0.03);
       cursor: pointer;
       display: flex;
       flex-direction: column;
-      padding: 16px;
+      padding: 18px;
       text-align: left;
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       width: 100%;
-      height: 160px;
+      min-height: 160px;
+      height: auto;
       box-sizing: border-box;
       outline: none;
     }
 
     .standards-card:hover {
-      box-shadow: 0 8px 16px rgba(16, 6, 159, 0.06);
-      border-color: #cbd5e1;
+      box-shadow: 0 6px 16px rgba(16, 6, 159, 0.08);
+      border-color: #c7d2fe;
       transform: translateY(-2px);
     }
 
     .standards-card-icon-container {
       align-items: center;
-      border-radius: 8px;
+      border-radius: 10px;
       display: flex;
-      height: 32px;
-      width: 32px;
+      height: 38px;
+      width: 38px;
       justify-content: center;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
-      border: 1px solid rgba(226, 232, 240, 0.8);
+      border: 1px solid #f1f5f9;
       flex-shrink: 0;
     }
 
@@ -1994,8 +2008,8 @@ export interface TaxonomyCard {
     }
 
     .standards-card-icon-container.closure-color {
-      background: #e0f2fe; /* Light sky blue instead of red */
-      color: #0284c7;      /* Beautiful different shade of blue */
+      background: #e0f2fe;
+      color: #0284c7;
     }
 
     .standards-card-icon-container.benefits-color {
@@ -2004,22 +2018,22 @@ export interface TaxonomyCard {
     }
 
     .standards-card-icon {
-      font-size: 14px;
+      font-size: 18px;
       display: inline-flex;
     }
 
     .standards-card-body {
-      margin-top: 10px;
+      margin-top: 14px;
       flex-grow: 1;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 6px;
     }
 
     .standards-card-body h4 {
-      font-size: 13.5px;
+      font-size: 15px;
       font-weight: 700;
-      color: #1d2939;
+      color: #0f172a;
       margin: 0;
       line-height: 1.3;
       display: flex;
@@ -2030,23 +2044,50 @@ export interface TaxonomyCard {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
-      border: 1px solid #1d2939;
+      border: 1px solid transparent;
       margin-left: 8px;
     }
 
     .standards-card-item-count-inner {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 600;
-      color: #1d2939;
+    }
+
+    .standards-card:has(.setup-color) .standards-card-item-count {
+      background: #f5f6ff;
+    }
+    .standards-card:has(.setup-color) .standards-card-item-count-inner {
+      color: #10069f;
+    }
+
+    .standards-card:has(.planning-color) .standards-card-item-count {
+      background: #f0fdfa;
+    }
+    .standards-card:has(.planning-color) .standards-card-item-count-inner {
+      color: #0d9488;
+    }
+
+    .standards-card:has(.closure-color) .standards-card-item-count {
+      background: #e0f2fe;
+    }
+    .standards-card:has(.closure-color) .standards-card-item-count-inner {
+      color: #0284c7;
+    }
+
+    .standards-card:has(.benefits-color) .standards-card-item-count {
+      background: #eef2ff;
+    }
+    .standards-card:has(.benefits-color) .standards-card-item-count-inner {
+      color: #4f46e5;
     }
 
     .standards-card-meta {
       margin-top: 12px;
       font-size: 11.5px;
-      color: #475467;
+      color: #64748b;
       line-height: 1.4;
       display: block;
       width: 100%;
@@ -2058,9 +2099,9 @@ export interface TaxonomyCard {
     }
 
     .standards-card-body p {
-      font-size: 11px;
-      line-height: 1.4;
-      color: #667085;
+      font-size: 13px;
+      line-height: 1.45;
+      color: #64748b;
       margin: 0;
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -2071,10 +2112,10 @@ export interface TaxonomyCard {
 
     .standards-card-arrow-right {
       position: absolute;
-      bottom: 12px;
-      right: 16px;
+      bottom: 16px;
+      right: 18px;
       color: #10069f;
-      font-size: 14px;
+      font-size: 18px;
       display: inline-flex;
       transition: transform 0.2s ease;
     }
@@ -2085,14 +2126,7 @@ export interface TaxonomyCard {
 
     /* Amber Attention Dot on Card Top Right */
     .attention-dot {
-      position: absolute;
-      top: 14px;
-      right: 14px;
-      width: 7px;
-      height: 7px;
-      background-color: #f59e0b; /* Amber warning dot */
-      border-radius: 50%;
-      box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
+      display: none;
     }
 
     /* Workflow Designer Custom Header & Buttons */
@@ -2435,6 +2469,33 @@ export class PortfolioWorkspaceFrameworkComponent {
     this.changeDetector.markForCheck();
   }
 
+  // Governance category sidebar state
+  activeGovernanceCategory = 'change-request';
+
+  readonly governanceCategories = [
+    { id: 'change-request', label: 'Change Request Management' },
+    { id: 'stage-gate', label: 'Stage Gate Management' },
+    { id: 'monitoring-reporting', label: 'Monitoring & Reporting' },
+    { id: 'prioritization', label: 'Portfolio & Investment Prioritization' },
+    { id: 'risk-management', label: 'Risk Management' }
+  ];
+
+  setGovernanceCategory(id: string): void {
+    this.activeGovernanceCategory = id;
+    this.changeDetector.markForCheck();
+  }
+
+  getGovernanceCategoryCount(id: string): number {
+    switch (id) {
+      case 'change-request': return this.changeRequestCards.length;
+      case 'stage-gate': return this.stageGateCards.length;
+      case 'monitoring-reporting': return this.monitoringReportingCards.length;
+      case 'prioritization': return this.prioritizationCards.length;
+      case 'risk-management': return this.riskManagementCards.length;
+      default: return 0;
+    }
+  }
+
   // Governance & Controls Cards Data State
   changeRequestCards: TaxonomyCard[] = [
     { id: 'cr-trigger', title: 'Change Request Trigger', icon: 'zap', description: 'Configure triggers for launching change requests.', items: ['Budget Deviation > 10%', 'Schedule Delay > 2 Weeks', 'Scope Change Request'] },
@@ -2467,6 +2528,27 @@ export class PortfolioWorkspaceFrameworkComponent {
     { id: 'risk-user-access', title: 'User Access', icon: 'user-x', description: 'Configure access permissions for risk registers.', items: ['Portfolio Manager (Full Access)', 'Project Manager (Edit Owned)', 'Viewer (Read Only)'] },
     { id: 'risk-plan-library', title: 'Planning Library', icon: 'book', description: 'Manage mitigation guides and baseline documents.', items: ['Standard Security Checklist', 'Disaster Recovery Template', 'GDPR Compliance Guidelines'] }
   ];
+
+  // Financial category sidebar state
+  activeFinancialCategory = 'funding-sources';
+
+  readonly financialCategories = [
+    { id: 'funding-sources', label: 'Funding Sources' },
+    { id: 'financial-cycle', label: 'Financial Cycle' }
+  ];
+
+  setFinancialCategory(id: string): void {
+    this.activeFinancialCategory = id;
+    this.changeDetector.markForCheck();
+  }
+
+  getFinancialCategoryCount(id: string): number {
+    switch (id) {
+      case 'funding-sources': return this.fundingSourcesCards.length;
+      case 'financial-cycle': return this.financialCycleCards.length;
+      default: return 0;
+    }
+  }
 
   // Financial & Budget Management Cards Data State
   fundingSourcesCards: TaxonomyCard[] = [
