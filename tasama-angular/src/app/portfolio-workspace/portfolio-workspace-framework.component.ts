@@ -5,6 +5,8 @@ import { PmConsoleIconComponent } from '../shared/pm-console-icon.component';
 import { PmConsoleReportingEmptyIllustrationComponent } from '../shared/pm-console-reporting-empty-illustration.component';
 import { PmConsoleModeTabsComponent, PmConsoleModeTabItem } from '../shared/pm-console-mode-tabs.component';
 import { PmConsolePlanDrawerComponent } from '../pm-console-plan-drawer.component';
+import { GlossaryItem, initialP3mGlossary, initialRiskGlossary, initialBenefitsGlossary } from './portfolio-workspace.data';
+
 
 export interface TaxonomyCard {
   id: string;
@@ -808,6 +810,242 @@ export interface TaxonomyCard {
                 }
               </div>
             }
+          </div>
+        </div>
+      } @else if (activeSectionId === 'glossary') {
+        <div class="standards-split-layout animation-fade">
+
+          <!-- Left Sidebar: category nav -->
+          <div class="standards-sidebar" style="padding-top: 48px;">
+            <nav class="standards-category-nav" aria-label="Glossary categories">
+              @for (cat of glossaryCategories; track cat.id) {
+                <button
+                  type="button"
+                  class="standards-cat-btn"
+                  [class.active]="activeGlossaryTab === cat.id"
+                  (click)="setGlossaryTab(cat.id)"
+                >
+                  <div class="cat-content-left">
+                    <span class="cat-label">{{ cat.label }}</span>
+                  </div>
+                  <span class="cat-count">{{ getGlossaryCategoryCount(cat.id) }}</span>
+                </button>
+              }
+            </nav>
+          </div>
+
+          <!-- Right Panel: table for the selected glossary tab -->
+          <div class="standards-cards-panel" style="padding-top: 48px; padding-left: 8px;">
+            <div class="tab-content-container animation-slide" style="gap: 16px; display: flex; flex-direction: column;">
+              
+              <!-- Glossary Header Block & Search (No Add Button) -->
+              <div class="glossary-top-bar" style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 12px; width: 100%;">
+                <div class="glossary-header-block" style="text-align: left;">
+                  <h2 style="font-size: 20px; font-weight: 600; color: #1e293b; margin: 0 0 6px 0; font-family: inherit;">Glossary</h2>
+                  <p style="font-size: 13.5px; color: #64748b; margin: 0; line-height: 1.5;">Configure contextual help for each and every label used in the p3m module.</p>
+                </div>
+                
+                <!-- Search bar -->
+                <div class="search-toggle-container is-expanded" style="display: flex; align-items: center; gap: 8px;">
+                  <div style="position: relative; display: flex; align-items: center;">
+                    <span pmConsoleIcon="search" style="position: absolute; left: 10px; color: #64748b; font-size: 14px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; justify-content: center;"></span>
+                    <input
+                      type="text"
+                      class="toolbar-search-input"
+                      placeholder="Search glossary..."
+                      [(ngModel)]="glossarySearchQuery"
+                      (input)="onSearchQueryChange()"
+                      style="padding-left: 32px; width: 240px; height: 36px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; background: #ffffff; color: #334155; transition: border-color 0.2s;"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Glossary Table styled like pm-project-table -->
+              <div class="pm-project-table-scroll" style="min-height: 380px; border-radius: 16px 16px 0 0; border-bottom: none;">
+                <table class="pm-project-table" style="width: 100%; min-width: 800px; table-layout: auto; border-collapse: separate; border-spacing: 0;">
+                  <thead>
+                    <tr>
+                      <th style="width: 25%; background: #fbfcff; color: #555555; font-weight: 600; padding: 15px 14px; border-bottom: 1px solid #eceef3; font-size: 12px; text-align: left;">System Label</th>
+                      <th style="width: 25%; background: #fbfcff; color: #555555; font-weight: 600; padding: 15px 14px; border-bottom: 1px solid #eceef3; font-size: 12px; text-align: left;">Custom Label</th>
+                      <th style="width: 40%; background: #fbfcff; color: #555555; font-weight: 600; padding: 15px 14px; border-bottom: 1px solid #eceef3; font-size: 12px; text-align: left;">Contextual Help</th>
+                      <th style="width: 10%; background: #fbfcff; color: #555555; font-weight: 600; padding: 15px 14px; border-bottom: 1px solid #eceef3; font-size: 12px; text-align: center;">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (item of getPaginatedGlossaryList(); track item.id) {
+                      <tr class="program-row" style="background: #ffffff; transition: background-color 0.15s ease;">
+                        <!-- System Label -->
+                        <td style="font-weight: 600; color: #252a34; font-size: 13.5px; padding: 14px 14px; border-bottom: 1px solid #eceef3; vertical-align: middle;">
+                          @if (editingGlossaryId === item.id) {
+                            <input 
+                              type="text" 
+                              class="form-control" 
+                              [(ngModel)]="editingSystemLabel"
+                              style="height: 32px; font-size: 13px; padding: 6px 10px; border: 1px solid #d0d5dd; border-radius: 8px; width: 100%; box-sizing: border-box;"
+                            />
+                          } @else {
+                            {{ item.systemLabel }}
+                          }
+                        </td>
+                        
+                        <!-- Custom Label -->
+                        <td style="font-size: 13.5px; color: #252a34; padding: 14px 14px; border-bottom: 1px solid #eceef3; vertical-align: middle;">
+                          @if (editingGlossaryId === item.id) {
+                            <input 
+                              type="text" 
+                              class="form-control" 
+                              [(ngModel)]="editingCustomLabel"
+                              style="height: 32px; font-size: 13px; padding: 6px 10px; border: 1px solid #d0d5dd; border-radius: 8px; width: 100%; box-sizing: border-box;"
+                            />
+                          } @else {
+                            @if (item.customLabel) {
+                              {{ item.customLabel }}
+                            } @else {
+                              <span style="color: #94a3b8; font-style: italic;">No custom label set</span>
+                            }
+                          }
+                        </td>
+                        
+                        <!-- Contextual Help -->
+                        <td style="font-size: 13.5px; color: #555555; line-height: 1.45; padding: 14px 14px; border-bottom: 1px solid #eceef3; vertical-align: middle;">
+                          @if (editingGlossaryId === item.id) {
+                            <textarea 
+                              class="form-control" 
+                              [(ngModel)]="editingContextualHelp"
+                              rows="2"
+                              style="font-size: 13px; padding: 6px 10px; border: 1px solid #d0d5dd; border-radius: 8px; width: 100%; box-sizing: border-box; resize: vertical;"
+                            ></textarea>
+                          } @else {
+                            {{ item.contextualHelp }}
+                          }
+                        </td>
+                        
+                        <!-- Action -->
+                        <td style="text-align: center; overflow: visible; position: relative; padding: 14px 14px; border-bottom: 1px solid #eceef3; vertical-align: middle;">
+                          <div style="display: flex; gap: 8px; justify-content: center; align-items: center; overflow: visible;">
+                            @if (editingGlossaryId === item.id) {
+                              <button 
+                                type="button" 
+                                class="priority-action-btn" 
+                                (click)="saveEditGlossary(item.id)" 
+                                title="Save"
+                                style="color: #059669; background: transparent; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 6px; transition: all 0.2s ease;"
+                              >
+                                <span pmConsoleIcon="check"></span>
+                              </button>
+                              <button 
+                                type="button" 
+                                class="priority-action-btn delete" 
+                                (click)="cancelEditGlossary()" 
+                                title="Cancel"
+                                style="color: #ef4444; background: transparent; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 6px; transition: all 0.2s ease;"
+                              >
+                                <span pmConsoleIcon="x"></span>
+                              </button>
+                            } @else {
+                              <!-- Actions vertical three-dot menu dropdown enclosed in a bordered square matching Image 2 exactly -->
+                              <div style="position: relative; display: inline-block; overflow: visible;">
+                                <button 
+                                  type="button" 
+                                  class="glossary-action-btn" 
+                                  (click)="toggleGlossaryActionMenu($event, item.id)"
+                                  title="Actions"
+                                  style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; color: #475569; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; transition: all 0.2s ease;"
+                                >
+                                  <span pmConsoleIcon="more-vertical" style="font-size: 16px;"></span>
+                                </button>
+                                
+                                @if (activeGlossaryActionId === item.id) {
+                                  <div class="priority-dropdown-menu animation-fade" style="position: absolute; right: 0; top: 36px; background: #ffffff; border: 1px solid #dfe4ee; border-radius: 8px; box-shadow: 0 4px 12px rgba(25, 33, 61, 0.08); z-index: 100; min-width: 100px; padding: 4px 0;">
+                                    <button 
+                                      type="button" 
+                                      class="dropdown-item" 
+                                      (click)="triggerEditGlossary(item)" 
+                                      style="display: flex; align-items: center; gap: 8px; width: 100%; border: none; background: transparent; padding: 8px 12px; font-size: 12.5px; color: #334155; text-align: left; cursor: pointer;"
+                                    >
+                                      <span pmConsoleIcon="edit-2" style="font-size: 12px; color: #64748b;"></span>
+                                      <span>Edit</span>
+                                    </button>
+                                    <button 
+                                      type="button" 
+                                      class="dropdown-item delete" 
+                                      (click)="triggerDeleteGlossary(item.id)" 
+                                      style="display: flex; align-items: center; gap: 8px; width: 100%; border: none; background: transparent; padding: 8px 12px; font-size: 12.5px; color: #ef4444; text-align: left; cursor: pointer;"
+                                    >
+                                      <span pmConsoleIcon="trash-2" style="font-size: 12px; color: #ef4444;"></span>
+                                      <span>Delete</span>
+                                    </button>
+                                  </div>
+                                }
+                              </div>
+                            }
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                    @if (getFilteredGlossaryList().length === 0) {
+                      <tr>
+                        <td colspan="4" style="padding: 32px; text-align: center; color: #94a3b8; font-style: italic;">
+                          No glossary terms found matching your search.
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Pagination Footer -->
+              <div class="glossary-pagination-container" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: #ffffff; border: 1px solid #e3e5e9; border-radius: 0 0 16px 16px; font-family: inherit; margin-top: -16px;">
+                <div style="font-size: 13px; color: #64748b;">
+                  Showing 
+                  <strong>{{ getFilteredGlossaryList().length === 0 ? 0 : (glossaryCurrentPage - 1) * glossaryPageSize + 1 }}</strong> 
+                  to 
+                  <strong>{{ Math.min(glossaryCurrentPage * glossaryPageSize, getFilteredGlossaryList().length) }}</strong> 
+                  of 
+                  <strong>{{ getFilteredGlossaryList().length }}</strong> 
+                  results
+                </div>
+                
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <button 
+                    type="button"
+                    class="tb-btn"
+                    [disabled]="glossaryCurrentPage === 1"
+                    (click)="prevGlossaryPage()"
+                    style="height: 32px; padding: 0 12px; font-size: 12.5px; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; border: 1px solid #e3e5e9; background: #ffffff; color: #334155; cursor: pointer; transition: all 0.2s;"
+                  >
+                    <span pmConsoleIcon="chevron-left" style="font-size: 14px; display: inline-flex; align-items: center; justify-content: center;"></span>
+                    <span>Previous</span>
+                  </button>
+                  
+                  <!-- Page numbers -->
+                  @for (page of glossaryPages; track page) {
+                    <button
+                      type="button"
+                      class="tb-btn"
+                      [class.active-page]="page === glossaryCurrentPage"
+                      (click)="setGlossaryPage(page)"
+                      style="height: 32px; width: 32px; display: inline-flex; align-items: center; justify-content: center; font-size: 12.5px; border-radius: 6px; border: 1px solid #e3e5e9; background: #ffffff; color: #334155; cursor: pointer; padding: 0;"
+                    >
+                      {{ page }}
+                    </button>
+                  }
+                  
+                  <button 
+                    type="button"
+                    class="tb-btn"
+                    [disabled]="glossaryCurrentPage === glossaryTotalPages || glossaryTotalPages === 0"
+                    (click)="nextGlossaryPage()"
+                    style="height: 32px; padding: 0 12px; font-size: 12.5px; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; border: 1px solid #e3e5e9; background: #ffffff; color: #334155; cursor: pointer; transition: all 0.2s;"
+                  >
+                    <span>Next</span>
+                    <span pmConsoleIcon="chevron-right" style="font-size: 14px; display: inline-flex; align-items: center; justify-content: center;"></span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
           </div>
         </div>
       } @else {
@@ -1828,6 +2066,19 @@ export interface TaxonomyCard {
       color: #202633;
     }
 
+    .active-page {
+      background: #10069f !important;
+      color: #ffffff !important;
+      border-color: #10069f !important;
+      font-weight: 600;
+    }
+
+    .glossary-action-btn:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      color: #10069f !important;
+    }
+
     /* Sidebar + panel split layout for Standards & Taxonomies */
     .standards-split-layout {
       display: flex;
@@ -2394,6 +2645,195 @@ export class PortfolioWorkspaceFrameworkComponent {
   @Output() readonly back = new EventEmitter<void>();
 
   activeSectionId = 'org-structure';
+
+  // Glossary category sidebar state
+  activeGlossaryTab = 'p3m';
+
+  readonly glossaryCategories = [
+    { id: 'p3m', label: 'P3M Glossary' },
+    { id: 'risk', label: 'Risk Glossary' },
+    { id: 'benefits', label: 'Benefits glossary' }
+  ];
+
+  p3mGlossary: GlossaryItem[] = [...initialP3mGlossary];
+  riskGlossary: GlossaryItem[] = [...initialRiskGlossary];
+  benefitsGlossary: GlossaryItem[] = [...initialBenefitsGlossary];
+
+  editingGlossaryId: string | null = null;
+  editingSystemLabel = '';
+  editingCustomLabel = '';
+  editingContextualHelp = '';
+
+  activeGlossaryActionId: string | null = null;
+  glossarySearchQuery = '';
+
+  // Pagination state
+  glossaryCurrentPage = 1;
+  glossaryPageSize = 5;
+  readonly Math = Math;
+
+  setGlossaryTab(id: string): void {
+    this.activeGlossaryTab = id;
+    this.editingGlossaryId = null;
+    this.activeGlossaryActionId = null;
+    this.glossaryCurrentPage = 1;
+    this.changeDetector.markForCheck();
+  }
+
+  onSearchQueryChange(): void {
+    this.glossaryCurrentPage = 1;
+    this.changeDetector.markForCheck();
+  }
+
+  get glossaryTotalPages(): number {
+    return Math.ceil(this.getFilteredGlossaryList().length / this.glossaryPageSize);
+  }
+
+  get glossaryPages(): number[] {
+    const total = this.glossaryTotalPages;
+    const pages = [];
+    for (let i = 1; i <= total; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  getPaginatedGlossaryList(): GlossaryItem[] {
+    const list = this.getFilteredGlossaryList();
+    const startIndex = (this.glossaryCurrentPage - 1) * this.glossaryPageSize;
+    return list.slice(startIndex, startIndex + this.glossaryPageSize);
+  }
+
+  setGlossaryPage(page: number): void {
+    if (page >= 1 && page <= this.glossaryTotalPages) {
+      this.glossaryCurrentPage = page;
+      this.changeDetector.markForCheck();
+    }
+  }
+
+  nextGlossaryPage(): void {
+    if (this.glossaryCurrentPage < this.glossaryTotalPages) {
+      this.glossaryCurrentPage++;
+      this.changeDetector.markForCheck();
+    }
+  }
+
+  prevGlossaryPage(): void {
+    if (this.glossaryCurrentPage > 1) {
+      this.glossaryCurrentPage--;
+      this.changeDetector.markForCheck();
+    }
+  }
+
+  getGlossaryCategoryCount(id: string): number {
+    switch (id) {
+      case 'p3m': return this.p3mGlossary.length;
+      case 'risk': return this.riskGlossary.length;
+      case 'benefits': return this.benefitsGlossary.length;
+      default: return 0;
+    }
+  }
+
+  getFilteredGlossaryList(): GlossaryItem[] {
+    let list: GlossaryItem[] = [];
+    if (this.activeGlossaryTab === 'p3m') list = this.p3mGlossary;
+    else if (this.activeGlossaryTab === 'risk') list = this.riskGlossary;
+    else if (this.activeGlossaryTab === 'benefits') list = this.benefitsGlossary;
+
+    const q = this.glossarySearchQuery.trim().toLowerCase();
+    if (!q) return list;
+
+    return list.filter(item => 
+      item.systemLabel.toLowerCase().includes(q) || 
+      item.customLabel.toLowerCase().includes(q) || 
+      item.contextualHelp.toLowerCase().includes(q)
+    );
+  }
+
+  toggleGlossaryActionMenu(event: Event, id: string): void {
+    event.stopPropagation();
+    this.activeGlossaryActionId = this.activeGlossaryActionId === id ? null : id;
+    this.changeDetector.markForCheck();
+  }
+
+  triggerEditGlossary(item: GlossaryItem): void {
+    this.activeGlossaryActionId = null;
+    this.editingGlossaryId = item.id;
+    this.editingSystemLabel = item.systemLabel;
+    this.editingCustomLabel = item.customLabel;
+    this.editingContextualHelp = item.contextualHelp;
+    this.changeDetector.markForCheck();
+  }
+
+  saveEditGlossary(id: string): void {
+    let list: GlossaryItem[] = [];
+    if (this.activeGlossaryTab === 'p3m') list = this.p3mGlossary;
+    else if (this.activeGlossaryTab === 'risk') list = this.riskGlossary;
+    else if (this.activeGlossaryTab === 'benefits') list = this.benefitsGlossary;
+
+    const idx = list.findIndex(item => item.id === id);
+    if (idx !== -1) {
+      list[idx].systemLabel = this.editingSystemLabel.trim();
+      list[idx].customLabel = this.editingCustomLabel.trim();
+      list[idx].contextualHelp = this.editingContextualHelp.trim();
+      
+      // trigger change detection by re-assigning array
+      if (this.activeGlossaryTab === 'p3m') this.p3mGlossary = [...list];
+      else if (this.activeGlossaryTab === 'risk') this.riskGlossary = [...list];
+      else if (this.activeGlossaryTab === 'benefits') this.benefitsGlossary = [...list];
+    }
+    
+    this.editingGlossaryId = null;
+    this.changeDetector.markForCheck();
+  }
+
+  cancelEditGlossary(): void {
+    // If we were editing a newly added item with a temp id, remove it
+    if (this.editingGlossaryId && this.editingGlossaryId.startsWith('temp-')) {
+      this.triggerDeleteGlossary(this.editingGlossaryId);
+    }
+    this.editingGlossaryId = null;
+    this.changeDetector.markForCheck();
+  }
+
+  triggerDeleteGlossary(id: string): void {
+    this.activeGlossaryActionId = null;
+    if (this.activeGlossaryTab === 'p3m') {
+      this.p3mGlossary = this.p3mGlossary.filter(item => item.id !== id);
+    } else if (this.activeGlossaryTab === 'risk') {
+      this.riskGlossary = this.riskGlossary.filter(item => item.id !== id);
+    } else if (this.activeGlossaryTab === 'benefits') {
+      this.benefitsGlossary = this.benefitsGlossary.filter(item => item.id !== id);
+    }
+    this.changeDetector.markForCheck();
+  }
+
+  openAddGlossaryItem(): void {
+    const tempId = `temp-${Date.now()}`;
+    const newItem: GlossaryItem = {
+      id: tempId,
+      systemLabel: '',
+      customLabel: '',
+      contextualHelp: ''
+    };
+
+    if (this.activeGlossaryTab === 'p3m') {
+      this.p3mGlossary = [newItem, ...this.p3mGlossary];
+    } else if (this.activeGlossaryTab === 'risk') {
+      this.riskGlossary = [newItem, ...this.riskGlossary];
+    } else if (this.activeGlossaryTab === 'benefits') {
+      this.benefitsGlossary = [newItem, ...this.benefitsGlossary];
+    }
+
+    this.triggerEditGlossary(newItem);
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.activeActionMenuIndex = null;
+    this.activeGlossaryActionId = null;
+  }
+
 
   // Standards & Taxonomies category sidebar state
   activeStandardsCategory = 'project-setup';
