@@ -142,7 +142,8 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
                     [actionItems]="workItems"
                     [boardFilters]="workFilters"
                     [showTargetPicker]="false"
-                    [showBoardDetailPanel]="true"
+                    [showBoardDetailPanel]="false"
+                    boardPresentation="compact"
                     [openItemsInDrawer]="true"
                     todayKey="2026-05-26"
                   />
@@ -277,10 +278,11 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
 
       .pmo-hero-metric {
         align-items: center;
-        background: rgba(255, 255, 255, 0.09);
-        border: 1px solid #addc91;
-        border-radius: 6.84px;
-        box-shadow: 0 8px 18px rgba(1, 10, 15, 0.08);
+        background: rgba(255, 255, 255, 0.08);
+        border: 0;
+        border-bottom: 1px solid rgba(173, 220, 145, 0.98);
+        border-radius: 7px;
+        box-shadow: none;
         display: inline-flex;
         gap: 8px;
         height: 36px;

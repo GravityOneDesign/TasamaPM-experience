@@ -950,6 +950,7 @@ When a user asks for UI from Figma:
 
 2026-05-27:
 
+- Disabled the PMO front-door Set up your framework and Access & Manage Learning action cards so they render as static, non-clickable tiles with no CTA arrow, while Create & manage, Report & Review Progress, and Insights & Decision Intelligence remain interactive.
 - Reworked the PMO front-door overview banner to match the supplied Figma node: the banner now uses a centered 976-1280 x 264 composition inside an expanding blue gradient shell, uses the exact linked Figma overall-health arrow SVG asset with cyan-faded grid lines and an expanded crop window so the grid blends into the banner background, pins the metric chips to the banner's left edge on wide screens, lets the main health and budget clusters expand outward from center without reaching the banner edges, aligns the overall-health illustration-to-copy spacing with Budget Health, offsets the complete unclipped budget illustration left so it avoids the budget card, and keeps health and budget headings at 14px with softer 12px health subtext.
 - Aligned the PMO front-door Welcome/Daily Digest right rail with the supplied Figma node: the PMO digest now uses the 320px rail width, Figma copy, Montserrat 12/16 digest typography, #0b0b0b item text, #777777 section labels, #10069f medium portfolio emphasis, 12px item padding, and PMO-scoped gradient/card overrides while preserving the shared digest component for other personas.
 

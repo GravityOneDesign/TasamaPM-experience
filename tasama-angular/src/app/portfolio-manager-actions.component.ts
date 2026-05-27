@@ -9,6 +9,7 @@ import { portfolioProgramRows, standaloneProjects, type ProgramRow } from './por
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 
 type PortfolioWorkTargetType = 'all' | 'program' | 'project';
+type PortfolioActionsBoardPresentation = 'kanban' | 'compact';
 
 type PortfolioCalendarItem = PmConsoleCalendarItem & {
   id: string;
@@ -199,56 +200,104 @@ interface PortfolioWorkTargetGroup {
       <!-- Views container -->
       <div class="workspace-body">
         <!-- Board view -->
-        <div class="board-view" [class.is-hidden]="activeView !== 'board'" [class.has-detail-panel]="showBoardDetailPanel" data-work-view="board">
-          <div class="kanban-board">
-            @for (column of visibleBoardColumns; track column.column) {
-              <section class="kanban-column {{ column.tone }}">
-                <header>
-                  <div>
-                    <span class="board-column-icon {{ column.tone }}">
-                      <span class="icon" aria-hidden="true">
-                        <i [attr.data-lucide]="boardColumnIcon(column.column)"></i>
+        <div
+          class="board-view"
+          [class.is-hidden]="activeView !== 'board'"
+          [class.has-detail-panel]="showBoardDetailPanel && boardPresentation !== 'compact'"
+          [class.is-compact-board]="boardPresentation === 'compact'"
+          data-work-view="board"
+        >
+          @if (boardPresentation === 'compact') {
+            <div class="compact-action-board" aria-label="PMO action board">
+              @for (column of visibleBoardColumns; track column.column) {
+                <section class="compact-action-column {{ column.tone }}">
+                  <header>
+                    <span class="compact-column-title">
+                      <span class="compact-column-icon {{ column.tone }}">
+                        <span [pmConsoleIcon]="boardColumnIcon(column.column)" aria-hidden="true"></span>
                       </span>
+                      <span>{{ column.column }}</span>
                     </span>
-                    <h3>{{ column.column }}</h3>
-                  </div>
-                  <strong>{{ boardColumnCount(column.items) }}</strong>
-                </header>
-                <div class="task-stack">
-                  @for (item of column.items; track item.id) {
-                    <button
-                      class="task-card {{ taskCardClass(item.type) }}"
-                      [class.is-selected]="activeBoardItem?.id === item.id"
-                      [class.has-volume]="actionItemTotal(item) > 1"
-                      [attr.data-card-kind]="item.kind"
-                      type="button"
-                      [attr.aria-label]="actionItemAriaLabel(item)"
-                      (click)="selectBoardItem(item)"
-                    >
-                      <div class="task-top">
-                        <span>{{ item.type }}</span>
-                        @if (actionItemTotal(item) > 1) {
-                          <strong class="task-volume-count">{{ actionItemTotal(item) }}</strong>
-                        }
-                      </div>
-                      <h3>{{ item.label }}</h3>
-                      <p>{{ item.project }}</p>
-                      <div class="task-bottom">
-                        <span class="avatar-sm">{{ item.owner }}</span>
-                        <small>{{ item.meta }}</small>
-                        <span class="task-action">
-                          <span>{{ item.cta }}</span>
-                          <span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
+                    <strong>{{ boardColumnCount(column.items) }}</strong>
+                  </header>
+                  <div class="compact-action-stack">
+                    @for (item of compactColumnItems(column); track item.id) {
+                      <button
+                        class="compact-action-card {{ item.tone }}"
+                        [attr.data-card-kind]="item.kind"
+                        type="button"
+                        [attr.aria-label]="actionItemAriaLabel(item)"
+                        (click)="selectBoardItem(item)"
+                      >
+                        <span class="compact-action-accent {{ item.tone }}" aria-hidden="true"></span>
+                        <span class="compact-action-icon {{ item.tone }}">
+                          <span [pmConsoleIcon]="boardDetailIcon(item)" aria-hidden="true"></span>
                         </span>
-                      </div>
-                    </button>
-                  } @empty {
-                    <div class="empty-column">No actions in this lane.</div>
-                  }
-                </div>
-              </section>
-            }
-          </div>
+                        <span class="compact-action-title">{{ item.type }}</span>
+                        <strong class="compact-action-count">{{ actionItemTotal(item) }}</strong>
+                        <span class="compact-action-view">
+                          <span>{{ item.cta }}</span>
+                          <span pmConsoleIcon="chevron-right" aria-hidden="true"></span>
+                        </span>
+                      </button>
+                    } @empty {
+                      <div class="empty-column">No actions in this lane.</div>
+                    }
+                  </div>
+                </section>
+              }
+            </div>
+          } @else {
+            <div class="kanban-board">
+              @for (column of visibleBoardColumns; track column.column) {
+                <section class="kanban-column {{ column.tone }}">
+                  <header>
+                    <div>
+                      <span class="board-column-icon {{ column.tone }}">
+                        <span class="icon" aria-hidden="true">
+                          <i [attr.data-lucide]="boardColumnIcon(column.column)"></i>
+                        </span>
+                      </span>
+                      <h3>{{ column.column }}</h3>
+                    </div>
+                    <strong>{{ boardColumnCount(column.items) }}</strong>
+                  </header>
+                  <div class="task-stack">
+                    @for (item of column.items; track item.id) {
+                      <button
+                        class="task-card {{ taskCardClass(item.type) }}"
+                        [class.is-selected]="activeBoardItem?.id === item.id"
+                        [class.has-volume]="actionItemTotal(item) > 1"
+                        [attr.data-card-kind]="item.kind"
+                        type="button"
+                        [attr.aria-label]="actionItemAriaLabel(item)"
+                        (click)="selectBoardItem(item)"
+                      >
+                        <div class="task-top">
+                          <span>{{ item.type }}</span>
+                          @if (actionItemTotal(item) > 1) {
+                            <strong class="task-volume-count">{{ actionItemTotal(item) }}</strong>
+                          }
+                        </div>
+                        <h3>{{ item.label }}</h3>
+                        <p>{{ item.project }}</p>
+                        <div class="task-bottom">
+                          <span class="avatar-sm">{{ item.owner }}</span>
+                          <small>{{ item.meta }}</small>
+                          <span class="task-action">
+                            <span>{{ item.cta }}</span>
+                            <span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
+                          </span>
+                        </div>
+                      </button>
+                    } @empty {
+                      <div class="empty-column">No actions in this lane.</div>
+                    }
+                  </div>
+                </section>
+              }
+            </div>
+          }
 
           @if (showBoardDetailPanel) {
             <aside class="board-detail-panel" aria-label="Selected action list">
@@ -362,6 +411,215 @@ interface PortfolioWorkTargetGroup {
 
     .board-view.has-detail-panel .kanban-board {
       min-width: 0;
+    }
+
+    .board-view.is-compact-board {
+      overflow: hidden;
+    }
+
+    .compact-action-board {
+      display: grid;
+      flex: 1 1 auto;
+      gap: 16px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      min-height: 0;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .compact-action-column {
+      background: #f7f8fb;
+      border: 1px solid #eef1f6;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 0;
+      min-width: 0;
+      padding: 14px 12px;
+    }
+
+    .compact-action-column header {
+      align-items: center;
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      min-height: 24px;
+      min-width: 0;
+    }
+
+    .compact-column-title {
+      align-items: center;
+      color: #0b0b0b;
+      display: inline-flex;
+      font-size: 13px;
+      font-weight: 600;
+      gap: 7px;
+      line-height: 18px;
+      min-width: 0;
+    }
+
+    .compact-column-icon,
+    .compact-action-icon {
+      align-items: center;
+      border-radius: 6px;
+      display: inline-flex;
+      flex: 0 0 auto;
+      justify-content: center;
+    }
+
+    .compact-column-icon {
+      height: 20px;
+      width: 20px;
+    }
+
+    .compact-column-icon .icon {
+      height: 13px;
+      width: 13px;
+    }
+
+    .compact-column-icon.red,
+    .compact-action-icon.red {
+      background: #fff0f0;
+      color: #9e2f2f;
+    }
+
+    .compact-column-icon.blue,
+    .compact-action-icon.blue {
+      background: #eef4ff;
+      color: #1f4fb8;
+    }
+
+    .compact-column-icon.amber {
+      background: #fff8e7;
+      color: #8a5c12;
+    }
+
+    .compact-column-icon.green,
+    .compact-action-icon.green {
+      background: #eefbf5;
+      color: #166b49;
+    }
+
+    .compact-action-icon.neutral {
+      background: #f2f4f8;
+      color: #536071;
+    }
+
+    .compact-action-column header strong {
+      color: #536071;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 16px;
+    }
+
+    .compact-action-stack {
+      display: grid;
+      gap: 10px;
+      min-height: 0;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .compact-action-card {
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid #eef1f6;
+      border-radius: 7px;
+      box-shadow: 0 1px 2px rgba(25, 33, 61, 0.04);
+      color: #2f2f2f;
+      cursor: pointer;
+      display: grid;
+      font: inherit;
+      gap: 8px;
+      grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+      min-height: 50px;
+      overflow: hidden;
+      padding: 8px 8px 8px 0;
+      position: relative;
+      text-align: left;
+      transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+      width: 100%;
+    }
+
+    .compact-action-card:hover,
+    .compact-action-card:focus-visible {
+      border-color: rgba(16, 6, 159, 0.22);
+      box-shadow: 0 6px 14px rgba(25, 33, 61, 0.08);
+      outline: 0;
+    }
+
+    .compact-action-accent {
+      align-self: stretch;
+      border-radius: 999px;
+      display: block;
+      height: 34px;
+      margin-left: 0;
+      width: 3px;
+    }
+
+    .compact-action-accent.blue {
+      background: #2563eb;
+    }
+
+    .compact-action-accent.red {
+      background: #e05252;
+    }
+
+    .compact-action-accent.green {
+      background: #22a06b;
+    }
+
+    .compact-action-accent.neutral {
+      background: #98a1b2;
+    }
+
+    .compact-action-icon {
+      height: 26px;
+      width: 26px;
+    }
+
+    .compact-action-icon .icon {
+      height: 15px;
+      width: 15px;
+    }
+
+    .compact-action-title {
+      color: #252a34;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 16px;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .compact-action-count {
+      align-items: center;
+      color: #10069f;
+      display: inline-flex;
+      font-size: 12px;
+      font-weight: 600;
+      justify-content: center;
+      line-height: 16px;
+      min-width: 18px;
+    }
+
+    .compact-action-view {
+      align-items: center;
+      color: #10069f;
+      display: inline-flex;
+      font-size: 11px;
+      font-weight: 600;
+      gap: 4px;
+      line-height: 16px;
+      white-space: nowrap;
+    }
+
+    .compact-action-view .icon {
+      height: 13px;
+      width: 13px;
     }
 
     .task-card {
@@ -807,6 +1065,11 @@ interface PortfolioWorkTargetGroup {
         overflow: auto;
       }
 
+      .compact-action-board {
+        grid-template-columns: minmax(0, 1fr);
+        overflow: auto;
+      }
+
       .board-detail-panel {
         min-height: 320px;
       }
@@ -823,6 +1086,7 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
   @Input() showTargetPicker = true;
   @Input() openItemsInDrawer = true;
   @Input() showBoardDetailPanel = false;
+  @Input() boardPresentation: PortfolioActionsBoardPresentation = 'kanban';
   @Input() todayKey = '2026-05-12';
   @Output() readonly actionSelected = new EventEmitter<PortfolioActionItem>();
 
@@ -1157,6 +1421,20 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
 
   boardColumnCount(items: readonly PortfolioActionItem[]): number {
     return this.sumActionItems(items);
+  }
+
+  compactColumnItems(column: PortfolioBoardColumn): PortfolioActionItem[] {
+    const orderByColumn: Record<PortfolioBoardColumn['column'], readonly PortfolioActionItem['kind'][]> = {
+      Overdue: ['report', 'plan', 'change', 'benefit', 'governance'],
+      'This week': ['change', 'governance', 'report', 'plan', 'benefit'],
+      Upcoming: ['report', 'change', 'benefit', 'plan', 'governance'],
+    };
+    const order = orderByColumn[column.column];
+    return [...column.items].sort((first, second) => {
+      const firstIndex = order.indexOf(first.kind);
+      const secondIndex = order.indexOf(second.kind);
+      return (firstIndex === -1 ? order.length : firstIndex) - (secondIndex === -1 ? order.length : secondIndex);
+    });
   }
 
   actionItemTotal(item: PortfolioActionItem): number {
