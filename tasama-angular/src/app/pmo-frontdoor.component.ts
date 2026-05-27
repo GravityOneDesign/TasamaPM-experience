@@ -76,7 +76,7 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
 
                         <section class="pmo-hero-health" aria-label="Portfolio and program performance">
                           <span class="pmo-hero-visual pmo-hero-visual-performance" aria-hidden="true">
-                            <img class="pmo-hero-illustration pmo-hero-illustration-performance" src="assets/executive/portfolio-performing.svg" alt="" />
+                            <img class="pmo-hero-illustration pmo-hero-illustration-performance" src="assets/executive/overall-portfolio-health.svg" alt="" />
                           </span>
                           <div class="pmo-hero-copy">
                             <h2>Overall Portfolio Health</h2>
@@ -222,6 +222,7 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
       }
 
       .pmo-performance-hero {
+        --pmo-hero-stage-width: clamp(976px, calc(100cqw - 178px), 1280px);
         background:
           radial-gradient(ellipse 62% 86% at 50% 50%, #0c5fe7 0%, #1f227d 100%),
           #10069f;
@@ -255,7 +256,7 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
         top: 50%;
         transform: translate(-50%, -50%);
         transform-origin: center center;
-        width: 976px;
+        width: var(--pmo-hero-stage-width);
       }
 
       .pmo-hero-metrics {
@@ -266,6 +267,12 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
         position: absolute;
         top: 16px;
         z-index: 4;
+      }
+
+      @container (min-width: 976px) {
+        .pmo-hero-metrics {
+          left: calc(16px - ((100cqw - var(--pmo-hero-stage-width)) / 2));
+        }
       }
 
       .pmo-hero-metric {
@@ -317,16 +324,17 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
 
       .pmo-hero-health {
         gap: 11px;
-        grid-template-columns: 186px 260px;
+        grid-template-columns: 230px 260px;
         left: 16px;
         top: 68px;
-        width: 457px;
+        transform: translateX(-44px);
+        width: 501px;
       }
 
       .pmo-hero-budget {
         gap: 11px;
         grid-template-columns: 181px 251px;
-        left: 504px;
+        right: 29px;
         top: 62px;
         width: 443px;
       }
@@ -339,8 +347,9 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
       }
 
       .pmo-hero-visual-performance {
-        height: 164px;
-        width: 186px;
+        height: 180px;
+        overflow: hidden;
+        width: 230px;
       }
 
       .pmo-hero-visual-budget {
@@ -357,9 +366,9 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
       }
 
       .pmo-hero-illustration-performance {
-        left: -177px;
-        top: -75px;
-        width: 501px;
+        left: -142px;
+        top: -85px;
+        width: 528px;
       }
 
       .pmo-hero-illustration-budget {
@@ -476,7 +485,7 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
         background: rgba(255, 255, 255, 0.76);
         border-radius: 999px;
         height: 120px;
-        left: 488px;
+        left: 50%;
         position: absolute;
         top: 90px;
         width: 1px;
