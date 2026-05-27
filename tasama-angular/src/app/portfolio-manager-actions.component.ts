@@ -542,6 +542,43 @@ interface PortfolioWorkTargetGroup {
       width: 100%;
     }
 
+    .compact-action-card::before,
+    .task-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      border-radius: 7px 0 0 7px;
+    }
+
+    .compact-action-card.red::before,
+    .task-card.red::before {
+      background: #e05252;
+      
+    }
+
+    .compact-action-card.blue::before,
+    .task-card.blue::before {
+      background: #2563eb;
+    }
+
+    .compact-action-card.green::before,
+    .task-card.green::before {
+      background: #22a06b;
+    }
+
+    .compact-action-card.amber::before,
+    .task-card.amber::before {
+      background: #8a5c12;
+    }
+
+    .compact-action-card.neutral::before,
+    .task-card.neutral::before {
+      background: #98a1b2;
+    }
+
     .compact-action-card:hover,
     .compact-action-card:focus-visible {
       border-color: rgba(16, 6, 159, 0.22);
@@ -1108,7 +1145,7 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
     private readonly changeDetector: ChangeDetectorRef,
     private readonly actionDrawer: PortfolioManagerActionDrawerService,
     private readonly iconsService: PmConsoleIconService
-  ) {}
+  ) { }
 
   ngAfterViewChecked(): void {
     if (this.iconsHydrated) return;

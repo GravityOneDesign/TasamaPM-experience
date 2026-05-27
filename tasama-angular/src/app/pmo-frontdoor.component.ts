@@ -9,8 +9,10 @@ import {
   pmoFrontdoorTabs,
   pmoFrontdoorWorkFilters,
   pmoFrontdoorWorkItems,
+  pmoStatusReports,
   type PmoFrontdoorQuickLink,
   type PmoFrontdoorTab,
+  type PmoStatusReport,
 } from './pmo-frontdoor.data';
 import type { ProjectOption } from './pm-console.types';
 import type { PmoGovernanceWorkspaceTarget } from './pmo-governance-workspace.data';
@@ -20,6 +22,7 @@ import { PmConsoleFrontdoorActionCardsComponent } from './shared/pm-console-fron
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 import { PmConsoleModeTabsComponent } from './shared/pm-console-mode-tabs.component';
 import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-dropdown.component';
+import { PmoStatusReportsDrawerComponent } from './pmo-status-reports-drawer.component';
 
 @Component({
   selector: 'app-pmo-frontdoor',
@@ -31,6 +34,7 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
     PmConsoleIconComponent,
     PmConsoleModeTabsComponent,
     PmConsoleProjectDropdownComponent,
+    PmoStatusReportsDrawerComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -134,10 +138,46 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
                       ctaMode="arrow"
                       (actionSelected)="selectAction($event)"
                     ></app-pm-console-frontdoor-action-cards>
+
+                    <section class="pmo-status-reports-overview-section" aria-label="Pending status reports">
+                      <div class="pmo-status-reports-section-header">
+                        <button
+                          type="button"
+                          class="pmo-status-reports-section-cta"
+                          aria-label="View all status reports"
+                          (click)="openStatusReportsDrawer()"
+                        >
+                          View all
+                          <span pmConsoleIcon="chevron-right" aria-hidden="true"></span>
+                        </button>
+                      </div>
+
+                      @if (statusReportsForOverview.length > 0) {
+                        <div class="pmo-status-reports-preview">
+                          @for (report of statusReportsForOverview; track report.id) {
+                            <button
+                              type="button"
+                              class="pmo-status-report-preview-card"
+                              [attr.aria-label]="'Open ' + report.title"
+                              (click)="openStatusReportsDrawer()"
+                            >
+                              <div class="pmo-status-report-preview-header">
+                                <strong>{{ report.title }}</strong>
+                                <span class="pmo-status-report-preview-project">{{ report.project }}</span>
+                              </div>
+                              <p class="pmo-status-report-preview-meta">
+                                <span pmConsoleIcon="calendar" aria-hidden="true"></span>
+                                {{ report.dueDate }} • {{ report.overdueText }}
+                              </p>
+                            </button>
+                          }
+                        </div>
+                      }
+                    </section>
                   </section>
                 } @else if (selectedTab === 'manage-work') {
                   <app-portfolio-manager-actions
-                    [workspaceTitle]="'Portfolio Management Office'"
+                    [workspaceTitle]="'PMO Console'"
                     searchPlaceholder="Search PMO work..."
                     [actionItems]="workItems"
                     [boardFilters]="workFilters"
@@ -186,6 +226,14 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
           </div>
         </div>
       </div>
+
+      @if (isStatusReportsDrawerOpen) {
+        <app-pmo-status-reports-drawer
+          [reports]="allStatusReports"
+          (close)="closeStatusReportsDrawer()"
+          (reportSelected)="selectStatusReport($event)"
+        ></app-pmo-status-reports-drawer>
+      }
     </main>
   `,
   styles: [
@@ -765,6 +813,129 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
         .pmo-health-labels {
           width: 100%;
         }
+
+        .pmo-status-reports-overview-section {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          padding: 24px;
+          background: #ffffff;
+          border: 1px solid #e0e0e0;
+          border-radius: 12px;
+        }
+
+        .pmo-status-reports-section-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 16px;
+        }
+
+        .pmo-status-reports-section-title {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin: 0;
+          font-size: 18px;
+          font-weight: 600;
+          color: #0b0b0b;
+        }
+
+        .pmo-status-reports-section-title span {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+          background: #e3f2fd;
+          border-radius: 8px;
+          color: #1976d2;
+        }
+
+        .pmo-status-reports-count-badge {
+          margin-left: auto;
+          padding: 4px 8px;
+          background: #ffebee;
+          color: #c62828;
+          font-size: 12px;
+          font-weight: 600;
+          border-radius: 4px;
+          white-space: nowrap;
+        }
+
+        .pmo-status-reports-section-cta {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: none;
+          border: none;
+          color: #0264c8;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          padding: 4px 0;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+
+        .pmo-status-reports-section-cta:hover {
+          opacity: 0.8;
+        }
+
+        .pmo-status-reports-preview {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .pmo-status-report-preview-card {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          padding: 12px;
+          background: #f9f9f9;
+          border: 1px solid #e8e8e8;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          text-align: left;
+          font-family: inherit;
+        }
+
+        .pmo-status-report-preview-card:hover {
+          background: #f5f5f5;
+          border-color: #d0d0d0;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+        }
+
+        .pmo-status-report-preview-header {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .pmo-status-report-preview-header strong {
+          font-size: 14px;
+          color: #0b0b0b;
+          font-weight: 600;
+          line-height: 1.3;
+        }
+
+        .pmo-status-report-preview-project {
+          font-size: 12px;
+          color: #999;
+          font-weight: 400;
+        }
+
+        .pmo-status-report-preview-meta {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin: 0;
+          font-size: 12px;
+          color: #999;
+          font-weight: 400;
+        }
       }
     `,
   ],
@@ -776,6 +947,7 @@ export class PmoFrontdoorComponent implements AfterViewChecked {
 
   selectedTab: PmoFrontdoorTab = 'overview';
   selectedPortfolioScope = 'all-portfolios';
+  isStatusReportsDrawerOpen = false;
   readonly tabs = pmoFrontdoorTabs;
   readonly metrics = pmoFrontdoorMetrics;
   readonly healthRows = pmoFrontdoorHealthRows;
@@ -784,13 +956,14 @@ export class PmoFrontdoorComponent implements AfterViewChecked {
   readonly workItems = pmoFrontdoorWorkItems;
   readonly workFilters = pmoFrontdoorWorkFilters;
   readonly quickLinks = pmoFrontdoorQuickLinks;
+  readonly allStatusReports = pmoStatusReports;
   readonly portfolioScopeOptions: readonly ProjectOption[] = [{ id: 'all-portfolios', name: 'All Portfolios' }];
   readonly welcomeIconSrc = './assets/pane-top-icon.svg';
   readonly welcomeSubtitle = ["Here's what's happening across your portfolio today."];
   readonly budgetBars = Array.from({ length: 10 });
   private iconsHydrated = false;
 
-  constructor(private readonly iconsService: PmConsoleIconService) {}
+  constructor(private readonly iconsService: PmConsoleIconService) { }
 
   ngAfterViewChecked(): void {
     if (this.iconsHydrated) return;
@@ -827,6 +1000,28 @@ export class PmoFrontdoorComponent implements AfterViewChecked {
 
   openWorkspace(target?: PmoGovernanceWorkspaceTarget): void {
     this.workspaceRequested.emit(target);
+  }
+
+  get statusReportsForOverview(): readonly PmoStatusReport[] {
+    return this.allStatusReports.slice(0, 2);
+  }
+
+  get overduReportsCount(): string {
+    const count = this.allStatusReports.filter((r) => r.isOverdue).length;
+    return count > 0 ? `${count} overdue` : 'All on track';
+  }
+
+  openStatusReportsDrawer(): void {
+    this.isStatusReportsDrawerOpen = true;
+  }
+
+  closeStatusReportsDrawer(): void {
+    this.isStatusReportsDrawerOpen = false;
+  }
+
+  selectStatusReport(report: PmoStatusReport): void {
+    // Handle status report selection - can be extended later
+    console.log('Selected report:', report);
   }
 }
 

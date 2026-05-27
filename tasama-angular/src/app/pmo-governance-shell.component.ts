@@ -40,7 +40,7 @@ import { PmConsoleTopBarComponent } from './shared/pm-console-top-bar.component'
   template: `
     <div class="modern-shell pmo-governance-shell" [class.side-nav-expanded]="sideNavExpanded">
       <app-pm-console-top-bar
-        consoleTitle="Portfolio Management Office"
+        consoleTitle="PMO Console"
         profileName="Muna Hassan"
         profileRole="PMO Lead"
         profileInitials="MH"

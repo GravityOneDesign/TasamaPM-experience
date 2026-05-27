@@ -28,6 +28,17 @@ export interface PmoFrontdoorQuickLink {
   readonly target?: PmoGovernanceWorkspaceTarget;
 }
 
+export interface PmoStatusReport {
+  readonly id: string;
+  readonly title: string;
+  readonly project: string;
+  readonly dueDate: string;
+  readonly overdueText: string;
+  readonly isOverdue: boolean;
+  readonly ownerName: string;
+  readonly ownerInitials: string;
+}
+
 export const pmoFrontdoorTabs: readonly PmConsoleModeTabItem[] = [
   { id: 'overview', label: 'Overview', icon: 'square-chart-gantt', widthPx: 143 },
   { id: 'manage-work', label: 'Manage My Work', icon: 'network', widthPx: 201 },
@@ -524,7 +535,7 @@ export const pmoFrontdoorQuickLinks: readonly PmoFrontdoorQuickLink[] = [
   },
   {
     id: 'upcoming-forums',
-    title: 'Upcoming Forums',
+    title: 'Governance Committees',
     description: 'Review stage readiness, evidence, and approval status.',
     icon: 'calendar-days',
     target: { primaryTab: 'governance', sectionTab: 'forums' },
@@ -549,6 +560,59 @@ export const pmoFrontdoorQuickLinks: readonly PmoFrontdoorQuickLink[] = [
     description: 'Log blockers, assign owners, and follow resolution progress.',
     icon: 'network',
     target: { primaryTab: 'portfolio-register' },
+  },
+];
+
+export const pmoStatusReports: readonly PmoStatusReport[] = [
+  {
+    id: 'status-report-01',
+    title: 'Submit Vision 2030 weekly report',
+    project: 'Vision 2030',
+    dueDate: 'May 12',
+    overdueText: 'Overdue by 5 days',
+    isOverdue: true,
+    ownerName: 'Muna Hasan',
+    ownerInitials: 'MH',
+  },
+  {
+    id: 'status-report-02',
+    title: 'Submit Tasama 2026 weekly report',
+    project: 'Tasama',
+    dueDate: 'May 15',
+    overdueText: 'Overdue by 2 days',
+    isOverdue: true,
+    ownerName: 'Osman Khan',
+    ownerInitials: 'OK',
+  },
+  {
+    id: 'status-report-03',
+    title: 'Prepare budget analysis for Q3',
+    project: 'UAE research',
+    dueDate: 'May 18',
+    overdueText: 'Overdue by 3 days',
+    isOverdue: true,
+    ownerName: 'Nadia Hossain',
+    ownerInitials: 'NH',
+  },
+  {
+    id: 'status-report-04',
+    title: 'Prepare budget analysis for Q3',
+    project: 'Shell',
+    dueDate: 'May 25',
+    overdueText: 'Overdue by 4 days',
+    isOverdue: true,
+    ownerName: 'Jasmine Smith',
+    ownerInitials: 'JS',
+  },
+  {
+    id: 'status-report-05',
+    title: 'Finalize project timeline for Saudi Initiative',
+    project: 'ARAMCO',
+    dueDate: 'May 20',
+    overdueText: 'Overdue by 1 day',
+    isOverdue: true,
+    ownerName: 'David Garcia',
+    ownerInitials: 'DG',
   },
 ];
 

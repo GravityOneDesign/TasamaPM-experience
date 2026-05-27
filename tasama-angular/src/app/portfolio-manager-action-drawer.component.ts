@@ -51,10 +51,8 @@ import {
   type RiskTreatmentDraftChange,
   type RiskTreatmentRecord,
 } from './shared/pm-console-risk-profile.component';
-import {
-  PortfolioManagerStageGateDrawerComponent,
-  type StageGateAttachment,
-} from './portfolio-manager-stage-gate-drawer.component';
+import { PortfolioManagerStageGateDrawerComponent, type StageGateAttachment } from './portfolio-manager-stage-gate-drawer.component';
+import { pmoStatusReports, type PmoStatusReport } from './pmo-frontdoor.data';
 
 type ReportDetailMode = 'simple' | 'detailed';
 type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
@@ -75,67 +73,132 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
   template: `
     @if (item; as selected) {
       @if (activeGroupItems.length) {
-        <div class="portfolio-action-profile-drawer-shell" aria-live="polite">
-          <button class="portfolio-action-profile-backdrop" type="button" (click)="close.emit()" [attr.aria-label]="'Close ' + selected.label + ' drawer'"></button>
-          <aside class="portfolio-action-group-drawer" role="dialog" aria-modal="true" [attr.aria-label]="selected.label + ' action list'">
-            <header class="portfolio-action-group-header">
-              <button class="portfolio-action-group-close" type="button" (click)="close.emit()" aria-label="Close action list">
-                <span pmConsoleIcon="x" aria-hidden="true"></span>
-              </button>
-              <span class="portfolio-action-group-icon {{ selected.tone }}">
-                <span [pmConsoleIcon]="groupIcon(selected)" aria-hidden="true"></span>
-              </span>
-              <div>
-                <small>{{ selected.column }}</small>
-                <h2>{{ selected.label }}</h2>
-                <p>{{ selected.detailSummary || selected.meta }}</p>
-              </div>
-              <strong>{{ activeGroupItems.length }}</strong>
-            </header>
-
-            <section class="portfolio-action-group-summary" aria-label="Action queue summary">
-              <span>
-                <small>Queue type</small>
-                <strong>{{ selected.type }}</strong>
-              </span>
-              <span>
-                <small>Due window</small>
-                <strong>{{ selected.meta }}</strong>
-              </span>
-              <span>
-                <small>Scope</small>
-                <strong>{{ selected.project }}</strong>
-              </span>
-            </section>
-
-            <section class="portfolio-action-group-list" aria-label="Action items">
-              @for (detail of activeGroupItems; track detail.id) {
-                <article class="portfolio-action-group-row">
-                  <span class="portfolio-action-group-row-icon {{ detail.tone }}">
-                    <span [pmConsoleIcon]="groupIcon(detail)" aria-hidden="true"></span>
+        @if (selected.kind === 'report' && selected.column === 'Overdue') {
+          <div class="portfolio-action-profile-drawer-shell" aria-live="polite">
+            <button class="portfolio-action-profile-backdrop" type="button" (click)="close.emit()" [attr.aria-label]="'Close drawer'"></button>
+            <aside class="portfolio-action-group-drawer overdue-reports-drawer" role="dialog" aria-modal="true" aria-label="Overdue status reports list">
+              
+              <!-- Header -->
+              <header class="overdue-reports-header">
+                <div class="header-left">
+                  <span class="report-icon-bg">
+                    <span pmConsoleIcon="chart-column" aria-hidden="true"></span>
                   </span>
-                  <span class="portfolio-action-group-row-copy">
-                    <strong>{{ detail.label }}</strong>
-                    <small>{{ detail.project }} · {{ targetLabel(detail) }}</small>
-                  </span>
-                  <span class="portfolio-action-group-row-meta">
-                    <small>{{ detail.meta }}</small>
-                    <b>{{ detail.owner }}</b>
-                  </span>
-                  <button type="button">
-                    <span>{{ groupActionLabel(detail) }}</span>
-                    <span pmConsoleIcon="arrow-right" aria-hidden="true"></span>
-                  </button>
-                </article>
-              }
-            </section>
+                  <h2>Status Reports</h2>
+                  <span class="overdue-pill">Overdue</span>
+                </div>
+                <button class="overdue-reports-close" type="button" (click)="close.emit()" aria-label="Close list">
+                  <span pmConsoleIcon="x" aria-hidden="true"></span>
+                </button>
+              </header>
 
-            <footer class="portfolio-action-group-footer">
-              <button class="secondary" type="button" (click)="close.emit()">Close</button>
-              <button class="primary" type="button" (click)="close.emit()">Mark queue reviewed</button>
-            </footer>
-          </aside>
-        </div>
+              <!-- Search Area -->
+              <section class="overdue-reports-search-section">
+                <div class="search-input-wrapper">
+                  <span pmConsoleIcon="search" class="search-icon" aria-hidden="true"></span>
+                  <input
+                    type="text"
+                    placeholder="Search.."
+                    aria-label="Search status reports"
+                    [value]="searchQuery"
+                    (input)="onSearchInput($event)"
+                  />
+                </div>
+                <div class="showing-count-label">
+                  Showing all {{ filteredReports.length }} status reports
+                </div>
+              </section>
+
+              <!-- Scrollable List of Cards -->
+              <section class="overdue-reports-list" aria-label="Overdue status reports">
+                @for (report of filteredReports; track report.id) {
+                  <div class="overdue-report-card">
+                    <header class="card-header">
+                      <span pmConsoleIcon="calendar" class="calendar-icon" aria-hidden="true"></span>
+                      <span>{{ report.dueDate }} ({{ report.overdueText }})</span>
+                    </header>
+                    <h3 class="card-title">{{ report.title }}</h3>
+                    <p class="card-project">{{ report.project }}</p>
+                    <div class="card-divider"></div>
+                    <footer class="card-footer">
+                      <div class="card-owner">
+                        <span class="owner-avatar {{ getAvatarClass(report.ownerInitials) }}">{{ report.ownerInitials }}</span>
+                        <span class="owner-name">{{ report.ownerName }}</span>
+                      </div>
+                      <button class="open-link" type="button" (click)="close.emit()">
+                        <span>Open</span>
+                        <span pmConsoleIcon="chevron-right" class="arrow-icon" aria-hidden="true"></span>
+                      </button>
+                    </footer>
+                  </div>
+                }
+              </section>
+
+            </aside>
+          </div>
+        } @else {
+          <div class="portfolio-action-profile-drawer-shell" aria-live="polite">
+            <button class="portfolio-action-profile-backdrop" type="button" (click)="close.emit()" [attr.aria-label]="'Close ' + selected.label + ' drawer'"></button>
+            <aside class="portfolio-action-group-drawer" role="dialog" aria-modal="true" [attr.aria-label]="selected.label + ' action list'">
+              <header class="portfolio-action-group-header">
+                <button class="portfolio-action-group-close" type="button" (click)="close.emit()" aria-label="Close action list">
+                  <span pmConsoleIcon="x" aria-hidden="true"></span>
+                </button>
+                <span class="portfolio-action-group-icon {{ selected.tone }}">
+                  <span [pmConsoleIcon]="groupIcon(selected)" aria-hidden="true"></span>
+                </span>
+                <div>
+                  <small>{{ selected.column }}</small>
+                  <h2>{{ selected.label }}</h2>
+                  <p>{{ selected.detailSummary || selected.meta }}</p>
+                </div>
+                <strong>{{ activeGroupItems.length }}</strong>
+              </header>
+
+              <section class="portfolio-action-group-summary" aria-label="Action queue summary">
+                <span>
+                  <small>Queue type</small>
+                  <strong>{{ selected.type }}</strong>
+                </span>
+                <span>
+                  <small>Due window</small>
+                  <strong>{{ selected.meta }}</strong>
+                </span>
+                <span>
+                  <small>Scope</small>
+                  <strong>{{ selected.project }}</strong>
+                </span>
+              </section>
+
+              <section class="portfolio-action-group-list" aria-label="Action items">
+                @for (detail of activeGroupItems; track detail.id) {
+                  <article class="portfolio-action-group-row">
+                    <span class="portfolio-action-group-row-icon {{ detail.tone }}">
+                      <span [pmConsoleIcon]="groupIcon(detail)" aria-hidden="true"></span>
+                    </span>
+                    <span class="portfolio-action-group-row-copy">
+                      <strong>{{ detail.label }}</strong>
+                      <small>{{ detail.project }} · {{ targetLabel(detail) }}</small>
+                    </span>
+                    <span class="portfolio-action-group-row-meta">
+                      <small>{{ detail.meta }}</small>
+                      <b>{{ detail.owner }}</b>
+                    </span>
+                    <button type="button">
+                      <span>{{ groupActionLabel(detail) }}</span>
+                      <span pmConsoleIcon="arrow-right" aria-hidden="true"></span>
+                    </button>
+                  </article>
+                }
+              </section>
+
+              <footer class="portfolio-action-group-footer">
+                <button class="secondary" type="button" (click)="close.emit()">Close</button>
+                <button class="primary" type="button" (click)="close.emit()">Mark queue reviewed</button>
+              </footer>
+            </aside>
+          </div>
+        }
       } @else {
         @switch (selected.kind) {
           @case ('report') {
@@ -777,12 +840,282 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
           text-align: left;
         }
       }
+
+      .overdue-reports-drawer {
+        width: min(420px, calc(100vw - 72px));
+        display: flex;
+        flex-direction: column;
+      }
+
+      .overdue-reports-header {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        padding: 24px 24px 16px;
+      }
+
+      .overdue-reports-header .header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .overdue-reports-header .report-icon-bg {
+        width: 40px;
+        height: 40px;
+        background: #eef4ff;
+        color: #1f4fb8;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .overdue-reports-header .report-icon-bg span {
+        width: 20px;
+        height: 20px;
+      }
+
+      .overdue-reports-header h2 {
+        color: #0b0b0b;
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      .overdue-reports-header .overdue-pill {
+        background: #fde2e2;
+        color: #d32f2f;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: 6px;
+        line-height: 1;
+      }
+
+      .overdue-reports-close {
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid #dfe4ee;
+        border-radius: 8px;
+        color: #536071;
+        display: inline-flex;
+        height: 34px;
+        justify-content: center;
+        width: 34px;
+      }
+
+      .overdue-reports-close:hover,
+      .overdue-reports-close:focus-visible {
+        background: #f7f7ff;
+        border-color: rgba(16, 6, 159, 0.22);
+        color: #10069f;
+        outline: 0;
+      }
+
+      .overdue-reports-close span {
+        width: 16px;
+        height: 16px;
+      }
+
+      .overdue-reports-search-section {
+        padding: 0 24px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .search-input-wrapper {
+        position: relative;
+        width: 100%;
+      }
+
+      .search-input-wrapper input {
+        padding: 0 12px 0 36px;
+        height: 38px;
+        border: 1px solid #dfe4ee;
+        border-radius: 8px;
+        width: 100%;
+        font-size: 13px;
+        color: #2f2f2f;
+        background: #ffffff;
+        outline: none;
+      }
+
+      .search-input-wrapper input:focus {
+        border-color: #10069f;
+      }
+
+      .search-input-wrapper .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #888;
+        width: 16px;
+        height: 16px;
+      }
+
+      .showing-count-label {
+        font-size: 13px;
+        color: #657084;
+        font-weight: 400;
+      }
+
+      .overdue-reports-list {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        padding: 0 24px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .overdue-report-card {
+        background: #ffffff;
+        border: 1px solid #eef1f6;
+        border-radius: 12px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        box-shadow: 0 1px 3px rgba(25, 33, 61, 0.03);
+      }
+
+      .overdue-report-card .card-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #737b8c;
+        font-size: 12.5px;
+      }
+
+      .overdue-report-card .card-header .calendar-icon {
+        width: 14px;
+        height: 14px;
+        color: #737b8c;
+      }
+
+      .overdue-report-card .card-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #0b0b0b;
+        margin: 0;
+        line-height: 1.35;
+      }
+
+      .overdue-report-card .card-project {
+        font-size: 13px;
+        color: #657084;
+        margin: 0;
+      }
+
+      .overdue-report-card .card-divider {
+        height: 1px;
+        background: #eef1f6;
+        margin: 4px 0;
+      }
+
+      .overdue-report-card .card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .overdue-report-card .card-owner {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .overdue-report-card .owner-avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 600;
+        color: #ffffff;
+      }
+
+      .overdue-report-card .owner-avatar.avatar-mh {
+        background: #6366f1;
+      }
+
+      .overdue-report-card .owner-avatar.avatar-ok {
+        background: #a855f7;
+      }
+
+      .overdue-report-card .owner-avatar.avatar-nh {
+        background: #3b82f6;
+      }
+
+      .overdue-report-card .owner-avatar.avatar-js {
+        background: #ec4899;
+      }
+
+      .overdue-report-card .owner-avatar.avatar-dg {
+        background: #10b981;
+      }
+
+      .overdue-report-card .owner-name {
+        font-size: 13px;
+        color: #2f2f2f;
+        font-weight: 500;
+      }
+
+      .overdue-report-card .open-link {
+        background: transparent;
+        border: none;
+        padding: 0;
+        color: #10069f;
+        font-size: 13px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+      }
+
+      .overdue-report-card .open-link .arrow-icon {
+        width: 13px;
+        height: 13px;
+      }
     `,
   ],
 })
 export class PortfolioManagerActionDrawerComponent implements OnChanges, OnDestroy {
   @Input() item: PortfolioActionItem | null = null;
   @Output() readonly close = new EventEmitter<void>();
+
+  searchQuery = '';
+
+  onSearchInput(event: Event): void {
+    this.searchQuery = (event.target as HTMLInputElement).value;
+  }
+
+  get filteredReports(): readonly PmoStatusReport[] {
+    if (!this.searchQuery) return pmoStatusReports;
+    const q = this.searchQuery.toLowerCase().trim();
+    return pmoStatusReports.filter((r) =>
+      r.title.toLowerCase().includes(q) ||
+      r.project.toLowerCase().includes(q) ||
+      r.ownerName.toLowerCase().includes(q)
+    );
+  }
+
+  getAvatarClass(initials: string): string {
+    const mapping: Record<string, string> = {
+      'MH': 'avatar-mh',
+      'OK': 'avatar-ok',
+      'NH': 'avatar-nh',
+      'JS': 'avatar-js',
+      'DG': 'avatar-dg',
+    };
+    return mapping[initials] || 'avatar-mh';
+  }
 
   readonly projectOptions = portfolioActionProjectOptions;
   readonly benefitProfileOptions = portfolioActionBenefitProfileOptions;
