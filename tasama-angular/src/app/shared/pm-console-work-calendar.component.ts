@@ -829,6 +829,7 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
   @Input() filters: PmConsoleCalendarFilter[] = [];
   @Input() selectedFilterId = 'all';
   @Input() showFilterBar = true;
+  @Input() truncateInlineLabels = false;
 
   @Output() readonly monthShift = new EventEmitter<number>();
   @Output() readonly filterChange = new EventEmitter<string>();

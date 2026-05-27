@@ -52,6 +52,18 @@ export interface ProgramRow {
   projects?: ProjectRow[];
 }
 
+export interface PortfolioRow {
+  id: string;
+  name: string;
+  manager: string;
+  startDate: string;
+  endDate: string;
+  budgetUtilised: string;
+  status: 'on-track' | 'off-track' | 'alert' | 'not-tracked' | 'not-started' | 'delayed' | 'completed' | 'under-review';
+  trend: 'stable' | 'up' | 'down';
+  programs: ProgramRow[];
+}
+
 export interface AwaitingReviewRow {
   interval: string;
   dueBy: string;
@@ -246,6 +258,31 @@ export const portfolioProgramRows: ProgramRow[] = [
       { id: 'proj-8-1', name: 'Micro-segmentation Firewall Deployments', stage: 'Execution', trend: 'stable', manager: 'Robert Chen', startDate: '2026-04-01', endDate: '2026-11-30', budgetUtilised: '$1.5M / $3.0M', status: 'on-track' },
       { id: 'proj-8-2', name: 'Edge Security Access Verification', stage: 'Closeout', trend: 'up', manager: 'Mona Al-Mansoori', startDate: '2026-03-20', endDate: '2026-08-15', budgetUtilised: '$2.0M / $3.0M', status: 'completed' }
     ]
+  }
+];
+
+export const portfolioRows: PortfolioRow[] = [
+  {
+    id: 'portfolio-1',
+    name: 'Safe Security Portfolio',
+    manager: 'Fatima Qahtani',
+    startDate: '2026-01-15',
+    endDate: '2027-12-20',
+    budgetUtilised: '$9.1M / $14.1M',
+    status: 'on-track',
+    trend: 'up',
+    programs: portfolioProgramRows.slice(0, 5)
+  },
+  {
+    id: 'portfolio-2',
+    name: 'Sovereign Operations Portfolio',
+    manager: 'Dr. Khalid Al-Mansoori',
+    startDate: '2026-03-15',
+    endDate: '2027-12-31',
+    budgetUtilised: '$7.8M / $14.8M',
+    status: 'alert',
+    trend: 'stable',
+    programs: portfolioProgramRows.slice(5)
   }
 ];
 

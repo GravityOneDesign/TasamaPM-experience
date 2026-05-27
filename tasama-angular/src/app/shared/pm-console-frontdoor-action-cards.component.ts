@@ -7,6 +7,7 @@ export interface PmConsoleFrontdoorAction {
   description: string;
   icon: string;
   badgeLabel?: string;
+  ctaLabel?: string;
   disabled?: boolean;
   decor?: 'waves' | 'loops' | 'hex' | 'plus' | 'burst';
 }
