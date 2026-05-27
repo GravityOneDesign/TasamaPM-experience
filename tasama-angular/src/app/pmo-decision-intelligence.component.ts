@@ -393,23 +393,23 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
         display: inline-flex;
         font-size: 16px;
         font-weight: 600;
-        gap: 18px;
+        gap: 26px;
         line-height: 22px;
         min-width: 0;
       }
 
       .pmo-decision-collapsed-preview {
         background: linear-gradient(180deg, #5f55f2 0%, #10069f 100%);
-        border-radius: 20px;
+        border-radius: 8px;
         box-shadow:
-          0 16px 28px rgba(16, 6, 159, 0.12),
-          0 3px 8px rgba(1, 10, 15, 0.1);
+          0 8px 18px rgba(16, 6, 159, 0.1),
+          0 2px 6px rgba(1, 10, 15, 0.1);
         display: block;
-        flex: 0 0 112px;
-        height: 70px;
+        flex: 0 0 67px;
+        height: 60px;
         overflow: hidden;
         position: relative;
-        width: 112px;
+        width: 67px;
       }
 
       .pmo-decision-collapsed-preview img {
@@ -499,10 +499,9 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
         }
 
         .pmo-decision-collapsed-preview {
-          border-radius: 16px;
-          flex-basis: 94px;
-          height: 60px;
-          width: 94px;
+          flex-basis: 60px;
+          height: 54px;
+          width: 60px;
         }
       }
     `,
