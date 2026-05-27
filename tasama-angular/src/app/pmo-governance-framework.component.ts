@@ -4800,6 +4800,7 @@ export interface TaxonomyCard {
       display: flex;
       gap: 24px;
       width: 100%;
+      height: 100%;
       min-height: 0;
       flex: 1;
       color: #202633;

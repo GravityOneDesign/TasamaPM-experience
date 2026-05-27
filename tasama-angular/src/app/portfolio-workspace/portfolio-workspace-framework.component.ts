@@ -57,7 +57,7 @@ export interface TaxonomyCard {
     </header>
 
     <!-- Scrollable full-width tab content area -->
-    <main class="portfolio-workspace-body" style="grid-row: 2; overflow-y: auto; background: #ffffff; padding: 24px; display: flex; flex-direction: column;">
+    <main class="portfolio-workspace-body" style="grid-row: 2; overflow-y: auto; background: #ffffff; padding: 24px; display: flex; flex-direction: column; flex: 1; min-height: 0;">
       
       @if (activeSectionId === 'org-structure') {
         <div class="org-structure-container animation-fade" style="display: flex; flex-direction: column; width: 100%; height: 100%;">
@@ -4800,6 +4800,7 @@ export interface TaxonomyCard {
       display: flex;
       gap: 24px;
       width: 100%;
+      height: 100%;
       min-height: 0;
       flex: 1;
       color: #202633;
