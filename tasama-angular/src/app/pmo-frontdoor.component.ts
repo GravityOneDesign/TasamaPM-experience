@@ -64,63 +64,67 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
                 @if (selectedTab === 'overview') {
                   <section class="pmo-frontdoor-overview" aria-label="PMO portfolio overview">
                     <article class="pmo-performance-hero" aria-label="Portfolio performance snapshot">
-                      <div class="pmo-hero-metrics" aria-label="PMO scope metrics">
-                        @for (metric of metrics; track metric.label) {
-                          <span class="pmo-hero-metric">
-                            <strong>{{ metric.value }}</strong>
-                            <span>{{ metric.label }}</span>
-                          </span>
-                        }
-                      </div>
-
-                      <section class="pmo-hero-health" aria-label="Portfolio and program performance">
-                        <span class="pmo-hero-visual pmo-hero-visual-performance" aria-hidden="true">
-                          <img class="pmo-hero-illustration pmo-hero-illustration-performance" src="assets/executive/portfolio-performing.svg" alt="" />
-                        </span>
-                        <div class="pmo-hero-copy">
-                          <h2>How Is My Portfolio Performing?</h2>
-                          @for (row of healthRows; track row.label) {
-                            <div class="pmo-health-row">
-                              <span>{{ row.label }}</span>
-                              <div class="pmo-health-track" aria-hidden="true">
-                                <i class="is-on-track"></i>
-                                <i class="is-delayed"></i>
-                                <i class="is-critical"></i>
-                              </div>
-                              <div class="pmo-health-labels">
-                                <span>On Track: {{ row.onTrack }}</span>
-                                <span>Delayed: {{ row.delayed }}</span>
-                                <span>Critical: {{ row.critical }}</span>
-                              </div>
-                            </div>
+                      <div class="pmo-performance-hero-stage">
+                        <div class="pmo-hero-metrics" aria-label="PMO scope metrics">
+                          @for (metric of metrics; track metric.label) {
+                            <span class="pmo-hero-metric">
+                              <strong>{{ metric.value }}</strong>
+                              <span>{{ metric.label }}</span>
+                            </span>
                           }
                         </div>
-                      </section>
 
-                      <span class="pmo-hero-divider" aria-hidden="true"></span>
+                        <section class="pmo-hero-health" aria-label="Portfolio and program performance">
+                          <span class="pmo-hero-visual pmo-hero-visual-performance" aria-hidden="true">
+                            <img class="pmo-hero-illustration pmo-hero-illustration-performance" src="assets/executive/portfolio-performing.svg" alt="" />
+                          </span>
+                          <div class="pmo-hero-copy">
+                            <h2>Overall Portfolio Health</h2>
+                            <div class="pmo-health-rows">
+                              @for (row of healthRows; track row.label) {
+                                <div class="pmo-health-row">
+                                  <span>{{ row.label }}</span>
+                                  <div class="pmo-health-track" aria-hidden="true">
+                                    <i class="is-on-track"></i>
+                                    <i class="is-delayed"></i>
+                                    <i class="is-critical"></i>
+                                  </div>
+                                  <div class="pmo-health-labels">
+                                    <span>On Track: {{ row.onTrack }}</span>
+                                    <span>Delayed: {{ row.delayed }}</span>
+                                    <span>Critical: {{ row.critical }}</span>
+                                  </div>
+                                </div>
+                              }
+                            </div>
+                          </div>
+                        </section>
 
-                      <section class="pmo-hero-budget" aria-label="Budget tracking snapshot">
-                        <span class="pmo-hero-visual pmo-hero-visual-budget" aria-hidden="true">
-                          <img class="pmo-hero-illustration pmo-hero-illustration-budget" src="assets/executive/budget-tracking.svg" alt="" />
-                        </span>
-                        <div class="pmo-hero-budget-copy">
-                          <h2>How are we tracking against our Budgets?</h2>
-                          <div class="pmo-budget-card">
-                            <span>Actual Vs Planned Budget</span>
-                            <div class="pmo-budget-card-body">
-                              <div class="pmo-budget-bars" aria-hidden="true">
-                                @for (bar of budgetBars; track $index) {
-                                  <i></i>
-                                }
-                              </div>
-                              <div class="pmo-budget-values">
-                                <p><strong>$175.9M</strong><span>/ $479.9M</span></p>
-                                <p><strong>40%</strong><span>of Total Budget Used</span></p>
+                        <section class="pmo-hero-budget" aria-label="Budget tracking snapshot">
+                          <span class="pmo-hero-visual pmo-hero-visual-budget" aria-hidden="true">
+                            <img class="pmo-hero-illustration pmo-hero-illustration-budget" src="assets/executive/budget-tracking.svg" alt="" />
+                          </span>
+                          <div class="pmo-hero-budget-copy">
+                            <h2>Budget Health</h2>
+                            <div class="pmo-budget-card">
+                              <span>Actual vs Planned Budget</span>
+                              <div class="pmo-budget-card-body">
+                                <div class="pmo-budget-bars" aria-hidden="true">
+                                  @for (bar of budgetBars; track $index) {
+                                    <i></i>
+                                  }
+                                </div>
+                                <div class="pmo-budget-values">
+                                  <p><strong>$175.9M</strong><span>/ $479.9M</span></p>
+                                  <p><strong>40%</strong><span>of total budget used</span></p>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </section>
+                        </section>
+
+                        <span class="pmo-hero-divider" aria-hidden="true"></span>
+                      </div>
                     </article>
 
                     <app-pm-console-frontdoor-action-cards
@@ -194,6 +198,10 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
         align-items: stretch;
       }
 
+      .content-grid.normal-pm-frontdoor-grid.pmo-frontdoor-grid {
+        grid-template-columns: minmax(300px, 320px) minmax(0, 1fr);
+      }
+
       .pmo-frontdoor-workspace {
         min-width: 0;
       }
@@ -215,10 +223,11 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
 
       .pmo-performance-hero {
         background:
-          radial-gradient(circle at 53% 26%, rgba(12, 95, 231, 0.88) 0%, rgba(12, 95, 231, 0.45) 28%, rgba(12, 95, 231, 0) 54%),
-          linear-gradient(135deg, #212179 0%, #10069f 48%, #272777 100%);
+          radial-gradient(ellipse 62% 86% at 50% 50%, #0c5fe7 0%, #1f227d 100%),
+          #10069f;
         border-radius: 12px;
         color: #ffffff;
+        container-type: inline-size;
         height: 264px;
         min-width: 0;
         overflow: hidden;
@@ -226,100 +235,117 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
       }
 
       .pmo-performance-hero::before {
-        background-image:
-          linear-gradient(30deg, transparent 49.4%, rgba(92, 207, 255, 0.15) 50%, transparent 50.6%),
-          linear-gradient(150deg, transparent 49.4%, rgba(92, 207, 255, 0.15) 50%, transparent 50.6%);
-        background-size: 78px 44px;
         content: "";
-        inset: 42px 8px 12px;
-        opacity: 0.7;
+        display: none;
         pointer-events: none;
         position: absolute;
       }
 
       .pmo-performance-hero::after {
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0));
         content: "";
-        inset: 0;
+        display: none;
         pointer-events: none;
         position: absolute;
+      }
+
+      .pmo-performance-hero-stage {
+        height: 264px;
+        left: 50%;
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        transform-origin: center center;
+        width: 976px;
       }
 
       .pmo-hero-metrics {
         align-items: center;
         display: flex;
-        gap: 7px;
-        left: 30px;
+        gap: 8px;
+        left: 16px;
         position: absolute;
-        top: 25px;
-        z-index: 2;
+        top: 16px;
+        z-index: 4;
       }
 
       .pmo-hero-metric {
         align-items: center;
         background: rgba(255, 255, 255, 0.09);
-        border-bottom: 2px solid #addc91;
-        border-radius: 6px;
+        border: 1px solid #addc91;
+        border-radius: 6.84px;
         box-shadow: 0 8px 18px rgba(1, 10, 15, 0.08);
         display: inline-flex;
-        gap: 7px;
-        height: 37px;
-        min-width: 124px;
-        padding: 0 10px;
+        gap: 8px;
+        height: 36px;
+        padding: 8px 12px;
+      }
+
+      .pmo-hero-metric:nth-child(1) {
+        width: 140px;
+      }
+
+      .pmo-hero-metric:nth-child(2) {
+        width: 138px;
+      }
+
+      .pmo-hero-metric:nth-child(3) {
+        width: 131px;
       }
 
       .pmo-hero-metric strong {
         color: #ffffff;
-        font-size: 16px;
+        font-size: 14px;
         font-weight: 600;
-        line-height: 28px;
+        line-height: 20px;
       }
 
       .pmo-hero-metric span {
-        color: rgba(255, 255, 255, 0.95);
-        font-size: 10px;
-        line-height: 14px;
+        color: #ffffff;
+        font-size: 11px;
+        font-weight: 400;
+        line-height: 16px;
+        white-space: nowrap;
       }
 
       .pmo-hero-health,
       .pmo-hero-budget {
-        align-items: center;
+        align-items: start;
         display: grid;
         position: absolute;
         z-index: 2;
       }
 
       .pmo-hero-health {
-        gap: 6px;
-        grid-template-columns: 188px 242px;
-        left: 30px;
-        top: 72px;
-        width: 437px;
+        gap: 11px;
+        grid-template-columns: 186px 260px;
+        left: 16px;
+        top: 68px;
+        width: 457px;
       }
 
       .pmo-hero-budget {
-        gap: 26px;
-        grid-template-columns: 176px minmax(0, 235px);
-        right: 30px;
-        top: 71px;
-        width: 437px;
+        gap: 11px;
+        grid-template-columns: 181px 251px;
+        left: 504px;
+        top: 62px;
+        width: 443px;
       }
 
       .pmo-hero-visual {
         display: block;
         min-width: 0;
-        overflow: hidden;
+        overflow: visible;
         position: relative;
       }
 
       .pmo-hero-visual-performance {
-        height: 167px;
-        width: 188px;
+        height: 164px;
+        width: 186px;
       }
 
       .pmo-hero-visual-budget {
-        height: 159px;
-        width: 176px;
+        height: 164px;
+        width: 181px;
       }
 
       .pmo-hero-illustration {
@@ -331,15 +357,15 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
       }
 
       .pmo-hero-illustration-performance {
-        left: -173px;
-        top: -74px;
-        width: 512px;
+        left: -177px;
+        top: -75px;
+        width: 501px;
       }
 
       .pmo-hero-illustration-budget {
-        left: -128px;
-        top: -92px;
-        width: 430px;
+        left: -136px;
+        top: -72px;
+        width: 406px;
       }
 
       .pmo-hero-copy,
@@ -349,43 +375,62 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
       }
 
       .pmo-hero-copy {
-        gap: 14px;
+        gap: 12px;
+        margin-top: 15px;
+        position: relative;
+        z-index: 3;
       }
 
       .pmo-hero-budget-copy {
-        gap: 10px;
+        gap: 12px;
+        margin-top: 21px;
+        position: relative;
+        z-index: 3;
       }
 
       .pmo-hero-copy h2,
       .pmo-hero-budget-copy h2 {
         color: #ffffff;
-        font-size: 14px;
         font-weight: 600;
-        line-height: 18px;
         margin: 0;
+      }
+
+      .pmo-hero-copy h2 {
+        font-size: 14px;
+        line-height: 20px;
+      }
+
+      .pmo-hero-budget-copy h2 {
+        font-size: 14px;
+        line-height: 20px;
+      }
+
+      .pmo-health-rows {
+        display: grid;
+        gap: 16px;
       }
 
       .pmo-health-row {
         display: grid;
-        gap: 6px;
+        gap: 5px;
         min-width: 0;
       }
 
       .pmo-health-row > span {
-        color: #ffffff;
-        font-size: 7px;
+        color: rgba(255, 255, 255, 0.88);
+        font-size: 12px;
         font-weight: 500;
-        line-height: 10px;
+        line-height: 16px;
       }
 
       .pmo-health-track {
-        background: rgba(255, 255, 255, 0.18);
+        background: transparent;
         border-radius: 999px;
         display: grid;
-        grid-template-columns: 37% 34% 29%;
-        height: 6px;
+        grid-template-columns: repeat(3, 1fr);
+        height: 8px;
         overflow: hidden;
-        width: 228px;
+        width: 260px;
       }
 
       .pmo-health-track i {
@@ -394,61 +439,72 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
       }
 
       .pmo-health-track .is-on-track {
-        background: #98d66f;
+        background: linear-gradient(90deg, #addc91 28.85%, rgba(152, 200, 152, 0.58) 100%);
       }
 
       .pmo-health-track .is-delayed {
-        background: #b69d55;
+        background: linear-gradient(90deg, rgba(255, 183, 16, 0.55) 47.12%, rgba(255, 183, 16, 0.2) 100%);
       }
 
       .pmo-health-track .is-critical {
-        background: #9d73c9;
+        background: linear-gradient(90deg, rgba(240, 151, 151, 0.66) 0%, rgba(240, 151, 151, 0) 100%);
       }
 
       .pmo-health-labels {
-        display: flex;
-        justify-content: space-between;
-        width: 228px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        width: 260px;
       }
 
       .pmo-health-labels span {
-        color: #ffffff;
-        font-size: 6px;
-        line-height: 6px;
+        color: rgba(255, 255, 255, 0.84);
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 16px;
+        white-space: nowrap;
+      }
+
+      .pmo-health-labels span:nth-child(2) {
+        text-align: center;
+      }
+
+      .pmo-health-labels span:nth-child(3) {
+        text-align: right;
       }
 
       .pmo-hero-divider {
         background: rgba(255, 255, 255, 0.76);
         border-radius: 999px;
-        height: 128px;
-        left: 50%;
+        height: 120px;
+        left: 488px;
         position: absolute;
-        top: 92px;
-        transform: translateX(-1px);
+        top: 90px;
         width: 1px;
-        z-index: 2;
+        z-index: 4;
       }
 
       .pmo-budget-card {
         background: rgba(255, 255, 255, 0.09);
         border-radius: 8px;
         display: grid;
-        gap: 11px;
-        min-height: 93px;
-        padding: 5px 10px 5px;
+        gap: 4px;
+        height: 106px;
+        padding: 8px;
       }
 
       .pmo-budget-card > span {
         color: #ffffff;
-        font-size: 8px;
+        font-size: 11px;
+        font-weight: 400;
         line-height: 16px;
       }
 
       .pmo-budget-card-body {
         align-items: center;
         display: grid;
-        gap: 16px;
-        grid-template-columns: 36px minmax(0, 1fr);
+        gap: 12px;
+        grid-template-columns: 54px 169px;
+        height: 70px;
       }
 
       .pmo-budget-bars {
@@ -457,14 +513,19 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
       }
 
       .pmo-budget-bars i {
-        background: linear-gradient(90deg, rgba(153, 180, 255, 0.95), rgba(255, 255, 255, 0.35));
+        background: rgba(255, 255, 255, 0.11);
         border-radius: 999px;
-        height: 3px;
+        height: 4px;
+        width: 54px;
+      }
+
+      .pmo-budget-bars i:nth-child(n + 7) {
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.66) 0%, rgba(255, 255, 255, 0.13) 100%);
       }
 
       .pmo-budget-values {
         display: grid;
-        gap: 3px;
+        gap: 8px;
         min-width: 0;
       }
 
@@ -472,7 +533,7 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
         align-items: baseline;
         color: #ffffff;
         display: flex;
-        gap: 5px;
+        gap: 4px;
         margin: 0;
         min-width: 0;
       }
@@ -481,13 +542,19 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
         color: #ffffff;
         font-size: 16px;
         font-weight: 600;
-        line-height: 28px;
+        line-height: 24px;
       }
 
       .pmo-budget-values span {
         color: rgba(255, 255, 255, 0.9);
-        font-size: 8px;
-        line-height: 14px;
+        font-size: 12px;
+        line-height: 16px;
+        white-space: nowrap;
+      }
+
+      .pmo-budget-values p:first-child span {
+        color: rgba(255, 255, 255, 0.74);
+        font-weight: 500;
       }
 
       .pmo-frontdoor-quicklinks {
@@ -515,13 +582,35 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
       }
 
       app-pm-console-digest-panel ::ng-deep .digest-panel-section-label {
+        color: #777777;
         font-size: 12px;
         font-weight: 400;
+        line-height: 16px;
+      }
+
+      app-pm-console-digest-panel ::ng-deep .digest-panel {
+        gap: 16px;
+        padding: 16px 12px;
+      }
+
+      app-pm-console-digest-panel ::ng-deep .digest-panel-body {
+        background:
+          linear-gradient(90deg, rgba(16, 6, 159, 0.075) 0%, rgba(16, 6, 159, 0.0375) 25%, rgba(151, 71, 255, 0.0375) 75%, rgba(200, 125, 127, 0.15) 100%),
+          #ffffff;
+        padding: 12px 8px;
       }
 
       app-pm-console-digest-panel ::ng-deep .digest-panel-content {
         gap: 24px;
-        margin-top: 20px;
+        margin-top: 12px;
+      }
+
+      app-pm-console-digest-panel ::ng-deep .digest-panel-section {
+        gap: 8px;
+      }
+
+      app-pm-console-digest-panel ::ng-deep .digest-panel-section-label::after {
+        background: linear-gradient(90deg, rgba(16, 6, 159, 0.25) 0%, rgba(151, 71, 255, 0.25) 50%, rgba(200, 125, 127, 0.25) 100%);
       }
 
       app-pm-console-digest-panel ::ng-deep .digest-panel-list {
@@ -529,10 +618,20 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
       }
 
       app-pm-console-digest-panel ::ng-deep .digest-panel-item {
+        color: #0b0b0b;
         font-size: 12px;
+        font-weight: 400;
         line-height: 16px;
         min-height: 56px;
-        padding: 8px 12px;
+        padding: 12px;
+      }
+
+      app-pm-console-digest-panel ::ng-deep .digest-panel-section:first-child .digest-panel-item {
+        background: linear-gradient(90deg, rgba(200, 125, 159, 0.1) 0%, rgba(151, 71, 255, 0.025) 51.92%, rgba(16, 6, 159, 0.025) 75%, rgba(16, 6, 159, 0.05) 100%);
+      }
+
+      app-pm-console-digest-panel ::ng-deep .digest-panel-section:nth-child(2) .digest-panel-item {
+        background: linear-gradient(90deg, rgba(200, 125, 127, 0.1) 0%, rgba(151, 71, 255, 0.025) 51.92%, rgba(16, 6, 159, 0.025) 75%, rgba(16, 6, 159, 0.05) 100%);
       }
 
       app-pm-console-digest-panel ::ng-deep .digest-panel-item strong {
@@ -540,11 +639,46 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
         font-weight: 500;
       }
 
+      @container (max-width: 980px) {
+        .content-grid.normal-pm-frontdoor-grid.pmo-frontdoor-grid {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+
+      @container (max-width: 975px) {
+        .pmo-performance-hero-stage {
+          transform: translate(-50%, -50%) scale(0.94);
+        }
+      }
+
+      @container (max-width: 920px) {
+        .pmo-performance-hero-stage {
+          transform: translate(-50%, -50%) scale(0.89);
+        }
+      }
+
+      @container (max-width: 860px) {
+        .pmo-performance-hero-stage {
+          transform: translate(-50%, -50%) scale(0.84);
+        }
+      }
+
       @media (max-width: 1180px) {
         .pmo-performance-hero {
           height: auto;
           min-height: 440px;
+        }
+
+        .pmo-performance-hero-stage {
+          display: grid;
+          gap: 20px;
+          height: auto;
+          left: auto;
           padding: 24px;
+          position: relative;
+          top: auto;
+          transform: none;
+          width: auto;
         }
 
         .pmo-hero-metrics,
@@ -560,17 +694,24 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
 
         .pmo-hero-metrics {
           flex-wrap: wrap;
-          margin-bottom: 28px;
         }
 
         .pmo-hero-health,
         .pmo-hero-budget {
-          margin-top: 20px;
           width: min(100%, 520px);
         }
 
         .pmo-hero-divider {
           display: none;
+        }
+
+        .pmo-hero-visual {
+          overflow: hidden;
+        }
+
+        .pmo-hero-copy,
+        .pmo-hero-budget-copy {
+          margin-top: 0;
         }
       }
 

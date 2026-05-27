@@ -41,8 +41,8 @@ export const pmoFrontdoorMetrics: readonly PmoFrontdoorMetric[] = [
 ];
 
 export const pmoFrontdoorHealthRows: readonly PmoFrontdoorHealthRow[] = [
-  { label: 'Portfolio Performance', onTrack: 3, delayed: 3, critical: 3 },
-  { label: 'Program Performance', onTrack: 3, delayed: 3, critical: 3 },
+  { label: 'Portfolio Performance', onTrack: 2, delayed: 1, critical: 0 },
+  { label: 'Program Performance', onTrack: 3, delayed: 3, critical: 4 },
 ];
 
 export const pmoFrontdoorDigestSections: readonly PmConsoleDigestSection[] = [
@@ -53,7 +53,7 @@ export const pmoFrontdoorDigestSections: readonly PmConsoleDigestSection[] = [
         parts: [{ text: '3 of your 5 portfolios are running on track!' }],
       },
       {
-        parts: [{ text: 'You have 77 PMO review actions pending across plans, status reports, benefits, change requests, and governance committees. Go to Manage my Work to clear the highest-volume queues.' }],
+        parts: [{ text: 'You have 15 actions pending your review. Go to Manage my Work to view your calendar and clear your action board.' }],
       },
     ],
   },
@@ -62,20 +62,20 @@ export const pmoFrontdoorDigestSections: readonly PmConsoleDigestSection[] = [
     items: [
       {
         parts: [
-          { text: 'TASAMA Internal', emphasis: true },
-          { text: ': 14 items are delayed and 5 are critical. Visit your portfolio workspace to see which programs and projects need attention.' },
+          { text: 'TASAMA Internal :', emphasis: true },
+          { text: '14 items are delayed and 5 are critical. Visit your portfolio workspace to see what needs attention.' },
         ],
       },
       {
         parts: [
-          { text: 'Client Portfolio 1', emphasis: true },
-          { text: ': Reporting compliance is down to 74% this month from 89% last month. Follow up with managers who have not yet reported.' },
+          { text: 'Client Portfolio 1 :', emphasis: true },
+          { text: 'Reporting compliance is down to 74% this month from 89% last month. Follow up with managers who have not yet reported.' },
         ],
       },
       {
         parts: [
-          { text: 'Client Portfolio 2', emphasis: true },
-          { text: ': You have not submitted a portfolio report this month. Head to Report Progress to submit your latest status update.' },
+          { text: 'Client Portfolio 2 :', emphasis: true },
+          { text: 'Has not submitted progress this month.' },
         ],
       },
     ],

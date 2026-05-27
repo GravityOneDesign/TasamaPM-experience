@@ -1,6 +1,6 @@
 # Tasama Project Bible
 
-Last updated: 2026-05-26
+Last updated: 2026-05-27
 
 This file is the long-term handoff, memory, architecture guide, and AI-agent operating manual for the Tasama project. It exists so another coding agent, developer, or design engineer can restart work in a different tool and still understand the project language, product context, structure, and constraints.
 
@@ -887,6 +887,11 @@ When a user asks for UI from Figma:
 - Visually verify if feasible.
 
 ## Memory Log
+
+2026-05-27:
+
+- Reworked the PMO front-door overview banner to match the supplied Figma node: the banner now uses a fixed 976 x 264 centered composition inside an expanding blue gradient shell, preserves the Figma illustration style, centers the budget artwork/card cluster visually inside its blue area, offsets the complete unclipped budget illustration left so it avoids the budget card, keeps health and budget headings at 14px with softer 12px health subtext, and keeps the visual centered as wider screens add only gradient space at the sides.
+- Aligned the PMO front-door Welcome/Daily Digest right rail with the supplied Figma node: the PMO digest now uses the 320px rail width, Figma copy, Montserrat 12/16 digest typography, #0b0b0b item text, #777777 section labels, #10069f medium portfolio emphasis, 12px item padding, and PMO-scoped gradient/card overrides while preserving the shared digest component for other personas.
 
 2026-05-26:
 
