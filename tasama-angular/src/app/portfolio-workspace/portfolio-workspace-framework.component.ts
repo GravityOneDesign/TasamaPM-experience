@@ -1738,9 +1738,9 @@ export interface TaxonomyCard {
     
     @if (isCreatingWorkflow) {
       <app-pm-console-plan-drawer
-        eyebrow=""
-        title="Workflow Designer"
-        description="Project Report"
+        eyebrow="Workflow Designer"
+        [title]="workflowType"
+        [description]="'Create custom ' + workflowType + ' Workflow'"
         submitLabel="Create"
         cancelLabel="Cancel"
         panelClass="workflow-custom-drawer"
