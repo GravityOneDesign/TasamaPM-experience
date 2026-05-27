@@ -47,22 +47,20 @@ const registerSubTabs: readonly RegisterSubTabItem[] = [
     <div class="workspace-registers-tab">
       <div class="portfolio-register-shell" [class.without-register-nav]="!showRegisterTabs">
         @if (showRegisterTabs) {
-          <aside class="portfolio-register-nav project-plan-sections plan-builder-nav quick-plan-nav matrix-plan-nav" aria-label="Register sections">
-            <div class="matrix-nav-scroll">
-              <div class="matrix-nav-group">
-                <div class="matrix-nav-list" role="tablist" aria-label="Portfolio registers">
-                  @for (tab of registerSubTabs; track tab.id) {
-                    <button
-                      [class.active]="activeSubTab === tab.id"
-                      type="button"
-                      role="tab"
-                      [attr.aria-selected]="activeSubTab === tab.id"
-                      (click)="setSubTab(tab.id)"
-                    >
-                      <span class="matrix-nav-item-label">{{ tab.label }}</span>
-                    </button>
-                  }
-                </div>
+          <aside class="portfolio-register-nav" aria-label="Register sections">
+            <div class="portfolio-register-tab-scroll">
+              <div class="portfolio-register-tab-list" role="tablist" aria-label="Portfolio registers">
+                @for (tab of registerSubTabs; track tab.id) {
+                  <button
+                    [class.active]="activeSubTab === tab.id"
+                    type="button"
+                    role="tab"
+                    [attr.aria-selected]="activeSubTab === tab.id"
+                    (click)="setSubTab(tab.id)"
+                  >
+                    <span class="portfolio-register-tab-label">{{ tab.label }}</span>
+                  </button>
+                }
               </div>
             </div>
           </aside>
@@ -74,7 +72,7 @@ const registerSubTabs: readonly RegisterSubTabItem[] = [
               <div class="tab-content-container animation-slide">
 
             <div class="register-toolbar">
-              <div class="toolbar-left" style="display: flex; align-items: center; gap: 12px;">
+              <div class="toolbar-left">
                 <!-- Programs summary container -->
                 <div class="summary-pill active">
                   <span class="pill-label">Programs</span>
@@ -87,7 +85,7 @@ const registerSubTabs: readonly RegisterSubTabItem[] = [
                 </div>
               </div>
               
-              <div class="toolbar-right" style="display: flex; align-items: center; gap: 10px; margin-left: auto;">
+              <div class="toolbar-right">
                 <!-- Toggleable Search -->
                 <div class="search-toggle-container" [class.is-expanded]="showSearch">
                   <button class="tb-btn search-toggle-btn" type="button" (click)="showSearch = !showSearch" aria-label="Toggle search">
@@ -334,10 +332,10 @@ const registerSubTabs: readonly RegisterSubTabItem[] = [
     }
 
     .portfolio-register-shell {
-      background: #f7f7fc;
-      display: grid;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
       flex: 1;
-      grid-template-columns: 252px minmax(0, 1fr);
       min-height: 0;
       overflow: hidden;
     }
@@ -347,23 +345,97 @@ const registerSubTabs: readonly RegisterSubTabItem[] = [
     }
 
     .portfolio-register-nav {
+      align-items: stretch;
+      background: #ffffff;
+      border-bottom: 1px solid #edf0f6;
+      display: flex;
+      flex: 0 0 auto;
+      height: 48px;
+      margin: 0;
       min-height: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 0 32px;
+      width: 100%;
     }
 
-    .portfolio-register-nav.plan-builder-nav.quick-plan-nav.matrix-plan-nav {
+    .portfolio-register-tab-scroll {
+      align-items: stretch;
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: row;
+      height: 100%;
+      min-height: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+      width: 100%;
+    }
+
+    .portfolio-register-tab-list {
+      align-items: stretch;
+      display: flex;
+      flex-direction: row;
+      gap: 32px;
+      height: 100%;
       width: auto;
     }
 
-    .portfolio-register-nav.plan-builder-nav.quick-plan-nav.matrix-plan-nav .matrix-nav-list {
-      gap: 10px;
+    .portfolio-register-tab-list button {
+      align-items: center;
+      background: transparent;
+      border: 0;
+      color: #5e6472;
+      display: inline-flex;
+      flex: 0 0 auto;
+      font-size: 13px;
+      font-weight: 600;
+      height: 100%;
+      justify-content: center;
+      line-height: 18px;
+      min-width: 0;
+      overflow: visible;
+      padding: 0 2px;
+      position: relative;
+      white-space: nowrap;
+      width: auto;
+      z-index: 0;
     }
 
-    .portfolio-register-nav.plan-builder-nav.quick-plan-nav.matrix-plan-nav .matrix-nav-list button:focus {
+    .portfolio-register-tab-list button:hover {
+      color: #252a34;
+    }
+
+    .portfolio-register-tab-list button.active {
+      background: transparent;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    .portfolio-register-tab-list button.active::after {
+      background: var(--brand);
+      border-radius: 999px 999px 0 0;
+      bottom: -1px;
+      content: "";
+      display: block;
+      height: 2px;
+      left: 0;
+      pointer-events: none;
+      position: absolute;
+      right: 0;
+    }
+
+    .portfolio-register-tab-label {
+      overflow: visible;
+      text-overflow: clip;
+      white-space: nowrap;
+    }
+
+    .portfolio-register-tab-list button:focus {
       outline: none;
     }
 
-    .portfolio-register-nav.plan-builder-nav.quick-plan-nav.matrix-plan-nav .matrix-nav-list button:focus-visible {
-      box-shadow: 0 0 0 2px rgba(16, 6, 159, 0.18);
+    .portfolio-register-tab-list button:focus-visible {
+      box-shadow: inset 0 0 0 2px rgba(16, 6, 159, 0.18);
     }
 
     .portfolio-register-panel {
@@ -379,7 +451,7 @@ const registerSubTabs: readonly RegisterSubTabItem[] = [
     .tab-content-container {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 14px;
       flex: 1;
       min-height: 0;
       overflow: hidden;
@@ -397,8 +469,8 @@ const registerSubTabs: readonly RegisterSubTabItem[] = [
       top: 0px;
       z-index: 11;
       background: transparent;
-      padding: 6px 0;
-      margin-bottom: 4px;
+      padding: 14px 20px 12px;
+      margin-bottom: 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -455,7 +527,7 @@ const registerSubTabs: readonly RegisterSubTabItem[] = [
     .toolbar-left {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 24px;
     }
 
     .items-count {
@@ -492,7 +564,8 @@ const registerSubTabs: readonly RegisterSubTabItem[] = [
     .toolbar-right {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
+      margin-left: auto;
     }
 
     .tb-btn {
@@ -863,15 +936,16 @@ const registerSubTabs: readonly RegisterSubTabItem[] = [
     }
 
     @media (max-width: 900px) {
-      .portfolio-register-shell {
-        grid-template-columns: minmax(0, 1fr);
-        grid-template-rows: auto minmax(0, 1fr);
+      .portfolio-register-nav {
+        padding: 0 16px;
       }
 
-      .portfolio-register-nav.plan-builder-nav.quick-plan-nav.matrix-plan-nav {
-        border-bottom: 1px solid #dddddd;
-        border-right: 0;
-        width: 100%;
+      .portfolio-register-tab-list {
+        gap: 24px;
+      }
+
+      .portfolio-register-tab-list button {
+        font-size: 12.5px;
       }
     }
   `]
