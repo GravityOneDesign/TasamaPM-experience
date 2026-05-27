@@ -143,19 +143,21 @@ export interface TaxonomyCard {
                 </div>
 
                 <!-- Subtitle (Description) -->
-                <p style="font-size: 14px; color: #687182; margin: 0 0 16px 0; max-width: 800px; line-height: 1.5;">
-                  {{ groupObjects[selectedGroupIndex].purpose || 'Description of new division' }}
-                </p>
+                @if (groupObjects[selectedGroupIndex].purpose) {
+                  <p style="font-size: 14px; color: #687182; margin: 0 0 16px 0; max-width: 800px; line-height: 1.5;">
+                    {{ groupObjects[selectedGroupIndex].purpose }}
+                  </p>
+                }
 
                 <!-- Wrap-around Branches Flex Row (4 per row max or wraps naturally) -->
                 <div class="branches-row-flex" style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 24px; align-items: flex-start; padding: 8px 4px 24px 4px; width: 100%;">
                   
                   @for (div of groupObjects[selectedGroupIndex].divisions; track $index; let dIdx = $index) {
                     <!-- Unified Branch Card Layout (Figma Selected Node: Container) -->
-                    <div class="branch-unified-card animation-fade" style="background: linear-gradient(135deg, #F4F5FF 0%, #FFFFFF 100%); border-radius: 16px; display: flex; flex-direction: column; width: 290px; min-width: 290px; height: 283px; box-shadow: 0 4px 16px 0 rgba(16, 6, 159, 0.07); position: relative; box-sizing: border-box; font-family: Montserrat, -apple-system, sans-serif; overflow: hidden;">
+                    <div class="branch-unified-card animation-fade" style="background: linear-gradient(135deg, #FAFBFF 0%, #FFFFFF 100%); border: 1px solid #CFDEFD; border-radius: 16px; display: flex; flex-direction: column; width: 290px; min-width: 290px; height: 283px; box-shadow: 0 4px 16px 0 rgba(16, 6, 159, 0.05); position: relative; box-sizing: border-box; font-family: Montserrat, -apple-system, sans-serif; overflow: hidden;">
                       
                       <!-- Header portion with linear gradient from Figma (exactly 89px height) -->
-                      <div style="background: linear-gradient(132deg, #F4F5FF 36.64%, #D5E3FF 100%); padding: 12px 20px 10px 20px; display: flex; flex-direction: column; justify-content: space-between; height: 89px; box-sizing: border-box; border-bottom: 1px solid rgba(16, 6, 159, 0.08); border-radius: 16px 16px 0 0;">
+                      <div style="background: linear-gradient(132deg, #F4F5FF 36.64%, #D5E3FF 100%); padding: 12px 20px 10px 20px; display: flex; flex-direction: column; justify-content: space-between; height: 89px; box-sizing: border-box; border-bottom: 1px solid #CFDEFD; border-radius: 16px 16px 0 0;">
                         <!-- Header Row: Pill & Actions -->
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                           <span class="pill-branch" style="background: #ffffff; color: #10069f; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 100px; line-height: 1; border: 1px solid #CFDEFD;">Branch</span>
@@ -174,12 +176,17 @@ export interface TaxonomyCard {
                         </div>
 
                         <!-- Branch Info (Name + Owner) -->
-                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
                           <!-- Branch Name -->
                           <h4 style="font-size: 15px; font-weight: 700; color: #000000; margin: 0; word-break: break-word; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="div.name">{{ div.name }}</h4>
                           
-                          <!-- Owner -->
-                          <div style="font-size: 11px; color: #687182; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Owner: {{ div.owner || '—' }}</div>
+                          <!-- Owner (shown only if entered, user icon + name, no "Owner" label) -->
+                          @if (div.owner) {
+                            <div style="font-size: 11.5px; color: #475569; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px;">
+                              <span pmConsoleIcon="user" style="width: 13px; height: 13px; color: #475569; display: inline-flex; align-items: center; justify-content: center;"></span>
+                              <span>{{ div.owner }}</span>
+                            </div>
+                          }
                         </div>
                       </div>
 
@@ -194,14 +201,11 @@ export interface TaxonomyCard {
                                   class="section-clickable-row"
                                   (click)="openViewSectionDrawer(dIdx, bIdx)"
                                   title="View Section Details"
-                                  style="display: flex; align-items: center; gap: 8px; cursor: pointer; width: 100%; padding: 4px 6px; border-radius: 6px; transition: background 0.2s;"
-                                  onmouseover="this.style.background='rgba(16, 6, 159, 0.05)'"
-                                  onmouseout="this.style.background='transparent'"
                                 >
-                                  <span class="icon icon-branch" aria-hidden="true" style="display: inline-flex; align-items: center; justify-content: center; color: #64748b;">
+                                  <span class="icon icon-branch" aria-hidden="true">
                                     <span pmConsoleIcon="git-branch" style="width: 14px; height: 14px;"></span>
                                   </span>
-                                  <span class="section-name-text" style="font-size: 13px; font-weight: 600; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-grow: 1;" [title]="br.name">{{ br.name }}</span>
+                                  <span class="section-name-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="br.name">{{ br.name }}</span>
                                 </div>
                               </div>
                             }
@@ -582,7 +586,7 @@ export interface TaxonomyCard {
               <div planDrawerBody class="ud-form" style="display: flex; flex-direction: column; gap: 20px; font-family: Montserrat, -apple-system, sans-serif;">
                 
                 <!-- Division Banner -->
-                <div style="display: flex; justify-content: space-between; align-items: center; background: #ffffff; border-top: 1px solid #e4e7ef; border-bottom: 1px solid #e4e7ef; padding: 12px 20px; margin: -18px -20px 20px -20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; background: #fafafa; border-top: 1px solid #e4e7ef; border-bottom: 1px solid #e4e7ef; padding: 12px 20px; margin: -18px -20px 20px -20px;">
                   <span style="font-size: 14px; font-weight: 700; color: #1d252d;">Division</span>
                   <span style="font-size: 14px; color: #687182;">{{ groupObjects[selectedGroupIndex]?.name }}</span>
                 </div>
@@ -593,19 +597,25 @@ export interface TaxonomyCard {
                     <div style="font-size: 13.5px; font-weight: 700; color: #1d252d; margin-bottom: 6px;">Branch Name <span style="color: #fb2c36;">*</span></div>
                     <div style="font-size: 14px; color: #687182;">{{ viewBranch.name }}</div>
                   </div>
-                  <div>
-                    <div style="font-size: 13.5px; font-weight: 700; color: #1d252d; margin-bottom: 6px;">Owner</div>
-                    <div style="font-size: 14px; color: #687182;">{{ viewBranch.owner || '—' }}</div>
-                  </div>
+                  @if (viewBranch.owner) {
+                    <div>
+                      <div style="font-size: 13.5px; font-weight: 700; color: #1d252d; margin-bottom: 6px; display: inline-flex; align-items: center; gap: 6px;">
+                        <span pmConsoleIcon="user" style="width: 14px; height: 14px; color: #1d252d;"></span>
+                        <span>{{ viewBranch.owner }}</span>
+                      </div>
+                    </div>
+                  }
                 </div>
 
                 <!-- Description read-only details -->
-                <div>
-                  <div style="font-size: 13.5px; font-weight: 700; color: #1d252d; margin-bottom: 6px;">Description</div>
-                  <div style="font-size: 14px; color: #687182; line-height: 1.5; white-space: pre-wrap;">
-                    {{ viewBranch.purpose || '—' }}
+                @if (viewBranch.purpose) {
+                  <div>
+                    <div style="font-size: 13.5px; font-weight: 700; color: #1d252d; margin-bottom: 6px;">Description</div>
+                    <div style="font-size: 14px; color: #687182; line-height: 1.5; white-space: pre-wrap;">
+                      {{ viewBranch.purpose }}
+                    </div>
                   </div>
-                </div>
+                }
 
               </div>
             </app-pm-console-plan-drawer>
@@ -637,7 +647,7 @@ export interface TaxonomyCard {
               <div planDrawerBody class="ud-form" style="display: flex; flex-direction: column; gap: 20px; font-family: Montserrat, -apple-system, sans-serif;">
                 
                 <!-- Division & Branch Banners -->
-                <div style="background: #ffffff; border-top: 1px solid #e4e7ef; border-bottom: 1px solid #e4e7ef; margin: -18px -20px 20px -20px;">
+                <div style="background: #fafafa; border-top: 1px solid #e4e7ef; border-bottom: 1px solid #e4e7ef; margin: -18px -20px 20px -20px;">
                   <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-bottom: 1px solid #e4e7ef;">
                     <span style="font-size: 14px; font-weight: 700; color: #1d252d;">Division</span>
                     <span style="font-size: 14px; color: #687182;">{{ groupObjects[selectedGroupIndex]?.name }}</span>
@@ -654,19 +664,25 @@ export interface TaxonomyCard {
                     <div style="font-size: 13.5px; font-weight: 700; color: #1d252d; margin-bottom: 6px;">Section Name <span style="color: #fb2c36;">*</span></div>
                     <div style="font-size: 14px; color: #687182;">{{ viewSection.name }}</div>
                   </div>
-                  <div>
-                    <div style="font-size: 13.5px; font-weight: 700; color: #1d252d; margin-bottom: 6px;">Owner</div>
-                    <div style="font-size: 14px; color: #687182;">{{ viewSection.owner || '—' }}</div>
-                  </div>
+                  @if (viewSection.owner) {
+                    <div>
+                      <div style="font-size: 13.5px; font-weight: 700; color: #1d252d; margin-bottom: 6px; display: inline-flex; align-items: center; gap: 6px;">
+                        <span pmConsoleIcon="user" style="width: 14px; height: 14px; color: #1d252d;"></span>
+                        <span>{{ viewSection.owner }}</span>
+                      </div>
+                    </div>
+                  }
                 </div>
 
                 <!-- Description read-only details -->
-                <div>
-                  <div style="font-size: 13.5px; font-weight: 700; color: #1d252d; margin-bottom: 6px;">Description</div>
-                  <div style="font-size: 14px; color: #687182; line-height: 1.5; white-space: pre-wrap;">
-                    {{ viewSection.purpose || '—' }}
+                @if (viewSection.purpose) {
+                  <div>
+                    <div style="font-size: 13.5px; font-weight: 700; color: #1d252d; margin-bottom: 6px;">Description</div>
+                    <div style="font-size: 14px; color: #687182; line-height: 1.5; white-space: pre-wrap;">
+                      {{ viewSection.purpose }}
+                    </div>
                   </div>
-                </div>
+                }
 
               </div>
             </app-pm-console-plan-drawer>
@@ -5407,26 +5423,37 @@ export interface TaxonomyCard {
       gap: 8px;
       color: #334155;
       font-size: 13px;
-      font-weight: 500;
+      font-weight: 600;
       min-width: 0;
       flex-grow: 1;
       cursor: pointer;
-      transition: color 0.2s ease;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #CFDEFD;
+      background: #ffffff;
+      transition: all 0.2s ease;
+      box-sizing: border-box;
     }
     .section-clickable-row:hover {
       color: #10069f !important;
+      background: #F4F5FF;
+      border-color: #10069f;
     }
     .section-clickable-row:hover .section-name-text {
-      text-decoration: underline;
+      text-decoration: none;
     }
     .section-clickable-row .icon-branch {
-      color: #10069f;
+      color: #64748b;
       font-size: 14px;
       width: 14px;
       height: 14px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      transition: color 0.2s ease;
+    }
+    .section-clickable-row:hover .icon-branch {
+      color: #10069f;
     }
 
     /* Scrollbar styling for nested sections inside branch card */
