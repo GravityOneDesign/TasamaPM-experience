@@ -1,7 +1,9 @@
-import { ChangeDetectionStrategy, Component, HostListener } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PmConsoleIconComponent } from '../shared/pm-console-icon.component';
+import { PmConsoleCreateMenuComponent, type PmConsoleCreateMenuOption } from '../shared/pm-console-create-menu.component';
+import { type PmConsoleFieldOption } from '../shared/pm-console-field.component';
 import { PmConsoleStatusTrendComponent, type PmConsoleStatusTrendInput } from '../shared/pm-console-status-trend.component';
 import { PmConsolePlanEmptyStateComponent } from '../pm-console-plan-empty-state.component';
 import {
@@ -10,11 +12,18 @@ import {
   riskRegisterData,
   benefitsRegisterData,
   ProgramRow,
+  ProjectRow,
   Risk,
   Benefit
 } from './portfolio-workspace.data';
 import { PortfolioWorkspaceRiskRegisterComponent } from './portfolio-workspace-risk-register.component';
 import { PortfolioWorkspaceBenefitsRegisterComponent } from './portfolio-workspace-benefits-register.component';
+import {
+  PortfolioWorkspaceRegisterCreateDrawerComponent,
+  type PortfolioProgramCreatePayload,
+  type PortfolioProjectCreatePayload,
+  type PortfolioRegisterCreateKind,
+} from './portfolio-workspace-register-create-drawer.component';
 
 type SubTab = 'projects' | 'benefits' | 'risks' | 'issues';
 
@@ -30,6 +39,14 @@ const registerSubTabs: readonly RegisterSubTabItem[] = [
   { id: 'issues', label: 'Issues' },
 ];
 
+const createMenuOptions: readonly PmConsoleCreateMenuOption[] = [
+  { id: 'program', label: 'Program', icon: 'layers' },
+  { id: 'project', label: 'Project', icon: 'folder' },
+];
+
+const portfolioOptions: readonly string[] = ['Tasama Client 1'];
+const unassignedManager = 'Unassigned';
+
 @Component({
   selector: 'app-portfolio-workspace-registers',
   standalone: true,
@@ -37,10 +54,12 @@ const registerSubTabs: readonly RegisterSubTabItem[] = [
     CommonModule,
     FormsModule,
     PmConsoleIconComponent,
+    PmConsoleCreateMenuComponent,
     PmConsoleStatusTrendComponent,
     PmConsolePlanEmptyStateComponent,
     PortfolioWorkspaceRiskRegisterComponent,
-    PortfolioWorkspaceBenefitsRegisterComponent
+    PortfolioWorkspaceBenefitsRegisterComponent,
+    PortfolioWorkspaceRegisterCreateDrawerComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -110,27 +129,14 @@ const registerSubTabs: readonly RegisterSubTabItem[] = [
                   <span>Export</span>
                 </button>
 
-                <!-- Create Dropdown Container -->
-                <div class="create-dropdown-container" style="position: relative; display: inline-block;">
-                  <button class="tb-btn primary-tb" type="button" (click)="toggleCreateDropdown($event)" style="display: inline-flex; align-items: center; gap: 6px;">
-                    <span [pmConsoleIcon]="'plus'"></span>
-                    <span>Add new</span>
-                  </button>
-                  @if (showCreateDropdown) {
-                    <div class="create-dropdown-menu" style="position: absolute; right: 0; top: 100%; margin-top: 6px; background: white; border: 1px solid #edf0f6; border-radius: 10px; box-shadow: 0 10px 25px rgba(25, 33, 61, 0.12); width: 150px; z-index: 100; padding: 6px; display: flex; flex-direction: column; gap: 4px;">
-                      <button class="dropdown-item" type="button" (click)="onCreateOption('New Project')" style="background: transparent; border: none; padding: 8px 12px; font-size: 13px; font-weight: 500; color: #252a34; text-align: left; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; width: 100%; transition: background-color 0.15s ease;">
-                        <span [pmConsoleIcon]="'folder'" style="font-size: 14px; color: #707788;"></span>
-                        <span>New Project</span>
-                      </button>
-                      <button class="dropdown-item" type="button" (click)="onCreateOption('New Program')" style="background: transparent; border: none; padding: 8px 12px; font-size: 13px; font-weight: 500; color: #252a34; text-align: left; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; width: 100%; transition: background-color 0.15s ease;">
-                        <span [pmConsoleIcon]="'layers'" style="font-size: 14px; color: #707788;"></span>
-                        <span>New Program</span>
-                      </button>
-                    </div>
-                  }
-                </div>
+                <app-pm-console-create-menu
+                  label="Add new"
+                  ariaLabel="Add program or project"
+                  [options]="createMenuOptions"
+                  (optionSelect)="openCreateDrawer($event)"
+                />
 
-                <button class="tb-btn settings-btn" type="button" aria-label="Settings" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0;">
+                <button class="tb-btn settings-btn" type="button" aria-label="Settings">
                   <span [pmConsoleIcon]="'settings'"></span>
                 </button>
               </div>
@@ -141,12 +147,12 @@ const registerSubTabs: readonly RegisterSubTabItem[] = [
               <table class="pm-project-table">
                 <thead>
                   <tr>
-                    <th style="width: 28%">Program / Project Name</th>
-                    <th style="width: 16%">Manager</th>
-                    <th style="width: 20%">Status Trend</th>
-                    <th style="width: 12%">Start Date</th>
-                    <th style="width: 12%">End Date</th>
-                    <th style="width: 12%">Budget Utilised</th>
+                    <th>Program / Project Name</th>
+                    <th>Manager</th>
+                    <th>Status Trend</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Budget Utilised</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -164,7 +170,7 @@ const registerSubTabs: readonly RegisterSubTabItem[] = [
                             <span [pmConsoleIcon]="isExpanded(prog.id) ? 'chevron-down' : 'chevron-right'" class="chevron-icon"></span>
                           </button>
                           <div class="program-title-column" title="{{ prog.name }}">
-                            <div class="program-id-alert-wrapper" style="display: flex; align-items: center; gap: 6px;">
+                            <div class="program-id-alert-wrapper">
                               <span class="program-display-id">{{ getProgramDisplayId(prog.id) }}</span>
                               @if (prog.id === 'prog-1' || prog.id === 'prog-2') {
                                 <span class="review-needed-alert" title="Needs attention">
@@ -285,6 +291,7 @@ const registerSubTabs: readonly RegisterSubTabItem[] = [
                   [programs]="programs"
                   [standaloneProjects]="standaloneList"
                   (riskCreate)="addRisk($event)"
+                  (riskDelete)="deleteRisk($event)"
                 />
               </div>
             }
@@ -308,6 +315,17 @@ const registerSubTabs: readonly RegisterSubTabItem[] = [
           }
         </main>
       </div>
+      @if (createDrawerKind) {
+        <app-portfolio-workspace-register-create-drawer
+          [kind]="createDrawerKind"
+          [portfolioOptions]="portfolioOptions"
+          [programOptions]="programSelectOptions"
+          [managerOptions]="managerOptions"
+          (close)="closeCreateDrawer()"
+          (programCreate)="addProgramFromDrawer($event)"
+          (projectCreate)="addProjectFromDrawer($event)"
+        />
+      }
     </div>
   `,
   styles: [`
@@ -381,11 +399,11 @@ const registerSubTabs: readonly RegisterSubTabItem[] = [
       color: #5e6472;
       display: inline-flex;
       flex: 0 0 auto;
-      font-size: 13px;
-      font-weight: 600;
+      font-size: 12px;
+      font-weight: 500;
       height: 100%;
       justify-content: center;
-      line-height: 18px;
+      line-height: 16px;
       min-width: 0;
       overflow: visible;
       padding: 0 2px;
@@ -402,7 +420,7 @@ const registerSubTabs: readonly RegisterSubTabItem[] = [
     .portfolio-register-tab-list button.active {
       background: transparent;
       color: var(--brand);
-      font-weight: 600;
+      font-weight: 500;
     }
 
     .portfolio-register-tab-list button.active::after {
@@ -856,10 +874,6 @@ const registerSubTabs: readonly RegisterSubTabItem[] = [
       border-color: rgba(16, 6, 159, 0.15);
       color: #10069f;
     }
-    .create-dropdown-menu .dropdown-item:hover {
-      background-color: #f4f5f7 !important;
-    }
-
     /* Animations */
     .animation-slide {
       animation: slideIn 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -884,6 +898,12 @@ const registerSubTabs: readonly RegisterSubTabItem[] = [
       width: 32px;
       height: 32px;
       padding: 0 !important;
+    }
+
+    .program-id-alert-wrapper {
+      align-items: center;
+      display: flex;
+      gap: 6px;
     }
 
     /* Needs Review indicator & legend styles */
@@ -939,42 +959,74 @@ const registerSubTabs: readonly RegisterSubTabItem[] = [
       }
 
       .portfolio-register-tab-list button {
-        font-size: 12.5px;
+        font-size: 12px;
       }
     }
   `]
 })
 export class PortfolioWorkspaceRegistersComponent {
   readonly registerSubTabs = registerSubTabs;
+  readonly createMenuOptions = createMenuOptions;
+  readonly portfolioOptions = portfolioOptions;
+
   activeSubTab: SubTab = 'risks';
   expandedProgramIds = new Set<string>(); // default closed by default
   searchQuery = '';
   statusFilter: string | null = null;
   showSearch = false; // toggleable search bar
-  showCreateDropdown = false;
+  createDrawerKind: PortfolioRegisterCreateKind | null = null;
 
-  programs = portfolioProgramRows;
-  standaloneList = standaloneProjects;
+  programs: ProgramRow[] = portfolioProgramRows.map((program) => ({
+    ...program,
+    projects: program.projects ? [...program.projects] : undefined,
+  }));
+  standaloneList: ProgramRow[] = standaloneProjects.map((project) => ({ ...project }));
   riskData: Risk[] = riskRegisterData;
   benefits: Benefit[] = benefitsRegisterData;
 
-  @HostListener('document:click')
-  onDocumentClick(): void {
-    this.showCreateDropdown = false;
+  openCreateDrawer(option: PmConsoleCreateMenuOption): void {
+    if (!this.isCreateKind(option.id)) return;
+    this.createDrawerKind = option.id;
   }
 
-  toggleCreateDropdown(event: MouseEvent): void {
-    event.stopPropagation();
-    this.showCreateDropdown = !this.showCreateDropdown;
+  closeCreateDrawer(): void {
+    this.createDrawerKind = null;
   }
 
-  onCreateOption(option: string): void {
-    console.log('Selected option:', option);
-    this.showCreateDropdown = false;
+  addProgramFromDrawer(payload: PortfolioProgramCreatePayload): void {
+    const program = this.createProgramRow(payload);
+    this.programs = [program, ...this.programs];
+    this.closeCreateDrawer();
+  }
+
+  addProjectFromDrawer(payload: PortfolioProjectCreatePayload): void {
+    const selectedProgram = this.programs.find((program) => program.id === payload.programId);
+    if (!selectedProgram) {
+      this.standaloneList = [this.createStandaloneProjectRow(payload), ...this.standaloneList];
+      this.closeCreateDrawer();
+      return;
+    }
+
+    const project = this.createProjectRow(payload, selectedProgram);
+    this.programs = this.programs.map((program) => {
+      if (program.id !== selectedProgram.id) return program;
+      return {
+        ...program,
+        projects: [project, ...(program.projects || [])],
+      };
+    });
+    const nextExpandedProgramIds = new Set(this.expandedProgramIds);
+    nextExpandedProgramIds.add(selectedProgram.id);
+    this.expandedProgramIds = nextExpandedProgramIds;
+    this.closeCreateDrawer();
   }
 
   addRisk(risk: Risk): void {
     this.riskData = [...this.riskData, risk];
+  }
+
+  deleteRisk(riskId: string): void {
+    this.riskData = this.riskData.filter((risk) => risk.id !== riskId);
   }
 
   getRowStatusLabel(id: string, defaultStatus: string): string {
@@ -1039,21 +1091,128 @@ export class PortfolioWorkspaceRegistersComponent {
     // Component search query handled reactively in getter below
   }
 
+  private createManagerOptions(): readonly string[] {
+    const names = new Set<string>();
+    for (const program of this.programs) {
+      if (program.manager && program.manager !== unassignedManager) names.add(program.manager);
+      for (const project of program.projects || []) {
+        if (project.manager && project.manager !== unassignedManager) names.add(project.manager);
+      }
+    }
+    for (const project of this.standaloneList) {
+      if (project.manager && project.manager !== unassignedManager) names.add(project.manager);
+    }
+    return [...names].sort((a, b) => a.localeCompare(b));
+  }
+
+  get managerOptions(): readonly string[] {
+    return this.createManagerOptions();
+  }
+
+  get programSelectOptions(): readonly PmConsoleFieldOption[] {
+    return this.programs.map((program) => ({
+      value: program.id,
+      label: program.name,
+    }));
+  }
+
+  private isCreateKind(id: string): id is PortfolioRegisterCreateKind {
+    return id === 'program' || id === 'project';
+  }
+
+  private createProgramRow(payload: PortfolioProgramCreatePayload): ProgramRow {
+    return {
+      id: this.nextProgramId(),
+      name: payload.name,
+      stage: 'Initiation',
+      trend: 'stable',
+      manager: payload.manager || unassignedManager,
+      relatedPortfolio: payload.relatedPortfolio,
+      startDate: this.isoDateWithOffset(0),
+      endDate: this.isoDateWithOffset(365),
+      budgetUtilised: '$0 / $0',
+      status: 'not-started',
+      isProgram: true,
+      projects: [],
+    };
+  }
+
+  private createStandaloneProjectRow(payload: PortfolioProjectCreatePayload): ProgramRow {
+    return {
+      id: this.nextStandaloneProjectId(),
+      name: payload.name,
+      stage: payload.complete ? 'Planning' : 'Initiation',
+      trend: 'stable',
+      manager: payload.manager || unassignedManager,
+      relatedPortfolio: this.portfolioOptions[0],
+      startDate: this.isoDateWithOffset(0),
+      endDate: this.isoDateWithOffset(90),
+      budgetUtilised: '$0 / $0',
+      status: payload.complete ? 'under-review' : 'not-started',
+      isProgram: false,
+    };
+  }
+
+  private createProjectRow(payload: PortfolioProjectCreatePayload, program: ProgramRow): ProjectRow {
+    return {
+      id: this.nextProjectId(program),
+      name: payload.name,
+      stage: payload.complete ? 'Planning' : 'Initiation',
+      trend: 'stable',
+      manager: payload.manager || unassignedManager,
+      startDate: this.isoDateWithOffset(0),
+      endDate: this.isoDateWithOffset(90),
+      budgetUtilised: '$0 / $0',
+      status: payload.complete ? 'under-review' : 'not-started',
+    };
+  }
+
+  private nextProgramId(): string {
+    return `prog-${this.nextNumericId(this.programs, /^prog-(\d+)$/)}`;
+  }
+
+  private nextStandaloneProjectId(): string {
+    return `sa-proj-${this.nextNumericId(this.standaloneList, /^sa-proj-(\d+)$/)}`;
+  }
+
+  private nextProjectId(program: ProgramRow): string {
+    const programNumber = program.id.match(/^prog-(\d+)$/)?.[1] || '0';
+    return `proj-${programNumber}-${this.nextNumericId(program.projects || [], /^proj-\d+-(\d+)$/)}`;
+  }
+
+  private nextNumericId(rows: readonly { readonly id: string }[], pattern: RegExp): number {
+    return rows.reduce((next, row) => {
+      const match = row.id.match(pattern);
+      if (!match) return next;
+      return Math.max(next, Number(match[1]) + 1);
+    }, 1);
+  }
+
+  private isoDateWithOffset(days: number): string {
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    return date.toISOString().slice(0, 10);
+  }
+
+  private displayIdPart(value: string | undefined): string {
+    return (value || '0').padStart(2, '0');
+  }
+
 
 
   getProgramDisplayId(id: string): string {
     if (id.startsWith('prog-')) {
-      const num = id.split('-')[1];
-      return `ATRC-0${num}`;
+      const num = this.displayIdPart(id.split('-')[1]);
+      return `ATRC-${num}`;
     }
     if (id.startsWith('sa-proj-')) {
-      const num = id.split('-')[2];
-      return `ATRC-SA-0${num}`;
+      const num = this.displayIdPart(id.split('-')[2]);
+      return `ATRC-SA-${num}`;
     }
     if (id.startsWith('proj-')) {
       // e.g. proj-1-1 -> ATRC-01-01
       const parts = id.split('-');
-      return `ATRC-0${parts[1]}-0${parts[2]}`;
+      return `ATRC-${this.displayIdPart(parts[1])}-${this.displayIdPart(parts[2])}`;
     }
     return id.toUpperCase();
   }

@@ -44,6 +44,8 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
               <button class="plan-entry-drawer-cancel" type="button" (click)="close.emit()">{{ cancelLabel }}</button>
               <button class="plan-entry-drawer-submit" type="submit" [disabled]="submitDisabled">{{ submitLabel }}</button>
             </footer>
+          } @else {
+            <ng-content select="[planDrawerFooter]"></ng-content>
           }
         </form>
       </aside>

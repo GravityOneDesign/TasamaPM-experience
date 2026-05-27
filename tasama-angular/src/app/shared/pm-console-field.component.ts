@@ -3,6 +3,11 @@ import { NgClass } from '@angular/common';
 import { PmConsoleIconComponent } from './pm-console-icon.component';
 
 export type PmConsoleFieldType = 'text' | 'number' | 'date' | 'password' | 'search' | 'textarea' | 'select' | 'money';
+export type PmConsoleFieldOption = string | {
+  readonly value: string;
+  readonly label: string;
+  readonly disabled?: boolean;
+};
 
 @Component({
   selector: 'app-pm-console-field',
@@ -37,8 +42,10 @@ export type PmConsoleFieldType = 'text' | 'number' | 'date' | 'password' | 'sear
             @if (placeholder) {
               <option value="" [disabled]="placeholderDisabled" [selected]="!controlValue">{{ placeholder }}</option>
             }
-            @for (option of options; track option) {
-              <option [value]="option" [selected]="option === controlValue">{{ option }}</option>
+            @for (option of options; track optionValue(option)) {
+              <option [value]="optionValue(option)" [selected]="optionValue(option) === controlValue" [disabled]="optionDisabled(option)">
+                {{ optionLabel(option) }}
+              </option>
             }
           </select>
           <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
@@ -89,7 +96,7 @@ export class PmConsoleFieldComponent {
   @Input() label = '';
   @Input() value: string | number | null | undefined = '';
   @Input() type: PmConsoleFieldType = 'text';
-  @Input() options: string[] = [];
+  @Input() options: readonly PmConsoleFieldOption[] = [];
   @Input() placeholder = '';
   @Input() placeholderDisabled = true;
   @Input() description = '';
@@ -112,6 +119,18 @@ export class PmConsoleFieldComponent {
 
   get controlValue(): string {
     return this.value == null ? '' : String(this.value);
+  }
+
+  optionValue(option: PmConsoleFieldOption): string {
+    return typeof option === 'string' ? option : option.value;
+  }
+
+  optionLabel(option: PmConsoleFieldOption): string {
+    return typeof option === 'string' ? option : option.label;
+  }
+
+  optionDisabled(option: PmConsoleFieldOption): boolean {
+    return typeof option !== 'string' && Boolean(option.disabled);
   }
 
   get fieldClasses(): string[] {

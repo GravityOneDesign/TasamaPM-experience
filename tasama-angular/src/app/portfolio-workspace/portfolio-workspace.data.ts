@@ -44,6 +44,7 @@ export interface ProgramRow {
   stage: string;
   trend: 'stable' | 'up' | 'down';
   manager: string;
+  relatedPortfolio?: string;
   startDate: string;
   endDate: string;
   budgetUtilised: string;
@@ -342,10 +343,29 @@ export const reportsStats = {
 export type RiskLevel = 'portfolio' | 'program' | 'project';
 export type RiskExposure = 'critical' | 'high' | 'medium' | 'low';
 export type RiskStatus = 'escalated' | 'active' | 'monitoring' | 'watching';
+export type RiskCategory =
+  | 'Reputational'
+  | 'Technology Risk'
+  | 'Schedule Risk'
+  | 'Financial Risk'
+  | 'Operational Risk'
+  | 'Compliance Risk'
+  | 'Stakeholder Risk';
+
+export const riskCategoryOptions: RiskCategory[] = [
+  'Reputational',
+  'Technology Risk',
+  'Schedule Risk',
+  'Financial Risk',
+  'Operational Risk',
+  'Compliance Risk',
+  'Stakeholder Risk',
+];
 
 export interface Risk {
   id: string;
   name: string;
+  category: RiskCategory;
   level: RiskLevel;
   linkedTo: string;
   parentProgram?: string;
@@ -361,6 +381,7 @@ export const riskRegisterData: Risk[] = [
   {
     id: 'RSK-01',
     name: 'Compliance evidence delay across local office stage-gates',
+    category: 'Compliance Risk',
     level: 'portfolio',
     linkedTo: 'Safe Security Portfolio',
     owner: { name: 'PMO Desk', initials: 'PM' },
@@ -370,8 +391,33 @@ export const riskRegisterData: Risk[] = [
     status: 'active'
   },
   {
+    id: 'RSK-02',
+    name: 'Cross-agency security policy adoption variance delaying portfolio assurance',
+    category: 'Operational Risk',
+    level: 'portfolio',
+    linkedTo: 'Safe Security Portfolio',
+    owner: { name: 'Fatima Qahtani', initials: 'FQ' },
+    mitigation: 'Use a single portfolio assurance checklist and escalate late agency confirmations through the steering forum.',
+    lastReview: '05/14/2026',
+    exposure: 'medium',
+    status: 'monitoring'
+  },
+  {
+    id: 'RSK-03',
+    name: 'Public confidence impact if cyber-readiness milestones slip across priority agencies',
+    category: 'Reputational',
+    level: 'portfolio',
+    linkedTo: 'Safe Security Portfolio',
+    owner: { name: 'Dr. Khalid Al-Mansoori', initials: 'KM' },
+    mitigation: 'Maintain executive communications, publish milestone recovery actions, and align agency launch messaging.',
+    lastReview: '05/16/2026',
+    exposure: 'high',
+    status: 'active'
+  },
+  {
     id: 'RSK-05',
     name: 'Stakeholder adoption delays due to training resource constraints',
+    category: 'Reputational',
     level: 'project',
     linkedTo: 'Smart City Alpha',
     parentPortfolio: 'Safe Security Portfolio',
@@ -384,6 +430,7 @@ export const riskRegisterData: Risk[] = [
   {
     id: 'RSK-06',
     name: 'Benefits owner responsiveness limiting baseline sign-offs',
+    category: 'Operational Risk',
     level: 'program',
     linkedTo: 'Identity & Access Program',
     parentPortfolio: 'Safe Security Portfolio',
@@ -396,6 +443,7 @@ export const riskRegisterData: Risk[] = [
   {
     id: 'RSK-07',
     name: 'Government MFA portal security audit response delays',
+    category: 'Technology Risk',
     level: 'project',
     linkedTo: 'MFA Government Portal',
     parentProgram: 'Identity & Access Program',
@@ -407,8 +455,36 @@ export const riskRegisterData: Risk[] = [
     status: 'active'
   },
   {
+    id: 'RSK-08',
+    name: 'Identity governance approval queue delays affecting access control rollout',
+    category: 'Stakeholder Risk',
+    level: 'program',
+    linkedTo: 'Identity & Access Program',
+    parentPortfolio: 'Safe Security Portfolio',
+    owner: { name: 'Saeed Al-Mansoori', initials: 'SA' },
+    mitigation: 'Add approval service levels and route unresolved sign-offs through the program steering group.',
+    lastReview: '05/13/2026',
+    exposure: 'medium',
+    status: 'active'
+  },
+  {
+    id: 'RSK-09',
+    name: 'Agency helpdesk readiness gaps for MFA cutover support',
+    category: 'Operational Risk',
+    level: 'project',
+    linkedTo: 'MFA Government Portal',
+    parentProgram: 'Identity & Access Program',
+    parentPortfolio: 'Safe Security Portfolio',
+    owner: { name: 'Saeed Al-Mansoori', initials: 'SA' },
+    mitigation: 'Run helpdesk simulations and publish cutover scripts before the next enrolment wave.',
+    lastReview: '05/14/2026',
+    exposure: 'medium',
+    status: 'monitoring'
+  },
+  {
     id: 'RSK-10',
     name: 'Core router bandwidth bottlenecks during backup syncs',
+    category: 'Technology Risk',
     level: 'program',
     linkedTo: 'Network Security Upgrade Program',
     parentPortfolio: 'Safe Security Portfolio',
@@ -419,8 +495,36 @@ export const riskRegisterData: Risk[] = [
     status: 'active'
   },
   {
+    id: 'RSK-14',
+    name: 'Token delivery failures during remote enrolment windows',
+    category: 'Technology Risk',
+    level: 'project',
+    linkedTo: 'MFA Government Portal',
+    parentProgram: 'Identity & Access Program',
+    parentPortfolio: 'Safe Security Portfolio',
+    owner: { name: 'Amna Al-Hammadi', initials: 'AA' },
+    mitigation: 'Pre-stage alternate token channels and monitor failed delivery queues daily.',
+    lastReview: '05/15/2026',
+    exposure: 'high',
+    status: 'active'
+  },
+  {
+    id: 'RSK-15',
+    name: 'Network change freeze conflicts with backup sync remediation',
+    category: 'Schedule Risk',
+    level: 'program',
+    linkedTo: 'Network Security Upgrade Program',
+    parentPortfolio: 'Safe Security Portfolio',
+    owner: { name: 'Dr. Khalid Al-Mansoori', initials: 'KM' },
+    mitigation: 'Reserve emergency change windows and sequence remediation work around freeze periods.',
+    lastReview: '05/18/2026',
+    exposure: 'medium',
+    status: 'monitoring'
+  },
+  {
     id: 'RSK-11',
     name: 'Hardware delivery delay on core modular switches',
+    category: 'Schedule Risk',
     level: 'project',
     linkedTo: 'Riyadh Core Switch Upgrade',
     parentProgram: 'Network Security Upgrade Program',
@@ -432,8 +536,23 @@ export const riskRegisterData: Risk[] = [
     status: 'monitoring'
   },
   {
+    id: 'RSK-16',
+    name: 'Data-center access permit delays for core switch installation',
+    category: 'Schedule Risk',
+    level: 'project',
+    linkedTo: 'Riyadh Core Switch Upgrade',
+    parentProgram: 'Network Security Upgrade Program',
+    parentPortfolio: 'Safe Security Portfolio',
+    owner: { name: 'Muna Hassan', initials: 'MH' },
+    mitigation: 'Submit permit packs earlier and nominate backup installation windows with facilities teams.',
+    lastReview: '05/20/2026',
+    exposure: 'medium',
+    status: 'watching'
+  },
+  {
     id: 'RSK-12',
     name: 'Subnet collision risk during legacy database migrations',
+    category: 'Technology Risk',
     level: 'project',
     linkedTo: 'Jeddah Database Migration',
     parentProgram: 'Network Security Upgrade Program',
@@ -445,8 +564,23 @@ export const riskRegisterData: Risk[] = [
     status: 'active'
   },
   {
+    id: 'RSK-17',
+    name: 'Legacy firewall rule exports missing dependency mappings',
+    category: 'Technology Risk',
+    level: 'project',
+    linkedTo: 'Jeddah Database Migration',
+    parentProgram: 'Network Security Upgrade Program',
+    parentPortfolio: 'Safe Security Portfolio',
+    owner: { name: 'Fatima Ali', initials: 'FA' },
+    mitigation: 'Reconcile rule exports with application dependency scans before migration rehearsals.',
+    lastReview: '05/21/2026',
+    exposure: 'high',
+    status: 'active'
+  },
+  {
     id: 'RSK-13',
     name: 'API authentication handshake timeouts with central registry',
+    category: 'Technology Risk',
     level: 'project',
     linkedTo: 'API Integration Project',
     parentPortfolio: 'Safe Security Portfolio',
@@ -454,6 +588,32 @@ export const riskRegisterData: Risk[] = [
     mitigation: 'Establish a localized token caching layer and increase connection timeouts.',
     lastReview: '05/21/2026',
     exposure: 'high',
+    status: 'active'
+  },
+  {
+    id: 'RSK-18',
+    name: 'Awareness content localization approvals slow campaign launch',
+    category: 'Stakeholder Risk',
+    level: 'project',
+    linkedTo: 'Smart City Alpha',
+    parentPortfolio: 'Safe Security Portfolio',
+    owner: { name: 'Mariam Al-Ali', initials: 'MA' },
+    mitigation: 'Lock bilingual content owners and approve standard campaign packs before agency rollout.',
+    lastReview: '05/15/2026',
+    exposure: 'medium',
+    status: 'monitoring'
+  },
+  {
+    id: 'RSK-19',
+    name: 'Vendor certificate rotation cadence misaligned with registry gateway',
+    category: 'Technology Risk',
+    level: 'project',
+    linkedTo: 'API Integration Project',
+    parentPortfolio: 'Safe Security Portfolio',
+    owner: { name: 'Khalid Omar', initials: 'KO' },
+    mitigation: 'Align certificate rotation calendars and automate expiry alerts for registry endpoints.',
+    lastReview: '05/22/2026',
+    exposure: 'medium',
     status: 'active'
   }
 ];
@@ -609,6 +769,3 @@ export const initialBenefitsGlossary: GlossaryItem[] = [
   { id: 'b11', systemLabel: 'Benefit Map', customLabel: 'Dependency Map', contextualHelp: 'A visual diagram showing how project deliverables connect to business changes and strategic outcomes.' },
   { id: 'b12', systemLabel: 'Review Frequency', customLabel: 'Harvesting Interval', contextualHelp: 'The interval at which benefit indicators are captured and reported.' }
 ];
-
-
-
