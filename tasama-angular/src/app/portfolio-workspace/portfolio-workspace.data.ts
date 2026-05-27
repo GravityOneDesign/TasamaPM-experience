@@ -556,3 +556,59 @@ export const benefitsRegisterData: Benefit[] = [
   }
 ];
 
+export interface GlossaryItem {
+  id: string;
+  systemLabel: string;
+  customLabel: string;
+  contextualHelp: string;
+}
+
+export const initialP3mGlossary: GlossaryItem[] = [
+  { id: 'g1', systemLabel: 'Issue Priority', customLabel: 'Criticality', contextualHelp: 'Level of attention required on an issue' },
+  { id: 'g2', systemLabel: 'Change Assessment Comment', customLabel: 'Comment', contextualHelp: 'A summary of the assessment conducted on the change request of the project/ program' },
+  { id: 'g3', systemLabel: 'Resource Comment', customLabel: 'Comment', contextualHelp: 'Capture additional information regarding the resource requirement' },
+  { id: 'g4', systemLabel: 'Project Business Unit', customLabel: 'Business Unit', contextualHelp: 'The Business Unit that own the project.' },
+  { id: 'g5', systemLabel: 'Resource Business Unit', customLabel: 'Business Unit', contextualHelp: 'The Business Unit to which the Resource belongs to Or the Business Unit that would be involved with making the resource available for the project.' },
+  { id: 'g6', systemLabel: 'Issue Status', customLabel: 'Status', contextualHelp: 'Level of attention required on an issue' },
+  { id: 'g7', systemLabel: 'Benefit Owner', customLabel: 'Owner', contextualHelp: 'A role responsible for the realisation/harvesting of a specific benefit' },
+  { id: 'g8', systemLabel: 'Project Description', customLabel: 'Description', contextualHelp: 'A brief description of the project including the salient features of the project.' },
+  { id: 'g9', systemLabel: 'Product Description', customLabel: 'Description', contextualHelp: "A description of a product's purpose." },
+  { id: 'g10', systemLabel: 'Stage Gate Status', customLabel: 'Approval Status', contextualHelp: 'The current stage-gate review status for this project lifecycle phase.' },
+  { id: 'g11', systemLabel: 'Portfolio Owner', customLabel: 'Executive Sponsor', contextualHelp: 'The primary individual accountable for strategic alignment and funding approval at the portfolio level.' },
+  { id: 'g12', systemLabel: 'Program Manager', customLabel: 'Strategic Lead', contextualHelp: 'The person responsible for coordinating and directing related projects within a strategic program.' },
+  { id: 'g13', systemLabel: 'Project Manager', customLabel: 'Delivery Lead', contextualHelp: 'The person responsible for managing day-to-day execution and delivery of a project.' },
+  { id: 'g14', systemLabel: 'Work Package', customLabel: 'Task Group', contextualHelp: 'A subset of a project that can be assigned to a specific team or department for execution.' }
+];
+
+export const initialRiskGlossary: GlossaryItem[] = [
+  { id: 'r1', systemLabel: 'Inherent Risk', customLabel: 'Pre-control Risk', contextualHelp: 'The level of risk before any controls or mitigation actions have been applied.' },
+  { id: 'r2', systemLabel: 'Residual Risk', customLabel: 'Post-control Risk', contextualHelp: 'The remaining level of risk after controls and mitigations have been implemented.' },
+  { id: 'r3', systemLabel: 'Risk Owner', customLabel: 'Accountable Lead', contextualHelp: 'The individual responsible for monitoring the risk and implementing mitigation actions.' },
+  { id: 'r4', systemLabel: 'Risk Treatment', customLabel: 'Mitigation Category', contextualHelp: 'The strategy chosen to manage a risk (e.g., Avoid, Mitigate, Transfer, Accept).' },
+  { id: 'r5', systemLabel: 'Risk Probability', customLabel: 'Likelihood', contextualHelp: 'The estimated likelihood or frequency of a risk occurring during project delivery.' },
+  { id: 'r6', systemLabel: 'Risk Impact', customLabel: 'Severity', contextualHelp: 'The degree of damage or disruption to strategic objectives if a risk is realized.' },
+  { id: 'r7', systemLabel: 'Risk Category', customLabel: 'Domain', contextualHelp: 'The grouping of risks by common sources (e.g., Financial, Operational, Security, Reputational).' },
+  { id: 'r8', systemLabel: 'Risk Control', customLabel: 'Mitigation Action', contextualHelp: 'The specific process or system deployed to reduce either the probability or impact of a risk.' },
+  { id: 'r9', systemLabel: 'Control Effectiveness', customLabel: 'Effectiveness Rating', contextualHelp: 'The assessment of how successful a specific control is in mitigating risk.' },
+  { id: 'r10', systemLabel: 'Risk Appetite', customLabel: 'Risk Tolerance', contextualHelp: 'The level of risk that an organization is willing to accept in pursuit of strategic value.' },
+  { id: 'r11', systemLabel: 'Risk Register', customLabel: 'Risk Ledger', contextualHelp: 'The centralized repository where all identified risks, owners, mitigations, and histories are logged.' },
+  { id: 'r12', systemLabel: 'Risk Review Frequency', customLabel: 'Review Interval', contextualHelp: 'The standard interval (e.g. weekly, monthly) at which risk exposures are reassessed.' }
+];
+
+export const initialBenefitsGlossary: GlossaryItem[] = [
+  { id: 'b1', systemLabel: 'Financial Benefit', customLabel: 'Tangible Return', contextualHelp: 'A benefit that can be quantified and expressed in financial terms (e.g., cost savings, revenue growth).' },
+  { id: 'b2', systemLabel: 'Non-Financial Benefit', customLabel: 'Qualitative Gain', contextualHelp: 'A benefit that cannot be easily quantified in financial terms but provides strategic value (e.g., brand reputation, citizen satisfaction).' },
+  { id: 'b3', systemLabel: 'Baseline Value', customLabel: 'Starting Point', contextualHelp: 'The pre-program level of a metric against which improvements will be measured.' },
+  { id: 'b4', systemLabel: 'Target Value', customLabel: 'Goal Metric', contextualHelp: 'The expected level of achievement for a benefit metric at a specific future date.' },
+  { id: 'b5', systemLabel: 'Realization Date', customLabel: 'Delivery Target', contextualHelp: 'The specific calendar date by which a benefit is expected to be achieved and measured.' },
+  { id: 'b6', systemLabel: 'Benefit Owner', customLabel: 'Harvesting Lead', contextualHelp: 'The individual responsible for ensuring that actions are taken to realize and harvest a specific benefit.' },
+  { id: 'b7', systemLabel: 'KPI Measure', customLabel: 'Success Metric', contextualHelp: 'The key performance indicator used to verify benefit realization.' },
+  { id: 'b8', systemLabel: 'Disbenefit', customLabel: 'Negative Side Effect', contextualHelp: 'A negative consequence of program or project delivery that must be managed alongside positive outcomes.' },
+  { id: 'b9', systemLabel: 'Benefit Category', customLabel: 'Outcome Type', contextualHelp: 'The classification of benefits into functional areas (e.g., Process Efficiency, Risk Reduction, Citizen Experience).' },
+  { id: 'b10', systemLabel: 'Benefit Enablement', customLabel: 'Business Change', contextualHelp: 'The changes in business operations or systems required to enable the realization of a benefit.' },
+  { id: 'b11', systemLabel: 'Benefit Map', customLabel: 'Dependency Map', contextualHelp: 'A visual diagram showing how project deliverables connect to business changes and strategic outcomes.' },
+  { id: 'b12', systemLabel: 'Review Frequency', customLabel: 'Harvesting Interval', contextualHelp: 'The interval at which benefit indicators are captured and reported.' }
+];
+
+
+
