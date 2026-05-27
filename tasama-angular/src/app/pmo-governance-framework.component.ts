@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, HostListener, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PmConsoleIconComponent } from '../shared/pm-console-icon.component';
-import { PmConsoleReportingEmptyIllustrationComponent } from '../shared/pm-console-reporting-empty-illustration.component';
-import { PmConsoleModeTabsComponent, PmConsoleModeTabItem } from '../shared/pm-console-mode-tabs.component';
-import { PmConsolePlanDrawerComponent } from '../pm-console-plan-drawer.component';
-import { GlossaryItem, initialP3mGlossary, initialRiskGlossary, initialBenefitsGlossary } from './portfolio-workspace.data';
+import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
+import { PmConsoleReportingEmptyIllustrationComponent } from './shared/pm-console-reporting-empty-illustration.component';
+import { PmConsoleModeTabsComponent, PmConsoleModeTabItem } from './shared/pm-console-mode-tabs.component';
+import { PmConsolePlanDrawerComponent } from './pm-console-plan-drawer.component';
+import { GlossaryItem, initialP3mGlossary, initialRiskGlossary, initialBenefitsGlossary } from './pmo-governance-workspace.data';
 
 
 export interface TaxonomyCard {
@@ -21,7 +21,7 @@ export interface TaxonomyCard {
 }
 
 @Component({
-  selector: 'app-portfolio-workspace-framework',
+  selector: 'app-pmo-governance-framework',
   standalone: true,
   imports: [
     CommonModule,
@@ -300,7 +300,7 @@ export interface TaxonomyCard {
                             onmouseout="this.style.background='white';"
                             (click)="selectOwner(u.name)"
                           >
-                            {{ u.name }} <span style="color: #64748b; font-size: 11.5px; font-weight: 400;">— {{ u.role }}</span>
+                            {{ u.name }} <span style="color: #64748b; font-size: 11.5px; font-weight: 400;">â€” {{ u.role }}</span>
                           </div>
                         }
                       </div>
@@ -483,7 +483,7 @@ export interface TaxonomyCard {
                              onmouseout="this.style.background='white';"
                              (click)="selectBranchOwner(u.name)"
                            >
-                             {{ u.name }} <span style="color: #64748b; font-size: 11.5px; font-weight: 400;">— {{ u.role }}</span>
+                             {{ u.name }} <span style="color: #64748b; font-size: 11.5px; font-weight: 400;">â€” {{ u.role }}</span>
                            </div>
                          }
                        </div>
@@ -751,7 +751,7 @@ export interface TaxonomyCard {
                             onmouseout="this.style.background='white';"
                             (click)="selectSectionOwner(u.name)"
                           >
-                            {{ u.name }} <span style="color: #64748b; font-size: 11.5px; font-weight: 400;">— {{ u.role }}</span>
+                            {{ u.name }} <span style="color: #64748b; font-size: 11.5px; font-weight: 400;">â€” {{ u.role }}</span>
                           </div>
                         }
                       </div>
@@ -1007,7 +1007,7 @@ export interface TaxonomyCard {
                           {{ user.loginAccess }}
                         </span>
                       </td>
-                      <td class="last-login-cell">{{ user.lastLogin || '—' }}</td>
+                      <td class="last-login-cell">{{ user.lastLogin || 'â€”' }}</td>
                       <td class="user-action-cell">
                         <div class="user-action-wrap">
                           <button
@@ -2222,7 +2222,7 @@ export interface TaxonomyCard {
                           }
                           <tr>
                             <td style="padding: 8px 12px; vertical-align: middle; overflow: visible;">
-                      <!-- Add New Action — Roles & Users picker -->
+                      <!-- Add New Action â€” Roles & Users picker -->
                       <div class="ca-picker-wrap" style="position: relative; width: 100%;">
                         <details
                           class="ca-picker-dropdown"
@@ -2740,7 +2740,7 @@ export interface TaxonomyCard {
     }
     /* end Workflow Designer */
 
-    /* ── Configure Actions Roles & Users picker ───────────────────────── */
+    /* â”€â”€ Configure Actions Roles & Users picker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .ca-picker-wrap {
       position: relative;
     }
@@ -2947,7 +2947,7 @@ export interface TaxonomyCard {
       text-align: center;
     }
 
-    /* Configure Actions table — action icon badge */
+    /* Configure Actions table â€” action icon badge */
     .ca-action-icon-badge {
       display: inline-flex;
       align-items: center;
@@ -3850,7 +3850,7 @@ export interface TaxonomyCard {
       color: #202633;
     }
 
-    /* ── Roles & Users picker ──────────────────────────────── */
+    /* â”€â”€ Roles & Users picker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .user-target-picker {
       flex: 0 0 auto;
       min-width: 0;
@@ -4256,7 +4256,7 @@ export interface TaxonomyCard {
       gap: 8px;
     }
 
-    /* Label — Montserrat 14px/500 #0A0A0A as per Figma */
+    /* Label â€” Montserrat 14px/500 #0A0A0A as per Figma */
     .ud-label {
       font-family: Montserrat, -apple-system, Roboto, Helvetica, sans-serif;
       font-size: 14px;
@@ -4270,7 +4270,7 @@ export interface TaxonomyCard {
       margin-left: 1px;
     }
 
-    /* Text input — Figma: 36px h, 8px radius, rgba(0,0,0,0.15) border */
+    /* Text input â€” Figma: 36px h, 8px radius, rgba(0,0,0,0.15) border */
     .ud-input {
       height: 36px;
       padding: 4px 12px;
@@ -4296,7 +4296,7 @@ export interface TaxonomyCard {
       box-shadow: 0 0 0 3px rgba(16, 6, 159, 0.08);
     }
 
-    /* Checkbox — styled square as per Figma */
+    /* Checkbox â€” styled square as per Figma */
     .ud-checkbox-row {
       height: 36px;
       display: flex;
@@ -4359,14 +4359,14 @@ export interface TaxonomyCard {
       flex-shrink: 0;
     }
 
-    /* Select wrapper — positions chevron */
+    /* Select wrapper â€” positions chevron */
     .ud-select-wrap {
       position: relative;
       display: flex;
       align-items: center;
     }
 
-    /* Bordered select (Group) — same as text input */
+    /* Bordered select (Group) â€” same as text input */
     .ud-select {
       appearance: none;
       -webkit-appearance: none;
@@ -4394,7 +4394,7 @@ export interface TaxonomyCard {
       box-shadow: 0 0 0 3px rgba(16, 6, 159, 0.08);
     }
 
-    /* Pill select (Division / Branch / Section) — #F3F3F5 bg, no visible border */
+    /* Pill select (Division / Branch / Section) â€” #F3F3F5 bg, no visible border */
     .ud-select--pill {
       border: 1px solid transparent;
       background: #f3f3f5;
@@ -5477,7 +5477,7 @@ export interface TaxonomyCard {
     }
   `]
 })
-export class PortfolioWorkspaceFrameworkComponent implements OnInit {
+export class PmoGovernanceFrameworkComponent implements OnInit {
   @Output() readonly back = new EventEmitter<void>();
 
   activeSectionId = 'org-structure';
@@ -7074,7 +7074,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     this.changeDetector.markForCheck();
   }
 
-  // ── Configure Actions picker getters & methods ────────────────────────────────────
+  // â”€â”€ Configure Actions picker getters & methods â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   get selectedCaTarget(): { id: string; label: string } {
     if (this.selectedCaTargetId === 'all') {
@@ -7088,7 +7088,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
   }
 
   get caTargetGroups(): Array<{ id: string; label: string; options: Array<{ id: string; label: string; subLabel?: string }> }> {
-    // Roles accordion — always shows all availableRoles; adds user-count subheading
+    // Roles accordion â€” always shows all availableRoles; adds user-count subheading
     const roleCounts = new Map<string, number>();
     for (const u of this.users) {
       const role = (u.role || 'Unassigned').trim();

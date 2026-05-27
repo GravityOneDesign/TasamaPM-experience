@@ -6,8 +6,8 @@ export interface PmConsoleFrontdoorAction {
   title: string;
   description: string;
   icon: string;
-  ctaLabel?: string;
   badgeLabel?: string;
+  ctaLabel?: string;
   disabled?: boolean;
   decor?: 'waves' | 'loops' | 'hex' | 'plus' | 'burst';
 }
@@ -218,10 +218,6 @@ export type PmConsoleFrontdoorActionCtaMode = 'label' | 'arrow';
         min-height: 0;
         position: relative;
         z-index: 1;
-      }
-
-      .frontdoor-action-button.has-label {
-        height: 16px;
       }
 
       .frontdoor-action-button.has-badge {

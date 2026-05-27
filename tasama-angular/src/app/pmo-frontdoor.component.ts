@@ -897,6 +897,7 @@ export class PmoFrontdoorComponent implements AfterViewChecked {
   @Output() readonly workspaceRequested = new EventEmitter<PmoGovernanceWorkspaceTarget | undefined>();
   @Output() readonly reportReviewRequested = new EventEmitter<void>();
   @Output() readonly decisionIntelligenceRequested = new EventEmitter<void>();
+  @Output() readonly frameworkRequested = new EventEmitter<void>();
 
   selectedTab: PmoFrontdoorTab = 'overview';
   selectedPortfolioScope = 'all-portfolios';
@@ -934,6 +935,10 @@ export class PmoFrontdoorComponent implements AfterViewChecked {
   }
 
   selectAction(actionId: string): void {
+    if (actionId === 'framework') {
+      this.frameworkRequested.emit();
+      return;
+    }
     if (actionId === 'report-review') {
       this.reportReviewRequested.emit();
       return;

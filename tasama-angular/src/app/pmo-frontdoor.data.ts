@@ -93,14 +93,15 @@ export const pmoFrontdoorDigestSections: readonly PmConsoleDigestSection[] = [
   },
 ];
 
-export const pmoFrontdoorActions: readonly PmConsoleFrontdoorAction[] = [
+export const pmoFrontdoorActions: PmConsoleFrontdoorAction[] = [
   {
     id: 'framework',
     title: 'Set up your framework',
-    description: 'Define frameworks, governance controls, manage users, and set the standards portfolios will run on.',
-    icon: 'folder',
+    description: 'Configure hierarchical domains for this workspace to track divisions, brands, programs or other groups.',
+    icon: 'layout-template',
+    disabled: false,
     decor: 'waves',
-    disabled: true,
+    ctaLabel: 'Configure Framework',
   },
   {
     id: 'create-manage',

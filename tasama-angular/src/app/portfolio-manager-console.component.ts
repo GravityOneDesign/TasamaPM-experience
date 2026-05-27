@@ -59,7 +59,7 @@ import { PortfolioConsolePage, PortfolioManagerMountOptions, PortfolioWorkspaceV
       display: flex;
       flex-direction: column;
       height: 100%;
-      background: transparent;
+      background: #F1F7FA;
       color: #202633;
       padding: 16px 24px 24px 24px;
     }

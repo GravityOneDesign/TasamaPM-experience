@@ -3940,7 +3940,6 @@ const normalPmOverviewActions: PmConsoleFrontdoorAction[] = [
     title: 'Build project plan',
     description: 'Define scope, timelines and project milestones using the simple or detailed project plan template.',
     icon: 'folder',
-    ctaLabel: 'View Plan',
     decor: 'waves',
   },
   {

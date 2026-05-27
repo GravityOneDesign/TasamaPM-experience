@@ -1249,7 +1249,7 @@ export class PortfolioWorkspaceRegistersComponent {
       portfolio.name,
       portfolio.manager,
       portfolio.status,
-      portfolio.programs.map((program) => this.programSearchValue(program)).join(' '),
+      portfolio.programs.map((program: ProgramRow) => this.programSearchValue(program)).join(' '),
     ].join(' ').toLowerCase();
   }
 

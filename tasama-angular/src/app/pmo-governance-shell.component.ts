@@ -16,6 +16,7 @@ import { PmoFrontdoorComponent } from './pmo-frontdoor.component';
 import { PmoReportReviewDrawerComponent } from './pmo-report-review-drawer.component';
 import { PmoReportReviewProgressComponent } from './pmo-report-review-progress.component';
 import type { PmoReportReviewCard } from './pmo-report-review-progress.data';
+import { PmoGovernanceFrameworkComponent } from './pmo-governance-framework.component';
 import { PmConsoleAgentDockComponent } from './shared/pm-console-agent-dock.component';
 import { PmConsoleSideNavComponent, type PmConsoleSideNavItem } from './shared/pm-console-side-nav.component';
 import { PmConsoleTopBarComponent } from './shared/pm-console-top-bar.component';
@@ -30,6 +31,7 @@ import { PmConsoleTopBarComponent } from './shared/pm-console-top-bar.component'
     PmoFrontdoorComponent,
     PmoReportReviewDrawerComponent,
     PmoReportReviewProgressComponent,
+    PmoGovernanceFrameworkComponent,
     PmConsoleAgentDockComponent,
     PmConsoleNotificationsComponent,
     PmConsoleSideNavComponent,
@@ -64,6 +66,7 @@ import { PmConsoleTopBarComponent } from './shared/pm-console-top-bar.component'
           (workspaceRequested)="openWorkspace($event)"
           (reportReviewRequested)="openReportReview()"
           (decisionIntelligenceRequested)="openDecisionIntelligence()"
+          (frameworkRequested)="openFramework()"
         />
       } @else if (activeSurface === 'governance') {
         <app-pmo-governance-workspace
@@ -74,6 +77,12 @@ import { PmConsoleTopBarComponent } from './shared/pm-console-top-bar.component'
         />
       } @else if (activeSurface === 'decision-intelligence') {
         <app-pmo-decision-intelligence (backSelected)="goHome()" />
+      } @else if (activeSurface === 'framework') {
+        <div class="portfolio-workspace-page-container">
+          <div class="project-plan-card-frame" style="flex: 1; min-height: 0;">
+            <app-pmo-governance-framework (back)="goHome()" />
+          </div>
+        </div>
       } @else {
         <app-pmo-report-review-progress
           (backSelected)="goHome()"
@@ -96,6 +105,25 @@ import { PmConsoleTopBarComponent } from './shared/pm-console-top-bar.component'
       }
     </div>
   `,
+  styles: [`
+    .portfolio-workspace-page-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: #F1F7FA;
+      color: #202633;
+      padding: 16px 24px 24px 24px;
+    }
+    .project-plan-card-frame {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      margin: 24px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+  `]
 })
 export class PmoGovernanceShellComponent implements AfterViewChecked {
   private readonly portfolioActionDrawer = inject(PortfolioManagerActionDrawerService);
@@ -112,7 +140,7 @@ export class PmoGovernanceShellComponent implements AfterViewChecked {
     { id: 'sign-out', icon: 'log-out', label: 'Sign out' },
   ];
 
-  activeSurface: 'frontdoor' | 'governance' | 'report-review' | 'decision-intelligence' = 'frontdoor';
+  activeSurface: 'frontdoor' | 'governance' | 'report-review' | 'decision-intelligence' | 'framework' = 'frontdoor';
   forums: readonly PmoGovernanceForumRow[] = pmoGovernanceForumRows;
   workspaceTarget: PmoGovernanceWorkspaceTarget = pmoGovernanceDefaultWorkspaceTarget;
   notificationPanelOpen = false;
@@ -182,6 +210,17 @@ export class PmoGovernanceShellComponent implements AfterViewChecked {
   openDecisionIntelligence(): void {
     if (this.activeSurface !== 'decision-intelligence') {
       this.activeSurface = 'decision-intelligence';
+      this.selectedForum = null;
+      this.selectedReport = null;
+      this.notificationPanelOpen = false;
+      this.resetViewportScroll();
+      this.markShellChanged();
+    }
+  }
+
+  openFramework(): void {
+    if (this.activeSurface !== 'framework') {
+      this.activeSurface = 'framework';
       this.selectedForum = null;
       this.selectedReport = null;
       this.notificationPanelOpen = false;

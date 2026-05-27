@@ -1,12 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, HostListener, Input, OnDestroy, Output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnDestroy, Output } from '@angular/core';
 import { PmConsoleIconComponent } from './pm-console-icon.component';
 
+export type PmConsoleCalendarTargetType = 'portfolio' | 'program' | 'project';
+
 export interface PmConsoleCalendarItem {
+  id?: string;
   date: string;
   label: string;
   tone: string;
   project: string;
+  targetType?: PmConsoleCalendarTargetType;
   kind?: string;
 }
 
@@ -27,13 +31,20 @@ export interface PmConsoleCalendarFilter {
 
 type CalendarPopoverPlacement = 'above' | 'below';
 
+interface CalendarPopoverPosition {
+  top: number;
+  left: number;
+  arrowLeft: number;
+  placement: CalendarPopoverPlacement;
+}
+
 @Component({
   selector: 'app-pm-console-work-calendar',
   standalone: true,
   imports: [CommonModule, PmConsoleIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="timeline-calendar" [class.truncate-inline-labels]="truncateInlineLabels">
+    <div class="timeline-calendar">
       <div class="calendar-command-row">
         <div class="calendar-month-picker" aria-label="Calendar month navigation">
           <button class="calendar-nav-button" type="button" (click)="monthShift.emit(-1)" aria-label="Previous month">
@@ -93,7 +104,7 @@ type CalendarPopoverPlacement = 'above' | 'below';
             [class.today]="cell.today"
             [class.has-items]="cell.items.length > 0"
             [class.has-overflow]="isCollapsedCell(cell)"
-            (mouseenter)="showCellPreview(cell, $event)"
+            (mouseenter)="queueCellPreview(cell, $event)"
             (mouseleave)="hidePreviewSoon()"
           >
             <span class="calendar-day-number">{{ cell.day }}</span>
@@ -106,7 +117,7 @@ type CalendarPopoverPlacement = 'above' | 'below';
                     [attr.aria-label]="summaryItemsLabel(cell)"
                     aria-haspopup="dialog"
                     [attr.aria-expanded]="previewCell?.key === cell.key"
-                    (mouseenter)="showDayPreview(cell, $event)"
+                    (mouseenter)="queueDayPreview(cell, $event)"
                     (mouseleave)="hidePreviewSoon()"
                     (focus)="showDayPreview(cell, $event)"
                     (blur)="hidePreviewSoon()"
@@ -121,7 +132,8 @@ type CalendarPopoverPlacement = 'above' | 'below';
                       class="calendar-event {{ item.tone }}"
                       type="button"
                       [attr.aria-label]="calendarEventLabel(item)"
-                      (mouseenter)="showItemPreview(item, $event)"
+                      [attr.title]="item.label"
+                      (mouseenter)="queueItemPreview(item, $event)"
                       (mouseleave)="hidePreviewSoon()"
                       (focus)="showItemPreview(item, $event)"
                       (blur)="hidePreviewSoon()"
@@ -147,16 +159,18 @@ type CalendarPopoverPlacement = 'above' | 'below';
         [attr.aria-label]="previewItem.label + ' details'"
         [style.top.px]="previewTop"
         [style.left.px]="previewLeft"
-        [style.--calendar-hover-arrow-left.px]="previewArrowLeft"
+        [style.--calendar-popover-arrow-left]="previewArrowLeft + 'px'"
         (mouseenter)="keepPreview()"
         (mouseleave)="hidePreviewSoon()"
         (focusin)="keepPreview()"
         (focusout)="hidePreviewSoon()"
         (click)="$event.stopPropagation()"
       >
-        <span class="calendar-popover-kind {{ previewItem.tone }}">{{ itemKindLabel(previewItem) }}</span>
+        <div class="calendar-popover-tag-row">
+          <span class="calendar-popover-kind {{ previewItem.tone }}">{{ itemKindLabel(previewItem) }}</span>
+          <span class="calendar-popover-context-tag">{{ itemTargetLabel(previewItem) }}</span>
+        </div>
         <strong>{{ previewItem.label }}</strong>
-        <p>{{ previewItem.project }}</p>
         <div class="calendar-popover-meta">
           <span><b>Date</b>{{ dateLabel(previewItem.date) }}</span>
         </div>
@@ -175,7 +189,7 @@ type CalendarPopoverPlacement = 'above' | 'below';
         [attr.aria-label]="dateLabel(previewCell.key) + ' agenda preview'"
         [style.top.px]="previewTop"
         [style.left.px]="previewLeft"
-        [style.--calendar-hover-arrow-left.px]="previewArrowLeft"
+        [style.--calendar-popover-arrow-left]="previewArrowLeft + 'px'"
         (mouseenter)="keepPreview()"
         (mouseleave)="hidePreviewSoon()"
         (focusin)="keepPreview()"
@@ -190,7 +204,10 @@ type CalendarPopoverPlacement = 'above' | 'below';
               <span class="calendar-event-dot {{ item.tone }}"></span>
               <span>
                 <strong>{{ item.label }}</strong>
-                <small>{{ item.project }} - {{ itemKindLabel(item) }}</small>
+                <small class="calendar-agenda-context-line">
+                  <span class="calendar-agenda-context-tag">{{ itemTargetLabel(item) }}</span>
+                  <span>{{ itemKindLabel(item) }}</span>
+                </small>
               </span>
               <span class="calendar-agenda-cta">
                 <span>{{ actionLabel(item) }}</span>
@@ -210,21 +227,20 @@ type CalendarPopoverPlacement = 'above' | 'below';
         flex: 1 1 auto;
         flex-direction: column;
         gap: 10px;
+        height: 100%;
         min-height: 0;
         min-width: 0;
         overflow: visible;
         position: relative;
       }
 
+      .timeline-calendar {
+        flex: 1 1 auto;
+        height: 100%;
+        min-height: 0;
+      }
+
       .calendar-cell {
-        overflow: visible;
-      }
-
-      .calendar-cell:not(.has-items) {
-        overflow: hidden;
-      }
-
-      .timeline-calendar.truncate-inline-labels .calendar-cell {
         overflow: hidden;
       }
 
@@ -242,31 +258,27 @@ type CalendarPopoverPlacement = 'above' | 'below';
         display: grid;
         gap: 3px;
         justify-items: start;
-        min-width: 0;
-      }
-
-      .timeline-calendar.truncate-inline-labels .calendar-event-stack {
         max-width: 100%;
+        min-width: 0;
         overflow: hidden;
         width: 100%;
       }
 
       .calendar-event {
+        box-sizing: border-box;
         cursor: pointer;
         font-size: 10.25px;
         height: 22px;
         margin-top: 0;
         max-width: calc(100% - 2px);
-        padding: 0 8px;
-      }
-
-      .timeline-calendar.truncate-inline-labels .calendar-event {
-        box-sizing: border-box;
         min-width: 0;
         overflow: hidden;
+        padding: 0 8px;
+        position: relative;
+        z-index: 70;
       }
 
-      .timeline-calendar.truncate-inline-labels .calendar-event-title {
+      .calendar-event-title {
         display: block;
         min-width: 0;
         overflow: hidden;
@@ -468,7 +480,7 @@ type CalendarPopoverPlacement = 'above' | 'below';
         min-width: 248px;
         padding: 12px;
         position: fixed;
-        z-index: 80;
+        z-index: 120;
       }
 
       .calendar-hover-card {
@@ -498,7 +510,7 @@ type CalendarPopoverPlacement = 'above' | 'below';
         bottom: -6px;
         content: "";
         height: 10px;
-        left: var(--calendar-hover-arrow-left, 24px);
+        left: var(--calendar-popover-arrow-left, 24px);
         position: absolute;
         transform: rotate(45deg);
         width: 10px;
@@ -518,6 +530,14 @@ type CalendarPopoverPlacement = 'above' | 'below';
         width: 14px;
       }
 
+      .calendar-popover-tag-row {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        min-width: 0;
+      }
+
       .calendar-popover-kind {
         align-items: center;
         border-radius: 999px;
@@ -529,6 +549,22 @@ type CalendarPopoverPlacement = 'above' | 'below';
         line-height: 1;
         padding: 6px 8px;
         text-transform: uppercase;
+      }
+
+      .calendar-popover-context-tag {
+        align-items: center;
+        background: #fbfcff;
+        border: 1px solid #dfe4ee;
+        border-radius: 999px;
+        color: #3f4654;
+        display: inline-flex;
+        font-size: 10.5px;
+        font-weight: 600;
+        justify-self: start;
+        line-height: 1.2;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        padding: 5px 8px;
       }
 
       .calendar-popover-kind.green {
@@ -664,6 +700,31 @@ type CalendarPopoverPlacement = 'above' | 'below';
         margin-top: 2px;
       }
 
+      .calendar-agenda-row small.calendar-agenda-context-line {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        overflow: visible;
+        text-overflow: clip;
+        white-space: normal;
+      }
+
+      .calendar-agenda-context-tag {
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid #dfe4ee;
+        border-radius: 999px;
+        color: #4d5666;
+        display: inline-flex;
+        font-size: 10px;
+        font-weight: 600;
+        line-height: 1.2;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        padding: 2px 6px;
+      }
+
       .calendar-agenda-cta {
         align-items: center;
         color: #10069f;
@@ -727,7 +788,7 @@ type CalendarPopoverPlacement = 'above' | 'below';
           text-overflow: clip;
         }
 
-        .timeline-calendar.truncate-inline-labels .calendar-event:not(.calendar-action-summary) .calendar-event-title {
+        .calendar-event:not(.calendar-action-summary) .calendar-event-title {
           display: none;
         }
 
@@ -786,10 +847,17 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
   previewPlacement: CalendarPopoverPlacement = 'above';
 
   private previewHideTimer: number | null = null;
+  private previewShowTimer: number | null = null;
   private previewPinned = false;
+
+  constructor(
+    private readonly changeDetectorRef: ChangeDetectorRef,
+    private readonly elementRef: ElementRef<HTMLElement>,
+  ) {}
 
   ngOnDestroy(): void {
     this.clearPreviewHideTimer();
+    this.clearPreviewShowTimer();
   }
 
   get selectedFilter(): PmConsoleCalendarFilter {
@@ -827,11 +895,19 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
     this.filterChange.emit(filterId);
   }
 
+  queueItemPreview(item: PmConsoleCalendarItem, event: MouseEvent): void {
+    this.queuePreview(event, (anchor) => this.showItemPreviewFromAnchor(item, anchor));
+  }
+
   showItemPreview(item: PmConsoleCalendarItem, event: MouseEvent | FocusEvent): void {
-    this.previewPinned = false;
-    this.keepPreview();
     const anchor = this.eventAnchor(event);
     if (!anchor) return;
+    this.showItemPreviewFromAnchor(item, anchor);
+  }
+
+  private showItemPreviewFromAnchor(item: PmConsoleCalendarItem, anchor: HTMLElement): void {
+    this.previewPinned = false;
+    this.keepPreview();
     const position = this.positionFor(anchor, 280, 156);
     this.previewItem = item;
     this.previewCell = null;
@@ -839,13 +915,22 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
     this.previewLeft = position.left;
     this.previewArrowLeft = position.arrowLeft;
     this.previewPlacement = position.placement;
+    this.changeDetectorRef.markForCheck();
+  }
+
+  queueDayPreview(cell: PmConsoleCalendarCell, event: MouseEvent): void {
+    this.queuePreview(event, (anchor) => this.showDayPreviewFromAnchor(cell, anchor));
   }
 
   showDayPreview(cell: PmConsoleCalendarCell, event: MouseEvent | FocusEvent): void {
-    this.previewPinned = false;
-    this.keepPreview();
     const anchor = this.eventAnchor(event);
     if (!anchor) return;
+    this.showDayPreviewFromAnchor(cell, anchor);
+  }
+
+  private showDayPreviewFromAnchor(cell: PmConsoleCalendarCell, anchor: HTMLElement): void {
+    this.previewPinned = false;
+    this.keepPreview();
     const position = this.positionFor(anchor, 320, this.dayPopoverHeight(cell));
     this.previewItem = null;
     this.previewCell = cell;
@@ -853,24 +938,28 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
     this.previewLeft = position.left;
     this.previewArrowLeft = position.arrowLeft;
     this.previewPlacement = position.placement;
+    this.changeDetectorRef.markForCheck();
   }
 
-  showCellPreview(cell: PmConsoleCalendarCell, event: MouseEvent): void {
+  queueCellPreview(cell: PmConsoleCalendarCell, event: MouseEvent): void {
     if (cell.items.length < 2) return;
-    this.showDayPreview(cell, event);
+    this.queueDayPreview(cell, event);
   }
 
   showDayPreviewFromClick(cell: PmConsoleCalendarCell, event: MouseEvent): void {
     event.stopPropagation();
+    this.clearPreviewShowTimer();
     this.showDayPreview(cell, event);
     this.previewPinned = true;
   }
 
   keepPreview(): void {
+    this.clearPreviewShowTimer();
     this.clearPreviewHideTimer();
   }
 
   hidePreviewSoon(): void {
+    this.clearPreviewShowTimer();
     if (this.previewPinned) return;
     this.clearPreviewHideTimer();
     this.previewHideTimer = window.setTimeout(() => {
@@ -879,10 +968,12 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
   }
 
   hidePreview(): void {
+    this.clearPreviewShowTimer();
     this.clearPreviewHideTimer();
     this.previewPinned = false;
     this.previewItem = null;
     this.previewCell = null;
+    this.changeDetectorRef.markForCheck();
   }
 
   openAgendaItem(item: PmConsoleCalendarItem, event: MouseEvent): void {
@@ -892,12 +983,12 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
   }
 
   calendarEventLabel(item: PmConsoleCalendarItem): string {
-    return `${item.label}, ${item.project}, ${this.dateLabel(item.date)}. Open item.`;
+    return `${item.label}, ${this.itemTargetLabel(item)}, ${this.dateLabel(item.date)}. Open item.`;
   }
 
   calendarEventTitle(item: PmConsoleCalendarItem): string {
     const label = item.label.trim();
-    if (!this.truncateInlineLabels || label.length <= this.maxInlineLabelLength) return label;
+    if (label.length <= this.maxInlineLabelLength) return label;
     return `${label.slice(0, this.maxInlineLabelLength).trimEnd()}...`;
   }
 
@@ -918,15 +1009,20 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
       .join(' ');
   }
 
+  itemTargetLabel(item: PmConsoleCalendarItem): string {
+    return `${this.targetTypeLabel(item.targetType)}: ${item.project}`;
+  }
+
+  targetTypeLabel(targetType: PmConsoleCalendarTargetType = 'project'): string {
+    return targetType.charAt(0).toUpperCase() + targetType.slice(1);
+  }
+
   actionLabel(item: PmConsoleCalendarItem): string {
     const kind = item.kind || 'task';
-    if (kind === 'plan') return 'Open plan queue';
     if (kind === 'report') return 'Open report';
-    if (kind === 'benefit') return 'Open benefit';
-    if (kind === 'change') return 'Open change queue';
-    if (kind === 'governance') return 'Open governance queue';
     if (kind === 'risk') return 'Open risk';
     if (kind === 'dependency') return 'Open dependency';
+    if (kind === 'benefit') return 'Open benefit';
     if (kind === 'milestone' || kind === 'end-product' || kind === 'management-product') return 'Open schedule';
     return 'Open work item';
   }
@@ -966,46 +1062,68 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
     this.previewHideTimer = null;
   }
 
-  private positionFor(anchor: HTMLElement, width: number, estimatedHeight: number): { top: number; left: number; arrowLeft: number; placement: CalendarPopoverPlacement } {
+  private clearPreviewShowTimer(): void {
+    if (this.previewShowTimer === null) return;
+    window.clearTimeout(this.previewShowTimer);
+    this.previewShowTimer = null;
+  }
+
+  private queuePreview(event: MouseEvent, showPreview: (anchor: HTMLElement) => void): void {
+    this.previewPinned = false;
+    this.clearPreviewShowTimer();
+    this.clearPreviewHideTimer();
+    const anchor = this.eventAnchor(event);
+    if (!anchor) return;
+    this.previewShowTimer = window.setTimeout(() => {
+      this.previewShowTimer = null;
+      showPreview(anchor);
+    }, 80);
+  }
+
+  private positionFor(anchor: HTMLElement, width: number, estimatedHeight: number): CalendarPopoverPosition {
     const rect = anchor.getBoundingClientRect();
+    const containingBlockOffset = this.fixedContainingBlockOffset();
     const margin = 12;
     const gap = 8;
-    const arrowInset = 24;
-    const fixedOffset = this.fixedContainingBlockOffset(anchor);
+    const arrowSize = 10;
     const placement: CalendarPopoverPlacement = rect.top - estimatedHeight - gap > margin ? 'above' : 'below';
     const rawTop = placement === 'above' ? rect.top - gap : rect.bottom + gap;
     const rawLeft = rect.left + rect.width / 2 - width / 2;
-    const visualTop = placement === 'above' ? Math.max(margin, rawTop) : Math.max(margin, Math.min(rawTop, window.innerHeight - estimatedHeight - margin));
-    const visualLeft = Math.max(margin, Math.min(rawLeft, window.innerWidth - width - margin));
+    const viewportTop = placement === 'above' ? Math.max(margin, rawTop) : Math.max(margin, Math.min(rawTop, window.innerHeight - estimatedHeight - margin));
+    const viewportLeft = Math.max(margin, Math.min(rawLeft, window.innerWidth - width - margin));
     const anchorCenter = rect.left + rect.width / 2;
-    const arrowLeft = Math.max(arrowInset, Math.min(anchorCenter - visualLeft - 5, width - arrowInset));
-    const top = visualTop - fixedOffset.top;
-    const left = visualLeft - fixedOffset.left;
+    const arrowLeft = Math.max(16, Math.min(anchorCenter - viewportLeft - arrowSize / 2, width - 26));
+    const top = viewportTop - containingBlockOffset.top;
+    const left = viewportLeft - containingBlockOffset.left;
     return { top, left, arrowLeft, placement };
   }
 
-  private fixedContainingBlockOffset(anchor: HTMLElement): { top: number; left: number } {
-    let element = anchor.parentElement;
+  private fixedContainingBlockOffset(): { left: number; top: number } {
+    let element = this.elementRef.nativeElement.parentElement;
     while (element && element !== document.documentElement) {
       const style = window.getComputedStyle(element);
-      const backdropFilter = style.getPropertyValue('backdrop-filter');
-      const hasContainingBlock =
+      const willChange = style.willChange.split(',').map((property) => property.trim());
+      const createsFixedContainingBlock =
         style.transform !== 'none' ||
-        style.perspective !== 'none' ||
         style.filter !== 'none' ||
-        (backdropFilter && backdropFilter !== 'none') ||
-        /(layout|paint|strict|content)/.test(style.contain) ||
-        /(transform|perspective|filter)/.test(style.willChange);
+        style.perspective !== 'none' ||
+        style.contain.includes('paint') ||
+        style.contain.includes('layout') ||
+        style.contain.includes('strict') ||
+        style.contain.includes('content') ||
+        willChange.includes('transform') ||
+        willChange.includes('filter') ||
+        willChange.includes('perspective');
 
-      if (hasContainingBlock) {
+      if (createsFixedContainingBlock) {
         const rect = element.getBoundingClientRect();
-        return { top: rect.top, left: rect.left };
+        return { left: rect.left, top: rect.top };
       }
 
       element = element.parentElement;
     }
 
-    return { top: 0, left: 0 };
+    return { left: 0, top: 0 };
   }
 }
 
