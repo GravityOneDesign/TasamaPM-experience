@@ -1763,38 +1763,47 @@ export interface TaxonomyCard {
 
                         <!-- Step Accordion Body -->
                         @if (newStepExpandedIndex === idx) {
-                          <div class="workflow-step-card-body" style="padding: 16px; border-top: 1px solid #cbd5e1; background: #ffffff; font-size: 13px; color: #475569; display: flex; flex-direction: column; gap: 10px;">
+                          <div class="workflow-step-card-body" style="padding: 16px; border-top: 1px solid #cbd5e1; background: #ffffff; font-size: 13px; color: #475569; display: flex; flex-direction: column; gap: 16px;">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                               <div><strong>Reject Action:</strong> <span style="text-transform: capitalize;">{{ step.rejectAction }}</span></div>
                               <div><strong>AI Component:</strong> <span style="text-transform: capitalize;">{{ step.aiComponent?.replace('_', ' ') }}</span></div>
                             </div>
-                            @if (step.submittedRoles && step.submittedRoles.length > 0) {
+                            
+                            @if (step.configuredActions && step.configuredActions.length > 0) {
                               <div>
-                                <strong>Submitted Roles (Notification):</strong>
-                                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;">
-                                  @for (role of step.submittedRoles; track role) {
-                                    <span class="role-badge" style="font-size: 11px;">{{ role }}</span>
-                                  }
-                                </div>
-                              </div>
-                            }
-                            @if (step.approvedRoles && step.approvedRoles.length > 0) {
-                              <div>
-                                <strong>Approved Roles (Notification):</strong>
-                                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;">
-                                  @for (role of step.approvedRoles; track role) {
-                                    <span class="role-badge" style="font-size: 11px;">{{ role }}</span>
-                                  }
-                                </div>
-                              </div>
-                            }
-                            @if (step.rejectedRoles && step.rejectedRoles.length > 0) {
-                              <div>
-                                <strong>Rejected Roles (Notification):</strong>
-                                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;">
-                                  @for (role of step.rejectedRoles; track role) {
-                                    <span class="role-badge" style="font-size: 11px;">{{ role }}</span>
-                                  }
+                                <strong style="display: block; margin-bottom: 8px;">Configured Actions:</strong>
+                                <div style="border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden;">
+                                  <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12px;">
+                                    <thead style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                                      <tr>
+                                        <th style="padding: 8px 12px; font-weight: 600; color: #475569; text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.04em;">User / Role</th>
+                                        <th style="padding: 8px 12px; font-weight: 600; color: #475569; text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.04em;">Action Type</th>
+                                        <th style="padding: 8px 12px; font-weight: 600; color: #475569; text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.04em; text-align: center;">Email</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      @for (action of step.configuredActions; track action.id) {
+                                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                                          <td style="padding: 8px 12px;">
+                                            <div style="display: flex; align-items: center; gap: 6px;">
+                                              <span class="ca-action-icon-badge" [class.ca-action-icon-badge--role]="action.type === 'role'" [class.ca-action-icon-badge--user]="action.type === 'user'" style="width: 18px; height: 18px; font-size: 10px;">
+                                                <span [pmConsoleIcon]="action.type === 'role' ? 'shield' : 'user'"></span>
+                                              </span>
+                                              <span style="font-weight: 500;">{{ action.label }}</span>
+                                            </div>
+                                          </td>
+                                          <td style="padding: 8px 12px;">{{ action.actionType }}</td>
+                                          <td style="padding: 8px 12px; text-align: center;">
+                                            @if (action.emailNotification) {
+                                              <span pmConsoleIcon="check" style="color: #059669; font-size: 14px;"></span>
+                                            } @else {
+                                              <span pmConsoleIcon="x" style="color: #cbd5e1; font-size: 14px;"></span>
+                                            }
+                                          </td>
+                                        </tr>
+                                      }
+                                    </tbody>
+                                  </table>
                                 </div>
                               </div>
                             }
@@ -1875,10 +1884,6 @@ export interface TaxonomyCard {
                         <input type="radio" name="newStepAiComponent" value="no" [(ngModel)]="newStepAiComponent" class="ud-radio" />
                         <span>No</span>
                       </label>
-                      <label class="ud-radio-label" style="margin-left: 24px;">
-                        <input type="radio" name="newStepAiComponent" value="not_required" [(ngModel)]="newStepAiComponent" class="ud-radio" />
-                        <span>Not Required</span>
-                      </label>
                     </div>
                   </div>
 
@@ -1889,31 +1894,158 @@ export interface TaxonomyCard {
                         Configure Actions
                       </div>
                       
-                      <!-- Add New Action Dropdown -->
-                      <div class="ud-select-wrap" style="width: 140px; position: relative;">
-                        <select class="workflow-field-select" style="height: 32px; padding: 0 8px; font-size: 12.5px;" disabled>
-                          <option value="">Add New</option>
-                        </select>
-                        <span pmConsoleIcon="chevron-down" class="ud-select-chevron" style="font-size: 12px; right: 8px;"></span>
+                      <!-- Add New Action — Roles & Users picker -->
+                      <div class="ca-picker-wrap" style="position: relative;">
+                        <details
+                          class="ca-picker-dropdown"
+                          (toggle)="onCaPickerToggle($event)"
+                        >
+                          <summary aria-label="Add New action">
+                            <span pmConsoleIcon="users" aria-hidden="true"></span>
+                            <span>{{ selectedCaTarget.label }}</span>
+                            <span pmConsoleIcon="chevron-down" aria-hidden="true" class="ca-chevron"></span>
+                          </summary>
+
+                          <div class="ca-picker-menu" role="menu">
+                            <!-- Search -->
+                            <label class="ca-picker-search" (click)="$event.stopPropagation()">
+                              <span pmConsoleIcon="search" aria-hidden="true"></span>
+                              <input
+                                type="search"
+                                placeholder="Search Users or roles"
+                                aria-label="Search Users or roles"
+                                [value]="caPickerSearchQuery"
+                                (input)="onCaPickerSearchChange($event)"
+                              />
+                            </label>
+
+                            <!-- All Roles and Users -->
+                            <button
+                              class="ca-picker-option ca-all-option"
+                              [class.active]="selectedCaTargetId === 'all'"
+                              type="button"
+                              role="menuitemradio"
+                              [attr.aria-checked]="selectedCaTargetId === 'all'"
+                              (click)="selectCaTarget('all', $event)"
+                            >
+                              <span class="ca-option-copy">
+                                <strong>All Roles and Users</strong>
+                                <small>{{ users.length }} {{ users.length === 1 ? 'user' : 'users' }}</small>
+                              </span>
+                            </button>
+
+                            @if (hasCaFilteredOptions) {
+                              @for (group of filteredCaGroups; track group.id) {
+                                @if (group.options.length) {
+                                  <details
+                                    class="ca-picker-group"
+                                    [attr.aria-label]="group.label"
+                                    [open]="isCaGroupExpanded(group.id)"
+                                    (toggle)="onCaGroupToggle(group.id, $event)"
+                                  >
+                                    <summary class="ca-picker-group-label" (click)="$event.stopPropagation()">
+                                      <span>{{ group.label }}</span>
+                                      <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
+                                    </summary>
+                                    @for (option of group.options; track option.id) {
+                                      <button
+                                        class="ca-picker-option"
+                                        [class.active]="selectedCaTargetId === option.id"
+                                        type="button"
+                                        role="menuitemradio"
+                                        [attr.aria-checked]="selectedCaTargetId === option.id"
+                                        (click)="selectCaTarget(option.id, $event)"
+                                      >
+                                        <span class="ca-option-copy">
+                                          <strong>{{ option.label }}</strong>
+                                          @if (option.subLabel) {
+                                            <small>{{ option.subLabel }}</small>
+                                          }
+                                        </span>
+                                      </button>
+                                    }
+                                  </details>
+                                }
+                              }
+                            } @else {
+                              <div class="ca-picker-empty">No roles or users found.</div>
+                            }
+                          </div>
+                        </details>
                       </div>
                     </div>
 
                     <!-- Configured Actions Table -->
-                    <div class="user-table-wrapper" style="border-radius: 8px; overflow: hidden; margin-top: 4px;">
+                    <div class="user-table-wrapper" style="border-radius: 8px; overflow: visible; margin-top: 4px;">
                       <table class="user-table" style="margin: 0; width: 100%;">
                         <thead>
                           <tr>
-                            <th style="padding: 8px 12px; font-size: 11px; width: 40%; background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">Action Name</th>
-                            <th style="padding: 8px 12px; font-size: 11px; width: 40%; background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">Trigger Condition</th>
-                            <th style="padding: 8px 12px; font-size: 11px; width: 20%; background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; text-align: center;">Status</th>
+                            <th style="padding: 8px 12px; font-size: 11px; width: 35%; background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">User / Role</th>
+                            <th style="padding: 8px 12px; font-size: 11px; width: 30%; background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">Action Type</th>
+                            <th style="padding: 8px 12px; font-size: 11px; width: 25%; background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; text-align: center;">Email Notification</th>
+                            <th style="padding: 8px 12px; font-size: 11px; width: 10%; background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; text-align: center;"></th>
                           </tr>
                         </thead>
                         <tbody>
-                          <tr>
-                            <td colspan="3" style="text-align: center; padding: 20px; color: #94a3b8; font-style: italic; font-size: 12.5px;">
-                              No custom actions configured for this step.
-                            </td>
-                          </tr>
+                          @if (configuredActions.length > 0) {
+                            @for (action of configuredActions; track action.id; let i = $index) {
+                              <tr style="animation: slideIn 0.15s ease;">
+                                <td style="padding: 8px 12px; vertical-align: middle;">
+                                  <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span
+                                      class="ca-action-icon-badge"
+                                      [class.ca-action-icon-badge--role]="action.type === 'role'"
+                                      [class.ca-action-icon-badge--user]="action.type === 'user'"
+                                    >
+                                      <span [pmConsoleIcon]="action.type === 'role' ? 'shield' : 'user'"></span>
+                                    </span>
+                                    <span style="font-size: 12.5px; font-weight: 500; color: #1e293b;">{{ action.label }}</span>
+                                    <span style="font-size: 10px; color: #94a3b8; text-transform: capitalize;">{{ action.type }}</span>
+                                  </div>
+                                </td>
+                                <td style="padding: 6px 12px; vertical-align: middle;">
+                                  <div class="ud-select-wrap" style="position: relative;">
+                                    <select
+                                      class="ud-select ud-select--pill"
+                                      style="height: 28px; font-size: 12px; padding: 0 28px 0 8px;"
+                                      [value]="action.actionType"
+                                      (change)="setCaActionType(i, $any($event.target).value)"
+                                    >
+                                      @for (opt of actionTypeOptions; track opt) {
+                                        <option [value]="opt">{{ opt }}</option>
+                                      }
+                                    </select>
+                                    <span pmConsoleIcon="chevron-down" class="ud-select-chevron" style="font-size: 11px;"></span>
+                                  </div>
+                                </td>
+                                <td style="padding: 6px 12px; vertical-align: middle; text-align: center;">
+                                  <label style="display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+                                    <span
+                                      class="ud-checkbox-box"
+                                      [class.ud-checkbox-box--checked]="action.emailNotification"
+                                      (click)="toggleCaEmailNotification(i)"
+                                    ></span>
+                                  </label>
+                                </td>
+                                <td style="padding: 6px 12px; vertical-align: middle; text-align: center;">
+                                  <button
+                                    type="button"
+                                    (click)="removeCaAction(i)"
+                                    title="Remove"
+                                    style="background: transparent; border: none; cursor: pointer; color: #ef4444; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 5px; transition: background 0.15s;"
+                                  >
+                                    <span pmConsoleIcon="trash-2" style="font-size: 13px;"></span>
+                                  </button>
+                                </td>
+                              </tr>
+                            }
+                          } @else {
+                            <tr>
+                              <td colspan="4" style="text-align: center; padding: 20px; color: #94a3b8; font-style: italic; font-size: 12.5px;">
+                                No actions configured. Use the picker above to add a role or user.
+                              </td>
+                            </tr>
+                          }
                         </tbody>
                       </table>
                     </div>
@@ -2281,23 +2413,283 @@ export interface TaxonomyCard {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 8px 16px;
-      background: #10069f;
-      color: #ffffff;
-      border: none;
-      border-radius: 20px;
+      padding: 6px 16px;
+      background: #ffffff;
+      color: #10069f;
+      border: 1.5px solid #10069f;
+      border-radius: 9999px;
       font-size: 14px;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background 0.15s, color 0.15s;
     }
     .workflow-add-step-btn:hover {
-      background: #0d0481;
+      background: rgba(16, 6, 159, 0.04);
     }
     .workflow-add-step-btn .btn-icon {
       font-size: 16px;
     }
     /* end Workflow Designer */
+
+    /* ── Configure Actions Roles & Users picker ───────────────────────── */
+    .ca-picker-wrap {
+      position: relative;
+    }
+
+    .ca-picker-dropdown {
+      position: relative;
+    }
+
+    .ca-picker-dropdown > summary {
+      align-items: center;
+      background: #ffffff;
+      border: 1.5px solid #10069f;
+      border-radius: 9999px;
+      color: #10069f;
+      cursor: pointer;
+      display: flex;
+      font-size: 13px;
+      font-weight: 600;
+      gap: 6px;
+      height: 32px;
+      list-style: none;
+      padding: 0 16px;
+      user-select: none;
+      white-space: nowrap;
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+
+    .ca-picker-dropdown > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .ca-picker-dropdown > summary:hover {
+      background: rgba(16, 6, 159, 0.04);
+    }
+
+    .ca-picker-dropdown[open] > summary {
+      background: rgba(16, 6, 159, 0.04);
+      box-shadow: 0 0 0 3px rgba(16, 6, 159, 0.08);
+    }
+
+    .ca-picker-dropdown > summary span[pmConsoleIcon] {
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      color: #10069f;
+    }
+
+    .ca-chevron {
+      transition: transform 160ms ease;
+    }
+
+    .ca-picker-dropdown[open] .ca-chevron {
+      transform: rotate(180deg);
+    }
+
+    .ca-picker-menu {
+      background: #ffffff;
+      border: 1px solid #dfe4ee;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(25, 33, 61, 0.10);
+      display: grid;
+      gap: 2px;
+      max-height: 300px;
+      min-width: 260px;
+      overflow: auto;
+      padding: 6px;
+      position: absolute;
+      right: 0;
+      top: calc(100% + 6px);
+      z-index: 300;
+    }
+
+    .ca-picker-search {
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid #e3e8f0;
+      border-radius: 8px;
+      color: #6f7785;
+      display: flex;
+      gap: 8px;
+      height: 34px;
+      margin-bottom: 4px;
+      padding: 0 10px;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    .ca-picker-search input {
+      background: transparent;
+      border: 0;
+      color: #252a34;
+      font: inherit;
+      font-size: 12px;
+      min-width: 0;
+      outline: 0;
+      width: 100%;
+    }
+
+    .ca-picker-search span[pmConsoleIcon] {
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      color: #687182;
+    }
+
+    .ca-picker-group {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .ca-picker-group summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .ca-picker-group-label {
+      align-items: center;
+      color: #4c5566;
+      cursor: pointer;
+      display: flex;
+      font-size: 10.5px;
+      font-weight: 600;
+      gap: 8px;
+      justify-content: space-between;
+      padding: 6px 8px 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      user-select: none;
+    }
+
+    .ca-picker-group-label span[pmConsoleIcon] {
+      font-size: 12px;
+      display: inline-flex;
+      transition: transform 160ms ease;
+    }
+
+    .ca-picker-group:not([open]) .ca-picker-group-label span[pmConsoleIcon] {
+      transform: rotate(-90deg);
+    }
+
+    .ca-picker-option {
+      align-items: center;
+      background: transparent;
+      border: 0;
+      border-radius: 6px;
+      color: #252a34;
+      cursor: pointer;
+      display: flex;
+      font: inherit;
+      min-height: 38px;
+      min-width: 0;
+      padding: 5px 10px;
+      text-align: left;
+      width: 100%;
+    }
+
+    .ca-picker-option:hover,
+    .ca-picker-option.active {
+      background: #f4f6fb;
+    }
+
+    .ca-picker-option.active {
+      color: var(--brand, #10069f);
+    }
+
+    .ca-all-option {
+      margin-bottom: 2px;
+    }
+
+    .ca-option-copy {
+      display: grid;
+      gap: 1px;
+      min-width: 0;
+    }
+
+    .ca-picker-option strong {
+      color: inherit;
+      display: block;
+      font-size: 11.5px;
+      font-weight: 500;
+      line-height: 15px;
+      overflow: hidden;
+      padding: 0;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .ca-picker-option small {
+      color: #737b8c;
+      display: block;
+      font-size: 10.5px;
+      font-weight: 400;
+      line-height: 13px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .ca-picker-empty {
+      color: #737b8c;
+      font-size: 12px;
+      padding: 10px 8px;
+      text-align: center;
+    }
+
+    /* Configure Actions table — action icon badge */
+    .ca-action-icon-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .ca-action-icon-badge--role {
+      background: rgba(16, 6, 159, 0.08);
+      color: #10069f;
+    }
+
+    .ca-action-icon-badge--user {
+      background: rgba(16, 185, 129, 0.08);
+      color: #059669;
+    }
+
+    /* Checkbox for Configure Actions email notification */
+    .ud-checkbox-box {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 4px;
+      background: #ffffff;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      flex-shrink: 0;
+    }
+
+    .ud-checkbox-box--checked {
+      background: #10069f;
+      border-color: #10069f;
+    }
+
+    .ud-checkbox-box--checked::after {
+      content: '';
+      display: block;
+      width: 4px;
+      height: 7px;
+      border: 1.5px solid #ffffff;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg) translate(-1px, -1px);
+    }
 
 
     .project-plan-title {
@@ -3158,6 +3550,221 @@ export interface TaxonomyCard {
       width: 100%;
       height: 100%;
       color: #202633;
+    }
+
+    /* ── Roles & Users picker ──────────────────────────────── */
+    .user-target-picker {
+      flex: 0 0 auto;
+      min-width: 0;
+    }
+
+    .user-picker-dropdown {
+      position: relative;
+    }
+
+    .user-picker-dropdown[open] {
+      z-index: 220;
+    }
+
+    .user-picker-dropdown > summary {
+      align-items: center;
+      background: #ffffff;
+      border: 1.5px solid #dfe4ee;
+      border-radius: 8px;
+      color: #252a34;
+      cursor: pointer;
+      display: flex;
+      font-size: 13px;
+      font-weight: 500;
+      gap: 8px;
+      height: 36px;
+      list-style: none;
+      padding: 0 12px;
+      user-select: none;
+      white-space: nowrap;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .user-picker-dropdown > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .user-picker-dropdown > summary:hover,
+    .user-picker-dropdown[open] > summary {
+      border-color: #10069f;
+      box-shadow: 0 0 0 3px rgba(16, 6, 159, 0.08);
+    }
+
+    .user-picker-dropdown > summary .icon {
+      height: 15px;
+      width: 15px;
+      color: #687182;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .user-picker-dropdown[open] > summary .icon:last-child {
+      transform: rotate(180deg);
+    }
+
+    .user-picker-menu {
+      background: #ffffff;
+      border: 1px solid #dfe4ee;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(25, 33, 61, 0.10);
+      display: grid;
+      gap: 2px;
+      max-height: 360px;
+      min-width: 280px;
+      overflow: auto;
+      padding: 6px;
+      position: absolute;
+      right: 0;
+      top: calc(100% + 6px);
+      z-index: 220;
+    }
+
+    .user-picker-search {
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid #e3e8f0;
+      border-radius: 8px;
+      color: #6f7785;
+      display: flex;
+      gap: 8px;
+      height: 36px;
+      margin-bottom: 6px;
+      padding: 0 10px;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    .user-picker-search input {
+      background: transparent;
+      border: 0;
+      color: #252a34;
+      font: inherit;
+      font-size: 12px;
+      min-width: 0;
+      outline: 0;
+      width: 100%;
+    }
+
+    .user-picker-search span[pmConsoleIcon] {
+      height: 15px;
+      width: 15px;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      color: #687182;
+    }
+
+    .user-picker-group {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .user-picker-group summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .user-picker-group-label {
+      align-items: center;
+      color: #4c5566;
+      cursor: pointer;
+      display: flex;
+      font-size: 11.5px;
+      font-weight: 600;
+      gap: 8px;
+      justify-content: space-between;
+      letter-spacing: 0;
+      padding: 8px 8px 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      user-select: none;
+    }
+
+    .user-picker-group-label span[pmConsoleIcon] {
+      height: 13px;
+      width: 13px;
+      font-size: 12px;
+      display: inline-flex;
+      transition: transform 160ms ease;
+    }
+
+    .user-picker-group:not([open]) .user-picker-group-label span[pmConsoleIcon] {
+      transform: rotate(-90deg);
+    }
+
+    .user-picker-option {
+      align-items: center;
+      background: transparent;
+      border: 0;
+      border-radius: 6px;
+      color: #252a34;
+      cursor: pointer;
+      display: flex;
+      font: inherit;
+      min-height: 40px;
+      min-width: 0;
+      padding: 6px 10px;
+      text-align: left;
+      width: 100%;
+    }
+
+    .user-picker-option:hover,
+    .user-picker-option.active {
+      background: #f4f6fb;
+    }
+
+    .user-picker-option.active {
+      color: var(--brand, #10069f);
+    }
+
+    .all-user-target {
+      border-radius: 6px;
+      margin-bottom: 4px;
+    }
+
+    .user-target-option-copy {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .user-picker-option strong {
+      background: transparent;
+      border-radius: 0;
+      color: inherit;
+      display: block;
+      font-size: 11.5px;
+      font-weight: 500;
+      line-height: 16px;
+      min-width: 0;
+      overflow: hidden;
+      padding: 0;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .user-picker-option small {
+      color: #737b8c;
+      display: block;
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 14px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .user-picker-empty {
+      color: #737b8c;
+      font-size: 12px;
+      padding: 12px 8px;
+      text-align: center;
     }
 
     .user-management-header {
@@ -4834,7 +5441,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     this.newStepName = '';
     this.newStepMandatory = false;
     this.newStepRejectAction = 'restart';
-    this.newStepAiComponent = 'not_required';
+    this.newStepAiComponent = 'no';
     this.submittedSelectedRoles = [];
     this.approvedSelectedRoles = [];
     this.rejectedSelectedRoles = [];
@@ -4844,6 +5451,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     this.newStepSubmittedEmail = '';
     this.newStepApprovedEmail = '';
     this.newStepRejectedEmail = '';
+    this.configuredActions = [];
     this.changeDetector.markForCheck();
   }
 
@@ -4853,7 +5461,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     this.newStepName = step.name;
     this.newStepMandatory = step.isMandatory || false;
     this.newStepRejectAction = step.rejectAction || 'restart';
-    this.newStepAiComponent = step.aiComponent || 'not_required';
+    this.newStepAiComponent = step.aiComponent || 'no';
     this.submittedSelectedRoles = step.submittedRoles || [];
     this.approvedSelectedRoles = step.approvedRoles || [];
     this.rejectedSelectedRoles = step.rejectedRoles || [];
@@ -4863,6 +5471,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     this.newStepSubmittedEmail = step.submittedEmail || '';
     this.newStepApprovedEmail = step.approvedEmail || '';
     this.newStepRejectedEmail = step.rejectedEmail || '';
+    this.configuredActions = step.configuredActions ? JSON.parse(JSON.stringify(step.configuredActions)) : [];
     this.editingStepIndex = index;
     this.isAddingWorkflowStep = true;
     this.newStepExpandedIndex = -1;
@@ -4888,7 +5497,8 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
       rejectedRoles: [...this.rejectedSelectedRoles],
       submittedEmail: this.newStepSubmittedEmail,
       approvedEmail: this.newStepApprovedEmail,
-      rejectedEmail: this.newStepRejectedEmail
+      rejectedEmail: this.newStepRejectedEmail,
+      configuredActions: JSON.parse(JSON.stringify(this.configuredActions))
     };
 
     if (this.editingStepIndex !== null) {
@@ -5402,6 +6012,11 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
   drawerBranch = 'All';
   drawerSection = 'All';
 
+  // Configure Actions Roles & Users picker
+  selectedCaTargetId = 'all';
+  caPickerSearchQuery = '';
+  collapsedCaGroupIds = new Set<string>();
+
   // Change Password Drawer
   isChangingPassword = false;
   changePasswordUserIndex: number | null = null;
@@ -5418,7 +6033,25 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     businessUnit: string;
     loginAccess: 'Enabled' | 'Disabled';
     lastLogin?: string;
+  }> = [
+    { name: 'Alice Mercer', username: 'alice.mercer@org.com', role: 'Project Manager', email: 'alice.mercer@org.com', businessUnit: 'Portfolio Management', loginAccess: 'Enabled', lastLogin: '2026-05-20' },
+    { name: 'Brian Holloway', username: 'brian.holloway@org.com', role: 'Project Sponsor', email: 'brian.holloway@org.com', businessUnit: 'Asset Management', loginAccess: 'Enabled', lastLogin: '2026-05-18' },
+    { name: 'Clara Shen', username: 'clara.shen@org.com', role: 'PMO Contact', email: 'clara.shen@org.com', businessUnit: 'Risk Management', loginAccess: 'Enabled', lastLogin: '2026-05-22' },
+    { name: 'David Osei', username: 'david.osei@org.com', role: 'Delivery Manager', email: 'david.osei@org.com', businessUnit: 'Portfolio Management', loginAccess: 'Enabled', lastLogin: '2026-05-15' },
+    { name: 'Evelyn Park', username: 'evelyn.park@org.com', role: 'Initiator(Author)', email: 'evelyn.park@org.com', businessUnit: 'Asset Management', loginAccess: 'Disabled', lastLogin: '2026-04-30' },
+    { name: 'Frank Addo', username: 'frank.addo@org.com', role: 'Project Manager', email: 'frank.addo@org.com', businessUnit: 'Risk Management', loginAccess: 'Enabled', lastLogin: '2026-05-21' },
+  ];
+
+  // Configure Actions rows
+  configuredActions: Array<{
+    id: string;
+    label: string;
+    type: 'role' | 'user';
+    actionType: string;
+    emailNotification: boolean;
   }> = [];
+
+  readonly actionTypeOptions = ['Approve', 'Reject', 'Review', 'Notify', 'Escalate', 'Reassign'];
 
   constructor(public readonly changeDetector: ChangeDetectorRef) { }
 
@@ -5683,7 +6316,144 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     this.changeDetector.markForCheck();
   }
 
+  // ── Configure Actions picker getters & methods ────────────────────────────────────
 
+  get selectedCaTarget(): { id: string; label: string } {
+    if (this.selectedCaTargetId === 'all') {
+      return { id: 'all', label: 'All Roles and Users' };
+    }
+    for (const group of this.caTargetGroups) {
+      const match = group.options.find(o => o.id === this.selectedCaTargetId);
+      if (match) return { id: match.id, label: match.label };
+    }
+    return { id: 'all', label: 'All Roles and Users' };
+  }
+
+  get caTargetGroups(): Array<{ id: string; label: string; options: Array<{ id: string; label: string; subLabel?: string }> }> {
+    // Roles accordion — always shows all availableRoles; adds user-count subheading
+    const roleCounts = new Map<string, number>();
+    for (const u of this.users) {
+      const role = (u.role || 'Unassigned').trim();
+      roleCounts.set(role, (roleCounts.get(role) ?? 0) + 1);
+    }
+    const rolesGroup = {
+      id: 'role',
+      label: 'Roles',
+      options: this.availableRoles.map(role => ({
+        id: `role::${role}`,
+        label: role,
+        subLabel: (() => {
+          const count = roleCounts.get(role) ?? 0;
+          return count === 1 ? '1 user' : count > 1 ? `${count} users` : 'Role';
+        })(),
+      })),
+    };
+
+    // Users accordion
+    const usersGroup = {
+      id: 'user',
+      label: 'Users',
+      options: this.users.map(u => ({
+        id: `user::${u.username}`,
+        label: u.name || u.username,
+        subLabel: u.role || undefined,
+      })),
+    };
+
+    return [rolesGroup, usersGroup];
+  }
+
+  get filteredCaGroups(): Array<{ id: string; label: string; options: Array<{ id: string; label: string; subLabel?: string }> }> {
+    const q = this.caPickerSearchQuery;
+    if (!q) return this.caTargetGroups;
+    return this.caTargetGroups.map(group => ({
+      ...group,
+      options: group.options.filter(o =>
+        [o.label, o.subLabel ?? ''].some(v => v.toLowerCase().includes(q))
+      ),
+    }));
+  }
+
+  get hasCaFilteredOptions(): boolean {
+    return this.filteredCaGroups.some(g => g.options.length > 0);
+  }
+
+  isCaGroupExpanded(groupId: string): boolean {
+    return !this.collapsedCaGroupIds.has(groupId);
+  }
+
+  onCaGroupToggle(groupId: string, event: Event): void {
+    const details = event.currentTarget as HTMLDetailsElement;
+    if (details.open) {
+      this.collapsedCaGroupIds.delete(groupId);
+    } else {
+      this.collapsedCaGroupIds.add(groupId);
+    }
+    this.changeDetector.markForCheck();
+  }
+
+  onCaPickerSearchChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.caPickerSearchQuery = input.value.toLowerCase().trim();
+    if (this.caPickerSearchQuery) {
+      this.collapsedCaGroupIds.clear();
+    }
+    this.changeDetector.markForCheck();
+  }
+
+  onCaPickerToggle(event: Event): void {
+    const details = event.currentTarget as HTMLDetailsElement;
+    if (!details.open) {
+      this.caPickerSearchQuery = '';
+    }
+    this.changeDetector.markForCheck();
+  }
+
+  selectCaTarget(id: string, event?: Event): void {
+    if (id !== 'all') {
+      // Add a row to the configured actions table
+      const alreadyAdded = this.configuredActions.some(a => a.id === id);
+      if (!alreadyAdded) {
+        const target = this.selectedCaTarget;
+        const label = this.caTargetGroups
+          .flatMap(g => g.options)
+          .find(o => o.id === id)?.label ?? id;
+        const type: 'role' | 'user' = id.startsWith('role::') ? 'role' : 'user';
+        this.configuredActions = [...this.configuredActions, {
+          id,
+          label,
+          type,
+          actionType: 'Approve',
+          emailNotification: false,
+        }];
+      }
+    }
+    this.selectedCaTargetId = 'all'; // reset picker to default
+    this.caPickerSearchQuery = '';
+    if (event) {
+      (event.currentTarget as HTMLElement | null)?.closest('details')?.removeAttribute('open');
+    }
+    this.changeDetector.markForCheck();
+  }
+
+  removeCaAction(index: number): void {
+    this.configuredActions = this.configuredActions.filter((_, i) => i !== index);
+    this.changeDetector.markForCheck();
+  }
+
+  toggleCaEmailNotification(index: number): void {
+    this.configuredActions = this.configuredActions.map((a, i) =>
+      i === index ? { ...a, emailNotification: !a.emailNotification } : a
+    );
+    this.changeDetector.markForCheck();
+  }
+
+  setCaActionType(index: number, value: string): void {
+    this.configuredActions = this.configuredActions.map((a, i) =>
+      i === index ? { ...a, actionType: value } : a
+    );
+    this.changeDetector.markForCheck();
+  }
 
   // User Management Methods
   openAddUserForm(): void {
