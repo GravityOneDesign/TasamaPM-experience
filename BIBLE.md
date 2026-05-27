@@ -193,6 +193,7 @@ PMO:
 - Owns the PMO governance shell mounted from login.
 - Current root component is `PmoGovernanceShellComponent`.
 - PMO-owned feature files live as `tasama-angular/src/app/pmo-*.ts` with PMO decision-intelligence imagery in `tasama-angular/src/assets/pmo-decision-intelligence`.
+- `PmoDecisionIntelligenceComponent` collapsed accordion rows use compact 67 x 60 artwork thumbnails with tighter radius/shadow, while expanded cards keep their larger artwork treatment.
 - PMO concepts also appear in PM onboarding and assignment flows, but the PMO persona itself must not be implemented as a page mode inside the PM console.
 
 Portfolio Manager:
@@ -892,6 +893,7 @@ When a user asks for UI from Figma:
 - Linked the PMO login persona on `main` to `PmoGovernanceShellComponent` instead of the generic placeholder, preserving Project Manager, Portfolio Manager, Executive, and Program Manager entry behavior.
 - Added the PMO-owned governance/front-door/decision-intelligence files and PMO decision-intelligence artwork to `main`.
 - Added default-preserving shared/component inputs needed by the PMO shell: configurable top bar title/profile display, expandable search, field help icons, register table wrapped cells, submit-first drawer footers, hidden register tabs, and configurable Portfolio action workspace inputs.
+- Reduced the PMO Insights & Decision Intelligence collapsed accordion artwork to the compact 67 x 60 thumbnail scale shown in the reference rows, with tighter radius/shadow and spacing while preserving the expanded category-card treatment.
 
 2026-05-25:
 
