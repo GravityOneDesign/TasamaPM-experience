@@ -165,7 +165,7 @@ export class PortfolioManagerShellComponent implements OnInit, AfterViewChecked 
   constructor(
     private readonly changeDetector: ChangeDetectorRef,
     private readonly iconsService: PmConsoleIconService,
-  ) {}
+  ) { }
 
   get usesConsoleHeader(): boolean {
     return this.frontDoorMode !== 'unassigned' && ['workspace', 'workspaces', 'portfolio-workspace', 'framework', 'performance'].includes(this.selectedPage);

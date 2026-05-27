@@ -281,7 +281,7 @@ export const pmoGovernancePrimaryTabs: readonly PmoGovernanceTab[] = [
   { id: 'risk-register', label: 'Risk Register', icon: 'layout-grid' },
   { id: 'benefits-register', label: 'Benefits Register', icon: 'layout-grid' },
   { id: 'issues-register', label: 'Issues Register', icon: 'layout-grid' },
-  { id: 'governance', label: 'Governance', icon: 'layout-grid' },
+  { id: 'governance', label: 'Governance Register', icon: 'layout-grid' },
 ];
 
 export const pmoGovernanceDefaultWorkspaceTarget: PmoGovernanceWorkspaceTarget = { primaryTab: 'portfolio-register' };
