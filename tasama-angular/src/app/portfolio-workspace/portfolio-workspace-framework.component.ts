@@ -867,14 +867,14 @@ export interface TaxonomyCard {
             <div class="add-workflow-btn-wrap" style="position: relative;">
               <button class="add-workflow-btn" type="button" (click)="toggleAddWorkflowMenu($event)">
                 <span pmConsoleIcon="plus" class="btn-icon"></span>
-                <span>Add new</span>
+                <span>Add workflow</span>
                 <span pmConsoleIcon="chevron-down" style="font-size: 13px; margin-left: 4px;"></span>
               </button>
               @if (isAddWorkflowMenuOpen) {
                 <div class="add-workflow-dropdown animation-fade" role="menu">
                   <div class="add-workflow-dropdown-label">Select Workflow Type</div>
-                  <button type="button" class="add-workflow-dropdown-item" role="menuitem" (click)="addNewWorkflow('Project stage closure')">
-                    Project stage closure
+                  <button type="button" class="add-workflow-dropdown-item" role="menuitem" (click)="addNewWorkflow('Project Stage Closure')">
+                    Project Stage Closure
                   </button>
                   <button type="button" class="add-workflow-dropdown-item" role="menuitem" (click)="addNewWorkflow('KPI Measure Tracking')">
                     KPI Measure Tracking
@@ -1749,8 +1749,8 @@ export interface TaxonomyCard {
         (submitForm)="saveWorkflow($event)"
       >
         <div planDrawerBody class="workflow-drawer-wrapper">
-          <!-- Tabs row: shown for Project stage closure, placed just below description -->
-          @if (workflowType === 'Project stage closure') {
+          <!-- Tabs row: shown for Project Stage Closure, placed just below description -->
+          @if (workflowType === 'Project Stage Closure') {
             <div class="workflow-drawer-tabs">
               <button
                 type="button"
@@ -1773,7 +1773,7 @@ export interface TaxonomyCard {
             </div>
           }
           <!-- White content area -->
-          <div class="workflow-drawer-content-area" [class.no-tabs]="workflowType !== 'Project stage closure'">
+          <div class="workflow-drawer-content-area" [class.no-tabs]="workflowType !== 'Project Stage Closure'">
             <!-- Workflow Name + Description fields (shared for both tabs / both types) -->
             <div class="workflow-form-fields">
               <div class="workflow-field-group">
@@ -1796,7 +1796,7 @@ export interface TaxonomyCard {
               </div>
 
               <!-- Conditional Dropdowns -->
-              @if (workflowType === 'Project stage closure' && workflowActiveTab === 'custom') {
+              @if (workflowType === 'Project Stage Closure' && workflowActiveTab === 'custom') {
                 <div class="workflow-field-group">
                   <label class="workflow-field-label">Applicability</label>
                   <div class="ud-select-wrap" style="position: relative;">
@@ -1952,42 +1952,6 @@ export interface TaxonomyCard {
                     </div>
                   </div>
 
-                  <!-- Reject Action Section -->
-                  <div class="form-section-block" style="display: flex; flex-direction: column; gap: 12px;">
-                    <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; border-left: 3px solid #10069f; padding-left: 8px;">
-                      If the step is rejected, then
-                    </div>
-                    
-                    <div class="ud-radio-group" style="margin-top: 4px;">
-                      <label class="ud-radio-label">
-                        <input type="radio" name="newStepRejectAction" value="restart" [(ngModel)]="newStepRejectAction" class="ud-radio" />
-                        <span>Restart the workflow</span>
-                      </label>
-                      <label class="ud-radio-label" style="margin-left: 24px;">
-                        <input type="radio" name="newStepRejectAction" value="stay" [(ngModel)]="newStepRejectAction" class="ud-radio" />
-                        <span>Stay on the current step</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  <!-- AI Component Section -->
-                  <div class="form-section-block" style="display: flex; flex-direction: column; gap: 12px;">
-                    <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; border-left: 3px solid #10069f; padding-left: 8px;">
-                      AI component
-                    </div>
-                    
-                    <div class="ud-radio-group" style="margin-top: 4px;">
-                      <label class="ud-radio-label">
-                        <input type="radio" name="newStepAiComponent" value="yes" [(ngModel)]="newStepAiComponent" class="ud-radio" />
-                        <span>Yes</span>
-                      </label>
-                      <label class="ud-radio-label" style="margin-left: 24px;">
-                        <input type="radio" name="newStepAiComponent" value="no" [(ngModel)]="newStepAiComponent" class="ud-radio" />
-                        <span>No</span>
-                      </label>
-                    </div>
-                  </div>
-
                   <!-- Configure Actions Section -->
                   <div class="form-section-block" style="display: flex; flex-direction: column; gap: 12px;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1995,16 +1959,86 @@ export interface TaxonomyCard {
                         Configure Actions
                       </div>
                       
+                    </div>
+
+                    <!-- Configured Actions Table -->
+                    <div class="user-table-wrapper" style="border-radius: 8px; overflow: visible; margin-top: 4px;">
+                      <table class="user-table" style="margin: 0; width: 100%;">
+                        <thead>
+                          <tr>
+                            <th style="padding: 8px 12px; font-size: 11px; width: 40%; background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">User / Role</th>
+                            <th style="padding: 8px 12px; font-size: 11px; width: 25%; background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">Action Type</th>
+                            <th style="padding: 8px 12px; font-size: 11px; width: 25%; background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; text-align: center;">Email Notification</th>
+                            <th style="padding: 8px 12px; font-size: 11px; width: 10%; background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; text-align: center;"></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @if (configuredActions.length > 0) {
+                            @for (action of configuredActions; track action.id; let i = $index) {
+                              <tr style="animation: slideIn 0.15s ease;">
+                                <td style="padding: 8px 12px; vertical-align: middle;">
+                                  <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span
+                                      class="ca-action-icon-badge"
+                                      [class.ca-action-icon-badge--role]="action.type === 'role'"
+                                      [class.ca-action-icon-badge--user]="action.type === 'user'"
+                                    >
+                                      <span [pmConsoleIcon]="action.type === 'role' ? 'shield' : 'user'"></span>
+                                    </span>
+                                    <span style="font-size: 12.5px; font-weight: 500; color: #1e293b;">{{ action.label }}</span>
+                                    <span style="font-size: 10px; color: #94a3b8; text-transform: capitalize;">{{ action.type }}</span>
+                                  </div>
+                                </td>
+                                <td style="padding: 6px 12px; vertical-align: middle;">
+                                  <div class="ud-select-wrap" style="position: relative;">
+                                    <select
+                                      class="ud-select ud-select--pill"
+                                      style="height: 28px; font-size: 12px; padding: 0 28px 0 8px; min-width: 95px;"
+                                      [value]="action.actionType"
+                                      (change)="setCaActionType(i, $any($event.target).value)"
+                                    >
+                                      @for (opt of actionTypeOptions; track opt) {
+                                        <option [value]="opt">{{ opt }}</option>
+                                      }
+                                    </select>
+                                    <span pmConsoleIcon="chevron-down" class="ud-select-chevron" style="font-size: 11px;"></span>
+                                  </div>
+                                </td>
+                                <td style="padding: 6px 12px; vertical-align: middle; text-align: center;">
+                                  <label style="display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+                                    <span
+                                      class="ud-checkbox-box"
+                                      [class.ud-checkbox-box--checked]="action.emailNotification"
+                                      (click)="toggleCaEmailNotification(i)"
+                                    ></span>
+                                  </label>
+                                </td>
+                                <td style="padding: 6px 12px; vertical-align: middle; text-align: center;">
+                                  <button
+                                    type="button"
+                                    (click)="removeCaAction(i)"
+                                    title="Remove"
+                                    style="background: transparent; border: none; cursor: pointer; color: #ef4444; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 5px; transition: background 0.15s;"
+                                  >
+                                    <span pmConsoleIcon="trash-2" style="font-size: 13px;"></span>
+                                  </button>
+                                </td>
+                              </tr>
+                            }
+                          } @else {
+                          }
+                          <tr>
+                            <td style="padding: 8px 12px; vertical-align: middle; overflow: visible;">
                       <!-- Add New Action — Roles & Users picker -->
-                      <div class="ca-picker-wrap" style="position: relative;">
+                      <div class="ca-picker-wrap" style="position: relative; width: 100%;">
                         <details
                           class="ca-picker-dropdown"
                           (toggle)="onCaPickerToggle($event)"
                         >
-                          <summary aria-label="Add New action">
-                            <span pmConsoleIcon="users" aria-hidden="true"></span>
+                          <summary aria-label="Add New action" style="display: inline-flex; align-items: center; gap: 6px; border: none; border-radius: 9999px; padding: 0 12px; color: #1e293b; font-weight: 500; font-size: 12.5px; height: 28px; background: #f1f5f9; cursor: pointer;">
+                            <span pmConsoleIcon="users" aria-hidden="true" style="font-size: 14px; color: #64748b;"></span>
                             <span>{{ selectedCaTarget.label }}</span>
-                            <span pmConsoleIcon="chevron-down" aria-hidden="true" class="ca-chevron"></span>
+                            <span pmConsoleIcon="chevron-down" aria-hidden="true" class="ca-chevron" style="font-size: 11px; margin-left: 2px; color: #64748b;"></span>
                           </summary>
 
                           <div class="ca-picker-menu" role="menu">
@@ -2074,81 +2108,62 @@ export interface TaxonomyCard {
                           </div>
                         </details>
                       </div>
-                    </div>
-
-                    <!-- Configured Actions Table -->
-                    <div class="user-table-wrapper" style="border-radius: 8px; overflow: visible; margin-top: 4px;">
-                      <table class="user-table" style="margin: 0; width: 100%;">
-                        <thead>
-                          <tr>
-                            <th style="padding: 8px 12px; font-size: 11px; width: 35%; background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">User / Role</th>
-                            <th style="padding: 8px 12px; font-size: 11px; width: 30%; background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">Action Type</th>
-                            <th style="padding: 8px 12px; font-size: 11px; width: 25%; background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; text-align: center;">Email Notification</th>
-                            <th style="padding: 8px 12px; font-size: 11px; width: 10%; background: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; text-align: center;"></th>
+                            </td>
+                            <td style="padding: 6px 12px; vertical-align: middle;">
+                              <div class="ud-select-wrap" style="position: relative;">
+                                <select class="ud-select ud-select--pill" style="height: 28px; font-size: 12px; padding: 0 28px 0 8px; min-width: 95px;" [(ngModel)]="newCaActionType">
+                                  @for (opt of actionTypeOptions; track opt) {
+                                    <option [value]="opt">{{ opt }}</option>
+                                  }
+                                </select>
+                                <span pmConsoleIcon="chevron-down" class="ud-select-chevron" style="font-size: 11px;"></span>
+                              </div>
+                            </td>
+                            <td style="padding: 6px 12px; vertical-align: middle; text-align: center;">
+                              <label style="display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+                                <span class="ud-checkbox-box" [class.ud-checkbox-box--checked]="newCaEmailNotification" (click)="newCaEmailNotification = !newCaEmailNotification"></span>
+                              </label>
+                            </td>
+                            <td style="padding: 6px 12px; vertical-align: middle; text-align: center;"></td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          @if (configuredActions.length > 0) {
-                            @for (action of configuredActions; track action.id; let i = $index) {
-                              <tr style="animation: slideIn 0.15s ease;">
-                                <td style="padding: 8px 12px; vertical-align: middle;">
-                                  <div style="display: flex; align-items: center; gap: 6px;">
-                                    <span
-                                      class="ca-action-icon-badge"
-                                      [class.ca-action-icon-badge--role]="action.type === 'role'"
-                                      [class.ca-action-icon-badge--user]="action.type === 'user'"
-                                    >
-                                      <span [pmConsoleIcon]="action.type === 'role' ? 'shield' : 'user'"></span>
-                                    </span>
-                                    <span style="font-size: 12.5px; font-weight: 500; color: #1e293b;">{{ action.label }}</span>
-                                    <span style="font-size: 10px; color: #94a3b8; text-transform: capitalize;">{{ action.type }}</span>
-                                  </div>
-                                </td>
-                                <td style="padding: 6px 12px; vertical-align: middle;">
-                                  <div class="ud-select-wrap" style="position: relative;">
-                                    <select
-                                      class="ud-select ud-select--pill"
-                                      style="height: 28px; font-size: 12px; padding: 0 28px 0 8px;"
-                                      [value]="action.actionType"
-                                      (change)="setCaActionType(i, $any($event.target).value)"
-                                    >
-                                      @for (opt of actionTypeOptions; track opt) {
-                                        <option [value]="opt">{{ opt }}</option>
-                                      }
-                                    </select>
-                                    <span pmConsoleIcon="chevron-down" class="ud-select-chevron" style="font-size: 11px;"></span>
-                                  </div>
-                                </td>
-                                <td style="padding: 6px 12px; vertical-align: middle; text-align: center;">
-                                  <label style="display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
-                                    <span
-                                      class="ud-checkbox-box"
-                                      [class.ud-checkbox-box--checked]="action.emailNotification"
-                                      (click)="toggleCaEmailNotification(i)"
-                                    ></span>
-                                  </label>
-                                </td>
-                                <td style="padding: 6px 12px; vertical-align: middle; text-align: center;">
-                                  <button
-                                    type="button"
-                                    (click)="removeCaAction(i)"
-                                    title="Remove"
-                                    style="background: transparent; border: none; cursor: pointer; color: #ef4444; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 5px; transition: background 0.15s;"
-                                  >
-                                    <span pmConsoleIcon="trash-2" style="font-size: 13px;"></span>
-                                  </button>
-                                </td>
-                              </tr>
-                            }
-                          } @else {
-                            <tr>
-                              <td colspan="4" style="text-align: center; padding: 20px; color: #94a3b8; font-style: italic; font-size: 12.5px;">
-                                No actions configured. Use the picker above to add a role or user.
-                              </td>
-                            </tr>
-                          }
                         </tbody>
                       </table>
+                    </div>
+                  </div>
+
+                  <!-- Reject Action Section -->
+                  <div class="form-section-block" style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; border-left: 3px solid #10069f; padding-left: 8px;">
+                      If the step is rejected, then
+                    </div>
+                    
+                    <div class="ud-radio-group" style="margin-top: 4px;">
+                      <label class="ud-radio-label">
+                        <input type="radio" name="newStepRejectAction" value="restart" [(ngModel)]="newStepRejectAction" class="ud-radio" />
+                        <span>Restart the workflow</span>
+                      </label>
+                      <label class="ud-radio-label" style="margin-left: 24px;">
+                        <input type="radio" name="newStepRejectAction" value="stay" [(ngModel)]="newStepRejectAction" class="ud-radio" />
+                        <span>Stay on the current step</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <!-- AI Component Section -->
+                  <div class="form-section-block" style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; border-left: 3px solid #10069f; padding-left: 8px;">
+                      AI component
+                    </div>
+                    
+                    <div class="ud-radio-group" style="margin-top: 4px;">
+                      <label class="ud-radio-label">
+                        <input type="radio" name="newStepAiComponent" value="yes" [(ngModel)]="newStepAiComponent" class="ud-radio" />
+                        <span>Yes</span>
+                      </label>
+                      <label class="ud-radio-label" style="margin-left: 24px;">
+                        <input type="radio" name="newStepAiComponent" value="no" [(ngModel)]="newStepAiComponent" class="ud-radio" />
+                        <span>No</span>
+                      </label>
                     </div>
                   </div>
 
@@ -5534,6 +5549,8 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
   newStepMandatory = false;
   newStepRejectAction = 'restart';
   newStepAiComponent = 'not_required';
+  newCaActionType = 'Approve';
+  newCaEmailNotification = false;
   newStepExpandedIndex = -1;
 
   emailAccordionOpen: string = '';
@@ -5594,6 +5611,8 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     this.newStepMandatory = false;
     this.newStepRejectAction = 'restart';
     this.newStepAiComponent = 'no';
+    this.newCaActionType = 'Approve';
+    this.newCaEmailNotification = false;
     this.submittedSelectedRoles = [];
     this.approvedSelectedRoles = [];
     this.rejectedSelectedRoles = [];
@@ -5614,6 +5633,8 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     this.newStepMandatory = step.isMandatory || false;
     this.newStepRejectAction = step.rejectAction || 'restart';
     this.newStepAiComponent = step.aiComponent || 'no';
+    this.newCaActionType = 'Approve';
+    this.newCaEmailNotification = false;
     this.submittedSelectedRoles = step.submittedRoles || [];
     this.approvedSelectedRoles = step.approvedRoles || [];
     this.rejectedSelectedRoles = step.rejectedRoles || [];
@@ -5863,7 +5884,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
       this.editingWorkflowId = card.id;
       this.workflowName = card.title;
       this.workflowDescription = card.description;
-      this.workflowType = card.workflowType || 'Project stage closure';
+      this.workflowType = card.workflowType || 'Project Stage Closure';
       this.workflowApplicability = card.workflowApplicability || '';
 
       // Load steps if present, otherwise fallback to mapping string items
@@ -6775,11 +6796,13 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
           id,
           label,
           type,
-          actionType: 'Approve',
-          emailNotification: false,
+          actionType: this.newCaActionType,
+          emailNotification: this.newCaEmailNotification,
         }];
       }
     }
+    this.newCaActionType = 'Approve';
+    this.newCaEmailNotification = false;
     this.selectedCaTargetId = 'all'; // reset picker to default
     this.caPickerSearchQuery = '';
     if (event) {
