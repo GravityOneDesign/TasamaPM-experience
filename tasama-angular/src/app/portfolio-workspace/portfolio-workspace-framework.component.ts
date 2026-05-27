@@ -57,19 +57,18 @@ export interface TaxonomyCard {
     </header>
 
     <!-- Scrollable full-width tab content area -->
-    <main class="portfolio-workspace-body" style="grid-row: 2; overflow-y: auto; background: #ffffff; padding: 24px; display: flex; flex-direction: column;">
+    <main class="portfolio-workspace-body" style="grid-row: 2; overflow-y: auto; background: #ffffff; padding: 12px 24px 24px 24px; display: flex; flex-direction: column;">
       
       @if (activeSectionId === 'org-structure') {
-        <div class="org-structure-container animation-fade" style="display: flex; flex-direction: column; width: 100%; height: 100%;">
+        <div class="org-structure-container animation-fade" style="display: flex; flex-direction: column; width: 100%; height: 100%; gap: 16px; margin-top: 0px;">
           
-          <!-- Top Header Section with Add Division Button -->
-          <div class="org-structure-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <!-- Tab Heading and Subheading Row -->
+          <div class="org-structure-header-row" style="margin-bottom: 8px;">
             <div class="org-structure-intro">
-              <h2 style="font-size: 20px; font-weight: 600; color: #0b0b0b; margin: 0 0 6px 0;">Organisational Structure</h2>
-              <p style="font-size: 13.5px; color: #687182; margin: 0;">Configure divisions, brands, and sections to define the portfolio's hierarchical architecture.</p>
+              <h2>Organisational Structure</h2>
+              <p>Configure divisions, branches, and sections to define the portfolio's hierarchical architecture.</p>
             </div>
           </div>
-
           @if (groupObjects.length === 0) {
             @if (!isAddingGroup) {
               <!-- Empty state when no Divisions exist -->
@@ -93,159 +92,203 @@ export interface TaxonomyCard {
             }
           } @else {
             
-            <!-- Level of Flat Tabs (underlined, plain text, borderless) below heading and subheading -->
-            <div class="groups-tabs-row" style="display: flex; flex-direction: row; gap: 24px; padding: 0; margin-bottom: -1px; width: 100%; overflow-x: auto; scrollbar-width: none; font-family: Montserrat, -apple-system, sans-serif; align-items: center; position: relative; z-index: 10;">
-              @for (group of groupObjects; track $index; let gIdx = $index) {
-                <button 
-                  type="button"
-                  class="division-tab-btn pointer animation-fade" 
-                  [class.active]="selectedGroupIndex === gIdx"
-                  (click)="selectGroup(gIdx)"
-                  style="background: transparent; border: none; padding: 12px 4px; cursor: pointer; font-weight: 600; font-size: 15px; transition: all 0.2s ease; border-bottom: 3.5px solid transparent; color: #64748b; outline: none; margin-bottom: -1px; display: inline-flex; align-items: center;"
-                  [style.border-bottom-color]="selectedGroupIndex === gIdx ? '#10069f' : 'transparent'"
-                  [style.color]="selectedGroupIndex === gIdx ? '#10069f' : '#64748b'"
-                >
-                  <span>{{ group.name }}</span>
-                </button>
+            <!-- Level of Tabs below heading and subheading (Image 2 band container format) -->
+            <div class="groups-tabs-row" style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%; margin-top: 0px; margin-bottom: 6px; font-family: Montserrat, -apple-system, sans-serif; position: relative; z-index: 10;">
+              
+              <!-- Tab band: only appears if there are 2 or more divisions (Rectangle with rounded corners) -->
+              @if (groupObjects.length >= 2) {
+                <div class="division-pill-band" style="background: #F1F5F9; border: 1px solid #E2E8F0; border-radius: 12px; padding: 4px; display: inline-flex; align-items: center; gap: 4px; box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);">
+                  @for (group of groupObjects; track $index; let gIdx = $index) {
+                    <button 
+                      type="button"
+                      class="division-tab-btn pointer animation-fade" 
+                      [class.active]="selectedGroupIndex === gIdx"
+                      (click)="selectGroup(gIdx)"
+                      style="border: none; padding: 6px 20px; cursor: pointer; font-size: 14px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 8px; outline: none; display: inline-flex; align-items: center; justify-content: center;"
+                      [style.background]="selectedGroupIndex === gIdx ? '#ffffff' : 'transparent'"
+                      [style.color]="selectedGroupIndex === gIdx ? '#10069f' : '#64748b'"
+                      [style.font-weight]="'500'"
+                      [style.box-shadow]="selectedGroupIndex === gIdx ? '0 2px 6px rgba(16, 6, 159, 0.08)' : 'none'"
+                      onmouseover="if (this.style.background === 'transparent') { this.style.color='#0f172a'; this.style.background='rgba(0, 0, 0, 0.04)'; }"
+                      onmouseout="if (this.style.boxShadow === 'none') { this.style.color='#64748b'; this.style.background='transparent'; }"
+                    >
+                      <span>{{ group.name }}</span>
+                    </button>
+                  }
+                </div>
+              } @else {
+                <!-- Empty spacer block to maintain flex structure when no tabs are present -->
+                <div></div>
               }
               
-              <!-- Tab button to trigger drawer -->
+              <!-- Tab button to trigger drawer (always positioned at the top right) -->
               <button 
                 type="button"
-                class="division-tab-btn pointer animation-fade" 
+                class="division-add-btn pointer animation-fade" 
                 (click)="openAddGroupDrawer()"
-                style="background: transparent; border: none; padding: 12px 4px; cursor: pointer; font-weight: 600; font-size: 15px; transition: all 0.2s ease; color: #94a3b8; outline: none; margin-bottom: -1px; display: inline-flex; align-items: center;"
-                onmouseover="this.style.color='#10069f'"
-                onmouseout="this.style.color='#94a3b8'"
+                style="background: transparent; border: 0.75px solid #475569; padding: 8px 18px; border-radius: 100px; cursor: pointer; font-weight: 600; font-size: 13.5px; transition: all 0.2s ease; color: #475569; outline: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px;"
+                onmouseover="this.style.color='#10069f'; this.style.borderColor='#10069f'; this.style.background='#f4f6fc';"
+                onmouseout="this.style.color='#475569'; this.style.borderColor='#475569'; this.style.background='transparent';"
               >
-                <span>+Add Division</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 2px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span>Add Division</span>
               </button>
             </div>
 
             <!-- Active Division Hierarchy Area -->
-            @if (groupObjects[selectedGroupIndex]) {
-              <div class="active-group-details animation-fade" style="border: 1px solid rgba(16, 6, 159, 0.25); border-radius: 16px; padding: 24px; background: #ffffff; display: flex; flex-direction: column; width: 100%; box-sizing: border-box; margin-top: 0; font-family: Montserrat, -apple-system, sans-serif; gap: 12px; position: relative; box-shadow: 0 4px 12px rgba(25, 33, 61, 0.03);">
+            @if (groupObjects[selectedGroupIndex]; as activeGroup) {
+              <div class="active-group-details animation-fade" style="border: none; border-radius: 0; padding: 0px 0 0 0; background: transparent; display: flex; flex-direction: column; width: 100%; box-sizing: border-box; margin-top: 0; font-family: Montserrat, -apple-system, sans-serif; position: relative;">
                 
-                <!-- Title Row -->
-                <div style="display: flex; align-items: center; width: 100%;">
-                  <div 
-                    (click)="openEditGroupDrawer(selectedGroupIndex)"
-                    style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer;"
-                    title="Open Division Details"
-                    onmouseover="this.querySelector('h3').style.color='#10069f'; this.querySelector('.heading-arrow').style.color='#10069f';"
-                    onmouseout="this.querySelector('h3').style.color='#1d252d'; this.querySelector('.heading-arrow').style.color='#64748b';"
-                  >
-                    <h3 style="font-size: 18px; font-weight: 700; color: #1d252d; margin: 0; font-family: Montserrat, -apple-system, sans-serif; transition: color 0.2s ease;">
-                      {{ groupObjects[selectedGroupIndex].name }}
-                    </h3>
-                    <span class="heading-arrow" pmConsoleIcon="arrow-up-right" style="font-size: 16px; width: 16px; height: 16px; color: #64748b; transition: color 0.2s ease;"></span>
+                <!-- Center Aligned Division Card (Image 2 - Rounded rectangle with left side highlight border) -->
+                <div class="division-card-row" style="display: flex; justify-content: center; width: 100%; margin-bottom: 48px; position: relative; z-index: 10;">
+                  <div class="division-unified-card animation-fade" style="background: #FAFBFF; border: 0.75px solid #CFDEFD; border-left: 3px solid #5D55DB; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; width: 290px; height: 112px; padding: 16px 20px; box-sizing: border-box; box-shadow: 0 4px 16px rgba(16, 6, 159, 0.04); position: relative;">
+                    <!-- Top Row: Pill and Actions menu -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                      <span class="pill-division" style="background: #DFDFEE; color: #10069f; font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 100px; line-height: 1;">Division</span>
+                      
+                      <!-- Three-dot menu button -->
+                      <button 
+                        type="button" 
+                        (click)="openEditGroupDrawer(selectedGroupIndex)"
+                        style="border: none; background: transparent; cursor: pointer; color: #64748b; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%;"
+                        title="Division Actions"
+                        onmouseover="this.style.background='rgba(16, 6, 159, 0.08)';"
+                        onmouseout="this.style.background='transparent';"
+                      >
+                        <span pmConsoleIcon="more-vertical" style="font-size: 18px; width: 18px; height: 18px;"></span>
+                      </button>
+                    </div>
+
+                    <!-- Division Name -->
+                    <h4 style="font-size: 16px; font-weight: 600; color: #000000; margin: 0; word-break: break-word; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="activeGroup.name">
+                      {{ activeGroup.name }}
+                    </h4>
                   </div>
                 </div>
 
-                <!-- Subtitle (Description) -->
-                @if (groupObjects[selectedGroupIndex].purpose) {
-                  <p style="font-size: 14px; color: #687182; margin: 0 0 16px 0; max-width: 800px; line-height: 1.5;">
-                    {{ groupObjects[selectedGroupIndex].purpose }}
-                  </p>
+                <!-- SVG Connector Lines Overlay (Curved Elbow Connectors in Royal Blue) -->
+                @if (activeGroup.divisions && activeGroup.divisions.length > 0) {
+                  @let branchCount = activeGroup.divisions.length;
+                  <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 170px; pointer-events: none; z-index: 1;">
+                    @for (div of activeGroup.divisions; track $index; let idx = $index) {
+                      <path 
+                        [attr.d]="getElbowPath(idx, branchCount)" 
+                        stroke="#DDDDDD" 
+                        stroke-width="1.2" 
+                        fill="none" 
+                      />
+                    }
+                  </svg>
                 }
 
-                <!-- Wrap-around Branches Flex Row (4 per row max or wraps naturally) -->
-                <div class="branches-row-flex" style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 24px; align-items: flex-start; padding: 8px 4px 24px 4px; width: 100%;">
+                <!-- Branches and Sections Columns Flex Row -->
+                <div class="branches-columns-flex" style="display: flex; flex-direction: row; gap: 40px; align-items: flex-start; justify-content: flex-start; padding: 0 4px 24px 4px; width: 100%; box-sizing: border-box; position: relative; z-index: 10;">
                   
-                  @for (div of groupObjects[selectedGroupIndex].divisions; track $index; let dIdx = $index) {
-                    <!-- Unified Branch Card Layout (Figma Selected Node: Container) -->
-                    <div class="branch-unified-card animation-fade" style="background: linear-gradient(135deg, #FAFBFF 0%, #FFFFFF 100%); border: 1px solid #CFDEFD; border-radius: 16px; display: flex; flex-direction: column; width: 290px; min-width: 290px; height: 283px; box-shadow: 0 4px 16px 0 rgba(16, 6, 159, 0.05); position: relative; box-sizing: border-box; font-family: Montserrat, -apple-system, sans-serif; overflow: hidden;">
+                  @for (div of activeGroup.divisions; track $index; let dIdx = $index) {
+                    <!-- Branch Column -->
+                    <div class="branch-column-vertical" style="display: flex; flex-direction: column; gap: 16px; width: 240px; min-width: 240px;">
                       
-                      <!-- Header portion with linear gradient from Figma (exactly 89px height) -->
-                      <div style="background: linear-gradient(132deg, #F4F5FF 36.64%, #D5E3FF 100%); padding: 12px 20px 10px 20px; display: flex; flex-direction: column; justify-content: space-between; height: 89px; box-sizing: border-box; border-bottom: 1px solid #CFDEFD; border-radius: 16px 16px 0 0;">
-                        <!-- Header Row: Pill & Actions -->
+                      <!-- Branch Unified Card Layout (Image 3 - Left side indigo highlight border) -->
+                      <div class="branch-unified-card animation-fade" style="background: #FAFBFF; border: 0.75px solid #CFDEFD; border-left: 3px solid #7C9FF1; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; width: 240px; height: 112px; padding: 16px 20px; box-sizing: border-box; box-shadow: 0 4px 16px rgba(16, 6, 159, 0.04); position: relative;">
+                        <!-- Top Row: Pill and Actions menu -->
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                          <span class="pill-branch" style="background: #ffffff; color: #10069f; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 100px; line-height: 1; border: 1px solid #CFDEFD;">Branch</span>
+                          <span class="pill-branch" style="background: #E1E9FF; color: #10069f; font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 100px; line-height: 1; border: none;">Branch</span>
                           
-                          <!-- arrow-up-right CTA / View Details trigger -->
+                          <!-- Three-dot menu button -->
                           <button 
                             type="button" 
                             (click)="openViewBranchDrawer(selectedGroupIndex, dIdx)"
-                            style="border: none; background: transparent; cursor: pointer; color: #10069f; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%;"
-                            title="View Details"
+                            style="border: none; background: transparent; cursor: pointer; color: #64748b; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%;"
+                            title="Branch Actions"
                             onmouseover="this.style.background='rgba(16, 6, 159, 0.08)';"
                             onmouseout="this.style.background='transparent';"
                           >
-                            <span pmConsoleIcon="arrow-up-right" style="font-size: 16px; width: 16px; height: 16px;"></span>
+                            <span pmConsoleIcon="more-vertical" style="font-size: 18px; width: 18px; height: 18px;"></span>
                           </button>
                         </div>
 
                         <!-- Branch Info (Name + Owner) -->
                         <div style="display: flex; flex-direction: column; gap: 4px;">
                           <!-- Branch Name -->
-                          <h4 style="font-size: 15px; font-weight: 700; color: #000000; margin: 0; word-break: break-word; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="div.name">{{ div.name }}</h4>
+                          <h4 style="font-size: 16px; font-weight: 600; color: #000000; margin: 0; word-break: break-word; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="div.name">
+                            {{ div.name }}
+                          </h4>
                           
-                          <!-- Owner (shown only if entered, user icon + name, no "Owner" label) -->
+                          <!-- Owner (user icon + name) -->
                           @if (div.owner) {
                             <div style="font-size: 11.5px; color: #475569; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px;">
-                              <span pmConsoleIcon="user" style="width: 13px; height: 13px; color: #475569; display: inline-flex; align-items: center; justify-content: center;"></span>
+                              <span style="width: 20px; height: 20px; border-radius: 50%; background: rgba(71, 85, 105, 0.1); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <span pmConsoleIcon="user" style="width: 11px; height: 11px; color: #475569; display: inline-flex; align-items: center; justify-content: center;"></span>
+                              </span>
                               <span>{{ div.owner }}</span>
                             </div>
                           }
                         </div>
                       </div>
 
-                      <!-- Body portion with transparent background (showing the card's gradient, exactly 194px height) -->
-                      <div style="padding: 16px 20px 18px 20px; display: flex; flex-direction: column; gap: 12px; height: 194px; box-sizing: border-box; background: transparent;">
-                        <!-- Nested Sections List -->
-                        @if (div.branches && div.branches.length > 0) {
-                          <div class="sections-scroll-list" style="display: flex; flex-direction: column; gap: 8px; width: 100%; overflow-y: auto; flex-grow: 1; padding-right: 4px;">
-                            @for (br of div.branches; track $index; let bIdx = $index) {
-                              <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                                <div 
-                                  class="section-clickable-row"
-                                  (click)="openViewSectionDrawer(dIdx, bIdx)"
-                                  title="View Section Details"
-                                >
-                                  <span class="icon icon-branch" aria-hidden="true">
-                                    <span pmConsoleIcon="git-branch" style="width: 14px; height: 14px;"></span>
-                                  </span>
-                                  <span class="section-name-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="br.name">{{ br.name }}</span>
-                                </div>
-                              </div>
-                            }
+                      <!-- Nested Sections List (Vertical Stack without elbow connectors) -->
+                      @if (div.branches && div.branches.length > 0) {
+                        @for (br of div.branches; track $index; let bIdx = $index) {
+                          <!-- Section Unified Card Layout (Image 4 - Left side amber highlight border) -->
+                          <div 
+                            class="section-unified-card animation-fade" 
+                            (click)="openViewSectionDrawer(dIdx, bIdx)"
+                            title="View Section Details"
+                            style="background: #ffffff; border: 0.75px solid #CFDEFD; border-left: 3px solid #EFB882; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start; gap: 6px; width: 240px; height: 68px; padding: 10px 16px; box-sizing: border-box; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02); cursor: pointer; transition: all 0.2s ease; position: relative;"
+                            onmouseover="this.style.borderColor='#10069f'; this.style.boxShadow='0 4px 12px rgba(16, 6, 159, 0.08)';"
+                            onmouseout="this.style.borderColor='#CFDEFD'; this.style.boxShadow='0 2px 8px rgba(0, 0, 0, 0.02)';"
+                          >
+                            <!-- Top Row: Pill and Actions menu -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                              <span class="pill-section" style="background: #FFF8EB; border: 1px solid #FFEECF; color: #92400e; font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 100px; line-height: 1;">Section</span>
+                              
+                              <!-- Actions menu indicator ⋮ -->
+                              <span pmConsoleIcon="more-vertical" style="font-size: 16px; width: 16px; height: 16px; color: #94a3b8;"></span>
+                            </div>
+
+                            <!-- Section Name -->
+                            <h5 style="font-size: 16px; font-weight: 600; color: #000000; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="br.name">
+                              {{ br.name }}
+                            </h5>
                           </div>
                         }
+                      }
 
-                        <!-- Add Section Pill Button Centered at the Bottom -->
-                        <div style="display: flex; justify-content: center; width: 100%; margin-top: auto; padding-top: 8px;">
-                          <button 
-                            type="button" 
-                            (click)="openAddSectionDrawer(dIdx, dIdx)"
-                            style="background: transparent; border: 1px dashed #cbd5e1; border-radius: 100px; padding: 6px 16px; display: flex; align-items: center; justify-content: center; gap: 6px; color: #687182; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-sizing: border-box;"
-                            onmouseover="this.style.borderColor='#10069f'; this.style.background='#E6ECF8'; this.style.color='#10069f';"
-                            onmouseout="this.style.borderColor='#cbd5e1'; this.style.background='transparent'; this.style.color='#687182';"
-                          >
-                            <span pmConsoleIcon="plus" style="width: 12px; height: 12px;"></span>
-                            <span>Add Section</span>
-                          </button>
-                        </div>
-                      </div>
+                      <!-- Add Section Slot Card (Image 4 bottom) -->
+                      <button 
+                        type="button" 
+                        (click)="openAddSectionDrawer(dIdx, dIdx)"
+                        style="background: transparent; border: 0.75px solid #CFDEFD; border-radius: 12px; padding: 0 16px; display: flex; align-items: center; justify-content: center; gap: 8px; color: #475569; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-sizing: border-box; width: 240px; height: 68px;"
+                        onmouseover="this.style.borderColor='#10069f'; this.style.background='#F4F5FF'; this.style.color='#10069f';"
+                        onmouseout="this.style.borderColor='#CFDEFD'; this.style.background='transparent'; this.style.color='#475569';"
+                      >
+                        <span class="plus-icon-circle" style="width: 24px; height: 24px; border-radius: 50%; background: #FFF8EC; border: 1px solid #FFEED0; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        </span>
+                        <span>Add Section</span>
+                      </button>
 
                     </div>
                   }
-                  
-                  <!-- Stroke Container to the right of Branch cards labeled 'Add Branch' (matches image 2 vertical rectangle when empty) -->
+
+                  <!-- Add Branch Slot Card (Image 4 rightmost) -->
                   <button 
                     type="button" 
                     (click)="openAddBranchDrawer(selectedGroupIndex)"
-                    style="background: transparent; border: 1.5px dashed #cbd5e1; border-radius: 16px; min-width: 290px; width: 290px; height: 283px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 16px 20px; color: #10069f; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-sizing: border-box; font-family: Montserrat, -apple-system, sans-serif;"
-                    onmouseover="this.style.borderColor='#10069f'; this.style.color='#10069f'; this.style.background='#f4f6fc';"
-                    onmouseout="this.style.borderColor='#cbd5e1'; this.style.color='#10069f'; this.style.background='transparent';"
+                    style="background: transparent; border: 0.75px solid #CFDEFD; border-radius: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0 20px; color: #475569; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-sizing: border-box; width: 240px; height: 112px; font-family: Montserrat, -apple-system, sans-serif;"
+                    onmouseover="this.style.borderColor='#10069f'; this.style.background='#f4f6fc'; this.style.color='#10069f';"
+                    onmouseout="this.style.borderColor='#CFDEFD'; this.style.background='transparent'; this.style.color='#475569';"
                   >
-                    <span pmConsoleIcon="plus" style="font-size: 24px; width: 24px; height: 24px;"></span>
+                    <span class="branch-plus-icon-circle" style="width: 28px; height: 28px; border-radius: 50%; background: #CBD9FD; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </span>
                     <span>Add Branch</span>
                   </button>
 
                 </div>
 
               </div>
-          }
+            }
         }
 
           <!-- Drawer 1: Repurposed Division Drawer (originally Group) -->
@@ -331,9 +374,9 @@ export interface TaxonomyCard {
 
                 <hr style="border: 0; border-top: 1px solid #e4e7ef; margin: 12px 0;" />
 
-                <!-- Branches & Sections (Nested Hierarchy) builder -->
+                <!-- Branches & Sections builder -->
                 <div class="ud-field">
-                  <h3 style="font-size: 16px; font-weight: 700; color: #1d252d; margin: 0 0 16px 0; font-family: Montserrat, -apple-system, sans-serif;">Branches & Sections (Nested Hierarchy)</h3>
+                  <h3 style="font-size: 16px; font-weight: 700; color: #1d252d; margin: 0 0 16px 0; font-family: Montserrat, -apple-system, sans-serif;">Branches & Sections</h3>
                   
                   @if (drawerBranches.length > 0) {
                     <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px;">
@@ -401,7 +444,7 @@ export interface TaxonomyCard {
                   <button 
                     type="button" 
                     (click)="addBranchToDrawer()"
-                    style="background: #ffffff; border: 1.5px solid #10069f; color: #10069f; font-size: 13.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px 18px; border-radius: 8px; width: fit-content; transition: all 0.2s ease; font-family: Montserrat, -apple-system, sans-serif;"
+                    style="background: #ffffff; border: 1.5px solid #10069f; color: #10069f; font-size: 13.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px 18px; border-radius: 100px; width: fit-content; transition: all 0.2s ease; font-family: Montserrat, -apple-system, sans-serif;"
                     onmouseover="this.style.background='#f4f6fc';"
                     onmouseout="this.style.background='#ffffff';"
                   >
@@ -5423,11 +5466,11 @@ export interface TaxonomyCard {
       gap: 8px;
       color: #334155;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 500;
       min-width: 0;
       flex-grow: 1;
       cursor: pointer;
-      padding: 8px 12px;
+      padding: 10px 12px;
       border-radius: 8px;
       border: 1px solid #CFDEFD;
       background: #ffffff;
@@ -5480,6 +5523,43 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
   @Output() readonly back = new EventEmitter<void>();
 
   activeSectionId = 'org-structure';
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    // Triggers change detection on resize
+  }
+
+  getElbowPath(idx: number, branchCount: number): string {
+    const container = document.querySelector('.active-group-details');
+    const xDiv = container ? container.clientWidth / 2 : 400;
+    const xBranch = 124 + idx * 280;
+    const yStart = 112;
+    const yMid = 136;
+    const yEnd = 160;
+    const r = 12; // corner radius
+    
+    if (xBranch === xDiv) {
+      return `M ${xDiv} ${yStart} L ${xDiv} ${yEnd}`;
+    }
+    
+    if (xBranch < xDiv) {
+      // Left branch: curves to left, then curves down
+      return `M ${xDiv} ${yStart} ` +
+             `L ${xDiv} ${yMid - r} ` +
+             `A ${r} ${r} 0 0 1 ${xDiv - r} ${yMid} ` +
+             `L ${xBranch + r} ${yMid} ` +
+             `A ${r} ${r} 0 0 0 ${xBranch} ${yMid + r} ` +
+             `L ${xBranch} ${yEnd}`;
+    } else {
+      // Right branch: curves to right, then curves down
+      return `M ${xDiv} ${yStart} ` +
+             `L ${xDiv} ${yMid - r} ` +
+             `A ${r} ${r} 0 0 0 ${xDiv + r} ${yMid} ` +
+             `L ${xBranch - r} ${yMid} ` +
+             `A ${r} ${r} 0 0 1 ${xBranch} ${yMid + r} ` +
+             `L ${xBranch} ${yEnd}`;
+    }
+  }
 
   groupObjects: Array<{
     name: string;
