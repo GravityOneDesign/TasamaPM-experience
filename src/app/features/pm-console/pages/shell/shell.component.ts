@@ -68,9 +68,7 @@ const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
 export class PmConsoleShellComponent implements OnInit, AfterViewChecked, OnDestroy {
   @Input() initialState: PmConsoleMountOptions = {};
 
-  projects: ProjectOption[] = [
-    { id: 'all', name: 'All projects' },
-  ];
+  projects: ProjectOption[] = [];
   apiProjects: P3MProject[] = [];
   private projectsSub?: Subscription;
 
@@ -93,9 +91,9 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked, OnDest
     { id: 'settings', icon: 'settings', label: 'Settings' },
   ];
 
-  selectedProject = 'all';
+  selectedProject = '';
   selectedPage: ConsolePage = 'workspace';
-  selectedView: WorkspaceView = 'calendar';
+  selectedView: WorkspaceView = 'pm101';
   frontDoorMode = 'assigned';
   notificationPanelOpen = false;
   pmoAssignmentReady = false;
@@ -141,9 +139,9 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked, OnDest
   ngOnInit(): void {
     this.loadProjects();
     this.forgetSideNavExpandedPreference();
-    this.selectedProject = this.initialState.projectId || 'all';
+    this.selectedProject = this.initialState.projectId ?? '';
     this.selectedPage = (this.initialState.selectedPage as ConsolePage) || 'workspace';
-    this.selectedView = (this.initialState.selectedView as WorkspaceView) || 'calendar';
+    this.selectedView = (this.initialState.selectedView as WorkspaceView) || 'pm101';
     this.frontDoorMode = this.initialState.frontDoorMode || 'assigned';
     this.guidedTourActive = Boolean(this.initialState.guidedTourActive);
     this.guidedTourExitMode = this.initialState.guidedTourExitMode ?? null;
@@ -172,8 +170,8 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked, OnDest
       this.selectedView = 'pm101';
     }
     this.selectedPage = page;
-    if (this.isProjectScopedPage && this.selectedProject === 'all') {
-      this.selectedProject = ONBOARDING_ASSIGNED_PROJECT_ID;
+    if (this.isProjectScopedPage && !this.selectedProject) {
+      this.selectedProject = this.defaultOperationalProjectId() ?? ONBOARDING_ASSIGNED_PROJECT_ID;
     }
     this.markShellChanged();
   }
@@ -189,7 +187,11 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked, OnDest
       this.markShellChanged();
       return;
     }
-    this.selectedProject = this.onboardingProjectSetup ? ONBOARDING_ASSIGNED_PROJECT_ID : this.onboardingPm101Locked ? ONBOARDING_PM101_PROJECT_ID : 'all';
+    this.selectedProject = this.onboardingProjectSetup
+      ? ONBOARDING_ASSIGNED_PROJECT_ID
+      : this.onboardingPm101Locked
+        ? ONBOARDING_PM101_PROJECT_ID
+        : this.defaultOperationalProjectId() ?? '';
     this.selectedPage = 'workspace';
     this.selectedView = 'pm101';
     this.notificationPanelOpen = false;
@@ -271,15 +273,32 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked, OnDest
   private loadProjects(): void {
     this.projectsSub = this.projectListService.getProjectList().subscribe({
       next: (response) => {
-        this.apiProjects = response.List;
-        this.projects = this.projectListService.toProjectOptions(response.List);
+        this.apiProjects = this.projectListService.extractProjectList(response);
+        this.projects = this.projectListService.toProjectOptions(this.apiProjects);
+        this.applyDefaultProjectSelection();
         this.markShellChanged();
       },
       error: () => {
-        this.projects = [{ id: 'all', name: 'All projects' }];
+        this.projects = [];
         this.apiProjects = [];
       },
     });
+  }
+
+  private defaultOperationalProjectId(): string | null {
+    return this.projectListService.defaultProjectId(this.projects);
+  }
+
+  private applyDefaultProjectSelection(): void {
+    if (this.onboardingPm101Locked || this.onboardingAssignmentFlow || this.onboardingProjectSetup) {
+      return;
+    }
+    const defaultId = this.defaultOperationalProjectId();
+    if (!defaultId) return;
+    const currentIsValid = this.projects.some((project) => project.id === this.selectedProject);
+    if (!this.selectedProject || this.selectedProject === 'all' || !currentIsValid) {
+      this.selectedProject = defaultId;
+    }
   }
 
   private markShellChanged(): void {

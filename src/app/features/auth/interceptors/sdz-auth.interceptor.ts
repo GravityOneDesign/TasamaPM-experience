@@ -1,6 +1,7 @@
 import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 import { AuthService } from '../services/auth.service';
 
 @Injectable()
@@ -29,17 +30,25 @@ export class SdzAuthInterceptor implements HttpInterceptor {
 
     const token = this.auth.getToken() ?? '';
     const xsrfToken = this.auth.getCookieByName('XSRF-TOKEN');
+    const secureToken = this.auth.getCookieByName('secure_token');
+
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${token}`,
+      'X-XSRF-TOKEN': xsrfToken,
+      withCredentials: 'true',
+      'Cache-Control': 'no-cache',
+      Pragma: 'no-cache',
+    };
+
+    if (!environment.production) {
+      headers['secure_token'] = secureToken;
+      headers['x-requested-with'] = 'XMLHttpRequest';
+    }
 
     return next.handle(
       request.clone({
         withCredentials: true,
-        setHeaders: {
-          Authorization: `Bearer ${token}`,
-          'X-XSRF-TOKEN': xsrfToken,
-          withCredentials: 'true',
-          'Cache-Control': 'no-cache',
-          Pragma: 'no-cache',
-        },
+        setHeaders: headers,
       }),
     );
   }

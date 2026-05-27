@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import {
   P3MProject,
@@ -35,14 +35,59 @@ export class ProjectListService {
     );
   }
 
-  toProjectOptions(projects: P3MProject[]): ProjectOption[] {
-    return [
-      { id: 'all', name: 'All projects' },
-      ...projects.map((p) => ({
-        id: String(p.Id),
-        name: p.ProjectName,
-      })),
-    ];
+  /** Supports PascalCase and camelCase API payloads, and bare arrays. */
+  extractProjectList(response: unknown): P3MProject[] {
+    if (!response) return [];
+    if (Array.isArray(response)) return response as P3MProject[];
+    if (typeof response !== 'object') return [];
+
+    const record = response as Record<string, unknown>;
+    const list =
+      record['List'] ??
+      record['list'] ??
+      record['Items'] ??
+      record['items'] ??
+      record['Projects'] ??
+      record['projects'];
+    if (Array.isArray(list)) return list as P3MProject[];
+
+    const nested = record['Data'] ?? record['data'] ?? record['Result'] ?? record['result'];
+    if (nested && nested !== response) {
+      return this.extractProjectList(nested);
+    }
+
+    return [];
+  }
+
+  toProjectOptions(projects: P3MProject[] | null | undefined): ProjectOption[] {
+    const options = (projects ?? [])
+      .map((project) => {
+        const raw = project as unknown as Record<string, unknown>;
+        const id =
+          raw['Id'] ??
+          raw['id'] ??
+          raw['ID'] ??
+          raw['ProjectId'] ??
+          raw['projectId'] ??
+          raw['ProjectID'] ??
+          raw['projectID'];
+        const name =
+          raw['ProjectName'] ??
+          raw['projectName'] ??
+          raw['Name'] ??
+          raw['name'] ??
+          raw['ProjectCode'] ??
+          raw['projectCode'];
+        if (id == null || id === '') return null;
+        return { id: String(id), name: String(name || `Project ${id}`) };
+      })
+      .filter((option): option is ProjectOption => option !== null);
+
+    return options;
+  }
+
+  defaultProjectId(options: ProjectOption[]): string | null {
+    return options[0]?.id ?? null;
   }
 
   static parseNetDate(raw: string | null | undefined): Date | null {

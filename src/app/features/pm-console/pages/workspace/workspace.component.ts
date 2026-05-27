@@ -9,6 +9,7 @@ import {
   Input,
   OnChanges,
   OnDestroy,
+  OnInit,
   Output,
   SimpleChanges,
   ViewChild,
@@ -8858,7 +8859,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     @if (usesPm101DesignShell) {
                       @if (!onboardingPm101Locked) {
                         <div class="workspace-shell-actions" aria-label="Workspace utilities">
-                          @if (showWorkspaceProjectSwitch) {
+                          @if (shouldShowWorkspaceProjectDropdown) {
                             <app-pm-console-project-dropdown
                               [label]="workspaceProjectSwitchLabel"
                               [leadingIcon]="workspaceProjectSwitchLeadingIcon"
@@ -10044,12 +10045,12 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
     }
   `,
 })
-export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, OnDestroy {
+export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, OnDestroy, OnInit {
   @Input() projectOptions: readonly ProjectOption[] = [];
   @Input() apiProjects: P3MProject[] = [];
   @Input() selectedProject = 'all';
   @Input() selectedPage: ConsolePage = 'workspace';
-  @Input() selectedView: WorkspaceView = 'calendar';
+  @Input() selectedView: WorkspaceView = 'pm101';
   @Input() frontDoorMode = 'assigned';
   @Input() pmoAssignmentReady = false;
   @Input() guidedTourActive = false;
@@ -11181,13 +11182,22 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   insidePageUrl: SafeResourceUrl | null = null;
 
+  private localProjectOptions: ProjectOption[] = [];
+  private localApiProjects: P3MProject[] = [];
+  private workspaceProjectsLoadStarted = false;
+
   constructor(
     private readonly iconsService: PmConsoleIconService,
     private readonly changeDetector: ChangeDetectorRef,
     private readonly elementRef: ElementRef<HTMLElement>,
     private readonly sanitizer: DomSanitizer,
+    private readonly projectListService: ProjectListService,
   ) {
     this.clearStoredProjectCovers();
+  }
+
+  ngOnInit(): void {
+    this.loadWorkspaceProjectsIfNeeded();
   }
 
   private clearStoredProjectCovers(): void {
@@ -11259,7 +11269,11 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get scopedProjectName(): string {
-    return this.isAllProjects ? 'All projects' : this.selectedProject;
+    if (this.isAllProjects) return 'All projects';
+    const option = (this.projectOptions ?? []).find((project) => project.id === this.selectedProject);
+    if (option) return option.name;
+    const apiProject = this.resolvedApiProjects.find((project) => String(project.Id) === this.selectedProject);
+    return apiProject?.ProjectName || this.selectedProject;
   }
 
   get projectPlanStage(): string {
@@ -11976,7 +11990,12 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get usesPm101DesignShell(): boolean {
-    return this.onboardingPm101Locked || this.isPm101WelcomeWorkspace || this.isSelectedProjectWorkspaceShell;
+    return (
+      this.onboardingPm101Locked ||
+      this.isPm101WelcomeWorkspace ||
+      this.isSelectedProjectWorkspaceShell ||
+      this.isNormalFlowPmFrontDoor
+    );
   }
 
   get usesPm101OperationalLayout(): boolean {
@@ -12007,21 +12026,40 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return true;
   }
 
+  get shouldShowWorkspaceProjectDropdown(): boolean {
+    if (this.onboardingPm101Locked || this.frontDoorMode === 'unassigned') {
+      return false;
+    }
+    if (this.isNormalFlowPmFrontDoor) {
+      return true;
+    }
+    return this.usesPm101OperationalLayout && this.workspaceHeaderProjectOptions.length > 0;
+  }
+
   get showWorkspaceProjectSwitch(): boolean {
-    return this.frontDoorMode !== 'unassigned' && this.usesPm101OperationalLayout && this.workspaceHeaderProjectOptions.length > 0;
+    return this.shouldShowWorkspaceProjectDropdown;
   }
 
   get workspaceHeaderProject(): string {
     if (this.onboardingPm101Locked) return 'all';
-    if (!this.isActionWorkspaceActive && this.selectedProject === 'all') return firstAssignedProject.id;
-    return this.selectedProject;
+    const options = this.workspaceHeaderProjectOptions;
+    if (options.some((project) => project.id === this.selectedProject)) {
+      return this.selectedProject;
+    }
+    return options[0]?.id ?? this.selectedProject;
   }
 
   get workspaceHeaderProjectOptions(): readonly ProjectOption[] {
-    if (this.onboardingPm101Locked) return this.projectOptions.filter((project) => project.id === 'all');
-    if (this.isNormalFlowPmFrontDoor) return this.projectOptions;
-    if (!this.isActionWorkspaceActive) return this.projectOptions.filter((project) => project.id !== 'all');
-    return this.projectOptions;
+    const options = this.resolvedProjectOptions.filter((project) => project.id !== 'all');
+    if (this.onboardingPm101Locked) {
+      return [{ id: 'all', name: 'All projects' }];
+    }
+    return options;
+  }
+
+  private get resolvedProjectOptions(): readonly ProjectOption[] {
+    const parentOptions = this.projectOptions ?? [];
+    return parentOptions.length > 0 ? parentOptions : this.localProjectOptions;
   }
 
   get workspaceProjectSwitchLabel(): string {
@@ -12045,17 +12083,54 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     return this.projectCoverArt(this.selectedProject, fallbackArt);
   }
 
-  get normalFrontDoorProjectId(): string {
-    if (this.selectedProject === 'all') {
-      return this.apiProjects.length > 0
-        ? String(this.apiProjects[0].Id)
-        : firstAssignedProject.id;
+  private get resolvedApiProjects(): P3MProject[] {
+    const parentProjects = this.apiProjects ?? [];
+    return parentProjects.length > 0 ? parentProjects : this.localApiProjects;
+  }
+
+  private loadWorkspaceProjectsIfNeeded(): void {
+    if (this.workspaceProjectsLoadStarted || (this.projectOptions?.length ?? 0) > 0) {
+      return;
     }
-    return this.selectedProject;
+    this.workspaceProjectsLoadStarted = true;
+    this.projectListService.getProjectList().subscribe({
+      next: (response) => {
+        this.localApiProjects = this.projectListService.extractProjectList(response);
+        this.localProjectOptions = this.projectListService.toProjectOptions(this.localApiProjects);
+        this.syncDefaultApiProjectSelection();
+        this.changeDetector.markForCheck();
+      },
+      error: () => {
+        this.workspaceProjectsLoadStarted = false;
+        this.changeDetector.markForCheck();
+      },
+    });
+  }
+
+  private syncDefaultApiProjectSelection(): void {
+    if (this.onboardingPm101Locked || this.onboardingAssignmentFlow || this.onboardingProjectSetup) {
+      return;
+    }
+    const options = this.resolvedProjectOptions.filter((project) => project.id !== 'all');
+    const defaultId = options[0]?.id;
+    if (!defaultId) return;
+    const currentIsValid = options.some((project) => project.id === this.selectedProject);
+    if (this.selectedProject === 'all' || !this.selectedProject || !currentIsValid) {
+      this.selectedProject = defaultId;
+      this.emitState();
+    }
+  }
+
+  get normalFrontDoorProjectId(): string {
+    const projects = this.resolvedApiProjects;
+    if (this.selectedProject && this.selectedProject !== 'all') {
+      return this.selectedProject;
+    }
+    return projects.length > 0 ? String(projects[0].Id) : firstAssignedProject.id;
   }
 
   get normalFrontDoorApiProject(): P3MProject | undefined {
-    return this.apiProjects.find((p) => String(p.Id) === this.normalFrontDoorProjectId);
+    return this.resolvedApiProjects.find((p) => String(p.Id) === this.normalFrontDoorProjectId);
   }
 
   get normalFrontDoorProjectRow(): ProjectRow {
@@ -12803,6 +12878,13 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     }
     if ('selectedPage' in changes && this.selectedPage === 'workspaces') {
       this.applyWorkspaceProjectEntryFilter();
+    }
+    if ('projectOptions' in changes || 'apiProjects' in changes) {
+      if ((this.projectOptions?.length ?? 0) === 0) {
+        this.loadWorkspaceProjectsIfNeeded();
+      }
+      this.syncDefaultApiProjectSelection();
+      this.changeDetector.markForCheck();
     }
     if (
       'selectedProject' in changes ||

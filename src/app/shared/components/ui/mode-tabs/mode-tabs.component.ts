@@ -35,10 +35,10 @@ export interface PmConsoleModeTabItem {
         <span class="project-mode-tab-indicator" aria-hidden="true"></span>
         @for (tab of tabs; track tab.id) {
           <button
-            [class.active]="tab.id === activeId"
+            [class.active]="tab.id === resolvedActiveId"
             [style.width]="tabWidth(tab)"
             [attr.aria-label]="tab.ariaLabel || null"
-            [attr.aria-selected]="tab.id === activeId"
+            [attr.aria-selected]="tab.id === resolvedActiveId"
             [disabled]="tab.disabled"
             type="button"
             role="tab"
@@ -77,12 +77,23 @@ export class PmConsoleModeTabsComponent {
   }
 
   selectTab(tab: PmConsoleModeTabItem): void {
-    if (tab.disabled || tab.id === this.activeId) return;
+    if (tab.disabled || tab.id === this.resolvedActiveId) return;
     this.tabSelected.emit(tab.id);
   }
 
+  /** Falls back to Overview (`pm101`) or the first tab when `activeId` is unset/invalid. */
+  get resolvedActiveId(): string {
+    if (this.tabs.some((tab) => tab.id === this.activeId)) {
+      return this.activeId;
+    }
+    const overviewTab = this.tabs.find(
+      (tab) => tab.id === 'pm101' || tab.id === 'overview' || tab.label.trim().toLowerCase() === 'overview',
+    );
+    return overviewTab?.id ?? this.tabs[0]?.id ?? '';
+  }
+
   private get activeTabIndex(): number {
-    const activeIndex = this.tabs.findIndex((tab) => tab.id === this.activeId);
+    const activeIndex = this.tabs.findIndex((tab) => tab.id === this.resolvedActiveId);
     return Math.max(0, activeIndex);
   }
 

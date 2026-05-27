@@ -6,8 +6,10 @@ import {
   EventEmitter,
   HostListener,
   Input,
+  OnChanges,
   OnDestroy,
   Output,
+  SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import { ProjectOption } from '../../models/pm-console.types';
@@ -195,7 +197,7 @@ import { PmConsoleIconComponent } from '../../../../shared/components/ui/icon/ic
         [style.left.px]="popoverLeft"
         [style.width.px]="popoverWidth"
       >
-        @for (project of options; track project.id; let index = $index) {
+        @for (project of resolvedOptions; track project.id; let index = $index) {
           <button
             class="pm-project-dropdown-option"
             [class.is-active]="index === activeIndex"
@@ -214,7 +216,7 @@ import { PmConsoleIconComponent } from '../../../../shared/components/ui/icon/ic
     }
   `,
 })
-export class PmConsoleProjectDropdownComponent implements OnDestroy {
+export class PmConsoleProjectDropdownComponent implements OnChanges, OnDestroy {
   private static activeDropdown: PmConsoleProjectDropdownComponent | null = null;
   private static nextId = 0;
 
@@ -222,7 +224,7 @@ export class PmConsoleProjectDropdownComponent implements OnDestroy {
   @Input() leadingIcon = '';
   @Input() ariaLabel = 'Select project';
   @Input() options: readonly ProjectOption[] = [];
-  @Input() value = 'all';
+  @Input() value = '';
   @Input() tourTarget = '';
 
   @Output() readonly valueChange = new EventEmitter<string>();
@@ -247,6 +249,12 @@ export class PmConsoleProjectDropdownComponent implements OnDestroy {
     private readonly elementRef: ElementRef<HTMLElement>,
   ) {}
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if ('options' in changes || 'value' in changes) {
+      this.changeDetector.markForCheck();
+    }
+  }
+
   ngOnDestroy(): void {
     if (PmConsoleProjectDropdownComponent.activeDropdown === this) {
       PmConsoleProjectDropdownComponent.activeDropdown = null;
@@ -255,7 +263,15 @@ export class PmConsoleProjectDropdownComponent implements OnDestroy {
   }
 
   get selectedProjectName(): string {
-    return this.options.find((project) => project.id === this.value)?.name || 'All projects';
+    return (
+      this.resolvedOptions.find((project) => project.id === this.value)?.name ||
+      this.resolvedOptions[0]?.name ||
+      'Select project'
+    );
+  }
+
+  get resolvedOptions(): readonly ProjectOption[] {
+    return this.options ?? [];
   }
 
   toggleDropdown(event: Event): void {
@@ -294,7 +310,7 @@ export class PmConsoleProjectDropdownComponent implements OnDestroy {
     }
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      this.selectProject(this.options[index]?.id || this.value);
+      this.selectProject(this.resolvedOptions[index]?.id || this.value);
       return;
     }
     if (event.key === 'Escape') {
@@ -328,10 +344,10 @@ export class PmConsoleProjectDropdownComponent implements OnDestroy {
   }
 
   private openDropdown(): void {
-    if (!this.options.length) return;
+    if (!this.resolvedOptions.length) return;
     PmConsoleProjectDropdownComponent.activeDropdown?.closeDropdown();
     PmConsoleProjectDropdownComponent.activeDropdown = this;
-    this.activeIndex = Math.max(0, this.options.findIndex((project) => project.id === this.value));
+    this.activeIndex = Math.max(0, this.resolvedOptions.findIndex((project) => project.id === this.value));
     this.isOpen = true;
     this.positionUntil = window.performance.now() + 360;
     this.positionPopover();
@@ -351,7 +367,7 @@ export class PmConsoleProjectDropdownComponent implements OnDestroy {
   }
 
   private moveActiveOption(direction: 1 | -1): void {
-    const total = this.options.length;
+    const total = this.resolvedOptions.length;
     if (!total) return;
     this.activeIndex = (this.activeIndex + direction + total) % total;
     this.changeDetector.markForCheck();
@@ -366,7 +382,7 @@ export class PmConsoleProjectDropdownComponent implements OnDestroy {
 
       const triggerRect = trigger.getBoundingClientRect();
       const popover = this.popover?.nativeElement;
-      const menuHeight = popover?.offsetHeight || 44 + this.options.length * 42;
+      const menuHeight = popover?.offsetHeight || 44 + this.resolvedOptions.length * 42;
       const margin = 8;
       const width = Math.max(220, triggerRect.width);
 
