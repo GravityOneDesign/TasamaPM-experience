@@ -133,7 +133,6 @@ function portfolioStepToAction(step: Pm101Step): PortfolioManagerFrontdoorAction
     title: step.title,
     description: step.body,
     icon: iconName(step.icon),
-    ctaLabel: step.footerAction,
     badgeLabel: undefined,
     disabled: step.comingSoon,
     decor: portfolioActionDecor(step.decor),
