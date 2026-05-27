@@ -9,10 +9,8 @@ import {
   pmoFrontdoorTabs,
   pmoFrontdoorWorkFilters,
   pmoFrontdoorWorkItems,
-  pmoStatusReports,
   type PmoFrontdoorQuickLink,
   type PmoFrontdoorTab,
-  type PmoStatusReport,
 } from './pmo-frontdoor.data';
 import type { ProjectOption } from './pm-console.types';
 import type { PmoGovernanceWorkspaceTarget } from './pmo-governance-workspace.data';
@@ -22,7 +20,6 @@ import { PmConsoleFrontdoorActionCardsComponent } from './shared/pm-console-fron
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 import { PmConsoleModeTabsComponent } from './shared/pm-console-mode-tabs.component';
 import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-dropdown.component';
-import { PmoStatusReportsDrawerComponent } from './pmo-status-reports-drawer.component';
 
 @Component({
   selector: 'app-pmo-frontdoor',
@@ -34,7 +31,6 @@ import { PmoStatusReportsDrawerComponent } from './pmo-status-reports-drawer.com
     PmConsoleIconComponent,
     PmConsoleModeTabsComponent,
     PmConsoleProjectDropdownComponent,
-    PmoStatusReportsDrawerComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -138,42 +134,6 @@ import { PmoStatusReportsDrawerComponent } from './pmo-status-reports-drawer.com
                       ctaMode="arrow"
                       (actionSelected)="selectAction($event)"
                     ></app-pm-console-frontdoor-action-cards>
-
-                    <section class="pmo-status-reports-overview-section" aria-label="Pending status reports">
-                      <div class="pmo-status-reports-section-header">
-                        <button
-                          type="button"
-                          class="pmo-status-reports-section-cta"
-                          aria-label="View all status reports"
-                          (click)="openStatusReportsDrawer()"
-                        >
-                          View all
-                          <span pmConsoleIcon="chevron-right" aria-hidden="true"></span>
-                        </button>
-                      </div>
-
-                      @if (statusReportsForOverview.length > 0) {
-                        <div class="pmo-status-reports-preview">
-                          @for (report of statusReportsForOverview; track report.id) {
-                            <button
-                              type="button"
-                              class="pmo-status-report-preview-card"
-                              [attr.aria-label]="'Open ' + report.title"
-                              (click)="openStatusReportsDrawer()"
-                            >
-                              <div class="pmo-status-report-preview-header">
-                                <strong>{{ report.title }}</strong>
-                                <span class="pmo-status-report-preview-project">{{ report.project }}</span>
-                              </div>
-                              <p class="pmo-status-report-preview-meta">
-                                <span pmConsoleIcon="calendar" aria-hidden="true"></span>
-                                {{ report.dueDate }} • {{ report.overdueText }}
-                              </p>
-                            </button>
-                          }
-                        </div>
-                      }
-                    </section>
                   </section>
                 } @else if (selectedTab === 'manage-work') {
                   <app-portfolio-manager-actions
@@ -227,13 +187,6 @@ import { PmoStatusReportsDrawerComponent } from './pmo-status-reports-drawer.com
         </div>
       </div>
 
-      @if (isStatusReportsDrawerOpen) {
-        <app-pmo-status-reports-drawer
-          [reports]="allStatusReports"
-          (close)="closeStatusReportsDrawer()"
-          (reportSelected)="selectStatusReport($event)"
-        ></app-pmo-status-reports-drawer>
-      }
     </main>
   `,
   styles: [
@@ -947,7 +900,6 @@ export class PmoFrontdoorComponent implements AfterViewChecked {
 
   selectedTab: PmoFrontdoorTab = 'overview';
   selectedPortfolioScope = 'all-portfolios';
-  isStatusReportsDrawerOpen = false;
   readonly tabs = pmoFrontdoorTabs;
   readonly metrics = pmoFrontdoorMetrics;
   readonly healthRows = pmoFrontdoorHealthRows;
@@ -956,7 +908,6 @@ export class PmoFrontdoorComponent implements AfterViewChecked {
   readonly workItems = pmoFrontdoorWorkItems;
   readonly workFilters = pmoFrontdoorWorkFilters;
   readonly quickLinks = pmoFrontdoorQuickLinks;
-  readonly allStatusReports = pmoStatusReports;
   readonly portfolioScopeOptions: readonly ProjectOption[] = [{ id: 'all-portfolios', name: 'All Portfolios' }];
   readonly welcomeIconSrc = './assets/pane-top-icon.svg';
   readonly welcomeSubtitle = ["Here's what's happening across your portfolio today."];
@@ -1000,28 +951,6 @@ export class PmoFrontdoorComponent implements AfterViewChecked {
 
   openWorkspace(target?: PmoGovernanceWorkspaceTarget): void {
     this.workspaceRequested.emit(target);
-  }
-
-  get statusReportsForOverview(): readonly PmoStatusReport[] {
-    return this.allStatusReports.slice(0, 2);
-  }
-
-  get overduReportsCount(): string {
-    const count = this.allStatusReports.filter((r) => r.isOverdue).length;
-    return count > 0 ? `${count} overdue` : 'All on track';
-  }
-
-  openStatusReportsDrawer(): void {
-    this.isStatusReportsDrawerOpen = true;
-  }
-
-  closeStatusReportsDrawer(): void {
-    this.isStatusReportsDrawerOpen = false;
-  }
-
-  selectStatusReport(report: PmoStatusReport): void {
-    // Handle status report selection - can be extended later
-    console.log('Selected report:', report);
   }
 }
 

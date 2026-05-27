@@ -535,7 +535,7 @@ export const pmoFrontdoorQuickLinks: readonly PmoFrontdoorQuickLink[] = [
   },
   {
     id: 'upcoming-forums',
-    title: 'Governance Committees',
+    title: 'Governance Register',
     description: 'Review stage readiness, evidence, and approval status.',
     icon: 'calendar-days',
     target: { primaryTab: 'governance', sectionTab: 'forums' },
