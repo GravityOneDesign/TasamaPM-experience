@@ -93,9 +93,26 @@ export interface PmConsoleFrontdoorCoverUploadRequest {
 
       .frontdoor-project-title {
         align-items: center;
+        appearance: none;
+        background: transparent;
+        border: 0;
+        color: inherit;
+        cursor: pointer;
         display: inline-flex;
+        font: inherit;
         gap: 12px;
         min-width: 0;
+        padding: 0;
+        text-align: left;
+      }
+
+      .frontdoor-project-title:hover h2 {
+        text-decoration: underline;
+      }
+
+      .frontdoor-project-title:focus-visible {
+        outline: 2px solid rgba(255, 255, 255, 0.72);
+        outline-offset: 4px;
       }
 
       .frontdoor-project-icon {
@@ -390,12 +407,17 @@ export interface PmConsoleFrontdoorCoverUploadRequest {
         }
         <div class="frontdoor-hero-content">
           <div class="frontdoor-hero-top">
-            <div class="frontdoor-project-title">
+            <button
+              class="frontdoor-project-title"
+              type="button"
+              [attr.aria-label]="'Open project plan for ' + projectName"
+              (click)="selectAction('project-plan')"
+            >
               <span class="frontdoor-project-icon" aria-hidden="true">
                 <span [pmConsoleIcon]="projectIcon"></span>
               </span>
               <h2>{{ projectName }}</h2>
-            </div>
+            </button>
             <div class="frontdoor-hero-meta">
               @if (coverUploadEnabled && projectId) {
                 <button

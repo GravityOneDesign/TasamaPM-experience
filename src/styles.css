@@ -5594,7 +5594,7 @@ button.pm-project-table-stat:focus-visible {
   position: absolute;
   right: 16px;
   top: 16px;
-  z-index: 3;
+  z-index: 4;
 }
 
 .workspace-filter-button {

@@ -4009,6 +4009,7 @@ const selectedProjectOperationalQuickLinkDescriptions: Record<string, string> = 
 };
 const quickLinkInsidePagePaths: Record<string, string> = {
   'project-plan': '',
+  reports: 'projectreport',
   wbs: 'wbs',
   dependencies: 'dependencies',
   resources: 'resources',
@@ -4018,6 +4019,11 @@ const quickLinkInsidePagePaths: Record<string, string> = {
   'change-request': 'changerequest',
   risks: 'risk',
   issues: 'issues',
+};
+const normalFrontDoorInsidePagePaths: Record<string, string> = {
+  'project-plan': '',
+  reports: 'projectreport',
+  'stage-gate': 'stagegate',
 };
 const workspaceTableColumns: WorkspaceTableColumn[] = [
   { id: 'project', label: 'Project Name' },
@@ -14981,7 +14987,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   openNormalFrontDoorProject(): void {
-    this.openProject(this.normalFrontDoorProjectId, this.currentProjectPlanReturnState());
+    this.openInsidePage(this.normalFrontDoorProjectId);
   }
 
   handleNormalFrontDoorAction(actionId: string): void {
@@ -14996,8 +15002,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       return;
     }
 
-    const projectId = this.normalFrontDoorProjectId;
-    this.openInsidePage(projectId);
+    const insidePath = normalFrontDoorInsidePagePaths[actionId];
+    if (insidePath !== undefined) {
+      this.openInsidePage(this.normalFrontDoorProjectId, insidePath);
+    }
   }
 
   openInsidePage(projectId: string, pathSuffix = ''): void {
