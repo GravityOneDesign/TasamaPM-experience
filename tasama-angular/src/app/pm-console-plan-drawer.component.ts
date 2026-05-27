@@ -20,9 +20,12 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
               <h2>{{ title }}</h2>
               <p>{{ description }}</p>
             </div>
-            <button class="plan-entry-drawer-close" type="button" [attr.aria-label]="closeAriaLabel" (click)="close.emit()">
-              <span pmConsoleIcon="x" aria-hidden="true"></span>
-            </button>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0;">
+              <button class="plan-entry-drawer-close" type="button" [attr.aria-label]="closeAriaLabel" (click)="close.emit()">
+                <span pmConsoleIcon="x" aria-hidden="true"></span>
+              </button>
+              <ng-content select="[planDrawerHeaderActions]"></ng-content>
+            </div>
           </header>
 
           <section class="plan-entry-drawer-body">
@@ -40,9 +43,14 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
           </section>
 
           @if (!hideFooter) {
-            <footer class="plan-entry-drawer-footer">
-              <button class="plan-entry-drawer-cancel" type="button" (click)="close.emit()">{{ cancelLabel }}</button>
-              <button class="plan-entry-drawer-submit" type="submit" [disabled]="submitDisabled">{{ submitLabel }}</button>
+            <footer class="plan-entry-drawer-footer" [style.justify-content]="showDelete ? 'space-between' : 'flex-end'">
+              @if (showDelete) {
+                <button class="plan-entry-drawer-delete" type="button" (click)="delete.emit($event)" style="background: transparent; border: 1px solid #ef4444; color: #ef4444; border-radius: 8px; font-size: 10.5px; font-weight: 600; height: 32px; padding: 0 15px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'">Delete</button>
+              }
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <button class="plan-entry-drawer-cancel" type="button" (click)="close.emit()">{{ cancelLabel }}</button>
+                <button class="plan-entry-drawer-submit" type="submit" [disabled]="submitDisabled">{{ submitLabel }}</button>
+              </div>
             </footer>
           }
         </form>
@@ -273,7 +281,9 @@ export class PmConsolePlanDrawerComponent {
   @Input() ariaLabel = '';
   @Input() panelClass: string | string[] | Set<string> | Record<string, unknown> = '';
   @Input() hideFooter = false;
+  @Input() showDelete = false;
 
   @Output() close = new EventEmitter<void>();
   @Output() submitForm = new EventEmitter<Event>();
+  @Output() delete = new EventEmitter<Event>();
 }
