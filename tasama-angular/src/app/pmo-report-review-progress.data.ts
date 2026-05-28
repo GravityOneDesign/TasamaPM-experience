@@ -141,20 +141,23 @@ export const pmoReportReviewColumns: readonly PmoReportReviewColumn[] = [
   },
 ];
 
+export const scheduledReports: PmoReportReviewCard[] = [...createCustomReports('scheduled-report', true)];
+export const adHocReports: PmoReportReviewCard[] = [...createCustomReports('ad-hoc-report', false)];
+
 export const pmoReportReviewCustomColumns: readonly PmoReportReviewColumn[] = [
   {
     id: 'scheduled',
     title: 'Scheduled Reports',
     icon: 'network',
-    count: 4,
-    reports: createCustomReports('scheduled-report', true),
+    get count() { return scheduledReports.length; },
+    get reports() { return scheduledReports; }
   },
   {
     id: 'ad-hoc',
     title: 'Ad-hoc Reports',
     icon: 'layout-grid',
-    count: 3,
-    reports: createCustomReports('ad-hoc-report', false),
+    get count() { return adHocReports.length; },
+    get reports() { return adHocReports; }
   },
 ];
 
@@ -246,4 +249,19 @@ function createCustomReports(prefix: string, includeRecurrence: boolean): readon
     publishedOn: '07/05/2026',
     actionLabel: 'Preview',
   }));
+}
+
+export function addScheduledReport(title: string, recursOn: string): void {
+  const today = new Date();
+  const publishedOn = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
+  
+  scheduledReports.unshift({
+    id: `scheduled-report-new-${Date.now()}`,
+    title,
+    recursOn,
+    publishedOn,
+    actionLabel: 'Preview',
+    creatorInitials: 'MH',
+    creatorName: 'Muna Hassan'
+  });
 }

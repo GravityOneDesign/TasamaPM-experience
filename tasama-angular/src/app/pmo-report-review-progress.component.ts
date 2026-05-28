@@ -99,7 +99,7 @@ import { PmConsoleDateFieldComponent } from './shared/pm-console-date-field.comp
                 }
 
                 @if (activeTabId === 'custom') {
-                  <button class="pmo-report-builder-button" type="button">
+                  <button class="pmo-report-builder-button" type="button" (click)="reportBuilderRequested.emit()">
                     <span pmConsoleIcon="plus" aria-hidden="true"></span>
                     <span>Report Builder</span>
                   </button>
@@ -921,6 +921,7 @@ import { PmConsoleDateFieldComponent } from './shared/pm-console-date-field.comp
 export class PmoReportReviewProgressComponent {
   @Output() readonly backSelected = new EventEmitter<void>();
   @Output() readonly reportDrawerRequested = new EventEmitter<PmoReportReviewCard>();
+  @Output() readonly reportBuilderRequested = new EventEmitter<void>();
 
   readonly tabs = pmoReportReviewTabs;
   readonly filters = pmoReportReviewFilters;
