@@ -225,12 +225,11 @@ interface PortfolioWorkTargetGroup {
                       <button
                         class="compact-action-card {{ item.tone }}"
                         [attr.data-card-kind]="item.kind"
+                        [attr.data-card-type]="item.type"
                         type="button"
                         [attr.aria-label]="actionItemAriaLabel(item)"
-                        [disabled]="!(column.column === 'Overdue' && item.type === 'Status Reports')"
                         (click)="selectBoardItem(item)"
                       >
-                        <span class="compact-action-accent {{ item.tone }}" aria-hidden="true"></span>
                         <span class="compact-action-icon {{ item.tone }}">
                           <span [pmConsoleIcon]="boardDetailIcon(item)" aria-hidden="true"></span>
                         </span>
@@ -266,30 +265,27 @@ interface PortfolioWorkTargetGroup {
                   <div class="task-stack">
                     @for (item of column.items; track item.id) {
                       <button
-                        class="task-card {{ taskCardClass(item.type) }}"
+                        class="task-card {{ taskCardClass(item.type) }} {{ item.tone }}"
                         [class.is-selected]="activeBoardItem?.id === item.id"
-                        [class.has-volume]="actionItemTotal(item) > 1"
                         [attr.data-card-kind]="item.kind"
+                        [attr.data-card-type]="item.type"
                         type="button"
                         [attr.aria-label]="actionItemAriaLabel(item)"
                         (click)="selectBoardItem(item)"
                       >
-                        <div class="task-top">
-                          <span>{{ item.type }}</span>
-                          @if (actionItemTotal(item) > 1) {
-                            <strong class="task-volume-count">{{ actionItemTotal(item) }}</strong>
-                          }
+                        <span class="task-card-icon {{ item.tone }}">
+                          <span [pmConsoleIcon]="boardDetailIcon(item)" aria-hidden="true"></span>
+                        </span>
+                        
+                        <div class="task-card-title-container">
+                          <span class="task-card-title">{{ item.label }}</span>
+                          <span class="task-card-count">{{ actionItemTotal(item) }}</span>
                         </div>
-                        <h3>{{ item.label }}</h3>
-                        <p>{{ item.project }}</p>
-                        <div class="task-bottom">
-                          <span class="avatar-sm">{{ item.owner }}</span>
-                          <small>{{ item.meta }}</small>
-                          <span class="task-action">
-                            <span>{{ item.cta }}</span>
-                            <span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
-                          </span>
-                        </div>
+
+                        <span class="task-card-action">
+                          <span>View All</span>
+                          <span pmConsoleIcon="chevron-right" class="arrow-icon" aria-hidden="true"></span>
+                        </span>
                       </button>
                     } @empty {
                       <div class="empty-column">No actions in this lane.</div>
@@ -687,11 +683,40 @@ interface PortfolioWorkTargetGroup {
     }
 
     .task-card {
-      color: inherit;
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid #eef1f6;
+      border-radius: 12px !important;
+      box-shadow: 0 1px 2px rgba(25, 33, 61, 0.04);
+      color: #2f2f2f;
       cursor: pointer;
+      display: grid !important;
       font: inherit;
+      gap: 8px;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      min-height: 50px !important;
+      overflow: hidden;
+      padding: 8px 12px 8px 14px !important;
+      position: relative;
       text-align: left;
+      transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
       width: 100%;
+    }
+
+    .task-card:hover {
+      border-color: rgba(16, 6, 159, 0.22);
+      box-shadow: 0 6px 14px rgba(25, 33, 61, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .task-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      border-radius: 12px 0 0 12px !important;
     }
 
     .task-card:focus-visible {
@@ -705,29 +730,93 @@ interface PortfolioWorkTargetGroup {
       box-shadow: 0 8px 20px rgba(25, 33, 61, 0.1);
     }
 
-    .task-card.has-volume {
-      min-height: 164px;
-    }
-
-    .task-card .task-top {
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .task-volume-count {
+    .task-card-icon {
       align-items: center;
-      background: #10069f;
-      border-radius: 999px;
-      color: #ffffff;
+      border-radius: 6px;
       display: inline-flex;
       flex: 0 0 auto;
-      font-size: 12px;
-      font-weight: 600;
-      height: 28px;
       justify-content: center;
-      line-height: 1;
-      min-width: 28px;
-      padding: 0 9px;
+      height: 26px;
+      width: 26px;
+    }
+
+    .task-card-icon .icon {
+      height: 15px;
+      width: 15px;
+    }
+
+    .task-card-icon.blue {
+      background: #eef4ff;
+      color: #1f4fb8;
+    }
+
+    .task-card-icon.red {
+      background: #fff0f0;
+      color: #9e2f2f;
+    }
+
+    .task-card-icon.green {
+      background: #eefbf5;
+      color: #166b49;
+    }
+
+    .task-card-icon.amber {
+      background: #fff8e7;
+      color: #8a5c12;
+    }
+
+    .task-card-icon.neutral {
+      background: #f2f4f8;
+      color: #536071;
+    }
+
+    .task-card-title-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .task-card-title {
+      color: #252a34;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 16px;
+      margin: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .task-card-count {
+      align-items: center;
+      background: #eef4ff;
+      color: #10069f;
+      border-radius: 999px;
+      display: inline-flex;
+      font-size: 11px;
+      font-weight: 600;
+      height: 20px;
+      justify-content: center;
+      min-width: 20px;
+      padding: 0 4px;
+    }
+
+    .task-card-action {
+      align-items: center;
+      color: #10069f;
+      display: inline-flex;
+      font-size: 11px;
+      font-weight: 600;
+      gap: 4px;
+      line-height: 16px;
+      white-space: nowrap;
+      margin-left: auto;
+    }
+
+    .task-card-action .arrow-icon {
+      height: 13px;
+      width: 13px;
     }
 
     .board-detail-panel {
@@ -1138,6 +1227,127 @@ interface PortfolioWorkTargetGroup {
         min-height: 320px;
       }
     }
+
+    .compact-column-icon {
+      background: transparent !important;
+      color: #657084 !important;
+      height: 20px;
+      width: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .compact-column-icon .icon {
+      height: 16px !important;
+      width: 16px !important;
+    }
+
+    .compact-action-card {
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid #eef1f6;
+      border-radius: 12px !important;
+      box-shadow: 0 1px 2px rgba(25, 33, 61, 0.04);
+      color: #2f2f2f;
+      cursor: pointer;
+      display: grid;
+      font: inherit;
+      gap: 8px;
+      grid-template-columns: auto minmax(0, 1fr) auto auto !important;
+      min-height: 64px !important;
+      overflow: hidden;
+      padding: 14px 12px 14px 12px !important;
+      position: relative;
+      text-align: left;
+      transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+      width: 100%;
+    }
+
+    .compact-action-card::before {
+      border-radius: 12px 0 0 12px !important;
+    }
+
+    .compact-action-title,
+    .task-card-title {
+      font-size: 13px !important;
+      font-weight: 300 !important;
+    }
+
+    .compact-action-count {
+      align-items: center;
+      background: #eef4ff !important;
+      color: #2f2f2f !important;
+      border-radius: 50% !important;
+      display: inline-flex;
+      font-size: 12px;
+      font-weight: 300 !important;
+      height: 24px !important;
+      justify-content: center;
+      min-width: 24px !important;
+      padding: 0 !important;
+    }
+
+    .compact-action-view,
+    .task-card-action {
+      font-weight: 300 !important;
+    }
+
+    .compact-action-view span,
+    .task-card-action span {
+      font-weight: 300 !important;
+    }
+
+    /* Type-specific colors and opacities (25% stroke, 10% icon container, 100% icon) */
+    [data-card-type="Governance Committees"]::before,
+    [data-card-type="Governance Committees"] .compact-action-accent {
+      background: rgba(11, 4, 130, 0.25) !important;
+    }
+    [data-card-type="Governance Committees"] .compact-action-icon,
+    [data-card-type="Governance Committees"] .task-card-icon {
+      background: rgba(11, 4, 130, 0.1) !important;
+      color: #0b0482 !important;
+    }
+
+    [data-card-type="Change Requests"]::before,
+    [data-card-type="Change Requests"] .compact-action-accent {
+      background: rgba(196, 52, 114, 0.25) !important;
+    }
+    [data-card-type="Change Requests"] .compact-action-icon,
+    [data-card-type="Change Requests"] .task-card-icon {
+      background: rgba(196, 52, 114, 0.1) !important;
+      color: #c43472 !important;
+    }
+
+    [data-card-type="Status Reports"]::before,
+    [data-card-type="Status Reports"] .compact-action-accent {
+      background: rgba(132, 80, 157, 0.25) !important;
+    }
+    [data-card-type="Status Reports"] .compact-action-icon,
+    [data-card-type="Status Reports"] .task-card-icon {
+      background: rgba(132, 80, 157, 0.1) !important;
+      color: #84509d !important;
+    }
+
+    [data-card-type="Project Plans"]::before,
+    [data-card-type="Project Plans"] .compact-action-accent {
+      background: rgba(52, 84, 196, 0.25) !important;
+    }
+    [data-card-type="Project Plans"] .compact-action-icon,
+    [data-card-type="Project Plans"] .task-card-icon {
+      background: rgba(52, 84, 196, 0.1) !important;
+      color: #3454c4 !important;
+    }
+
+    [data-card-type="Benefits"]::before,
+    [data-card-type="Benefits"] .compact-action-accent {
+      background: rgba(78, 208, 255, 0.25) !important;
+    }
+    [data-card-type="Benefits"] .compact-action-icon,
+    [data-card-type="Benefits"] .task-card-icon {
+      background: rgba(78, 208, 255, 0.1) !important;
+      color: #4ed0ff !important;
+    }
   `],
 })
 export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDestroy {
@@ -1488,15 +1698,46 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
   }
 
   compactColumnItems(column: PortfolioBoardColumn): PortfolioActionItem[] {
-    const orderByColumn: Record<PortfolioBoardColumn['column'], readonly PortfolioActionItem['kind'][]> = {
-      Overdue: ['report', 'plan', 'change', 'benefit', 'governance'],
-      'This week': ['change', 'governance', 'report', 'plan', 'benefit'],
-      Upcoming: ['report', 'change', 'benefit', 'plan', 'governance'],
+    const grouped: Record<string, PortfolioActionItem[]> = {};
+    for (const item of column.items) {
+      const typeKey = item.type || 'Other';
+      if (!grouped[typeKey]) {
+        grouped[typeKey] = [];
+      }
+      grouped[typeKey].push(item);
+    }
+
+    const orderByColumn: Record<PortfolioBoardColumn['column'], readonly string[]> = {
+      Overdue: ['Status Reports', 'Project Plans', 'Change Requests', 'Benefits', 'Governance Committees'],
+      'This week': ['Project Plans', 'Governance Committees', 'Status Reports', 'Change Requests', 'Benefits'],
+      Upcoming: ['Change Requests', 'Benefits', 'Status Reports', 'Project Plans', 'Governance Committees'],
     };
     const order = orderByColumn[column.column];
-    return [...column.items].sort((first, second) => {
-      const firstIndex = order.indexOf(first.kind);
-      const secondIndex = order.indexOf(second.kind);
+
+    const result: PortfolioActionItem[] = [];
+    for (const [typeKey, items] of Object.entries(grouped)) {
+      const firstItem = items[0];
+      result.push({
+        id: `pmo-group-${column.column}-${firstItem.kind}`,
+        date: firstItem.date,
+        label: typeKey,
+        project: firstItem.project,
+        targetType: 'portfolio',
+        type: typeKey,
+        kind: firstItem.kind,
+        tone: firstItem.tone,
+        owner: 'PMO',
+        meta: `Showing all ${items.length} ${typeKey.toLowerCase()}`,
+        cta: 'View All',
+        column: column.column,
+        detailItems: items,
+        detailSummary: `Showing all ${items.length} ${typeKey.toLowerCase()}`,
+      });
+    }
+
+    return result.sort((first, second) => {
+      const firstIndex = order.indexOf(first.type);
+      const secondIndex = order.indexOf(second.type);
       return (firstIndex === -1 ? order.length : firstIndex) - (secondIndex === -1 ? order.length : secondIndex);
     });
   }

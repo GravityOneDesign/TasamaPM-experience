@@ -131,8 +131,15 @@ export class PmoGovernanceShellComponent implements AfterViewChecked {
   readonly activePortfolioActionItem = this.portfolioActionDrawer.activeItem;
 
   readonly primaryRailItems: readonly PmConsoleSideNavItem[] = [
-    { id: 'home', icon: 'chart-column', label: 'Home' },
-    { id: 'governance', icon: 'layout-grid', label: 'My Workspace' },
+    { id: 'home', icon: 'home', label: 'Home' },
+    { id: 'governance', icon: 'layout-grid', label: 'My Workspaces' },
+    {
+      id: 'dashboards',
+      icon: 'chart-column',
+      label: 'Dashboards',
+      disabled: true,
+      disabledTitle: 'Dashboards are not available yet',
+    },
   ];
 
   readonly utilityRailItems: readonly PmConsoleSideNavItem[] = [

@@ -112,20 +112,46 @@ interface CalendarPopoverPosition {
               <div class="calendar-event-stack" [attr.aria-label]="cellAgendaLabel(cell)">
                 @if (isCollapsedCell(cell)) {
                   <button
-                    class="calendar-event calendar-action-summary"
+                    class="calendar-event {{ cell.items[0].tone }}"
                     type="button"
-                    [attr.aria-label]="summaryItemsLabel(cell)"
-                    aria-haspopup="dialog"
-                    [attr.aria-expanded]="previewCell?.key === cell.key"
-                    (mouseenter)="queueDayPreview(cell, $event)"
+                    [attr.aria-label]="calendarEventLabel(cell.items[0])"
+                    [attr.title]="cell.items[0].project"
+                    (mouseenter)="queueItemPreview(cell.items[0], $event)"
                     (mouseleave)="hidePreviewSoon()"
-                    (focus)="showDayPreview(cell, $event)"
+                    (focus)="showItemPreview(cell.items[0], $event)"
                     (blur)="hidePreviewSoon()"
-                    (click)="showDayPreviewFromClick(cell, $event)"
+                    (click)="openAgendaItem(cell.items[0], $event)"
                   >
-                    <span class="calendar-summary-count" aria-hidden="true">{{ cell.items.length }}</span>
-                    <span class="calendar-event-title">actions</span>
+                    <span class="calendar-event-dot"></span>
+                    <span class="calendar-event-title">{{ calendarEventProjectTitle(cell.items[0]) }}</span>
                   </button>
+
+                  <div class="calendar-event-with-more">
+                    <button
+                      class="calendar-event {{ cell.items[1].tone }}"
+                      type="button"
+                      [attr.aria-label]="calendarEventLabel(cell.items[1])"
+                      [attr.title]="cell.items[1].project"
+                      (mouseenter)="queueItemPreview(cell.items[1], $event)"
+                      (mouseleave)="hidePreviewSoon()"
+                      (focus)="showItemPreview(cell.items[1], $event)"
+                      (blur)="hidePreviewSoon()"
+                      (click)="openAgendaItem(cell.items[1], $event)"
+                    >
+                      <span class="calendar-event-dot"></span>
+                      <span class="calendar-event-title">{{ calendarEventProjectTitle(cell.items[1]) }}</span>
+                    </button>
+                    <button
+                      class="calendar-more-badge"
+                      type="button"
+                      [attr.aria-label]="summaryItemsLabel(cell)"
+                      (click)="showDayPreviewFromClick(cell, $event)"
+                      (mouseenter)="queueDayPreview(cell, $event)"
+                      (mouseleave)="hidePreviewSoon()"
+                    >
+                      +{{ cell.items.length - 2 }}
+                    </button>
+                  </div>
                 } @else {
                   @for (item of visibleCellItems(cell); track item.date + item.label + item.project) {
                     <button
@@ -207,7 +233,7 @@ interface CalendarPopoverPosition {
                 <span class="calendar-agenda-subtitle">{{ item.project }} - {{ itemKindLabel(item) }}</span>
               </span>
               <span class="calendar-agenda-cta">
-                <span>{{ actionLabel(item) }}</span>
+                <span>View</span>
                 <span pmConsoleIcon="arrow-right" aria-hidden="true"></span>
               </span>
             </button>
@@ -316,6 +342,43 @@ interface CalendarPopoverPosition {
         line-height: 1;
         min-width: 14px;
         padding: 0 4px;
+      }
+
+      .calendar-event-with-more {
+        align-items: center;
+        display: flex;
+        gap: 4px;
+        max-width: 100%;
+        width: 100%;
+      }
+
+      .calendar-event-with-more .calendar-event {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+
+      .calendar-more-badge {
+        align-items: center;
+        background: #f7f7ff;
+        border: 1px solid rgba(16, 6, 159, 0.24);
+        border-radius: 999px;
+        color: #10069f;
+        cursor: pointer;
+        display: inline-flex;
+        flex: 0 0 auto;
+        font-size: 9px;
+        font-weight: 700;
+        height: 18px;
+        justify-content: center;
+        min-width: 18px;
+        padding: 0 4px;
+        transition: all 120ms ease;
+      }
+
+      .calendar-more-badge:hover {
+        background: #f1f0ff;
+        border-color: rgba(16, 6, 159, 0.32);
+        color: #1c16b8;
       }
 
       .calendar-more-button {
@@ -1001,6 +1064,12 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
     const label = item.label.trim();
     if (label.length <= this.maxInlineLabelLength) return label;
     return `${label.slice(0, this.maxInlineLabelLength).trimEnd()}...`;
+  }
+
+  calendarEventProjectTitle(item: PmConsoleCalendarItem): string {
+    const project = item.project.trim();
+    if (project.length <= this.maxInlineLabelLength) return project;
+    return `${project.slice(0, this.maxInlineLabelLength).trimEnd()}...`;
   }
 
   cellAgendaLabel(cell: PmConsoleCalendarCell): string {

@@ -96,7 +96,7 @@ export const pmoFrontdoorDigestSections: readonly PmConsoleDigestSection[] = [
 export const pmoFrontdoorActions: PmConsoleFrontdoorAction[] = [
   {
     id: 'framework',
-    title: 'Set up your framework',
+    title: 'Set Up Your Framework',
     description: 'Configure hierarchical domains for this workspace to track divisions, brands, programs or other groups.',
     icon: 'layout-template',
     disabled: false,
@@ -105,7 +105,7 @@ export const pmoFrontdoorActions: PmConsoleFrontdoorAction[] = [
   },
   {
     id: 'create-manage',
-    title: 'Create & manage',
+    title: 'Manage Portfolio Workspaces',
     description: 'Add new programs / projects to your portfolios and keep registers updated in your Workspace!',
     icon: 'folder-tree',
     decor: 'loops',
@@ -165,6 +165,8 @@ function generatePmoCalendarWorkItems(): readonly PmoFrontdoorWorkItem[] {
     
     if (day === 25 || day === 26) {
       numTasks = Math.floor(Math.random() * 2) + 3; // 3-4 tasks for dates 25 & 26
+    } else if (day >= 28) {
+      numTasks = Math.floor(Math.random() * 2) + 2; // 2-3 tasks for upcoming days to ensure they populate
     } else {
       const rand = Math.random();
       if (rand < 0.4) {
@@ -182,9 +184,9 @@ function generatePmoCalendarWorkItems(): readonly PmoFrontdoorWorkItem[] {
       
       // Determine column based on date relative to today (May 26, 2026)
       let column: 'Overdue' | 'This week' | 'Upcoming';
-      if (day < 26) {
+      if (day < 22) {
         column = 'Overdue';
-      } else if (day <= 30) {
+      } else if (day <= 27) {
         column = 'This week';
       } else {
         column = 'Upcoming';

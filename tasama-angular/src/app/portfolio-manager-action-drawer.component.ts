@@ -73,132 +73,70 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
   template: `
     @if (item; as selected) {
       @if (activeGroupItems.length) {
-        @if (selected.kind === 'report' && selected.column === 'Overdue') {
-          <div class="portfolio-action-profile-drawer-shell" aria-live="polite">
-            <button class="portfolio-action-profile-backdrop" type="button" (click)="close.emit()" [attr.aria-label]="'Close drawer'"></button>
-            <aside class="portfolio-action-group-drawer overdue-reports-drawer" role="dialog" aria-modal="true" aria-label="Overdue status reports list">
-              
-              <!-- Header -->
-              <header class="overdue-reports-header">
-                <div class="header-left">
-                  <span class="report-icon-bg">
-                    <span pmConsoleIcon="chart-column" aria-hidden="true"></span>
-                  </span>
-                  <h2>Status Reports</h2>
-                  <span class="overdue-pill">Overdue</span>
-                </div>
-                <button class="overdue-reports-close" type="button" (click)="close.emit()" aria-label="Close list">
-                  <span pmConsoleIcon="x" aria-hidden="true"></span>
-                </button>
-              </header>
-
-              <!-- Search Area -->
-              <section class="overdue-reports-search-section">
-                <div class="search-input-wrapper">
-                  <span pmConsoleIcon="search" class="search-icon" aria-hidden="true"></span>
-                  <input
-                    type="text"
-                    placeholder="Search.."
-                    aria-label="Search status reports"
-                    [value]="searchQuery"
-                    (input)="onSearchInput($event)"
-                  />
-                </div>
-                <div class="showing-count-label">
-                  Showing all {{ filteredReports.length }} status reports
-                </div>
-              </section>
-
-              <!-- Scrollable List of Cards -->
-              <section class="overdue-reports-list" aria-label="Overdue status reports">
-                @for (report of filteredReports; track report.id) {
-                  <div class="overdue-report-card">
-                    <header class="card-header">
-                      <span pmConsoleIcon="calendar" class="calendar-icon" aria-hidden="true"></span>
-                      <span>{{ report.dueDate }} ({{ report.overdueText }})</span>
-                    </header>
-                    <h3 class="card-title">{{ report.title }}</h3>
-                    <p class="card-project">{{ report.project }}</p>
-                    <div class="card-divider"></div>
-                    <footer class="card-footer">
-                      <div class="card-owner">
-                        <span class="owner-avatar {{ getAvatarClass(report.ownerInitials) }}">{{ report.ownerInitials }}</span>
-                        <span class="owner-name">{{ report.ownerName }}</span>
-                      </div>
-                      <button class="open-link" type="button" (click)="close.emit()">
-                        <span>Open</span>
-                        <span pmConsoleIcon="chevron-right" class="arrow-icon" aria-hidden="true"></span>
-                      </button>
-                    </footer>
-                  </div>
-                }
-              </section>
-
-            </aside>
-          </div>
-        } @else {
-          <div class="portfolio-action-profile-drawer-shell" aria-live="polite">
-            <button class="portfolio-action-profile-backdrop" type="button" (click)="close.emit()" [attr.aria-label]="'Close ' + selected.label + ' drawer'"></button>
-            <aside class="portfolio-action-group-drawer" role="dialog" aria-modal="true" [attr.aria-label]="selected.label + ' action list'">
-              <header class="portfolio-action-group-header">
-                <button class="portfolio-action-group-close" type="button" (click)="close.emit()" aria-label="Close action list">
-                  <span pmConsoleIcon="x" aria-hidden="true"></span>
-                </button>
-                <span class="portfolio-action-group-icon {{ selected.tone }}">
+        <div class="portfolio-action-profile-drawer-shell" aria-live="polite">
+          <button class="portfolio-action-profile-backdrop" type="button" (click)="close.emit()" [attr.aria-label]="'Close drawer'"></button>
+          <aside class="portfolio-action-group-drawer overdue-reports-drawer" role="dialog" aria-modal="true" [attr.aria-label]="selected.type + ' list'">
+            
+            <!-- Header -->
+            <header class="overdue-reports-header">
+              <div class="header-left">
+                <span class="report-icon-bg {{ selected.tone }}">
                   <span [pmConsoleIcon]="groupIcon(selected)" aria-hidden="true"></span>
                 </span>
-                <div>
-                  <small>{{ selected.column }}</small>
-                  <h2>{{ selected.label }}</h2>
-                  <p>{{ selected.detailSummary || selected.meta }}</p>
-                </div>
-                <strong>{{ activeGroupItems.length }}</strong>
-              </header>
+                <h2>{{ selected.type }}</h2>
+                <span class="overdue-pill {{ selected.column === 'Overdue' ? 'red' : selected.column === 'This week' ? 'blue' : 'amber' }}">
+                  {{ selected.column }}
+                </span>
+              </div>
+              <button class="overdue-reports-close" type="button" (click)="close.emit()" aria-label="Close list">
+                <span pmConsoleIcon="x" aria-hidden="true"></span>
+              </button>
+            </header>
 
-              <section class="portfolio-action-group-summary" aria-label="Action queue summary">
-                <span>
-                  <small>Queue type</small>
-                  <strong>{{ selected.type }}</strong>
-                </span>
-                <span>
-                  <small>Due window</small>
-                  <strong>{{ selected.meta }}</strong>
-                </span>
-                <span>
-                  <small>Scope</small>
-                  <strong>{{ selected.project }}</strong>
-                </span>
-              </section>
+            <!-- Search Area -->
+            <section class="overdue-reports-search-section">
+              <div class="search-input-wrapper">
+                <span pmConsoleIcon="search" class="search-icon" aria-hidden="true"></span>
+                <input
+                  type="text"
+                  placeholder="Search.."
+                  aria-label="Search items"
+                  [value]="searchQuery"
+                  (input)="onSearchInput($event)"
+                />
+              </div>
+              <div class="showing-count-label">
+                Showing all {{ filteredGroupItems.length }} {{ selected.type.toLowerCase() }}
+              </div>
+            </section>
 
-              <section class="portfolio-action-group-list" aria-label="Action items">
-                @for (detail of activeGroupItems; track detail.id) {
-                  <article class="portfolio-action-group-row">
-                    <span class="portfolio-action-group-row-icon {{ detail.tone }}">
-                      <span [pmConsoleIcon]="groupIcon(detail)" aria-hidden="true"></span>
-                    </span>
-                    <span class="portfolio-action-group-row-copy">
-                      <strong>{{ detail.label }}</strong>
-                      <small>{{ detail.project }} · {{ targetLabel(detail) }}</small>
-                    </span>
-                    <span class="portfolio-action-group-row-meta">
-                      <small>{{ detail.meta }}</small>
-                      <b>{{ detail.owner }}</b>
-                    </span>
-                    <button type="button">
-                      <span>{{ groupActionLabel(detail) }}</span>
-                      <span pmConsoleIcon="arrow-right" aria-hidden="true"></span>
+            <!-- Scrollable List of Cards -->
+            <section class="overdue-reports-list" [attr.aria-label]="selected.type">
+              @for (report of filteredGroupItems; track report.id) {
+                <div class="overdue-report-card">
+                  <header class="card-header">
+                    <span pmConsoleIcon="calendar" class="calendar-icon" aria-hidden="true"></span>
+                    <span>{{ formatCardDate(report.date) }} ({{ report.meta }})</span>
+                  </header>
+                  <h3 class="card-title">{{ report.label }}</h3>
+                  <p class="card-project">{{ report.project }}</p>
+                  <div class="card-divider"></div>
+                  <footer class="card-footer">
+                    <div class="card-owner">
+                      <span class="owner-avatar {{ getAvatarClass(report.owner) }}">{{ report.owner }}</span>
+                      <span class="owner-name">{{ getOwnerFullName(report.owner) }}</span>
+                    </div>
+                    <button class="open-link" type="button" (click)="handleDetailItemClick(report)">
+                      <span>Open</span>
+                      <span pmConsoleIcon="chevron-right" class="arrow-icon" aria-hidden="true"></span>
                     </button>
-                  </article>
-                }
-              </section>
+                  </footer>
+                </div>
+              }
+            </section>
 
-              <footer class="portfolio-action-group-footer">
-                <button class="secondary" type="button" (click)="close.emit()">Close</button>
-                <button class="primary" type="button" (click)="close.emit()">Mark queue reviewed</button>
-              </footer>
-            </aside>
-          </div>
-        }
+          </aside>
+        </div>
       } @else {
         @switch (selected.kind) {
           @case ('report') {
@@ -863,12 +801,35 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
       .overdue-reports-header .report-icon-bg {
         width: 40px;
         height: 40px;
-        background: #eef4ff;
-        color: #1f4fb8;
         border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
+      }
+
+      .overdue-reports-header .report-icon-bg.blue {
+        background: #eef4ff;
+        color: #1f4fb8;
+      }
+
+      .overdue-reports-header .report-icon-bg.red {
+        background: #fff0f0;
+        color: #9e2f2f;
+      }
+
+      .overdue-reports-header .report-icon-bg.green {
+        background: #eefbf5;
+        color: #166b49;
+      }
+
+      .overdue-reports-header .report-icon-bg.amber {
+        background: #fff8e7;
+        color: #8a5c12;
+      }
+
+      .overdue-reports-header .report-icon-bg.neutral {
+        background: #f5f7fb;
+        color: #536071;
       }
 
       .overdue-reports-header .report-icon-bg span {
@@ -884,13 +845,26 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
       }
 
       .overdue-reports-header .overdue-pill {
-        background: #fde2e2;
-        color: #d32f2f;
         font-size: 11px;
         font-weight: 600;
         padding: 4px 8px;
         border-radius: 6px;
         line-height: 1;
+      }
+
+      .overdue-reports-header .overdue-pill.red {
+        background: #fde2e2;
+        color: #d32f2f;
+      }
+
+      .overdue-reports-header .overdue-pill.blue {
+        background: #eef4ff;
+        color: #1f4fb8;
+      }
+
+      .overdue-reports-header .overdue-pill.amber {
+        background: #fff8e7;
+        color: #8a5c12;
       }
 
       .overdue-reports-close {
@@ -1060,6 +1034,22 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
         background: #10b981;
       }
 
+      .overdue-report-card .owner-avatar.avatar-fq {
+        background: #f59e0b;
+      }
+
+      .overdue-report-card .owner-avatar.avatar-ah {
+        background: #f43f5e;
+      }
+
+      .overdue-report-card .owner-avatar.avatar-sa {
+        background: #8b5cf6;
+      }
+
+      .overdue-report-card .owner-avatar.avatar-fa {
+        background: #06b6d4;
+      }
+
       .overdue-report-card .owner-name {
         font-size: 13px;
         color: #2f2f2f;
@@ -1106,6 +1096,17 @@ export class PortfolioManagerActionDrawerComponent implements OnChanges, OnDestr
     );
   }
 
+  get filteredGroupItems(): readonly PortfolioActionItem[] {
+    if (!this.activeGroupItems.length) return [];
+    if (!this.searchQuery) return this.activeGroupItems;
+    const q = this.searchQuery.toLowerCase().trim();
+    return this.activeGroupItems.filter((item) =>
+      item.label.toLowerCase().includes(q) ||
+      item.project.toLowerCase().includes(q) ||
+      (item.owner && item.owner.toLowerCase().includes(q))
+    );
+  }
+
   getAvatarClass(initials: string): string {
     const mapping: Record<string, string> = {
       'MH': 'avatar-mh',
@@ -1113,8 +1114,38 @@ export class PortfolioManagerActionDrawerComponent implements OnChanges, OnDestr
       'NH': 'avatar-nh',
       'JS': 'avatar-js',
       'DG': 'avatar-dg',
+      'FQ': 'avatar-fq',
+      'AH': 'avatar-ah',
+      'SA': 'avatar-sa',
+      'FA': 'avatar-fa',
     };
     return mapping[initials] || 'avatar-mh';
+  }
+
+  formatCardDate(dateStr: string): string {
+    const parsed = new Date(`${dateStr}T00:00:00`);
+    if (Number.isNaN(parsed.getTime())) return dateStr;
+    return parsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  getOwnerFullName(initials: string): string {
+    const mapping: Record<string, string> = {
+      'FQ': 'Fatima Qahtani',
+      'MH': 'Muna Hassan',
+      'AH': 'Ahmed Hassan',
+      'SA': 'Sarah Al Saud',
+      'FA': 'Fatima Al-Saud',
+      'OK': 'Osman Khan',
+      'NH': 'Nadia Hossain',
+      'JS': 'Jasmine Smith',
+      'DG': 'David Garcia',
+    };
+    return mapping[initials] || initials;
+  }
+
+  handleDetailItemClick(detail: PortfolioActionItem): void {
+    this.item = detail;
+    this.hydrateDrawerState();
   }
 
   readonly projectOptions = portfolioActionProjectOptions;

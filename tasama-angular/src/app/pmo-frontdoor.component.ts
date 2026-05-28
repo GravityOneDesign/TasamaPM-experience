@@ -19,7 +19,6 @@ import { PmConsoleDigestPanelComponent } from './shared/pm-console-digest-panel.
 import { PmConsoleFrontdoorActionCardsComponent } from './shared/pm-console-frontdoor-action-cards.component';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 import { PmConsoleModeTabsComponent } from './shared/pm-console-mode-tabs.component';
-import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-dropdown.component';
 
 @Component({
   selector: 'app-pmo-frontdoor',
@@ -30,7 +29,6 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
     PmConsoleFrontdoorActionCardsComponent,
     PmConsoleIconComponent,
     PmConsoleModeTabsComponent,
-    PmConsoleProjectDropdownComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -47,16 +45,6 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
                     [activeId]="selectedTab"
                     (tabSelected)="setTab($event)"
                   ></app-pm-console-mode-tabs>
-                </div>
-                <div class="workspace-shell-actions pmo-frontdoor-scope-actions" aria-label="PMO portfolio scope">
-                  <app-pm-console-project-dropdown
-                    label=""
-                    leadingIcon="folder"
-                    ariaLabel="Select PMO portfolio scope"
-                    [options]="portfolioScopeOptions"
-                    [value]="selectedPortfolioScope"
-                    (valueChange)="setPortfolioScope($event)"
-                  ></app-pm-console-project-dropdown>
                 </div>
               </div>
 
@@ -141,7 +129,7 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
                     searchPlaceholder="Search PMO work..."
                     [actionItems]="workItems"
                     [boardFilters]="workFilters"
-                    [showTargetPicker]="false"
+                    [showTargetPicker]="true"
                     [showBoardDetailPanel]="false"
                     boardPresentation="compact"
                     [openItemsInDrawer]="true"
@@ -214,7 +202,7 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
       }
 
       .pmo-frontdoor-shell-head .onboarding-operational-tabs {
-        max-width: calc(100% - 288px);
+        max-width: 100%;
       }
 
       .pmo-frontdoor-overview {

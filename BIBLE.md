@@ -950,6 +950,45 @@ When a user asks for UI from Figma:
 
 2026-05-28:
 
+- Updated the first PMO front-door Overview journey card title in `pmo-frontdoor.data.ts` to Title Case: "Set Up Your Framework".
+- Corrected the PMO "My Actions" tab compact cards CSS grid columns (`grid-template-columns: auto minmax(0, 1fr) auto auto !important;`) to perfectly accommodate the 4-column children layout following inner side stroke removal, successfully preventing the lavender count circles from stretching horizontally.
+- Refined the PMO "My Actions" tab compact cards by removing the inner `.compact-action-accent` side stroke element positioned immediately to the left of the icon container, cleanly retaining only the premium outer card edge side stroke (drawn by the card's `::before` selector).
+- Completed the PMO "My Actions" tab card styling, color opacity rules, and layout refinements in `PortfolioManagerActionsComponent`:
+  - Updated the board column header icons to render as standalone grey icons (`#657084`) with transparent backgrounds and no surrounding containers, perfectly matching Image 2.
+  - Increased the compact card height (`min-height: 64px`) and added generous top/bottom padding (`14px`) around the title text.
+  - Applied a premium light font weight (`font-weight: 300`) to the card titles (`.compact-action-title`, `.task-card-title`) and View All CTAs (`.compact-action-view span`, `.task-card-action span`).
+  - Styled the count container around the numbers (`.compact-action-count`) as a circular `#EEF4FF` container with light `#2F2F2F` number text at a light font weight.
+  - Implemented exact custom color shade mapping and specific opacity rules (25% side stroke, 10% icon container background, 100% icon color) based on task types:
+    - Governance Committees: `#0B0482`
+    - Change Requests: `#C43472`
+    - Status Reports: `#84509D`
+    - Project Plans: `#3454C4`
+    - Benefits: `#4ED0FF`
+  - Re-distributed the random calendar work item generator thresholds in `pmo-frontdoor.data.ts` to ensure that all 3 columns (Overdue, This week, and Upcoming) are beautifully populated with action cards.
+- Redesigned the "My Actions" board individual task cards (`.task-card`) in `PortfolioManagerActionsComponent` to match the premium, single-row grouped card layout (Image 2):
+  - Modified the card structure in the board template to remove the obsolete top type pill, project name sub-headline, user avatar initials circle, and due-date text metadata.
+  - Implemented the brand-specific colored icon container (`.task-card-icon`) on the left of each card using dynamic Lucide icons mapping through `boardDetailIcon(item)`.
+  - Nested the card title and total action volume count side-by-side in a clean flex layout container (`.task-card-title-container`), rendering the count inside a light lavender circular pill (`.task-card-count`).
+  - Added a thick left-side accent stroke (`.task-card::before`) with a 12px border radius, fully integrated with the component's existing color theme palette rules (`.blue`, `.red`, `.green`, `.amber`, `.neutral`).
+  - Updated the right-aligned call-to-action button to render a standardized "View All" CTA with a premium chevron chevron-right icon.
+  - Set a 12px border radius, 50px compact card min-height, grid column alignments, and modern micro-interaction hover scaling effects (`translateY(-1px)`).
+  - Verified compilation success with a zero-warning, zero-error Angular CLI build.
+- Completed the PMO "Manage my work" "My actions" tab grouping and side drawer transition:
+  - Implemented the `filteredGroupItems` getter inside `PortfolioManagerActionDrawerComponent` class to support real-time searching and filtering of task list group items within the side drawer.
+  - Implemented typescript helper methods `formatCardDate(dateStr: string)`, `getOwnerFullName(initials: string)`, and `handleDetailItemClick(detail: PortfolioActionItem)` to enable dynamic date parsing, initials-to-name lookup, and smooth deep-linking from grouped task cards to detailed single-item views inside the side drawer.
+  - Added tone-specific CSS styling classes (`.blue`, `.red`, `.green`, `.amber`, `.neutral`) for `.report-icon-bg` and `.overdue-pill` elements to ensure drawer visual alignment with each action type's theme.
+  - Added background color styles for additional user initials (`avatar-fq`, `avatar-ah`, `avatar-sa`, `avatar-fa`) to visually enrich avatar displays.
+  - Verified stability with a zero-warning production build compilation.
+- Redesigned the calendar day grouping logic for cells with multiple scheduled items in `PmConsoleWorkCalendarComponent`:
+  - Replaced the generic "N actions" button with individual, project-specific `.calendar-event` buttons for the first two items, showing their project names in the standard brand layout (dot, color tone, text styles, etc.).
+  - Added a stylish, clickable `+N` badge beside the second project button, which triggers the day preview popover containing all scheduled items when clicked or hovered.
+  - Implemented `calendarEventProjectTitle` helper method to cleanly truncate long project names with an ellipsis.
+  - Updated the CTA label for all items rendered in the multiple-items hover card popover (`previewCell`) to read "View" instead of dynamic actions (e.g. "Open work item", "Open report"), ensuring a cleaner and more consistent user experience.
+- Updated the PMO front door and left navigation bar according to new requirements:
+  - Enabled the program/project selector dropdown filter (`[showTargetPicker]="true"`) on the "Manage My Work" tab workspace control bar directly to the left of the "All PMO actions" dropdown.
+  - Removed the 'All portfolios' scope selector dropdown in the top right of the Overview tab (`pmo-frontdoor.component.ts`) and adjusted the operational tab container max-width to allow clean layout expansion.
+  - Renamed the "Create & manage" journey card action to "Manage Portfolio Workspaces" in `pmo-frontdoor.data.ts`.
+  - Reconfigured the PMO left navigation rail (`pmo-governance-shell.component.ts`) to contain "Home" (with the standard home icon), "My Workspaces" (with the layout-grid icon), and "Dashboards" (with the chart-column icon, marked disabled/unclickable as shown in image 2).
 - Redesigned the multi-action calendar popup/hover card (`PmConsoleWorkCalendarComponent`) to align with the premium Figma designs in the PMO "Manage My Work" landing tab:
   - Transformed the card row layout into a clean three-column structure (status dot, text info column, right-aligned blue CTA).
   - Cleaned up the text details to show the task title (`item.label`) in bold charcoal (`#0b0b0b`) and combined the project name and task kind in a muted gray (`#536071`) subtitle separated by a hyphen (`{{ item.project }} - {{ itemKindLabel(item) }}`).
