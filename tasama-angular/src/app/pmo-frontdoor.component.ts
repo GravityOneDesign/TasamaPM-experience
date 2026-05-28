@@ -911,7 +911,7 @@ export class PmoFrontdoorComponent implements AfterViewChecked {
   readonly quickLinks = pmoFrontdoorQuickLinks;
   readonly portfolioScopeOptions: readonly ProjectOption[] = [{ id: 'all-portfolios', name: 'All Portfolios' }];
   readonly welcomeIconSrc = './assets/pane-top-icon.svg';
-  readonly welcomeSubtitle = ["Here's what's happening across your portfolio today."];
+  readonly welcomeSubtitle = ["Here's what's happening across your portfolios today."];
   readonly budgetBars = Array.from({ length: 10 });
   private iconsHydrated = false;
 

@@ -200,14 +200,11 @@ interface CalendarPopoverPosition {
         <strong>{{ previewCell.items.length }} item{{ previewCell.items.length === 1 ? '' : 's' }} scheduled</strong>
         <div class="calendar-day-agenda-list preview-agenda-list">
           @for (item of previewCell.items; track item.date + item.label + item.project) {
-            <button class="calendar-agenda-row" type="button" (click)="openAgendaItem(item, $event)">
+            <button class="calendar-agenda-row {{ item.tone }}" type="button" (click)="openAgendaItem(item, $event)">
               <span class="calendar-event-dot {{ item.tone }}"></span>
-              <span>
-                <strong>{{ item.label }}</strong>
-                <small class="calendar-agenda-context-line">
-                  <span class="calendar-agenda-context-tag">{{ itemTargetLabel(item) }}</span>
-                  <span>{{ itemKindLabel(item) }}</span>
-                </small>
+              <span class="calendar-agenda-info">
+                <span class="calendar-agenda-title">{{ item.label }}</span>
+                <span class="calendar-agenda-subtitle">{{ item.project }} - {{ itemKindLabel(item) }}</span>
               </span>
               <span class="calendar-agenda-cta">
                 <span>{{ actionLabel(item) }}</span>
@@ -659,82 +656,104 @@ interface CalendarPopoverPosition {
 
       .calendar-agenda-row {
         align-items: center;
-        background: #fbfcff;
+        background: #ffffff;
         border: 1px solid #edf0f6;
         border-radius: 8px;
         color: #303645;
         display: grid;
-        gap: 8px;
+        gap: 12px;
         grid-template-columns: auto minmax(0, 1fr) auto;
-        min-height: 44px;
-        padding: 8px;
+        min-height: 48px;
+        padding: 10px 14px;
         text-align: left;
+        transition: background 120ms ease, border-color 120ms ease;
+      }
+
+      .calendar-agenda-row.blue {
+        background: #ffffff;
+        border-color: #e3ebfc;
+      }
+
+      .calendar-agenda-row.red {
+        background: #ffffff;
+        border-color: #fcdbd9;
+      }
+
+      .calendar-agenda-row.green {
+        background: #ffffff;
+        border-color: #d1f2e1;
       }
 
       .calendar-agenda-row:hover,
       .calendar-agenda-row:focus-visible {
-        background: #f7f7ff;
-        border-color: rgba(16, 6, 159, 0.22);
-        color: #10069f;
+        background: #f7f9fc;
+        border-color: #cbd5e1;
         outline: 0;
       }
 
-      .calendar-agenda-row strong,
-      .calendar-agenda-row small {
+      .calendar-agenda-row.blue:hover,
+      .calendar-agenda-row.blue:focus-visible {
+        background: #f5f8ff;
+        border-color: #b8caff;
+      }
+
+      .calendar-agenda-row.red:hover,
+      .calendar-agenda-row.red:focus-visible {
+        background: #fff5f4;
+        border-color: #ffa8a1;
+      }
+
+      .calendar-agenda-row.green:hover,
+      .calendar-agenda-row.green:focus-visible {
+        background: #f2fcf7;
+        border-color: #a3e2c3;
+      }
+
+      .calendar-agenda-info {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+
+      .calendar-agenda-title {
+        color: #0b0b0b;
         display: block;
+        font-size: 12.5px;
+        font-weight: 600;
+        line-height: 1.4;
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
 
-      .calendar-agenda-row strong {
-        font-size: 12px;
-        font-weight: 600;
-        line-height: 1.25;
-      }
-
-      .calendar-agenda-row small {
-        color: var(--muted);
-        font-size: 10.5px;
+      .calendar-agenda-subtitle {
+        color: #536071;
+        display: block;
+        font-size: 11px;
+        font-weight: 400;
+        line-height: 1.4;
         margin-top: 2px;
-      }
-
-      .calendar-agenda-row small.calendar-agenda-context-line {
-        align-items: center;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
-        overflow: visible;
-        text-overflow: clip;
-        white-space: normal;
-      }
-
-      .calendar-agenda-context-tag {
-        align-items: center;
-        background: #ffffff;
-        border: 1px solid #dfe4ee;
-        border-radius: 999px;
-        color: #4d5666;
-        display: inline-flex;
-        font-size: 10px;
-        font-weight: 600;
-        line-height: 1.2;
-        max-width: 100%;
-        overflow-wrap: anywhere;
-        padding: 2px 6px;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .calendar-agenda-cta {
         align-items: center;
         color: #10069f;
         display: inline-flex;
-        font-size: 10.5px;
+        font-size: 11.5px;
         font-weight: 600;
         gap: 4px;
         justify-content: flex-end;
-        min-width: 76px;
+        min-width: 0;
         white-space: nowrap;
+      }
+
+      .calendar-agenda-cta:hover {
+        color: #1c16b8;
       }
 
       .calendar-agenda-row .calendar-event-dot {
@@ -796,15 +815,7 @@ interface CalendarPopoverPosition {
           display: inline-flex;
         }
 
-        .calendar-agenda-row {
-          grid-template-columns: auto minmax(0, 1fr);
-        }
 
-        .calendar-agenda-cta {
-          grid-column: 2;
-          justify-content: flex-start;
-          min-width: 0;
-        }
 
         .calendar-more-button {
           padding: 0 7px;

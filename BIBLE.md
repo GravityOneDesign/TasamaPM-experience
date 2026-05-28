@@ -948,6 +948,17 @@ When a user asks for UI from Figma:
 
 ## Memory Log
 
+2026-05-28:
+
+- Redesigned the multi-action calendar popup/hover card (`PmConsoleWorkCalendarComponent`) to align with the premium Figma designs in the PMO "Manage My Work" landing tab:
+  - Transformed the card row layout into a clean three-column structure (status dot, text info column, right-aligned blue CTA).
+  - Cleaned up the text details to show the task title (`item.label`) in bold charcoal (`#0b0b0b`) and combined the project name and task kind in a muted gray (`#536071`) subtitle separated by a hyphen (`{{ item.project }} - {{ itemKindLabel(item) }}`).
+  - Removed the redundant bold Project Name pill border and background, enabling smooth left-alignment of all text items.
+  - Relocated the dynamic blue CTA link (e.g. "Open schedule", "Open risk") to the right-most column of each item card, vertically centered.
+  - Introduced premium, status-tailored border and subtle background colors for each action card based on its status tone (blue, red, green, neutral) to boost micro-aesthetics and interactive hover/focus animations.
+  - Verified through a complete, successful Angular CLI production build.
+- Updated the welcome subtext message on the PMO landing view (`pmo-frontdoor.component.ts`) from "portfolio" to plural "portfolios" to accurately reflect multi-portfolio governance contexts without altering any other visual properties.
+
 2026-05-27:
 
 - Added Status Reports section to PMO Overview with preview cards showing overdue reports.
