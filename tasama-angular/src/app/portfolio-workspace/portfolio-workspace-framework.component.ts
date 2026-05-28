@@ -610,9 +610,9 @@ export interface TaxonomyCard {
           </div>
 
           <div class="standards-sections-stack">
-            <!-- Section: Funding Sources -->
+            <!-- Section: Budget Management -->
             <section class="standards-group">
-              <h3 class="standards-section-heading">Funding Sources</h3>
+              <h3 class="standards-section-heading">Budget Management</h3>
               <div class="standards-grid">
                 @for (card of fundingSourcesCards; track card.id) {
                   <button type="button" class="standards-card" (click)="openCardDrawer(card, 'Funding Sources')">
@@ -2072,9 +2072,9 @@ export class PortfolioWorkspaceFrameworkComponent {
 
   // Standards & Taxonomies Cards Data State
   projectSetupCards: TaxonomyCard[] = [
-    { id: 'category', title: 'Project Category', icon: 'layers', description: 'Define different types of project classifications.', items: ['Research & Development', 'Compliance & Regulatory', 'Business Expansion', 'Infrastructure', 'Software Development'] },
-    { id: 'priority', title: 'Priority', icon: 'alert-circle', description: 'Set system-wide priority tiers.', items: ['Critical', 'High', 'Medium', 'Low'], needsAttention: true },
-    { id: 'size', title: 'Project Size', icon: 'maximize', description: 'Scale definitions for sizing.', items: ['Small', 'Medium', 'Large', 'Enterprise'] },
+    { id: 'category', title: 'Project Category', icon: 'layers', description: 'Define different types of project Category.', items: ['Research & Development', 'Compliance & Regulatory', 'Business Expansion', 'Infrastructure', 'Software Development'] },
+    { id: 'priority', title: 'Priority', icon: 'alert-circle', description: 'Set priority levels for ranking and filtering of projects.', items: ['Critical', 'High', 'Medium', 'Low'], needsAttention: true },
+    { id: 'size', title: 'Project Size', icon: 'maximize', description: 'Configure size bands based on project scale.', items: ['Small', 'Medium', 'Large', 'Enterprise'] },
     { id: 'tier', title: 'Project Tier', icon: 'bar-chart', description: 'Tier rankings for governance and reviews.', items: ['Tier 1 (High Governance)', 'Tier 2 (Medium Governance)', 'Tier 3 (Light Governance)'] },
     { id: 'procurement', title: 'Procurement Type', icon: 'shopping-bag', description: 'Purchase and sourcing classifications.', items: ['Direct Purchase', 'Request For Proposal (RFP)', 'Sole Source', 'Contract Expansion'] },
     { id: 'supplier', title: 'External Senior Supplier', icon: 'users', description: 'Define third-party vendor categories.', items: ['Vendor Partner', 'Offshore Contractor', 'Independent Consultant', 'OEM Supplier'] }
@@ -2082,18 +2082,18 @@ export class PortfolioWorkspaceFrameworkComponent {
 
   projectPlanningCards: TaxonomyCard[] = [
     { id: 'resource', title: 'Resource', icon: 'user-check', description: 'Resource naming standards and capacities.', items: ['Developer', 'Project Manager', 'Business Analyst', 'QA Engineer', 'Solution Architect'] },
-    { id: 'change-impact', title: 'Change Impact', icon: 'refresh-cw', description: 'Change levels.', items: ['Disruptive', 'Major', 'Moderate', 'Minor'], needsAttention: true },
-    { id: 'schedule', title: 'Schedule Range', icon: 'calendar', description: 'Timeline margins and baseline parameters.', items: ['Short-term (< 3 months)', 'Medium-term (3-12 months)', 'Long-term (> 12 months)'] },
+    { id: 'change-impact', title: 'Change Impact', icon: 'refresh-cw', description: 'Levels of change impact expected from the projects.', items: ['Disruptive', 'Major', 'Moderate', 'Minor'], needsAttention: true },
+    { id: 'schedule', title: 'Schedule Range', icon: 'calendar', description: 'Timeline margins that provide indicative schedules for concepts and business cases.', items: ['Short-term (< 3 months)', 'Medium-term (3-12 months)', 'Long-term (> 12 months)'] },
     { id: 'dependency-impact', title: 'Impact of Dependency', icon: 'git-commit', description: 'Severity ratings of dependent delays.', items: ['High Impact (Blocker)', 'Medium Impact (Workaround)', 'Low Impact (Negligible)'] },
     { id: 'resource-type', title: 'Resource Type', icon: 'briefcase', description: 'Staffing categories.', items: ['Internal Staff', 'External Consultant', 'Subcontractor'] },
-    { id: 'product-type', title: 'Product Type', icon: 'package', description: 'Output deliverable definitions.', items: ['Software Release', 'Infrastructure Upgrade', 'Process Definition', 'Audit Report'] },
+    { id: 'product-type', title: 'Product Type', icon: 'package', description: 'Product deliverable definitions.', items: ['Software Release', 'Infrastructure Upgrade', 'Process Definition', 'Audit Report'] },
     { id: 'issue-type', title: 'Issue Type', icon: 'bug', description: 'Problem classifications.', items: ['Blocker', 'Bug', 'Risk', 'Change Request', 'Task'] },
     { id: 'miscellaneous', title: 'Miscellaneous', icon: 'help-circle', description: 'General settings and custom fields.', items: ['Custom Field A', 'Custom Field B'] }
   ];
 
   projectClosureCards: TaxonomyCard[] = [
-    { id: 'closure-content', title: 'Project Closure Content', icon: 'check-circle', description: 'Required deliverables and checks for ending projects.', items: ['Handover Document', 'Final Budget Report', 'Stakeholder Sign-off', 'Closure Certificate'] },
-    { id: 'program-closure', title: 'Program Closure Content', icon: 'archive', description: 'Criteria and summary templates for closing entire programs.', items: ['Program Benefits Report', 'Consolidated Asset Register', 'Executive Sponsor Review'] },
+    { id: 'closure-content', title: 'Project Closure Content', icon: 'check-circle', description: 'Define the message displayed to users when a project closure is initiated.', items: ['Handover Document', 'Final Budget Report', 'Stakeholder Sign-off', 'Closure Certificate'] },
+    { id: 'program-closure', title: 'Program Closure Content', icon: 'archive', description: 'Define the message displayed to users when a program closure is initiated.', items: ['Program Benefits Report', 'Consolidated Asset Register', 'Executive Sponsor Review'] },
     { id: 'lessons-learnt', title: 'Lessons Learnt Category', icon: 'book-open', description: 'Group lessons by domain.', items: ['Technical Execution', 'Procurement & Legal', 'Resource Management', 'Scope & Timeline'], needsAttention: true },
     { id: 'closure-reasons', title: 'Reasons for Closure', icon: 'x-circle', description: 'Allowed closure grounds.', items: ['Successful Delivery', 'Budget Exhaustion', 'Strategic Alignment Shift', 'Cancelled by Sponsor'] }
   ];
@@ -2154,6 +2154,7 @@ export class PortfolioWorkspaceFrameworkComponent {
 
   // Financial & Budget Management Cards Data State
   fundingSourcesCards: TaxonomyCard[] = [
+    { id: 'funding-sources', title: 'Funding Sources', icon: 'wallet', description: 'Define the funding sources available for allocation to projects', items: [] },
     { id: 'cost-centre', title: 'Cost Centre', icon: 'wallet', description: 'Define the cost centres for tracking department and team budgets.', items: ['Safe Security HQ', 'Product & Engineering', 'Global Sales', 'Marketing', 'Customer Success'] },
     { id: 'ongoing-cost', title: 'Ongoing Cost', icon: 'refresh-cw', description: 'Configure recurring operating and support expenses.', items: ['SaaS Subscriptions', 'Cloud Infrastructure', 'Consulting Fees', 'Hardware Maintenance'] },
     { id: 'budget-range', title: 'Budget Range', icon: 'sliders', description: 'Set standard funding thresholds and priority levels.', items: ['Micro (< $50k)', 'Small ($50k - $250k)', 'Medium ($250k - $1M)', 'Enterprise (> $1M)'] }
