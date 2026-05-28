@@ -19,7 +19,6 @@ import { PmConsoleDigestPanelComponent } from './shared/pm-console-digest-panel.
 import { PmConsoleFrontdoorActionCardsComponent } from './shared/pm-console-frontdoor-action-cards.component';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 import { PmConsoleModeTabsComponent } from './shared/pm-console-mode-tabs.component';
-import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-dropdown.component';
 
 @Component({
   selector: 'app-pmo-frontdoor',
@@ -30,7 +29,6 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
     PmConsoleFrontdoorActionCardsComponent,
     PmConsoleIconComponent,
     PmConsoleModeTabsComponent,
-    PmConsoleProjectDropdownComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -47,16 +45,6 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
                     [activeId]="selectedTab"
                     (tabSelected)="setTab($event)"
                   ></app-pm-console-mode-tabs>
-                </div>
-                <div class="workspace-shell-actions pmo-frontdoor-scope-actions" aria-label="PMO portfolio scope">
-                  <app-pm-console-project-dropdown
-                    label=""
-                    leadingIcon="folder"
-                    ariaLabel="Select PMO portfolio scope"
-                    [options]="portfolioScopeOptions"
-                    [value]="selectedPortfolioScope"
-                    (valueChange)="setPortfolioScope($event)"
-                  ></app-pm-console-project-dropdown>
                 </div>
               </div>
 
@@ -137,12 +125,12 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
                   </section>
                 } @else if (selectedTab === 'manage-work') {
                   <app-portfolio-manager-actions
-                    [workspaceTitle]="'Portfolio Management Office'"
+                    [workspaceTitle]="'PMO Console'"
                     searchPlaceholder="Search PMO work..."
                     [actionItems]="workItems"
                     [boardFilters]="workFilters"
-                    [showTargetPicker]="false"
-                    [showBoardDetailPanel]="true"
+                    [showTargetPicker]="true"
+                    [showBoardDetailPanel]="false"
                     [openItemsInDrawer]="true"
                     todayKey="2026-05-26"
                   />
@@ -185,6 +173,7 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
           </div>
         </div>
       </div>
+
     </main>
   `,
   styles: [
@@ -212,7 +201,7 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
       }
 
       .pmo-frontdoor-shell-head .onboarding-operational-tabs {
-        max-width: calc(100% - 288px);
+        max-width: 100%;
       }
 
       .pmo-frontdoor-overview {
@@ -277,10 +266,11 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
 
       .pmo-hero-metric {
         align-items: center;
-        background: rgba(255, 255, 255, 0.09);
-        border: 1px solid #addc91;
-        border-radius: 6.84px;
-        box-shadow: 0 8px 18px rgba(1, 10, 15, 0.08);
+        background: rgba(255, 255, 255, 0.08);
+        border: 0;
+        border-bottom: 1px solid rgba(173, 220, 145, 0.98);
+        border-radius: 7px;
+        box-shadow: none;
         display: inline-flex;
         gap: 8px;
         height: 36px;
@@ -763,6 +753,129 @@ import { PmConsoleProjectDropdownComponent } from './shared/pm-console-project-d
         .pmo-health-labels {
           width: 100%;
         }
+
+        .pmo-status-reports-overview-section {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          padding: 24px;
+          background: #ffffff;
+          border: 1px solid #e0e0e0;
+          border-radius: 12px;
+        }
+
+        .pmo-status-reports-section-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 16px;
+        }
+
+        .pmo-status-reports-section-title {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin: 0;
+          font-size: 18px;
+          font-weight: 600;
+          color: #0b0b0b;
+        }
+
+        .pmo-status-reports-section-title span {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+          background: #e3f2fd;
+          border-radius: 8px;
+          color: #1976d2;
+        }
+
+        .pmo-status-reports-count-badge {
+          margin-left: auto;
+          padding: 4px 8px;
+          background: #ffebee;
+          color: #c62828;
+          font-size: 12px;
+          font-weight: 600;
+          border-radius: 4px;
+          white-space: nowrap;
+        }
+
+        .pmo-status-reports-section-cta {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: none;
+          border: none;
+          color: #0264c8;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          padding: 4px 0;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+
+        .pmo-status-reports-section-cta:hover {
+          opacity: 0.8;
+        }
+
+        .pmo-status-reports-preview {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .pmo-status-report-preview-card {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          padding: 12px;
+          background: #f9f9f9;
+          border: 1px solid #e8e8e8;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          text-align: left;
+          font-family: inherit;
+        }
+
+        .pmo-status-report-preview-card:hover {
+          background: #f5f5f5;
+          border-color: #d0d0d0;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+        }
+
+        .pmo-status-report-preview-header {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .pmo-status-report-preview-header strong {
+          font-size: 14px;
+          color: #0b0b0b;
+          font-weight: 600;
+          line-height: 1.3;
+        }
+
+        .pmo-status-report-preview-project {
+          font-size: 12px;
+          color: #999;
+          font-weight: 400;
+        }
+
+        .pmo-status-report-preview-meta {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin: 0;
+          font-size: 12px;
+          color: #999;
+          font-weight: 400;
+        }
       }
     `,
   ],
@@ -771,6 +884,7 @@ export class PmoFrontdoorComponent implements AfterViewChecked {
   @Output() readonly workspaceRequested = new EventEmitter<PmoGovernanceWorkspaceTarget | undefined>();
   @Output() readonly reportReviewRequested = new EventEmitter<void>();
   @Output() readonly decisionIntelligenceRequested = new EventEmitter<void>();
+  @Output() readonly frameworkRequested = new EventEmitter<void>();
 
   selectedTab: PmoFrontdoorTab = 'overview';
   selectedPortfolioScope = 'all-portfolios';
@@ -784,11 +898,11 @@ export class PmoFrontdoorComponent implements AfterViewChecked {
   readonly quickLinks = pmoFrontdoorQuickLinks;
   readonly portfolioScopeOptions: readonly ProjectOption[] = [{ id: 'all-portfolios', name: 'All Portfolios' }];
   readonly welcomeIconSrc = './assets/pane-top-icon.svg';
-  readonly welcomeSubtitle = ["Here's what's happening across your portfolio today."];
+  readonly welcomeSubtitle = ["Here's what's happening across your portfolios today."];
   readonly budgetBars = Array.from({ length: 10 });
   private iconsHydrated = false;
 
-  constructor(private readonly iconsService: PmConsoleIconService) {}
+  constructor(private readonly iconsService: PmConsoleIconService) { }
 
   ngAfterViewChecked(): void {
     if (this.iconsHydrated) return;
@@ -808,6 +922,10 @@ export class PmoFrontdoorComponent implements AfterViewChecked {
   }
 
   selectAction(actionId: string): void {
+    if (actionId === 'framework') {
+      this.frameworkRequested.emit();
+      return;
+    }
     if (actionId === 'report-review') {
       this.reportReviewRequested.emit();
       return;
