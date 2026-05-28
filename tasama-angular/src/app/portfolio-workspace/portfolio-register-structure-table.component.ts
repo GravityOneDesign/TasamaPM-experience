@@ -112,7 +112,11 @@ export interface PortfolioRegisterStructureActionEvent {
     </ng-template>
 
     <div class="portfolio-register-table-scroll">
-      <table class="portfolio-register-structure-table" [attr.aria-label]="ariaLabel">
+      <table
+        class="portfolio-register-structure-table"
+        [class.without-connectors]="!showHierarchyConnectors"
+        [attr.aria-label]="ariaLabel"
+      >
         <thead>
           <tr>
             @for (column of columns; track column.id) {
@@ -140,7 +144,9 @@ export interface PortfolioRegisterStructureActionEvent {
                     [attr.aria-expanded]="row.expanded !== false"
                     (click)="groupToggle.emit(row.id)"
                   >
-                    <ng-container *ngTemplateOutlet="registerBranchMarker; context: { branchClass: branchClass(row) }"></ng-container>
+                    @if (showHierarchyConnectors) {
+                      <ng-container *ngTemplateOutlet="registerBranchMarker; context: { branchClass: branchClass(row) }"></ng-container>
+                    }
                     <span
                       class="portfolio-register-chevron"
                       [pmConsoleIcon]="row.expanded === false ? 'chevron-right' : 'chevron-down'"
@@ -170,7 +176,9 @@ export interface PortfolioRegisterStructureActionEvent {
                   <td [class]="cellClass(column, cell)">
                     @if (isFirstColumn) {
                       <div class="portfolio-register-cell-row">
-                        <ng-container *ngTemplateOutlet="registerBranchMarker; context: { branchClass: branchClass(row) }"></ng-container>
+                        @if (showHierarchyConnectors) {
+                          <ng-container *ngTemplateOutlet="registerBranchMarker; context: { branchClass: branchClass(row) }"></ng-container>
+                        }
                         <ng-container *ngTemplateOutlet="registerCellContent; context: { cell: cell, row: row }"></ng-container>
                       </div>
                     } @else {
@@ -228,7 +236,7 @@ export interface PortfolioRegisterStructureActionEvent {
       font-weight: 500;
       height: 55px;
       line-height: 15px;
-      padding: 0 12px;
+      padding: 0 10px;
       position: sticky;
       text-align: left;
       top: 0;
@@ -238,6 +246,10 @@ export interface PortfolioRegisterStructureActionEvent {
 
     .portfolio-register-structure-table th:first-child {
       padding-left: 78px;
+    }
+
+    .portfolio-register-structure-table.without-connectors th:first-child {
+      padding-left: 10px;
     }
 
     .portfolio-register-structure-table th.align-center,
@@ -255,7 +267,7 @@ export interface PortfolioRegisterStructureActionEvent {
       color: #343b49;
       font-size: 11px;
       line-height: 15px;
-      padding: 12px;
+      padding: 12px 10px;
       vertical-align: middle;
     }
 
@@ -305,6 +317,22 @@ export interface PortfolioRegisterStructureActionEvent {
     .portfolio-register-group-toggle:focus-visible {
       background: rgba(16, 6, 159, 0.035);
       outline: 0;
+    }
+
+    .portfolio-register-structure-table.without-connectors .portfolio-register-group-toggle.depth-1 {
+      padding-left: 34px;
+    }
+
+    .portfolio-register-structure-table.without-connectors .portfolio-register-group-toggle.depth-2 {
+      padding-left: 58px;
+    }
+
+    .portfolio-register-structure-table.without-connectors .portfolio-register-data-row.depth-1 td:first-child {
+      padding-left: 34px;
+    }
+
+    .portfolio-register-structure-table.without-connectors .portfolio-register-data-row.depth-2 td:first-child {
+      padding-left: 58px;
     }
 
     .portfolio-register-chevron.icon {
@@ -751,6 +779,10 @@ export interface PortfolioRegisterStructureActionEvent {
       white-space: normal;
     }
 
+    .nowrap .portfolio-register-text {
+      white-space: nowrap;
+    }
+
     .portfolio-register-person {
       align-items: center;
       display: inline-flex;
@@ -853,6 +885,7 @@ export class PortfolioRegisterStructureTableComponent {
   @Input() ariaLabel = 'Portfolio register table';
   @Input() emptyTitle = 'No records match this view';
   @Input() emptyBody = '';
+  @Input() showHierarchyConnectors = true;
 
   @Output() readonly groupToggle = new EventEmitter<string>();
   @Output() readonly rowAction = new EventEmitter<PortfolioRegisterStructureActionEvent>();

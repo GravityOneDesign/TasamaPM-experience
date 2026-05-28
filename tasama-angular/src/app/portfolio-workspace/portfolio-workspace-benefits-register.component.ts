@@ -22,9 +22,9 @@ interface BenefitProgramGroup {
 }
 
 const benefitRegisterColumns: PortfolioRegisterStructureColumn[] = [
-  { id: 'benefitNumber', label: 'Benefit Number', width: '12%' },
+  { id: 'benefitNumber', label: 'Benefit Number', width: '13%', className: 'nowrap' },
   { id: 'benefitCategory', label: 'Benefit Category', width: '16%' },
-  { id: 'benefitName', label: 'Benefit Name', width: '31%' },
+  { id: 'benefitName', label: 'Benefit Name', width: '30%' },
   { id: 'owner', label: 'Owner', width: '17%' },
   { id: 'realisationDate', label: 'Realisation Date', width: '12%' },
   { id: 'benefitState', label: 'Benefit State', width: '12%' },
@@ -69,6 +69,7 @@ const benefitRegisterColumns: PortfolioRegisterStructureColumn[] = [
       <app-portfolio-register-structure-table
         [columns]="columns"
         [rows]="structureRows"
+        [showHierarchyConnectors]="false"
         ariaLabel="Benefits register"
         emptyTitle="No benefits match this view"
         emptyBody="Clear the search to show programme and project benefits."

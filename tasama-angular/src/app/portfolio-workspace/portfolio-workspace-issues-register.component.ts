@@ -49,11 +49,11 @@ interface ProjectLinkOption {
 }
 
 const issueRegisterColumns: PortfolioRegisterStructureColumn[] = [
-  { id: 'issueId', label: 'Issue ID', width: '10%' },
+  { id: 'issueId', label: 'Issue ID', width: '12%', className: 'nowrap' },
   { id: 'issueType', label: 'Issue Type', width: '14%' },
-  { id: 'issue', label: 'Issue', width: '24%' },
+  { id: 'issue', label: 'Issue', width: '23%' },
   { id: 'criticality', label: 'Criticality', width: '11%' },
-  { id: 'resolution', label: 'Resolution', width: '22%' },
+  { id: 'resolution', label: 'Resolution', width: '21%' },
   { id: 'owner', label: 'Owner', width: '12%' },
   { id: 'dueDate', label: 'Due Date', width: '9%' },
   { id: 'status', label: 'Status', width: '10%' },
