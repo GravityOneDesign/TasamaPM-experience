@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { UserSessionService } from '../features/auth/services/user-session.service';
 import { PmConsoleIconComponent } from './pm-console-icon.component';
 
 @Component({
@@ -53,14 +54,16 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
           <span class="notification-badge" aria-hidden="true"></span>
         </button>
         <button class="profile-chip" type="button">
-          <span class="avatar-xl">MH<i></i></span>
-          <span><strong>Muna Hassan</strong><small>Project Manager</small></span>
+          <span class="avatar-xl">{{ userSession.initials() }}<i></i></span>
+          <span><strong>{{ userSession.displayName() }}</strong><small>{{ userSession.roleLabel() }}</small></span>
         </button>
       </div>
     </header>
   `,
 })
 export class PmConsoleTopBarComponent {
+  protected readonly userSession = inject(UserSessionService);
+
   @Input() showConsoleHeader = true;
   @Input() unassigned = false;
   @Input() pmoAssignmentReady = false;

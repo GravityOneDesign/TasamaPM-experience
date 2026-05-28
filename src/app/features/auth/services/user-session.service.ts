@@ -1,26 +1,35 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, computed, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import {
+  UserSessionInfo,
+  buildUserDisplayName,
+  buildUserInitials,
+  formatUserRoleLabel,
+  resolveConsoleLandingRole,
+  type ConsoleLandingRole,
+} from '../models/user-session-info.model';
 import { AuthService } from './auth.service';
 import { DevAuthService } from './dev-auth.service';
 
-interface UserSessionInfo {
-  aiDashboardId?: number | string | null;
-  companyId?: number | string | null;
-  roleId?: number | string | null;
-  externalClientID?: number | string | null;
-  isExternal?: boolean | string | null;
-}
+export type { UserSessionInfo, ConsoleLandingRole };
 
 @Injectable({
   providedIn: 'root',
 })
 export class UserSessionService {
   private authenticated = false;
+  private readonly sessionSignal = signal<UserSessionInfo | null>(null);
   private readonly sdzBaseUrl = environment.sdzBaseUrl.replace(/\/$/, '');
   private readonly cdApiBaseUrl = environment.cdApiBaseUrl.replace(/\/$/, '');
+
+  readonly session = this.sessionSignal.asReadonly();
+  readonly displayName = computed(() => buildUserDisplayName(this.sessionSignal()));
+  readonly roleLabel = computed(() => formatUserRoleLabel(this.sessionSignal()?.userRoleName));
+  readonly initials = computed(() => buildUserInitials(this.sessionSignal()));
+  readonly landingRole = computed(() => resolveConsoleLandingRole(this.sessionSignal()?.userRoleName));
 
   constructor(
     private readonly http: HttpClient,
@@ -72,6 +81,10 @@ export class UserSessionService {
     return this.authenticated || this.auth.isAuthenticated();
   }
 
+  getConsoleLandingRole(): ConsoleLandingRole {
+    return this.landingRole();
+  }
+
   private loadUserSessionInfo(resolve: (value: boolean) => void, reject: (reason?: unknown) => void): void {
     this.getSessionUserInfo().subscribe({
       next: (res) => {
@@ -83,6 +96,7 @@ export class UserSessionService {
       error: (error) => {
         this.auth.clearToken();
         this.authenticated = false;
+        this.sessionSignal.set(null);
         this.handleAuthFailure();
         reject(error);
       },
@@ -90,6 +104,7 @@ export class UserSessionService {
   }
 
   private storeSessionInfo(res: UserSessionInfo): void {
+    this.sessionSignal.set(res);
     this.setNullableLocalStorage('aiDashboardId', res.aiDashboardId);
     this.setNullableLocalStorage('companyId', res.companyId);
     this.setNullableLocalStorage('currentRoleId', res.roleId);

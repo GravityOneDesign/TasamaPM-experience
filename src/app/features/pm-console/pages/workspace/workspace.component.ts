@@ -13,6 +13,7 @@ import {
   Output,
   SimpleChanges,
   ViewChild,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, type SafeResourceUrl } from '@angular/platform-browser';
@@ -43,6 +44,23 @@ import {
   type PmConsoleFrontdoorAction,
   type PmConsoleFrontdoorTrendDot,
 } from '../../components/frontdoor-overview/frontdoor-overview.component';
+import { PmConsolePmoFrontdoorOverviewComponent } from '../../components/pmo-frontdoor-overview/pmo-frontdoor-overview.component';
+import { PmConsolePortfolioManagerFrontdoorOverviewComponent } from '../../components/portfolio-manager-frontdoor-overview/portfolio-manager-frontdoor-overview.component';
+import { UserSessionService } from '../../../auth/services/user-session.service';
+import {
+  DashboardComponentsService,
+  type DashboardComponentDetail,
+  type DashboardComponentsQuery,
+} from '../../services/dashboard-components.service';
+import {
+  pmoDigestSections,
+  pmoOverviewActions,
+  pmoQuickLinks,
+  portfolioManagerDigestSections,
+  portfolioManagerOverviewActions,
+  portfolioManagerQuickLinks,
+} from '../../models/console-landing.config';
+import { PmConsoleRoleQuickLinksGridComponent } from '../../components/role-quick-links-grid/role-quick-links-grid.component';
 import { PmConsoleModeTabsComponent, type PmConsoleModeTabItem } from '../../../../shared/components/ui/mode-tabs/mode-tabs.component';
 import { PmConsoleNoProjectOperationalWorkspaceComponent } from '../../components/no-project-operational-workspace/no-project-operational-workspace.component';
 import { PmConsoleOverviewCardsComponent, type PmConsoleOverviewCard } from '../../../../shared/components/ui/overview-cards/overview-cards.component';
@@ -158,6 +176,18 @@ interface QuickAction {
   page?: ConsolePage;
   entry?: string;
   view?: WorkspaceView;
+}
+
+interface RoleLandingDashboardRequest {
+  frontDoorName: string;
+  dashboardName: string;
+  isGrouped?: boolean;
+}
+
+interface InsidePageTab {
+  id: string;
+  label: string;
+  component: string;
 }
 
 interface BoardFilter {
@@ -4010,7 +4040,6 @@ const selectedProjectOperationalQuickLinkDescriptions: Record<string, string> = 
 const quickLinkInsidePagePaths: Record<string, string> = {
   'project-plan': '',
   reports: 'projectreport',
-  wbs: 'wbs',
   dependencies: 'dependencies',
   resources: 'resources',
   'project-closure': 'closure',
@@ -4019,6 +4048,18 @@ const quickLinkInsidePagePaths: Record<string, string> = {
   'change-request': 'changerequest',
   risks: 'risk',
   issues: 'issues',
+};
+const roleLandingDashboardRequests: Record<string, RoleLandingDashboardRequest> = {
+  framework: {
+    frontDoorName: 'Static PMO Dashboard',
+    dashboardName: 'Framework Configurations',
+    isGrouped: true,
+  },
+  'framework-configuration': {
+    frontDoorName: 'Static PMO Dashboard',
+    dashboardName: 'Framework Configurations',
+    isGrouped: true,
+  },
 };
 const normalFrontDoorInsidePagePaths: Record<string, string> = {
   'project-plan': '',
@@ -4091,6 +4132,9 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
     PmConsoleDigestPanelComponent,
     PmConsoleFieldComponent,
     PmConsoleFrontdoorOverviewComponent,
+    PmConsolePmoFrontdoorOverviewComponent,
+    PmConsolePortfolioManagerFrontdoorOverviewComponent,
+    PmConsoleRoleQuickLinksGridComponent,
     PmConsoleIconComponent,
     PmConsoleModeTabsComponent,
     PmConsoleNoProjectOperationalWorkspaceComponent,
@@ -8787,12 +8831,21 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                 <span class="icon" aria-hidden="true"><i data-lucide="chevron-left"></i></span>
               </button>
               <div>
-                <span>Project Workspace</span>
-                <h1>{{ scopedProjectName }}</h1>
+                <span>Workspace</span>
+                <h1>{{ insidePageHeading }}</h1>
               </div>
             </div>
+            @if (insidePageModeTabs.length) {
+              <app-pm-console-mode-tabs
+                [tabs]="insidePageModeTabs"
+                [activeId]="insidePageActiveTabId"
+                ariaLabel="Inside page tabs"
+                (tabSelected)="handleInsidePageTabSelected($event)"
+                style="display: inline-flex !important;"
+              ></app-pm-console-mode-tabs>
+            }
             @if (insidePageUrl) {
-              <iframe class="inside-page-frame" [src]="insidePageUrl" title="Project workspace" allowfullscreen></iframe>
+              <iframe class="inside-page-frame" [src]="insidePageUrl" [title]="insidePageIframeTitle" allowfullscreen></iframe>
             }
           </section>
         }
@@ -8858,10 +8911,10 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
               </div>
             </section>
           } @else {
-            <div class="content-grid" [class.pm101-locked-grid]="usesPm101DesignShell" [class.pm101-operational-grid]="usesPm101OperationalLayout" [class.pm101-awaiting-grid]="onboardingPm101Locked" [class.pm101-assigned-digest-grid]="showOnboardingAssignedRightRail" [class.normal-pm-frontdoor-grid]="isNormalFlowPmFrontDoor">
+            <div class="content-grid" [class.pm101-locked-grid]="usesPm101DesignShell" [class.pm101-operational-grid]="usesPm101OperationalLayout" [class.pm101-awaiting-grid]="onboardingPm101Locked" [class.pm101-assigned-digest-grid]="showOnboardingAssignedRightRail" [class.normal-pm-frontdoor-grid]="isRoleLandingFrontDoor">
               <div class="left-column">
-                <section class="workspace-panel" [class.project-workspace-panel]="!isAllProjects && !usesPm101DesignShell" [class.board-workspace-panel]="selectedView === 'board'" [class.calendar-workspace-panel]="selectedView === 'calendar'" [class.stages-workspace-panel]="selectedView === 'stages'" [class.quicklinks-workspace-panel]="selectedView === 'quicklinks'" [class.pm101-locked-workspace]="usesPm101DesignShell" [class.pm101-operational-workspace]="usesPm101OperationalLayout" [class.normal-pm-frontdoor-workspace]="isNormalFlowPmFrontDoor">
-                  <div class="workspace-shell-head" [class.pm101-locked-shell-head]="usesPm101DesignShell" [class.pm101-operational-shell-head]="usesPm101OperationalLayout" [class.pm101-awaiting-shell-head]="onboardingPm101Locked" [class.pm101-frontdoor-assigned-shell-head]="usesAssignedFrontDoorShell || isNormalFlowPmFrontDoor" [class.normal-pm-frontdoor-shell-head]="isNormalFlowPmFrontDoor">
+                <section class="workspace-panel" [class.project-workspace-panel]="!isAllProjects && !usesPm101DesignShell" [class.board-workspace-panel]="selectedView === 'board'" [class.calendar-workspace-panel]="selectedView === 'calendar'" [class.stages-workspace-panel]="selectedView === 'stages'" [class.quicklinks-workspace-panel]="selectedView === 'quicklinks'" [class.pm101-locked-workspace]="usesPm101DesignShell" [class.pm101-operational-workspace]="usesPm101OperationalLayout" [class.normal-pm-frontdoor-workspace]="isRoleLandingFrontDoor">
+                  <div class="workspace-shell-head" [class.pm101-locked-shell-head]="usesPm101DesignShell" [class.pm101-operational-shell-head]="usesPm101OperationalLayout" [class.pm101-awaiting-shell-head]="onboardingPm101Locked" [class.pm101-frontdoor-assigned-shell-head]="usesAssignedFrontDoorShell || isRoleLandingFrontDoor" [class.normal-pm-frontdoor-shell-head]="isRoleLandingFrontDoor">
                     @if (usesPm101DesignShell) {
                       @if (!onboardingPm101Locked) {
                         <div class="workspace-shell-actions" aria-label="Workspace utilities">
@@ -8885,9 +8938,9 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                           }
                         </div>
                       }
-                      @if (!onboardingPm101Locked && !isNormalFlowPmFrontDoor) {
+                      @if (!onboardingPm101Locked && !isRoleLandingFrontDoor) {
                         <img class="workspace-line-art" src="./assets/workspace-line-art.svg" alt="" aria-hidden="true" />
-                        <div class="workspace-locked-title-row" [class.is-hidden]="usesAssignedFrontDoorShell || isNormalFlowPmFrontDoor">
+                        <div class="workspace-locked-title-row" [class.is-hidden]="usesAssignedFrontDoorShell || isRoleLandingFrontDoor">
                           <span class="workspace-pane-icon" aria-hidden="true">
                             <img src="./assets/pane-top-icon.svg" alt="" />
                           </span>
@@ -8917,7 +8970,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                         </div>
                       </aside>
                     }
-                    @if (onboardingPm101Locked || usesAssignedFrontDoorShell || isNormalFlowPmFrontDoor) {
+                    @if (onboardingPm101Locked || usesAssignedFrontDoorShell || isRoleLandingFrontDoor) {
                       <div class="onboarding-operational-tabs" data-tour-target="workspace-tabs">
                         <app-pm-console-mode-tabs
                           ariaLabel="Workspace view"
@@ -9008,7 +9061,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                       </div>
                     </div>
                   }
-                  <div class="workspace-body" [class.no-project-operational-body]="onboardingPm101Locked && selectedView === 'pm101'" [class.selected-project-operational-body]="showSelectedProjectOverviewQuickLinks && selectedView === 'pm101'" [class.normal-pm-frontdoor-body]="isNormalFlowPmFrontDoor" [@panelMotion]="workspaceMotionKey">
+                  <div class="workspace-body" [class.no-project-operational-body]="onboardingPm101Locked && selectedView === 'pm101'" [class.selected-project-operational-body]="showSelectedProjectOverviewQuickLinks && selectedView === 'pm101'" [class.normal-pm-frontdoor-body]="isRoleLandingFrontDoor" [@panelMotion]="workspaceMotionKey">
                     <div class="board-view" [class.is-hidden]="selectedView !== 'board'" data-work-view="board" data-tour-target="action-board">
                       <div class="kanban-board">
                         @for (column of visibleBoardColumns; track column.column) {
@@ -9061,7 +9114,14 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     <div class="quicklinks-view" [class.is-hidden]="selectedView !== 'quicklinks'" data-work-view="quicklinks">
                       <section class="workspace-quick-links-view" [attr.aria-label]="quickLinksWorkspaceTitle + ' Quick links'">
                         <h2>{{ quickLinksWorkspaceTitle }}</h2>
-                        <ng-container [ngTemplateOutlet]="selectedProjectQuickLinksGrid"></ng-container>
+                        @if (usesRoleQuickLinksGrid) {
+                          <app-pm-console-role-quick-links-grid
+                            [links]="activeRoleQuickLinks"
+                            (linkSelected)="handleRoleQuickLink($event)"
+                          ></app-pm-console-role-quick-links-grid>
+                        } @else {
+                          <ng-container [ngTemplateOutlet]="selectedProjectQuickLinksGrid"></ng-container>
+                        }
                       </section>
                     </div>
                     @if (onboardingPm101Locked && selectedView === 'pm101') {
@@ -9071,7 +9131,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                         (workspaceAction)="handleNoProjectOperationalWorkspaceAction($event)"
                       ></app-pm-console-no-project-operational-workspace>
                     } @else if (showWorkspaceOverviewTab) {
-                    <div class="pm101-view" [class.pm101-operational-view]="usesPm101OperationalLayout" [class.selected-project-operational-view]="showSelectedProjectOverviewQuickLinks" [class.normal-pm-frontdoor-overview]="isNormalFlowPmFrontDoor" [class.is-hidden]="selectedView !== 'pm101'" data-work-view="pm101" data-tour-target="frontdoor-overview">
+                    <div class="pm101-view" [class.pm101-operational-view]="usesPm101OperationalLayout" [class.selected-project-operational-view]="showSelectedProjectOverviewQuickLinks" [class.normal-pm-frontdoor-overview]="isRoleLandingFrontDoor" [class.is-hidden]="selectedView !== 'pm101'" data-work-view="pm101" data-tour-target="frontdoor-overview">
                       @if (isNormalFlowPmFrontDoor) {
                         <app-pm-console-frontdoor-overview
                           [projectId]="normalFrontDoorProjectId"
@@ -9089,6 +9149,18 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                           (projectOpen)="openNormalFrontDoorProject()"
                           (actionSelected)="handleNormalFrontDoorAction($event)"
                         ></app-pm-console-frontdoor-overview>
+                      } @else if (isPmoFrontDoor) {
+                        <app-pm-console-pmo-frontdoor-overview
+                          [actions]="pmoOverviewActions"
+                          (actionSelected)="handleRoleFrontDoorAction($event)"
+                        ></app-pm-console-pmo-frontdoor-overview>
+                      } @else if (isPortfolioManagerFrontDoor) {
+                        <app-pm-console-portfolio-manager-frontdoor-overview
+                          [portfolioName]="selectedPortfolioName"
+                          [actions]="portfolioManagerOverviewActions"
+                          (portfolioOpen)="openPortfolioWorkspace()"
+                          (actionSelected)="handleRoleFrontDoorAction($event)"
+                        ></app-pm-console-portfolio-manager-frontdoor-overview>
                       } @else if (isFirstAssignedProjectOverviewContext) {
                         <section class="selected-project-operational-workspace pm101-onboarding-overview-stack" [attr.aria-label]="pm101QuickLinksProjectName + ' operational workspace'">
                           <app-pm-console-no-project-operational-workspace
@@ -9163,7 +9235,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                           <ng-container [ngTemplateOutlet]="selectedProjectQuickLinksGrid"></ng-container>
                         </section>
                       }
-                      @if (!onboardingPm101Locked && !showSelectedProjectOverviewQuickLinks && !isFirstAssignedProjectOverviewContext && !isNormalFlowPmFrontDoor) {
+                      @if (!onboardingPm101Locked && !showSelectedProjectOverviewQuickLinks && !isFirstAssignedProjectOverviewContext && !isRoleLandingFrontDoor) {
                         <ng-container [ngTemplateOutlet]="pm101Flow"></ng-container>
                       }
                     </div>
@@ -9208,7 +9280,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                   </div>
                 </section>
               </div>
-              <div class="right-column" [class.portfolio-frontdoor]="showPortfolioReportTrends || onboardingPm101Locked" [class.project-frontdoor]="!isAllProjects && !onboardingPm101Locked" [class.pm101-locked-right]="onboardingPm101Locked || showOnboardingAssignedRightRail || isSelectedProjectWorkspaceShell" [class.pm101-awaiting-digest-column]="onboardingPm101Locked" [class.pm101-assigned-digest-column]="showOnboardingAssignedRightRail" [class.normal-pm-digest-column]="isNormalFlowPmFrontDoor">
+              <div class="right-column" [class.portfolio-frontdoor]="showPortfolioReportTrends || onboardingPm101Locked" [class.project-frontdoor]="!isAllProjects && !onboardingPm101Locked" [class.pm101-locked-right]="onboardingPm101Locked || showOnboardingAssignedRightRail || isSelectedProjectWorkspaceShell" [class.pm101-awaiting-digest-column]="onboardingPm101Locked" [class.pm101-assigned-digest-column]="showOnboardingAssignedRightRail" [class.normal-pm-digest-column]="isRoleLandingFrontDoor">
                 @if (isNormalFlowPmFrontDoor) {
                   <app-pm-console-digest-panel
                     data-tour-target="frontdoor-digest"
@@ -9219,6 +9291,28 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                     digestTitle="Daily Digest"
                     digestIconName="wand-sparkles"
                     [sections]="normalPmDigestSections"
+                  />
+                } @else if (isPmoFrontDoor) {
+                  <app-pm-console-digest-panel
+                    data-tour-target="frontdoor-digest"
+                    title="Welcome!"
+                    [subtitleLines]="pmoDigestSubtitleLines"
+                    heroIconName="target"
+                    heroAssetSrc="./assets/pane-top-icon.svg"
+                    digestTitle="Daily Digest"
+                    digestIconName="wand-sparkles"
+                    [sections]="pmoDigestSections"
+                  />
+                } @else if (isPortfolioManagerFrontDoor) {
+                  <app-pm-console-digest-panel
+                    data-tour-target="frontdoor-digest"
+                    title="Welcome!"
+                    [subtitleLines]="portfolioDigestSubtitleLines"
+                    heroIconName="target"
+                    heroAssetSrc="./assets/pane-top-icon.svg"
+                    digestTitle="Daily Digest"
+                    digestIconName="wand-sparkles"
+                    [sections]="portfolioManagerDigestSections"
                   />
                 } @else if (showOnboardingAssignedRightRail) {
                   <app-pm-console-digest-panel
@@ -10077,6 +10171,17 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   readonly projectQuickActions = projectQuickActions;
   readonly unassignedJourneySteps = unassignedJourneySteps;
   readonly firstAssignedProject = firstAssignedProject;
+  readonly pmoOverviewActions = pmoOverviewActions;
+  readonly portfolioManagerOverviewActions = portfolioManagerOverviewActions;
+  readonly pmoDigestSections = pmoDigestSections;
+  readonly portfolioManagerDigestSections = portfolioManagerDigestSections;
+  readonly pmoQuickLinks = pmoQuickLinks;
+  readonly portfolioManagerQuickLinks = portfolioManagerQuickLinks;
+  readonly pmoDigestSubtitleLines = ["Here's what's happening across your", 'portfolios today.'];
+  readonly portfolioDigestSubtitleLines = ["Here's what's happening across your", 'portfolio today.'];
+
+  private readonly userSession = inject(UserSessionService);
+  private readonly dashboardComponentsService = inject(DashboardComponentsService);
   readonly onboardingAssignedDigestItems = onboardingAssignedDigestItemList;
   readonly onboardingNoProjectDigestItems = onboardingNoProjectDigestItemList;
   readonly normalPmDigestSections = normalPmDigestSections;
@@ -11187,10 +11292,16 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   private projectPlanHeaderScrollIgnoreUntil = 0;
 
   insidePageUrl: SafeResourceUrl | null = null;
+  insidePageHeading = '';
+  insidePageTabs: InsidePageTab[] = [];
+  insidePageActiveTabId = '';
+  roleLandingNavigationInFlight = false;
 
   private localProjectOptions: ProjectOption[] = [];
   private localApiProjects: P3MProject[] = [];
   private workspaceProjectsLoadStarted = false;
+  private localPortfolioOptions: ProjectOption[] = [];
+  private workspacePortfoliosLoadStarted = false;
 
   constructor(
     private readonly iconsService: PmConsoleIconService,
@@ -11204,6 +11315,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   ngOnInit(): void {
     this.loadWorkspaceProjectsIfNeeded();
+    this.loadWorkspacePortfoliosIfNeeded();
   }
 
   private clearStoredProjectCovers(): void {
@@ -11960,7 +12072,18 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get quickLinksWorkspaceTitle(): string {
+    if (this.usesPortfolioListFrontDoor) {
+      return this.selectedPortfolioName;
+    }
     return this.pm101QuickLinksProjectName;
+  }
+
+  get usesRoleQuickLinksGrid(): boolean {
+    return this.isPmoFrontDoor || this.isPortfolioManagerFrontDoor;
+  }
+
+  get activeRoleQuickLinks() {
+    return this.isPmoFrontDoor ? this.pmoQuickLinks : this.portfolioManagerQuickLinks;
   }
 
   get showOnboardingAssignedRightRail(): boolean {
@@ -12000,7 +12123,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       this.onboardingPm101Locked ||
       this.isPm101WelcomeWorkspace ||
       this.isSelectedProjectWorkspaceShell ||
-      this.isNormalFlowPmFrontDoor
+      this.isRoleLandingFrontDoor
     );
   }
 
@@ -12018,7 +12141,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     );
   }
 
-  get isNormalFlowPmFrontDoor(): boolean {
+  get isAssignedFrontDoorLanding(): boolean {
     return (
       this.frontDoorMode === 'assigned' &&
       !this.onboardingAssignmentFlow &&
@@ -12026,6 +12149,26 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       !this.onboardingProjectSetup &&
       this.selectedPage === 'workspace'
     );
+  }
+
+  get isRoleLandingFrontDoor(): boolean {
+    return this.isAssignedFrontDoorLanding;
+  }
+
+  get isNormalFlowPmFrontDoor(): boolean {
+    return this.isAssignedFrontDoorLanding && this.userSession.getConsoleLandingRole() === 'project-manager';
+  }
+
+  get isPmoFrontDoor(): boolean {
+    return this.isAssignedFrontDoorLanding && this.userSession.getConsoleLandingRole() === 'pmo';
+  }
+
+  get isPortfolioManagerFrontDoor(): boolean {
+    return this.isAssignedFrontDoorLanding && this.userSession.getConsoleLandingRole() === 'portfolio-manager';
+  }
+
+  get usesPortfolioListFrontDoor(): boolean {
+    return this.isPmoFrontDoor || this.isPortfolioManagerFrontDoor;
   }
 
   get showWorkspaceOverviewTab(): boolean {
@@ -12036,7 +12179,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     if (this.onboardingPm101Locked || this.frontDoorMode === 'unassigned') {
       return false;
     }
-    if (this.isNormalFlowPmFrontDoor) {
+    if (this.isRoleLandingFrontDoor) {
       return true;
     }
     return this.usesPm101OperationalLayout && this.workspaceHeaderProjectOptions.length > 0;
@@ -12056,11 +12199,41 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get workspaceHeaderProjectOptions(): readonly ProjectOption[] {
-    const options = this.resolvedProjectOptions.filter((project) => project.id !== 'all');
     if (this.onboardingPm101Locked) {
       return [{ id: 'all', name: 'All projects' }];
     }
-    return options;
+    if (this.usesPortfolioListFrontDoor) {
+      return this.roleFrontDoorPortfolioOptions;
+    }
+    return this.resolvedProjectOptions.filter((project) => project.id !== 'all');
+  }
+
+  private get roleFrontDoorPortfolioOptions(): readonly ProjectOption[] {
+    if (this.localPortfolioOptions.length > 0) {
+      return this.localPortfolioOptions;
+    }
+    if (this.isPmoFrontDoor) {
+      return [{ id: 'all-portfolios', name: 'All Portfolios' }];
+    }
+    return [{ id: 'portfolio', name: 'Portfolio Name' }];
+  }
+
+  get selectedPortfolioId(): string {
+    const options = this.localPortfolioOptions;
+    if (!options.length) return '';
+    const selected = this.selectedProject;
+    if (selected && options.some((portfolio) => portfolio.id === selected)) {
+      return selected;
+    }
+    return options[0]?.id ?? '';
+  }
+
+  get selectedPortfolioName(): string {
+    const options = this.localPortfolioOptions;
+    const fallback = this.isPmoFrontDoor ? 'All Portfolios' : 'Portfolio Name';
+    if (!options.length) return fallback;
+    const selected = options.find((portfolio) => portfolio.id === this.selectedPortfolioId);
+    return selected?.name || fallback;
   }
 
   private get resolvedProjectOptions(): readonly ProjectOption[] {
@@ -12069,11 +12242,14 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   get workspaceProjectSwitchLabel(): string {
-    return this.usesAssignedFrontDoorShell || this.isNormalFlowPmFrontDoor ? '' : 'Viewing';
+    return this.usesAssignedFrontDoorShell || this.isRoleLandingFrontDoor ? '' : 'Viewing';
   }
 
   get workspaceProjectSwitchLeadingIcon(): string {
-    return this.usesAssignedFrontDoorShell || this.isNormalFlowPmFrontDoor ? 'folder' : '';
+    if (this.isPmoFrontDoor) {
+      return 'layout-grid';
+    }
+    return this.usesAssignedFrontDoorShell || this.isRoleLandingFrontDoor ? 'folder' : '';
   }
 
   get selectedPm101ProjectPreview(): Pm101ProjectPreview | null {
@@ -12113,8 +12289,31 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     });
   }
 
+  private loadWorkspacePortfoliosIfNeeded(): void {
+    if (this.workspacePortfoliosLoadStarted || this.localPortfolioOptions.length > 0) {
+      return;
+    }
+    this.workspacePortfoliosLoadStarted = true;
+    this.projectListService.getPortfolioList().subscribe({
+      next: (response) => {
+        const portfolios = this.projectListService.extractPortfolioList(response);
+        this.localPortfolioOptions = this.projectListService.toPortfolioOptions(portfolios);
+        this.syncDefaultPortfolioSelection();
+        this.changeDetector.markForCheck();
+      },
+      error: () => {
+        this.workspacePortfoliosLoadStarted = false;
+        this.changeDetector.markForCheck();
+      },
+    });
+  }
+
   private syncDefaultApiProjectSelection(): void {
     if (this.onboardingPm101Locked || this.onboardingAssignmentFlow || this.onboardingProjectSetup) {
+      return;
+    }
+    if (this.usesPortfolioListFrontDoor) {
+      this.syncDefaultPortfolioSelection();
       return;
     }
     const options = this.resolvedProjectOptions.filter((project) => project.id !== 'all');
@@ -12122,6 +12321,17 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     if (!defaultId) return;
     const currentIsValid = options.some((project) => project.id === this.selectedProject);
     if (this.selectedProject === 'all' || !this.selectedProject || !currentIsValid) {
+      this.selectedProject = defaultId;
+      this.emitState();
+    }
+  }
+
+  private syncDefaultPortfolioSelection(): void {
+    if (!this.usesPortfolioListFrontDoor) return;
+    const defaultId = this.localPortfolioOptions[0]?.id;
+    if (!defaultId) return;
+    const currentIsValid = this.localPortfolioOptions.some((portfolio) => portfolio.id === this.selectedProject);
+    if (!this.selectedProject || this.selectedProject === 'all' || !currentIsValid) {
       this.selectedProject = defaultId;
       this.emitState();
     }
@@ -12889,6 +13099,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       if ((this.projectOptions?.length ?? 0) === 0) {
         this.loadWorkspaceProjectsIfNeeded();
       }
+      this.loadWorkspacePortfoliosIfNeeded();
       this.syncDefaultApiProjectSelection();
       this.changeDetector.markForCheck();
     }
@@ -14824,6 +15035,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   navigate(page: ConsolePage, projectPlanEntry: ProjectPlanEntry = 'quick'): void {
     if (this.onboardingPm101Locked && page === 'workspaces') return;
+    if (page === 'wbs') {
+      this.openGanttDashboard(this.resolveQuickLinkProjectId());
+      return;
+    }
     if (this.onboardingAssignmentFlow && this.pmoAssignmentReady && !this.onboardingProjectSetup && page === 'workspaces') {
       this.openOnboardingProjectSetupWorkspace();
       return;
@@ -14835,7 +15050,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     this.closeReport();
     this.closeStageGate();
     this.closeStageRevoke();
-    const isProjectScopedPage = page === 'project-plan' || page === 'wbs' || page === 'playground';
+    const isProjectScopedPage = page === 'project-plan' || page === 'playground';
     if (isProjectScopedPage && this.selectedPage !== page) {
       this.projectPlanReturnState = this.currentProjectPlanReturnState();
     }
@@ -14848,7 +15063,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       this.projectPlanActiveSection = 'Overview';
       this.projectPlanExpandedFieldSections = {};
     }
-    if ((page === 'project-plan' || page === 'wbs' || page === 'playground') && this.isAllProjects) {
+    if ((page === 'project-plan' || page === 'playground') && this.isAllProjects) {
       this.selectedProject = firstAssignedProject.id;
     }
     if (page === 'workspaces') {
@@ -14967,6 +15182,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       this.showQuickLinksToast('Quick links unlock once PMO assigns your first project.');
       return;
     }
+    if (action.id === 'wbs') {
+      this.openGanttDashboard(this.resolveQuickLinkProjectId());
+      return;
+    }
     const insidePath = quickLinkInsidePagePaths[action.id];
     if (insidePath !== undefined) {
       const projectId = this.normalFrontDoorProjectId;
@@ -15008,18 +15227,228 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     }
   }
 
+  openPortfolioWorkspace(): void {
+    this.openPortfolioInsidePage(this.selectedPortfolioId);
+  }
+
+  handleRoleFrontDoorAction(actionId: string): void {
+    if (actionId === 'learning-hub') {
+      this.showQuickLinksToast('Learning Hub is coming soon.');
+      return;
+    }
+
+    if (actionId === 'manage-portfolio') {
+      this.openPortfolioWorkspace();
+      return;
+    }
+
+    if (actionId === 'report-review') {
+      this.openPortfolioImplementationRoute('portfolioreporting', 'Report & Review Progress');
+      return;
+    }
+
+    if (actionId === 'insights') {
+      this.openImpactStudioExploreInsights('pmo');
+      return;
+    }
+
+    if (this.openRoleLandingDashboard(actionId)) {
+      return;
+    }
+
+    this.navigate('workspaces');
+  }
+
+  handleRoleQuickLink(linkId: string): void {
+    if (linkId === 'portfolio-workspace') {
+      this.openPortfolioWorkspace();
+      return;
+    }
+
+    if (linkId === 'programs-projects') {
+      this.openPortfolioInsidePage(this.selectedPortfolioId, 'project');
+      return;
+    }
+
+    if (linkId === 'learning-hub') {
+      this.showQuickLinksToast('Learning Hub is coming soon.');
+      return;
+    }
+
+    if (this.openRoleLandingDashboard(linkId)) {
+      return;
+    }
+
+    this.showQuickLinksToast('This quick link will be available soon.');
+  }
+
   openInsidePage(projectId: string, pathSuffix = ''): void {
     const baseUrl = environment.sdzBaseUrl.replace(/\/$/, '');
     const suffix = pathSuffix ? `/${pathSuffix.replace(/^\//, '')}` : '';
     const fullUrl = `${baseUrl}/P3M/PortfolioImplementation#workspace/profile/edit/${projectId}${suffix}`;
+    this.insidePageHeading = this.scopedProjectName;
+    this.insidePageTabs = [];
+    this.insidePageActiveTabId = '';
     this.insidePageUrl = this.sanitizer.bypassSecurityTrustResourceUrl(fullUrl);
     this.projectPlanReturnState = this.currentProjectPlanReturnState();
     this.selectedPage = 'inside-page';
     this.emitState();
   }
 
+  private openPortfolioInsidePage(portfolioId: string, pathSuffix = ''): void {
+    if (!portfolioId) {
+      this.showQuickLinksToast('No portfolio found to open.');
+      return;
+    }
+    const suffix = pathSuffix ? `/${pathSuffix.replace(/^\//, '')}` : '';
+    this.openPortfolioImplementationRoute(`portfolio/edit/${portfolioId}${suffix}`, this.selectedPortfolioName);
+  }
+
+  private openPortfolioImplementationRoute(workspaceRoute: string, heading: string): void {
+    const baseUrl = environment.sdzBaseUrl.replace(/\/$/, '');
+    const route = workspaceRoute.replace(/^\//, '');
+    const fullUrl = `${baseUrl}/P3M/PortfolioImplementation#workspace/${route}`;
+    this.insidePageHeading = heading;
+    this.insidePageTabs = [];
+    this.insidePageActiveTabId = '';
+    this.insidePageUrl = this.sanitizer.bypassSecurityTrustResourceUrl(fullUrl);
+    this.projectPlanReturnState = this.currentProjectPlanReturnState();
+    this.selectedPage = 'inside-page';
+    this.emitState();
+  }
+
+  private openImpactStudioExploreInsights(view: string): void {
+    const baseUrl = environment.sdzBaseUrl.replace(/\/$/, '');
+    const url = `${baseUrl}/ImpactStudio/explore-insights?view=${encodeURIComponent(view)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
+  private resolveQuickLinkProjectId(): string {
+    if (this.selectedProject && this.selectedProject !== 'all') {
+      return this.selectedProject;
+    }
+    return this.normalFrontDoorProjectId;
+  }
+
+  private openGanttDashboard(projectId: string): void {
+    if (!projectId || projectId === 'all') {
+      this.showQuickLinksToast('Select a project to open the Gantt dashboard.');
+      return;
+    }
+    const baseUrl = environment.sdzBaseUrl.replace(/\/$/, '');
+    const fullUrl = `${baseUrl}/dashboards-v2/gantt-dashboard?projectId=${encodeURIComponent(projectId)}`;
+    this.insidePageHeading = 'Work breakdown structure';
+    this.insidePageTabs = [];
+    this.insidePageActiveTabId = '';
+    this.insidePageUrl = this.sanitizer.bypassSecurityTrustResourceUrl(fullUrl);
+    this.projectPlanReturnState = this.currentProjectPlanReturnState();
+    this.selectedPage = 'inside-page';
+    this.emitState();
+  }
+
+  private openRoleLandingDashboard(actionId: string): boolean {
+    const request = roleLandingDashboardRequests[actionId];
+    if (!request) return false;
+
+    if (this.roleLandingNavigationInFlight) {
+      this.showQuickLinksToast('Opening dashboard...');
+      return true;
+    }
+
+    this.roleLandingNavigationInFlight = true;
+    this.openRoleLandingDashboardFromApi(request);
+    return true;
+  }
+
+  private openRoleLandingDashboardFromApi(request: RoleLandingDashboardRequest): void {
+    const query: DashboardComponentsQuery = {
+      frontDoorName: request.frontDoorName,
+      dashboardName: request.dashboardName,
+      isGrouped: request.isGrouped ?? true,
+    };
+
+    this.dashboardComponentsService.getDashboardComponentDetails(query).subscribe({
+      next: (groups) => {
+        const components = this.dashboardComponentsService.getAccessibleComponents(groups);
+        if (!components.length) {
+          this.showQuickLinksToast('No accessible screens found for this dashboard.');
+          this.roleLandingNavigationInFlight = false;
+          return;
+        }
+        this.openInsidePageWithTabs(groups[0]?.name || request.dashboardName, components);
+        this.roleLandingNavigationInFlight = false;
+      },
+      error: () => {
+        this.showQuickLinksToast('Unable to load dashboard screens right now.');
+        this.roleLandingNavigationInFlight = false;
+      },
+    });
+  }
+
+  private openInsidePageWithTabs(title: string, components: DashboardComponentDetail[]): void {
+    const tabs: InsidePageTab[] = components
+      .filter((item) => !!item.component)
+      .map((item) => ({
+        id: String(item.id),
+        label: item.name,
+        component: item.component as string,
+      }));
+
+    if (!tabs.length) {
+      this.showQuickLinksToast('No accessible screens found for this dashboard.');
+      return;
+    }
+
+    this.insidePageHeading = title || 'Project Workspace';
+    this.insidePageTabs = tabs;
+    this.insidePageActiveTabId = tabs[0].id;
+    this.openInsidePageByComponentPath(tabs[0].component, true);
+  }
+
+  handleInsidePageTabSelected(tabId: string): void {
+    const selected = this.insidePageTabs.find((tab) => tab.id === tabId);
+    if (!selected) return;
+    this.insidePageActiveTabId = selected.id;
+    this.openInsidePageByComponentPath(selected.component, false);
+  }
+
+  get insidePageModeTabs(): PmConsoleModeTabItem[] {
+    return this.insidePageTabs.map((tab) => ({
+      id: tab.id,
+      label: tab.label,
+      icon: 'layout-grid',
+      widthPx: 170,
+      ariaLabel: tab.label,
+    }));
+  }
+
+  get insidePageIframeTitle(): string {
+    const active = this.insidePageTabs.find((tab) => tab.id === this.insidePageActiveTabId);
+    return active?.label || this.insidePageHeading || 'Project workspace';
+  }
+
+  private openInsidePageByComponentPath(componentPath: string, enteringInsidePage = false): void {
+    const baseUrl = environment.sdzBaseUrl.replace(/\/$/, '');
+    const normalizedPath = componentPath.trim();
+    const fullUrl = /^https?:\/\//i.test(normalizedPath)
+      ? normalizedPath
+      : `${baseUrl}/${normalizedPath.replace(/^\//, '')}`;
+
+    this.insidePageUrl = this.sanitizer.bypassSecurityTrustResourceUrl(fullUrl);
+    if (enteringInsidePage && this.selectedPage !== 'inside-page') {
+      this.projectPlanReturnState = this.currentProjectPlanReturnState();
+    }
+    if (enteringInsidePage || this.selectedPage !== 'inside-page') {
+      this.selectedPage = 'inside-page';
+    }
+    this.emitState();
+  }
+
   closeInsidePage(): void {
     this.insidePageUrl = null;
+    this.insidePageHeading = '';
+    this.insidePageTabs = [];
+    this.insidePageActiveTabId = '';
     if (this.restoreProjectPlanReturnState()) return;
     this.navigate('workspace');
   }

@@ -3,6 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import {
+  P3MPortfolio,
+  P3MPortfolioListRequest,
+  P3MPortfolioListResponse,
   P3MProject,
   P3MProjectListRequest,
   P3MProjectListResponse,
@@ -35,10 +38,33 @@ export class ProjectListService {
     );
   }
 
+  getPortfolioList(pageSize = 100): Observable<P3MPortfolioListResponse> {
+    const payload: P3MPortfolioListRequest = {
+      PagingParams: { PageNumber: 1, PageSize: pageSize },
+      SearchParameter: '',
+      SortDirections: 1,
+      SortKeyColumn: 1,
+    };
+
+    return this.http.post<P3MPortfolioListResponse>(
+      `${this.baseUrl}/P3MRegister/GetPortfolioListforP3M`,
+      payload,
+    );
+  }
+
   /** Supports PascalCase and camelCase API payloads, and bare arrays. */
   extractProjectList(response: unknown): P3MProject[] {
+    return this.extractEntityList(response) as P3MProject[];
+  }
+
+  extractPortfolioList(response: unknown): P3MPortfolio[] {
+    return this.extractEntityList(response) as P3MPortfolio[];
+  }
+
+  /** Supports PascalCase and camelCase API payloads, and bare arrays. */
+  private extractEntityList(response: unknown): unknown[] {
     if (!response) return [];
-    if (Array.isArray(response)) return response as P3MProject[];
+    if (Array.isArray(response)) return response as unknown[];
     if (typeof response !== 'object') return [];
 
     const record = response as Record<string, unknown>;
@@ -49,11 +75,11 @@ export class ProjectListService {
       record['items'] ??
       record['Projects'] ??
       record['projects'];
-    if (Array.isArray(list)) return list as P3MProject[];
+    if (Array.isArray(list)) return list as unknown[];
 
     const nested = record['Data'] ?? record['data'] ?? record['Result'] ?? record['result'];
     if (nested && nested !== response) {
-      return this.extractProjectList(nested);
+      return this.extractEntityList(nested);
     }
 
     return [];
@@ -84,6 +110,18 @@ export class ProjectListService {
       .filter((option): option is ProjectOption => option !== null);
 
     return options;
+  }
+
+  toPortfolioOptions(portfolios: P3MPortfolio[] | null | undefined): ProjectOption[] {
+    return (portfolios ?? [])
+      .map((portfolio) => {
+        const raw = portfolio as unknown as Record<string, unknown>;
+        const id = raw['Id'] ?? raw['id'] ?? raw['ID'] ?? raw['PortfolioId'] ?? raw['portfolioId'];
+        const name = raw['PortfolioName'] ?? raw['portfolioName'] ?? raw['Name'] ?? raw['name'];
+        if (id == null || id === '') return null;
+        return { id: String(id), name: String(name || `Portfolio ${id}`) };
+      })
+      .filter((option): option is ProjectOption => option !== null);
   }
 
   defaultProjectId(options: ProjectOption[]): string | null {

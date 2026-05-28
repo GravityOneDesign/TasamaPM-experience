@@ -1142,6 +1142,7 @@ b {
   font-size: 14px;
   font-weight: 600;
   line-height: 20px;
+  display: none;
 }
 
 .brand-logo-button {
@@ -7039,7 +7040,7 @@ button.pm-project-table-stat:focus-visible {
   flex-direction: column;
   gap: 26px;
   min-height: 0;
-  padding-top: 16px;
+  padding: 10px;
 }
 
 .workspace-quick-links-view h2 {
@@ -29455,7 +29456,7 @@ button.pm-project-table-stat:focus-visible {
 }
 
 .project-modebar-inline .project-mode-toggle {
-  background: #ece2d0;
+  background: #e9eeff;
   border-radius: 10px;
   height: 40px;
   padding: 4px;

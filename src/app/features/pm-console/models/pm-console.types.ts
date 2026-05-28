@@ -64,3 +64,37 @@ export interface P3MProjectListResponse {
   NextPageNumber: number;
   PreviousPageNumber: number;
 }
+
+export interface P3MPortfolioListRequest {
+  PagingParams: {
+    PageNumber: number;
+    PageSize: number;
+  };
+  SearchParameter: string;
+  SortDirections: number;
+  SortKeyColumn: number;
+}
+
+export interface P3MPortfolio {
+  Id: number;
+  PortfolioName: string;
+  Status?: string | null;
+  Manager?: string | null;
+  Sponsor?: string | null;
+  ProgramCount?: number;
+  ProjectCount?: number;
+  StandaloneProjectCount?: number;
+  IsEditable?: boolean;
+}
+
+export interface P3MPortfolioListResponse {
+  TotalItems: number;
+  PageNumber: number;
+  PageSize: number;
+  List: P3MPortfolio[];
+  TotalPages: number;
+  HasPreviousPage: boolean;
+  HasNextPage: boolean;
+  NextPageNumber: number;
+  PreviousPageNumber: number;
+}
