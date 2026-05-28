@@ -5,19 +5,21 @@ import { PmConsoleIconComponent } from '../shared/pm-console-icon.component';
 import { PmConsoleCreateMenuComponent, type PmConsoleCreateMenuOption } from '../shared/pm-console-create-menu.component';
 import { type PmConsoleFieldOption } from '../shared/pm-console-field.component';
 import { PmConsoleStatusTrendComponent, type PmConsoleStatusTrendInput } from '../shared/pm-console-status-trend.component';
-import { PmConsolePlanEmptyStateComponent } from '../pm-console-plan-empty-state.component';
 import {
   portfolioProgramRows,
   standaloneProjects,
   riskRegisterData,
   benefitsRegisterData,
+  issuesRegisterData,
   ProgramRow,
   ProjectRow,
   Risk,
-  Benefit
+  Benefit,
+  Issue
 } from './portfolio-workspace.data';
 import { PortfolioWorkspaceRiskRegisterComponent } from './portfolio-workspace-risk-register.component';
 import { PortfolioWorkspaceBenefitsRegisterComponent } from './portfolio-workspace-benefits-register.component';
+import { PortfolioWorkspaceIssuesRegisterComponent } from './portfolio-workspace-issues-register.component';
 import {
   PortfolioWorkspaceRegisterCreateDrawerComponent,
   type PortfolioProgramCreatePayload,
@@ -56,9 +58,9 @@ const unassignedManager = 'Unassigned';
     PmConsoleIconComponent,
     PmConsoleCreateMenuComponent,
     PmConsoleStatusTrendComponent,
-    PmConsolePlanEmptyStateComponent,
     PortfolioWorkspaceRiskRegisterComponent,
     PortfolioWorkspaceBenefitsRegisterComponent,
+    PortfolioWorkspaceIssuesRegisterComponent,
     PortfolioWorkspaceRegisterCreateDrawerComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -298,18 +300,12 @@ const unassignedManager = 'Unassigned';
 
             @case ('issues') {
               <div class="tab-content-container animation-slide">
-                <div class="portfolio-issues-empty">
-                  <app-pm-console-plan-empty-state
-                    title="Issues register"
-                    description="Track portfolio, program, and project issues that need active resolution."
-                    countLabel="0 issues"
-                    actionLabel="Add issue"
-                    actionAriaLabel="Add issue"
-                    iconName="issues"
-                    emptyTitle="No issues logged yet"
-                    emptyBody="Open blockers, dependency problems, and unresolved decisions will appear here once they are added to the portfolio workspace."
-                  />
-                </div>
+                <app-portfolio-workspace-issues-register
+                  [issues]="issues"
+                  [programs]="programs"
+                  [standaloneProjects]="standaloneList"
+                  (issueCreate)="addIssue($event)"
+                />
               </div>
             }
           }
@@ -969,7 +965,7 @@ export class PortfolioWorkspaceRegistersComponent {
   readonly createMenuOptions = createMenuOptions;
   readonly portfolioOptions = portfolioOptions;
 
-  activeSubTab: SubTab = 'risks';
+  activeSubTab: SubTab = 'projects';
   expandedProgramIds = new Set<string>(); // default closed by default
   searchQuery = '';
   statusFilter: string | null = null;
@@ -983,6 +979,7 @@ export class PortfolioWorkspaceRegistersComponent {
   standaloneList: ProgramRow[] = standaloneProjects.map((project) => ({ ...project }));
   riskData: Risk[] = riskRegisterData;
   benefits: Benefit[] = benefitsRegisterData;
+  issues: Issue[] = issuesRegisterData;
 
   openCreateDrawer(option: PmConsoleCreateMenuOption): void {
     if (!this.isCreateKind(option.id)) return;
@@ -1027,6 +1024,10 @@ export class PortfolioWorkspaceRegistersComponent {
 
   deleteRisk(riskId: string): void {
     this.riskData = this.riskData.filter((risk) => risk.id !== riskId);
+  }
+
+  addIssue(issue: Issue): void {
+    this.issues = [...this.issues, issue];
   }
 
   getRowStatusLabel(id: string, defaultStatus: string): string {

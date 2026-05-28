@@ -1379,6 +1379,7 @@ export interface Benefit {
   id: string;
   name: string;
   benefit: string; // for compatibility with performance dashboard
+  category: string;
   level: 'program' | 'project';
   linkedTo: string;
   parentProgram?: string; // nested project benefits in grouped view
@@ -1392,11 +1393,152 @@ export interface Benefit {
   status: 'On-Track' | 'Under Review' | 'Alert' | 'Delayed' | 'Completed' | 'on-track' | 'under-review' | 'alert' | 'delayed' | 'completed';
 }
 
+export type IssueLevel = 'portfolio' | 'program' | 'project';
+export type IssueCriticality = 'critical' | 'high' | 'medium' | 'low';
+export type IssueStatus = 'open' | 'in-progress' | 'pending-decision' | 'resolved' | 'closed';
+
+export interface Issue {
+  id: string;
+  issueType: string;
+  issue: string;
+  criticality: IssueCriticality;
+  resolution: string;
+  level: IssueLevel;
+  linkedTo: string;
+  parentProgram?: string;
+  parentPortfolio?: string;
+  owner: { name: string; initials: string };
+  dueDate: string;
+  status: IssueStatus;
+}
+
+export const issuesRegisterData: Issue[] = [
+  {
+    id: 'ISS-01',
+    issueType: 'Decision required',
+    issue: 'Agree cross-agency assurance escalation route',
+    criticality: 'high',
+    resolution: 'Confirm the escalation owner and publish the decision route before the next portfolio checkpoint.',
+    level: 'portfolio',
+    linkedTo: 'Safe Security Portfolio',
+    owner: { name: 'PMO Desk', initials: 'PM' },
+    dueDate: '06/07/2026',
+    status: 'pending-decision'
+  },
+  {
+    id: 'ISS-02',
+    issueType: 'Dependency issue',
+    issue: 'Quarterly assurance pack missing agency attestations',
+    criticality: 'medium',
+    resolution: 'Collect the two outstanding attestations and attach them to the consolidated evidence pack.',
+    level: 'portfolio',
+    linkedTo: 'Safe Security Portfolio',
+    owner: { name: 'Fatima Qahtani', initials: 'FQ' },
+    dueDate: '06/12/2026',
+    status: 'in-progress'
+  },
+  {
+    id: 'ISS-03',
+    issueType: 'Resource issue',
+    issue: 'SOC integration test window conflicts with endpoint rollout',
+    criticality: 'high',
+    resolution: 'Move endpoint testing to the reserve slot and keep the SOC integration window protected.',
+    level: 'program',
+    linkedTo: 'National Infrastructure Protection',
+    parentPortfolio: 'Safe Security Portfolio',
+    owner: { name: 'Sarah Jenkins', initials: 'SJ' },
+    dueDate: '06/10/2026',
+    status: 'open'
+  },
+  {
+    id: 'ISS-04',
+    issueType: 'Technical issue',
+    issue: 'SIEM connector schema mismatch blocking SOC ingest',
+    criticality: 'critical',
+    resolution: 'Apply the normalized event schema and rerun the integration validation batch.',
+    level: 'project',
+    linkedTo: 'Ministerial SOC Hub Integration',
+    parentProgram: 'National Infrastructure Protection',
+    parentPortfolio: 'Safe Security Portfolio',
+    owner: { name: 'Fatima Qahtani', initials: 'FQ' },
+    dueDate: '06/05/2026',
+    status: 'in-progress'
+  },
+  {
+    id: 'ISS-05',
+    issueType: 'Decision required',
+    issue: 'Agency token distribution policy not approved',
+    criticality: 'high',
+    resolution: 'Secure policy sign-off from Identity governance and confirm the alternate delivery channel.',
+    level: 'program',
+    linkedTo: 'Identity & Access Program',
+    parentPortfolio: 'Safe Security Portfolio',
+    owner: { name: 'Saeed Al-Mansoori', initials: 'SA' },
+    dueDate: '06/14/2026',
+    status: 'pending-decision'
+  },
+  {
+    id: 'ISS-06',
+    issueType: 'Schedule issue',
+    issue: 'MFA senior staff enrolment window under-booked',
+    criticality: 'medium',
+    resolution: 'Open additional remote enrolment slots and ask agency champions to confirm attendance.',
+    level: 'project',
+    linkedTo: 'Multi-Factor Authentication Rollout',
+    parentProgram: 'Identity & Access Program',
+    parentPortfolio: 'Safe Security Portfolio',
+    owner: { name: 'Saeed Al-Mansoori', initials: 'SA' },
+    dueDate: '06/18/2026',
+    status: 'open'
+  },
+  {
+    id: 'ISS-07',
+    issueType: 'Compliance issue',
+    issue: 'Audit evidence samples incomplete for regional offices',
+    criticality: 'critical',
+    resolution: 'Issue one evidence checklist and validate a sample pack with each regional audit lead.',
+    level: 'program',
+    linkedTo: 'Governance & Compliance Office',
+    parentPortfolio: 'Safe Security Portfolio',
+    owner: { name: 'Dr. Khalid Al-Mansoori', initials: 'KM' },
+    dueDate: '06/09/2026',
+    status: 'in-progress'
+  },
+  {
+    id: 'ISS-08',
+    issueType: 'Vendor issue',
+    issue: 'Core switch customs hold delaying installation pack',
+    criticality: 'high',
+    resolution: 'Escalate with logistics, confirm clearance date, and reserve the backup install window.',
+    level: 'project',
+    linkedTo: 'Riyadh Core Switch Upgrade',
+    parentProgram: 'Network Security Upgrade Program',
+    parentPortfolio: 'Safe Security Portfolio',
+    owner: { name: 'Muna Hassan', initials: 'MH' },
+    dueDate: '06/11/2026',
+    status: 'open'
+  },
+  {
+    id: 'ISS-09',
+    issueType: 'Communications issue',
+    issue: 'Bilingual awareness content approval queue not cleared',
+    criticality: 'medium',
+    resolution: 'Lock the bilingual content owner and approve the first campaign pack before agency rollout.',
+    level: 'project',
+    linkedTo: 'Standalone Cyber Security Awareness Campaign',
+    parentPortfolio: 'Safe Security Portfolio',
+    owner: { name: 'Mariam Al-Ali', initials: 'MA' },
+    dueDate: '06/20/2026',
+    status: 'open'
+  }
+];
+
 export const benefitsRegisterData: Benefit[] = [
   {
     id: 'BEN-01',
     name: 'Cyber Incident Rate Reduction',
     benefit: 'Cyber Incident Rate Reduction',
+    category: 'Risk Reduction',
     level: 'program',
     linkedTo: 'National Infrastructure Protection',
     owner: { name: 'Fatima Qahtani', initials: 'FQ' },
@@ -1412,6 +1554,7 @@ export const benefitsRegisterData: Benefit[] = [
     id: 'BEN-02',
     name: 'Improved SOC MTTR',
     benefit: 'Improved SOC MTTR',
+    category: 'Operational Efficiency',
     level: 'project',
     linkedTo: 'Ministerial SOC Hub Integration',
     parentProgram: 'National Infrastructure Protection',
@@ -1428,6 +1571,7 @@ export const benefitsRegisterData: Benefit[] = [
     id: 'BEN-03',
     name: 'MFA Protection Level',
     benefit: 'MFA Protection Level',
+    category: 'Compliance Assurance',
     level: 'project',
     linkedTo: 'Multi-Factor Authentication Rollout',
     parentProgram: 'Identity & Access Program',
@@ -1444,6 +1588,7 @@ export const benefitsRegisterData: Benefit[] = [
     id: 'BEN-04',
     name: 'Unified Threat Feed Integration',
     benefit: 'Unified Threat Feed Integration',
+    category: 'Information Sharing',
     level: 'program',
     linkedTo: 'Cyber Threat Intelligence',
     owner: { name: 'Amna Al-Hammadi', initials: 'AA' },
@@ -1459,6 +1604,7 @@ export const benefitsRegisterData: Benefit[] = [
     id: 'BEN-05',
     name: 'Security awareness coverage',
     benefit: 'Security awareness coverage',
+    category: 'Adoption & Awareness',
     level: 'project',
     linkedTo: 'Standalone Cyber Security Awareness Campaign',
     owner: { name: 'Mariam Al-Ali', initials: 'MA' },
