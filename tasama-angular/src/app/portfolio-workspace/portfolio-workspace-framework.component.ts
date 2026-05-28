@@ -1521,8 +1521,8 @@ export interface TaxonomyCard {
               <!-- Glossary Header Block & Search (No Add Button) -->
               <div class="glossary-top-bar" style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 12px; width: 100%;">
                 <div class="glossary-header-block" style="text-align: left;">
-                  <h2 style="font-size: 20px; font-weight: 600; color: #1e293b; margin: 0 0 6px 0; font-family: inherit;">Glossary</h2>
-                  <p style="font-size: 13.5px; color: #64748b; margin: 0; line-height: 1.5;">Configure contextual help for each and every label used in the p3m module.</p>
+                  <h2 style="font-size: 20px; font-weight: 600; color: #1e293b; margin: 0 0 6px 0; font-family: inherit;">{{ glossaryHeaderTitle }}</h2>
+                  <p style="font-size: 13.5px; color: #64748b; margin: 0; line-height: 1.5;">{{ glossaryHeaderDescription }}</p>
                 </div>
                 
                 <!-- Search bar -->
@@ -1546,7 +1546,7 @@ export interface TaxonomyCard {
                 <table class="pm-project-table" style="width: 100%; min-width: 800px; table-layout: auto; border-collapse: separate; border-spacing: 0;">
                   <thead>
                     <tr>
-                      <th style="width: 25%; background: #fbfcff; color: #555555; font-weight: 600; padding: 15px 14px; border-bottom: 1px solid #eceef3; font-size: 12px; text-align: left;">System Label</th>
+                      <th style="width: 25%; background: #fbfcff; color: #555555; font-weight: 600; padding: 15px 14px; border-bottom: 1px solid #eceef3; font-size: 12px; text-align: left;">{{ glossarySystemLabelHeader }}</th>
                       <th style="width: 25%; background: #fbfcff; color: #555555; font-weight: 600; padding: 15px 14px; border-bottom: 1px solid #eceef3; font-size: 12px; text-align: left;">Custom Label</th>
                       <th style="width: 40%; background: #fbfcff; color: #555555; font-weight: 600; padding: 15px 14px; border-bottom: 1px solid #eceef3; font-size: 12px; text-align: left;">Contextual Help</th>
                       <th style="width: 10%; background: #fbfcff; color: #555555; font-weight: 600; padding: 15px 14px; border-bottom: 1px solid #eceef3; font-size: 12px; text-align: center;">Action</th>
@@ -5606,6 +5606,22 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     { id: 'benefits', label: 'Benefits glossary' }
   ];
 
+  get glossaryHeaderTitle(): string {
+    if (this.activeGlossaryTab === 'risk') return 'Risk Glossary';
+    if (this.activeGlossaryTab === 'benefits') return 'Benefits Glossary';
+    return 'Glossary';
+  }
+
+  get glossaryHeaderDescription(): string {
+    if (this.activeGlossaryTab === 'risk') return 'Risk Labels currently used in the organisation';
+    if (this.activeGlossaryTab === 'benefits') return 'Benefits Management Labels currently used in the organisation';
+    return 'Configure contextual help for each and every label used in the P3M module.';
+  }
+
+  get glossarySystemLabelHeader(): string {
+    return this.activeGlossaryTab === 'risk' ? 'Label name' : 'System Label';
+  }
+
   p3mGlossary: GlossaryItem[] = [...initialP3mGlossary];
   riskGlossary: GlossaryItem[] = [...initialRiskGlossary];
   benefitsGlossary: GlossaryItem[] = [...initialBenefitsGlossary];
@@ -6177,7 +6193,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
   activeFinancialCategory = 'funding-sources';
 
   readonly financialCategories = [
-    { id: 'funding-sources', label: 'Funding Sources' },
+    { id: 'funding-sources', label: 'Budget Management' },
     { id: 'financial-cycle', label: 'Financial Cycle' }
   ];
 
@@ -6196,6 +6212,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
 
   // Financial & Budget Management Cards Data State
   fundingSourcesCards: TaxonomyCard[] = [
+    { id: 'funding-sources', title: 'Funding Sources', icon: 'wallet', description: 'Define the funding sources available for allocation to projects', items: [] },
     { id: 'cost-centre', title: 'Cost Centre', icon: 'wallet', description: 'Define the cost centres for tracking department and team budgets.', items: ['Safe Security HQ', 'Product & Engineering', 'Global Sales', 'Marketing', 'Customer Success'] },
     { id: 'ongoing-cost', title: 'Ongoing Cost', icon: 'refresh-cw', description: 'Configure recurring operating and support expenses.', items: ['SaaS Subscriptions', 'Cloud Infrastructure', 'Consulting Fees', 'Hardware Maintenance'] },
     { id: 'budget-range', title: 'Budget Range', icon: 'sliders', description: 'Set standard funding thresholds and priority levels.', items: ['Micro (< $50k)', 'Small ($50k - $250k)', 'Medium ($250k - $1M)', 'Enterprise (> $1M)'] }
