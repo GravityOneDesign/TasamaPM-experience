@@ -114,20 +114,21 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
             <section class="overdue-reports-list" [attr.aria-label]="selected.type">
               @for (report of filteredGroupItems; track report.id) {
                 <div class="overdue-report-card">
-                  <header class="card-header">
-                    <span pmConsoleIcon="calendar" class="calendar-icon" aria-hidden="true"></span>
-                    <span>{{ formatCardDate(report.date) }} ({{ report.meta }})</span>
-                  </header>
+                  <div class="card-top-pill">
+                    <span class="action-type-pill" [attr.data-card-type]="getNormalizedCardType(report)">
+                      {{ getNormalizedCardType(report) }}
+                    </span>
+                  </div>
                   <h3 class="card-title">{{ report.label }}</h3>
                   <p class="card-project">{{ report.project }}</p>
                   <div class="card-divider"></div>
                   <footer class="card-footer">
-                    <div class="card-owner">
-                      <span class="owner-avatar {{ getAvatarClass(report.owner) }}">{{ report.owner }}</span>
-                      <span class="owner-name">{{ getOwnerFullName(report.owner) }}</span>
+                    <div class="card-footer-left">
+                      <span pmConsoleIcon="calendar" class="calendar-icon" aria-hidden="true"></span>
+                      <span>{{ formatCardDate(report.date) }} ({{ getReportMeta(report, selected.column) }})</span>
                     </div>
                     <button class="open-link" type="button" (click)="handleDetailItemClick(report)">
-                      <span>Open</span>
+                      <span>{{ report.cta || 'Open' }}</span>
                       <span pmConsoleIcon="chevron-right" class="arrow-icon" aria-hidden="true"></span>
                     </button>
                   </footer>
@@ -956,18 +957,63 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
         box-shadow: 0 1px 3px rgba(25, 33, 61, 0.03);
       }
 
-      .overdue-report-card .card-header {
+      .overdue-report-card .card-top-pill {
         display: flex;
-        align-items: center;
-        gap: 8px;
-        color: #737b8c;
-        font-size: 12.5px;
+        justify-content: flex-start;
       }
 
-      .overdue-report-card .card-header .calendar-icon {
-        width: 14px;
-        height: 14px;
-        color: #737b8c;
+      .overdue-report-card .action-type-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: 6px;
+        line-height: 1;
+        border: 1px solid transparent;
+      }
+
+      .overdue-report-card .action-type-pill[data-card-type="Plans"] {
+        border-color: rgba(121, 186, 221, 0.25);
+        background: rgba(121, 186, 221, 0.1);
+        color: #79badd;
+      }
+
+      .overdue-report-card .action-type-pill[data-card-type="Governance Committees"] {
+        border-color: rgba(52, 84, 196, 0.25);
+        background: rgba(52, 84, 196, 0.1);
+        color: #3454c4;
+      }
+
+      .overdue-report-card .action-type-pill[data-card-type="Status reports"] {
+        border-color: rgba(111, 32, 149, 0.25);
+        background: rgba(111, 32, 149, 0.1);
+        color: #6f2095;
+      }
+
+      .overdue-report-card .action-type-pill[data-card-type="Change requests"] {
+        border-color: rgba(196, 52, 114, 0.25);
+        background: rgba(196, 52, 114, 0.1);
+        color: #c43472;
+      }
+
+      .overdue-report-card .action-type-pill[data-card-type="Benefits"] {
+        border-color: rgba(22, 107, 73, 0.25);
+        background: rgba(22, 107, 73, 0.1);
+        color: #166b49;
+      }
+
+      .overdue-report-card .action-type-pill[data-card-type="Dependency"] {
+        border-color: rgba(121, 186, 221, 0.25);
+        background: rgba(121, 186, 221, 0.1);
+        color: #79badd;
+      }
+
+      .overdue-report-card .action-type-pill[data-card-type="Risk"] {
+        border-color: rgba(196, 52, 114, 0.25);
+        background: rgba(196, 52, 114, 0.1);
+        color: #c43472;
       }
 
       .overdue-report-card .card-title {
@@ -996,64 +1042,18 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
         align-items: center;
       }
 
-      .overdue-report-card .card-owner {
+      .overdue-report-card .card-footer-left {
         display: flex;
         align-items: center;
         gap: 8px;
+        color: #737b8c;
+        font-size: 12.5px;
       }
 
-      .overdue-report-card .owner-avatar {
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 11px;
-        font-weight: 600;
-        color: #ffffff;
-      }
-
-      .overdue-report-card .owner-avatar.avatar-mh {
-        background: #6366f1;
-      }
-
-      .overdue-report-card .owner-avatar.avatar-ok {
-        background: #a855f7;
-      }
-
-      .overdue-report-card .owner-avatar.avatar-nh {
-        background: #3b82f6;
-      }
-
-      .overdue-report-card .owner-avatar.avatar-js {
-        background: #ec4899;
-      }
-
-      .overdue-report-card .owner-avatar.avatar-dg {
-        background: #10b981;
-      }
-
-      .overdue-report-card .owner-avatar.avatar-fq {
-        background: #f59e0b;
-      }
-
-      .overdue-report-card .owner-avatar.avatar-ah {
-        background: #f43f5e;
-      }
-
-      .overdue-report-card .owner-avatar.avatar-sa {
-        background: #8b5cf6;
-      }
-
-      .overdue-report-card .owner-avatar.avatar-fa {
-        background: #06b6d4;
-      }
-
-      .overdue-report-card .owner-name {
-        font-size: 13px;
-        color: #2f2f2f;
-        font-weight: 500;
+      .overdue-report-card .card-footer-left .calendar-icon {
+        width: 14px;
+        height: 14px;
+        color: #737b8c;
       }
 
       .overdue-report-card .open-link {
@@ -1126,6 +1126,42 @@ export class PortfolioManagerActionDrawerComponent implements OnChanges, OnDestr
     const parsed = new Date(`${dateStr}T00:00:00`);
     if (Number.isNaN(parsed.getTime())) return dateStr;
     return parsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  getNormalizedCardType(report: PortfolioActionItem): string {
+    const type = report.type || '';
+    if (type.toLowerCase().includes('plan')) return 'Plans';
+    if (type.toLowerCase().includes('governance')) return 'Governance Committees';
+    if (type.toLowerCase().includes('status') || type.toLowerCase().includes('report')) return 'Status reports';
+    if (type.toLowerCase().includes('change')) return 'Change requests';
+    if (type.toLowerCase().includes('benefit')) return 'Benefits';
+    if (type.toLowerCase().includes('dependency')) return 'Dependency';
+    if (type.toLowerCase().includes('risk')) return 'Risk';
+    if (type.toLowerCase().includes('task')) return 'Task';
+    if (type.toLowerCase().includes('milestone')) return 'Milestone';
+    return type || 'Action';
+  }
+
+  getReportMeta(report: PortfolioActionItem, parentColumn?: string): string {
+    if (report.meta !== 'Pending') {
+      return report.meta;
+    }
+    const col = parentColumn || report.column || 'This week';
+    if (col === 'Overdue') {
+      return 'Overdue';
+    }
+    // Calculate difference in days relative to today: May 26, 2026
+    const today = new Date('2026-05-26T00:00:00');
+    const reportDate = new Date(`${report.date}T00:00:00`);
+    if (Number.isNaN(reportDate.getTime())) {
+      return 'Due soon';
+    }
+    const diffTime = reportDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays <= 0) {
+      return 'Due today';
+    }
+    return `Due in ${diffDays} day${diffDays === 1 ? '' : 's'}`;
   }
 
   getOwnerFullName(initials: string): string {

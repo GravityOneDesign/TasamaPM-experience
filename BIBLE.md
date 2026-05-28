@@ -1,6 +1,6 @@
 # Tasama Project Bible
 
-Last updated: 2026-05-27
+Last updated: 2026-05-28
 
 This file is the long-term handoff, memory, architecture guide, and AI-agent operating manual for the Tasama project. It exists so another coding agent, developer, or design engineer can restart work in a different tool and still understand the project language, product context, structure, and constraints.
 
@@ -950,6 +950,39 @@ When a user asks for UI from Figma:
 
 2026-05-28:
 
+- Completed changes to 'PMO console' 'My actions' tab styling colors:
+  - Updated card styling color hex codes for Plans (`#79BADD`), Governance (`#3454C4`), Status reports (`#6F2095`), Change (`#C43472`), and Benefits (`#166B49`).
+  - Maintained the current logic of 25% side-stroke opacity, 10% icon container background opacity, and 100% icon color while supporting broad case-insensitive selectors.
+- Completed Phase 2 changes to 'PMO console' 'My calendar' view:
+  - Default replaced "All programs and projects" with "All portfolios" in the target picker filter dropdown.
+  - Made multi-item pop-up responsive in height and completely non-scrollable by removing max-height constraints and overflow scrolls.
+  - Redesigned each row inside the multi-item pop-up to render a Type chip pill, a neutral project/program name pill, the bold Task name description, and its action-specific current CTA.
+  - Expanded the layout spacing (gap) and padding of the single-item hover pop-up to `16px` for enhanced aesthetics and readability.
+2026-05-28:
+
+- Replaced the static "(Pending)" status metadata text in the side drawer action list cards with dynamic relative due state text:
+  - If the parent action card is in the "Overdue" lane/column, the card metadata displays as `(Overdue)`.
+  - If the parent action card is in the "This week" or "Upcoming" columns, it dynamically parses `report.date` relative to May 26, 2026 to calculate and render the relative days remaining, displaying as `(Due in x days)`.
+- Updated the action type chips in the PMO Console "My calendar" view to use specific, customized colors while keeping the soft background tint (10%), border (25%), and full text/dot (100%) opacity:
+  - Plans: `#8DC8E8` (soft sky blue)
+  - Governance Committees: `#3454C4` (deep blue)
+  - Status reports: `#6F2095` (royal purple)
+  - Change requests: `#C43472` (vibrant magenta)
+  - Benefits: `#166B49` (emerald green)
+  - Seamlessly applied these theme color variables across inline calendar cells, hovering preview cards, and agenda list preview overlays by coupling selectors to standard data attributes (`[attr.data-event-type]`).
+- Redesigned the action detail cards visible inside the PMO Console "My Actions" tab side drawer to exactly match Figma Image 2 and brand color opacities:
+  - Replaced the card header date and avatar column with a clean, responsive layout.
+  - Implemented the `getNormalizedCardType(report)` typescript helper to accurately categorize action items (`Plans`, `Governance Committees`, `Status reports`, `Change requests`, `Benefits`, `Dependency`, `Risk`).
+  - Added a top-aligned container displaying the brand-styled `action-type-pill` for each item using the exact color and opacity rules matching Phase 3 (25% border, 10% background, and 100% text color).
+  - Maintained bold action name and project name stacked immediately below the pill.
+  - Rendered a discreet divider line separating the body from the horizontal footer.
+  - Restructured the footer to display a calendar icon and due-state metadata horizontally stacked on the left, next to the dynamic chevron arrow CTA link (`report.cta || 'Open'`) on the right.
+- Completed changes to 'PMO console' 'My calendar' view:
+  - Configured hovering over individual chips inside collapsed cells (dates with more than two items) to open the multi-item day agenda hover popup rather than the single project details card.
+  - Mapped all calendar chips to display exactly one of the 5 requested category names (`Plans`, `Status reports`, `Benefits`, `Change requests`, `Governance Committees`) based on item `kind` for both collapsed and non-collapsed blocks.
+  - Added collapsible `Portfolios` group in the program/project target picker dropdown on the "Manage My Work" control toolbar, populating active portfolio names from `portfolioRows` in `portfolio-workspace.data.ts` and implementing dynamic target matching and count labels.
+  - Updated the single-item hover detail pop-up content to show the mapped Type chip, Project name, dynamic Task name title, and a "View" CTA while removing the Date section entirely.
+  - Re-mapped generated PMO calendar items in `generatePmoCalendarWorkItems()` to have realistic randomized project assignments and distinct, descriptive task names (e.g. `Review ${project} weekly report`, `Verify ${project} benefit evidence`) so Task name and Type do not share identical content.
 - Updated the first PMO front-door Overview journey card title in `pmo-frontdoor.data.ts` to Title Case: "Set Up Your Framework".
 - Corrected the PMO "My Actions" tab compact cards CSS grid columns (`grid-template-columns: auto minmax(0, 1fr) auto auto !important;`) to perfectly accommodate the 4-column children layout following inner side stroke removal, successfully preventing the lavender count circles from stretching horizontally.
 - Refined the PMO "My Actions" tab compact cards by removing the inner `.compact-action-accent` side stroke element positioned immediately to the left of the icon container, cleanly retaining only the premium outer card edge side stroke (drawn by the card's `::before` selector).

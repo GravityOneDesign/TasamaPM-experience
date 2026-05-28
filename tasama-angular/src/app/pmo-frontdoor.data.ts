@@ -140,15 +140,16 @@ export const pmoFrontdoorWorkFilters: readonly PortfolioBoardFilter[] = [
   { id: 'report', label: 'Status reports', icon: 'chart' },
   { id: 'benefit', label: 'Benefits', icon: 'benefit' },
   { id: 'change', label: 'Change requests', icon: 'changeRequest' },
-  { id: 'governance', label: 'Governance committees', icon: 'calendar' },
+  { id: 'governance', label: 'Governance Committees', icon: 'calendar' },
 ];
 
 // Generate randomized calendar work items for PMO calendar view
 function generatePmoCalendarWorkItems(): readonly PmoFrontdoorWorkItem[] {
+  const projects = ['Vision 2030', 'NEOM Integration', 'Smart City Alpha', 'UAE Research Map'];
   const tasks = [
-    { label: 'Status Reports', kind: 'report' as const, tone: 'blue' as const },
-    { label: 'Project Plans', kind: 'plan' as const, tone: 'blue' as const },
-    { label: 'Change Requests', kind: 'change' as const, tone: 'red' as const },
+    { label: 'Status reports', kind: 'report' as const, tone: 'blue' as const },
+    { label: 'Plans', kind: 'plan' as const, tone: 'blue' as const },
+    { label: 'Change requests', kind: 'change' as const, tone: 'red' as const },
     { label: 'Benefits', kind: 'benefit' as const, tone: 'blue' as const },
     { label: 'Governance Committees', kind: 'governance' as const, tone: 'green' as const },
   ];
@@ -180,6 +181,7 @@ function generatePmoCalendarWorkItems(): readonly PmoFrontdoorWorkItem[] {
 
     for (let i = 0; i < numTasks; i++) {
       const randomTask = tasks[Math.floor(Math.random() * tasks.length)];
+      const project = projects[Math.floor(Math.random() * projects.length)];
       const dateStr = `2026-05-${String(day).padStart(2, '0')}`;
       
       // Determine column based on date relative to today (May 26, 2026)
@@ -191,13 +193,27 @@ function generatePmoCalendarWorkItems(): readonly PmoFrontdoorWorkItem[] {
       } else {
         column = 'Upcoming';
       }
+
+      // Generate a realistic, distinct task name that is not the same as Type
+      let taskName = '';
+      if (randomTask.kind === 'report') {
+        taskName = `Review ${project} weekly report`;
+      } else if (randomTask.kind === 'plan') {
+        taskName = `Review ${project} baseline plan`;
+      } else if (randomTask.kind === 'change') {
+        taskName = `Approve ${project} change request`;
+      } else if (randomTask.kind === 'benefit') {
+        taskName = `Verify ${project} benefit evidence`;
+      } else {
+        taskName = `Convene ${project} governance committee`;
+      }
       
       calendarItems.push({
         id: `pmo-cal-${dateStr}-${i}`,
         date: dateStr,
-        label: randomTask.label,
-        project: 'PMO Workspace',
-        targetType: 'portfolio',
+        label: taskName,
+        project: project,
+        targetType: 'project',
         type: randomTask.label,
         kind: randomTask.kind,
         tone: randomTask.tone,
