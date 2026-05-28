@@ -32,6 +32,11 @@
                 "glob": "web.config",
                 "input": "src",
                 "output": "."
+              },
+              {
+                "glob": "web.onprem.config",
+                "input": "src",
+                "output": "."
               }
             ],
             "styles": [
