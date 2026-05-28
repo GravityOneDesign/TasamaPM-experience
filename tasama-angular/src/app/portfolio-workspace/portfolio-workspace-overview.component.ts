@@ -5,7 +5,7 @@ import { PmConsoleIconComponent } from '../shared/pm-console-icon.component';
 import { PmConsoleStatusPillComponent } from '../shared/pm-console-status-pill.component';
 import { PmConsoleRowActionMenuComponent } from '../shared/pm-console-row-action-menu.component';
 import { PmConsolePlanTableComponent } from '../pm-console-plan-table.component';
-import { portfolioSummary, KPICard, ObjectiveRow } from './portfolio-workspace.data';
+import { portfolioProgramRows, portfolioSummary, standaloneProjects, KPICard, ObjectiveRow } from './portfolio-workspace.data';
 
 @Component({
   selector: 'app-portfolio-workspace-overview',
@@ -66,12 +66,12 @@ import { portfolioSummary, KPICard, ObjectiveRow } from './portfolio-workspace.d
           <!-- Row 2 -->
           <div class="portfolio-profile-field">
             <dt>No. of Programs</dt>
-            <dd><span>5</span></dd>
+            <dd><span>{{ programCount }}</span></dd>
           </div>
 
           <div class="portfolio-profile-field">
             <dt>No. of Standalone Projects</dt>
-            <dd><span>4</span></dd>
+            <dd><span>{{ standaloneProjectCount }}</span></dd>
           </div>
 
           <!-- Description Row spans full width (all 3 columns) placed below programs and projects -->
@@ -909,6 +909,8 @@ export class PortfolioWorkspaceOverviewComponent implements OnInit {
   objectives = [...portfolioSummary.objectives];
   owner = portfolioSummary.owner;
   sponsor = portfolioSummary.sponsor;
+  programCount = portfolioProgramRows.length;
+  standaloneProjectCount = standaloneProjects.length;
 
   // New state variables for KPIs section
   kpiRows: ObjectiveRow[] = [
