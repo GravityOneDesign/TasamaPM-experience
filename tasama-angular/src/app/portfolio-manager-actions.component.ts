@@ -54,84 +54,84 @@ interface PortfolioWorkTargetGroup {
 
         <!-- Program / Project selector -->
         @if (showTargetPicker) {
-          <div class="portfolio-target-picker" aria-label="Portfolio work target selector">
-            <details class="work-filter-dropdown target-picker-dropdown">
-              <summary [attr.aria-label]="'Select program or project: ' + selectedTargetOption.label">
-                <span class="work-filter-selected-icon">
-                  <span class="icon" aria-hidden="true">
-                    <i [attr.data-lucide]="targetIconName(selectedTargetOption)"></i>
-                  </span>
+        <div class="portfolio-target-picker" aria-label="Portfolio work target selector">
+          <details class="work-filter-dropdown target-picker-dropdown">
+            <summary [attr.aria-label]="'Select program or project: ' + selectedTargetOption.label">
+              <span class="work-filter-selected-icon">
+                <span class="icon" aria-hidden="true">
+                  <i [attr.data-lucide]="targetIconName(selectedTargetOption)"></i>
                 </span>
-                <span>{{ selectedTargetOption.label }}</span>
-                <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-              </summary>
-              <div class="work-filter-menu target-picker-menu" role="menu">
-                <label class="target-picker-search" (click)="$event.stopPropagation()">
-                  <span pmConsoleIcon="search" aria-hidden="true"></span>
-                  <input
-                    type="search"
-                    placeholder="Search programs or projects"
-                    aria-label="Search programs or projects"
-                    [value]="targetSearchQuery"
-                    (input)="onTargetSearchChange($event)"
-                  />
-                </label>
+              </span>
+              <span>{{ selectedTargetOption.label }}</span>
+              <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+            </summary>
+            <div class="work-filter-menu target-picker-menu" role="menu">
+              <label class="target-picker-search" (click)="$event.stopPropagation()">
+                <span pmConsoleIcon="search" aria-hidden="true"></span>
+                <input
+                  type="search"
+                  placeholder="Search programs or projects"
+                  aria-label="Search programs or projects"
+                  [value]="targetSearchQuery"
+                  (input)="onTargetSearchChange($event)"
+                />
+              </label>
 
-                <button
-                  class="target-picker-option all-target"
-                  [class.active]="selectedTargetId === allTargetOption.id"
-                  type="button"
-                  role="menuitemradio"
-                  [attr.aria-checked]="selectedTargetId === allTargetOption.id"
-                  (click)="selectTarget(allTargetOption.id, $event)"
-                >
-                  <span class="target-option-copy">
-                    <strong>{{ allTargetOption.label }}</strong>
-                    <small>{{ actionItems.length }} actions</small>
-                  </span>
-                </button>
+              <button
+                class="target-picker-option all-target"
+                [class.active]="selectedTargetId === allTargetOption.id"
+                type="button"
+                role="menuitemradio"
+                [attr.aria-checked]="selectedTargetId === allTargetOption.id"
+                (click)="selectTarget(allTargetOption.id, $event)"
+              >
+                <span class="target-option-copy">
+                  <strong>{{ allTargetOption.label }}</strong>
+                  <small>{{ actionItems.length }} actions</small>
+                </span>
+              </button>
 
-                @if (hasFilteredTargetOptions) {
-                  @for (group of filteredTargetGroups; track group.id) {
-                    @if (group.options.length) {
-                      <details
-                        class="target-picker-group"
-                        [attr.aria-label]="group.label"
-                        [open]="isTargetGroupExpanded(group.id)"
-                        (toggle)="onTargetGroupToggle(group.id, $event)"
-                      >
-                        <summary class="target-picker-group-label" (click)="$event.stopPropagation()">
-                          <span>{{ group.label }}</span>
-                          <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
-                        </summary>
-                        @for (target of group.options; track target.id) {
-                          <button
-                            class="target-picker-option"
-                            [class.active]="selectedTargetId === target.id"
-                            type="button"
-                            role="menuitemradio"
-                            [attr.aria-checked]="selectedTargetId === target.id"
-                            (click)="selectTarget(target.id, $event)"
-                          >
-                            <span class="target-option-copy">
-                              <strong>{{ target.label }}</strong>
-                              @if (target.parentLabel) {
-                                <small>{{ target.parentLabel }}</small>
-                              } @else {
-                                <small>{{ target.type === 'program' ? targetCountLabel(target) : 'Standalone project' }}</small>
-                              }
-                            </span>
-                          </button>
-                        }
-                      </details>
-                    }
+              @if (hasFilteredTargetOptions) {
+                @for (group of filteredTargetGroups; track group.id) {
+                  @if (group.options.length) {
+                    <details
+                      class="target-picker-group"
+                      [attr.aria-label]="group.label"
+                      [open]="isTargetGroupExpanded(group.id)"
+                      (toggle)="onTargetGroupToggle(group.id, $event)"
+                    >
+                      <summary class="target-picker-group-label" (click)="$event.stopPropagation()">
+                        <span>{{ group.label }}</span>
+                        <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
+                      </summary>
+                      @for (target of group.options; track target.id) {
+                        <button
+                          class="target-picker-option"
+                          [class.active]="selectedTargetId === target.id"
+                          type="button"
+                          role="menuitemradio"
+                          [attr.aria-checked]="selectedTargetId === target.id"
+                          (click)="selectTarget(target.id, $event)"
+                        >
+                          <span class="target-option-copy">
+                            <strong>{{ target.label }}</strong>
+                            @if (target.parentLabel) {
+                              <small>{{ target.parentLabel }}</small>
+                            } @else {
+                              <small>{{ target.type === 'program' ? targetCountLabel(target) : 'Standalone project' }}</small>
+                            }
+                          </span>
+                        </button>
+                      }
+                    </details>
                   }
-                } @else {
-                  <div class="target-picker-empty">No programs or projects found.</div>
                 }
-              </div>
-            </details>
-          </div>
+              } @else {
+                <div class="target-picker-empty">No programs or projects found.</div>
+              }
+            </div>
+          </details>
+        </div>
         }
 
         <!-- Filter dropdown -->

@@ -1,6 +1,6 @@
 # Tasama Project Bible
 
-Last updated: 2026-05-27
+Last updated: 2026-05-28
 
 This file is the long-term handoff, memory, architecture guide, and AI-agent operating manual for the Tasama project. It exists so another coding agent, developer, or design engineer can restart work in a different tool and still understand the project language, product context, structure, and constraints.
 
@@ -200,6 +200,8 @@ Portfolio Manager:
 
 - Owns the Portfolio Manager shell and workspace components.
 - Current root component is `PortfolioManagerShellComponent`.
+- The `main` branch Portfolio Manager shell should preserve the Portfolio-manager branch experience when selected from login: Safe Security header/profile, Portfolio Manager front door, action workspace, portfolio workspace tabs, framework configuration drawers, and register/risk hierarchy behavior.
+- Portfolio Manager shares a small set of default-preserving primitives with PMO, including the action workspace, front-door overview/action cards, plan drawer, and portfolio register component. Keep PMO-specific inputs working when porting Portfolio Manager branch changes.
 - Reuse shared tables/cards/toolbars where appropriate, but do not mount portfolio workflows inside PM-only front-door switches.
 
 ## Glossary
@@ -887,6 +889,11 @@ When a user asks for UI from Figma:
 - Visually verify if feasible.
 
 ## Memory Log
+
+2026-05-28:
+
+- Ported the Portfolio Manager branch experience onto `main` while keeping `main`'s persona-owned `PortfolioManagerShellComponent` and PMO/Executive/Project Manager entry points intact.
+- Preserved PMO-facing defaults on shared Portfolio Manager primitives while aligning the Portfolio Manager front door, action workspace, portfolio workspace, framework drawers, registers, and risk hierarchy with the Portfolio-manager branch.
 
 2026-05-27:
 

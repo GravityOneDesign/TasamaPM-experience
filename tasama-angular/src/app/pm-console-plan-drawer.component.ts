@@ -20,9 +20,12 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
               <h2>{{ title }}</h2>
               <p>{{ description }}</p>
             </div>
-            <button class="plan-entry-drawer-close" type="button" [attr.aria-label]="closeAriaLabel" (click)="close.emit()">
-              <span pmConsoleIcon="x" aria-hidden="true"></span>
-            </button>
+            <div class="plan-entry-drawer-head-actions">
+              <button class="plan-entry-drawer-close" type="button" [attr.aria-label]="closeAriaLabel" (click)="close.emit()">
+                <span pmConsoleIcon="x" aria-hidden="true"></span>
+              </button>
+              <ng-content select="[planDrawerHeaderActions]"></ng-content>
+            </div>
           </header>
 
           <section class="plan-entry-drawer-body">
@@ -40,7 +43,10 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
           </section>
 
           @if (!hideFooter) {
-            <footer class="plan-entry-drawer-footer">
+            <footer class="plan-entry-drawer-footer" [class.has-delete]="showDelete">
+              @if (showDelete) {
+                <button class="plan-entry-drawer-delete" type="button" (click)="delete.emit($event)">Delete</button>
+              }
               <span class="plan-entry-drawer-footer-prefix">
                 <ng-content select="[planDrawerFooterPrefix]"></ng-content>
               </span>
@@ -69,7 +75,7 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
         inset: 0;
         pointer-events: none;
         position: fixed;
-        z-index: 81;
+        z-index: 1200;
       }
 
       .plan-entry-drawer-backdrop {
@@ -160,6 +166,14 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
         width: 36px;
       }
 
+      .plan-entry-drawer-head-actions {
+        align-items: flex-end;
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        gap: 8px;
+      }
+
       .plan-entry-drawer-close:hover,
       .plan-entry-drawer-close:focus-visible {
         background: #eef1f7;
@@ -230,6 +244,7 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
       }
 
       .plan-entry-drawer-cancel,
+      .plan-entry-drawer-delete,
       .plan-entry-drawer-submit {
         align-items: center;
         border-radius: 8px;
@@ -262,6 +277,18 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
         cursor: default;
       }
 
+      .plan-entry-drawer-delete {
+        background: transparent;
+        border: 1px solid #ef4444;
+        color: #ef4444;
+      }
+
+      .plan-entry-drawer-delete:hover,
+      .plan-entry-drawer-delete:focus-visible {
+        background: #fef2f2;
+        outline: none;
+      }
+
       @media (max-width: 760px) {
         .plan-entry-drawer {
           max-width: 100vw;
@@ -291,7 +318,9 @@ export class PmConsolePlanDrawerComponent {
   @Input() ariaLabel = '';
   @Input() panelClass: string | string[] | Set<string> | Record<string, unknown> = '';
   @Input() hideFooter = false;
+  @Input() showDelete = false;
 
   @Output() close = new EventEmitter<void>();
   @Output() submitForm = new EventEmitter<Event>();
+  @Output() delete = new EventEmitter<Event>();
 }

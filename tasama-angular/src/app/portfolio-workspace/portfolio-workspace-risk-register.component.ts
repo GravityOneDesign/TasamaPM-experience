@@ -259,6 +259,16 @@ interface RiskAppliedFilter {
             </thead>
           </ng-template>
 
+          <ng-template #riskBranchMarker let-branchClass="branchClass">
+            <span class="risk-branch-map {{ branchClass }}" aria-hidden="true">
+              <span class="risk-branch-track portfolio"></span>
+              <span class="risk-branch-track program"></span>
+              <span class="risk-branch-track project"></span>
+              <span class="risk-branch-elbow"></span>
+              <span class="risk-branch-node"></span>
+            </span>
+          </ng-template>
+
           @let hierarchy = riskHierarchy;
           @if (riskRegisterViewMode === 'grouped') {
             <div class="risk-portfolio-block">
@@ -275,9 +285,10 @@ interface RiskAppliedFilter {
                             [attr.aria-expanded]="!isRiskNodeCollapsed(portfolioNodeId)"
                             (click)="toggleRiskNode(portfolioNodeId)"
                           >
+                            <ng-container *ngTemplateOutlet="riskBranchMarker; context: { branchClass: 'portfolio-node' }"></ng-container>
                             <span [pmConsoleIcon]="isRiskNodeCollapsed(portfolioNodeId) ? 'chevron-right' : 'chevron-down'" aria-hidden="true"></span>
                             <strong>{{ hierarchy.label }}</strong>
-                            <span pmConsoleIcon="briefcase-business" aria-hidden="true"></span>
+                            <span class="risk-portfolio-symbol" pmConsoleIcon="briefcase-business" aria-hidden="true"></span>
                             <span class="risk-portfolio-id">PORTFOLIO</span>
                             <span class="risk-portfolio-count">{{ riskCountLabel(hierarchy.directRisks.length) }}</span>
                           </button>
@@ -285,7 +296,9 @@ interface RiskAppliedFilter {
                       </tr>
 
                       @if (!isRiskNodeCollapsed(portfolioNodeId)) {
-                        <ng-container *ngTemplateOutlet="riskRows; context: { $implicit: hierarchy.directRisks, levelClass: 'portfolio-risk', indentClass: '' }"></ng-container>
+                        <ng-container
+                          *ngTemplateOutlet="riskRows; context: { $implicit: hierarchy.directRisks, levelClass: 'portfolio-risk', indentClass: '', branchClass: 'portfolio-risk-node' }"
+                        ></ng-container>
 
                         @for (program of hierarchy.programs; track program.key) {
                           <tr class="risk-group-row risk-program-row">
@@ -296,6 +309,7 @@ interface RiskAppliedFilter {
                                 [attr.aria-expanded]="!isRiskNodeCollapsed(program.key)"
                                 (click)="toggleRiskNode(program.key)"
                               >
+                                <ng-container *ngTemplateOutlet="riskBranchMarker; context: { branchClass: 'program-node' }"></ng-container>
                                 <span [pmConsoleIcon]="isRiskNodeCollapsed(program.key) ? 'chevron-right' : 'chevron-down'" aria-hidden="true"></span>
                                 <strong>{{ program.label }}</strong>
                                 <span class="risk-level-badge program">Program</span>
@@ -308,7 +322,9 @@ interface RiskAppliedFilter {
                           </tr>
 
                           @if (!isRiskNodeCollapsed(program.key)) {
-                            <ng-container *ngTemplateOutlet="riskRows; context: { $implicit: program.directRisks, levelClass: 'program-risk', indentClass: 'ind-program' }"></ng-container>
+                            <ng-container
+                              *ngTemplateOutlet="riskRows; context: { $implicit: program.directRisks, levelClass: 'program-risk', indentClass: 'ind-program', branchClass: 'program-risk-node' }"
+                            ></ng-container>
 
                             @for (project of program.projects; track project.key) {
                               <tr class="risk-group-row risk-project-row">
@@ -319,6 +335,7 @@ interface RiskAppliedFilter {
                                     [attr.aria-expanded]="!isRiskNodeCollapsed(project.key)"
                                     (click)="toggleRiskNode(project.key)"
                                   >
+                                    <ng-container *ngTemplateOutlet="riskBranchMarker; context: { branchClass: 'project-node' }"></ng-container>
                                     <span [pmConsoleIcon]="isRiskNodeCollapsed(project.key) ? 'chevron-right' : 'chevron-down'" aria-hidden="true"></span>
                                     <strong>{{ project.label }}</strong>
                                     <span class="risk-level-badge project">Project</span>
@@ -328,7 +345,9 @@ interface RiskAppliedFilter {
                               </tr>
 
                               @if (!isRiskNodeCollapsed(project.key)) {
-                                <ng-container *ngTemplateOutlet="riskRows; context: { $implicit: project.risks, levelClass: 'project-risk', indentClass: 'ind-project' }"></ng-container>
+                                <ng-container
+                                  *ngTemplateOutlet="riskRows; context: { $implicit: project.risks, levelClass: 'project-risk', indentClass: 'ind-project', branchClass: 'project-risk-node' }"
+                                ></ng-container>
                               }
                             }
                           }
@@ -343,6 +362,7 @@ interface RiskAppliedFilter {
                                 [attr.aria-expanded]="!isRiskNodeCollapsed(standaloneNodeId)"
                                 (click)="toggleRiskNode(standaloneNodeId)"
                               >
+                                <ng-container *ngTemplateOutlet="riskBranchMarker; context: { branchClass: 'standalone-node' }"></ng-container>
                                 <span [pmConsoleIcon]="isRiskNodeCollapsed(standaloneNodeId) ? 'chevron-right' : 'chevron-down'" aria-hidden="true"></span>
                                 <strong>Standalone Projects</strong>
                                 <span class="risk-level-badge standalone">Standalone</span>
@@ -361,6 +381,7 @@ interface RiskAppliedFilter {
                                     [attr.aria-expanded]="!isRiskNodeCollapsed(project.key)"
                                     (click)="toggleRiskNode(project.key)"
                                   >
+                                    <ng-container *ngTemplateOutlet="riskBranchMarker; context: { branchClass: 'standalone-project-node' }"></ng-container>
                                     <span [pmConsoleIcon]="isRiskNodeCollapsed(project.key) ? 'chevron-right' : 'chevron-down'" aria-hidden="true"></span>
                                     <strong>{{ project.label }}</strong>
                                     <span class="risk-level-badge project">Project</span>
@@ -370,7 +391,9 @@ interface RiskAppliedFilter {
                               </tr>
 
                               @if (!isRiskNodeCollapsed(project.key)) {
-                                <ng-container *ngTemplateOutlet="riskRows; context: { $implicit: project.risks, levelClass: 'project-risk', indentClass: 'ind-project' }"></ng-container>
+                                <ng-container
+                                  *ngTemplateOutlet="riskRows; context: { $implicit: project.risks, levelClass: 'project-risk', indentClass: 'ind-project', branchClass: 'standalone-risk-node' }"
+                                ></ng-container>
                               }
                             }
                           }
@@ -517,7 +540,7 @@ interface RiskAppliedFilter {
                     <tbody>
                       @if (selectedContext.risks.length) {
                         <ng-container
-                          *ngTemplateOutlet="riskRows; context: { $implicit: selectedContext.risks, levelClass: riskTreeLevelClass(selectedContext.kind), indentClass: '' }"
+                          *ngTemplateOutlet="riskRows; context: { $implicit: selectedContext.risks, levelClass: riskTreeLevelClass(selectedContext.kind), indentClass: '', branchClass: riskTreeBranchClass(selectedContext.kind) }"
                         ></ng-container>
                       } @else {
                         <tr>
@@ -539,17 +562,20 @@ interface RiskAppliedFilter {
         </article>
       </div>
 
-      <ng-template #riskRows let-risks let-levelClass="levelClass" let-indentClass="indentClass">
+      <ng-template #riskRows let-risks let-levelClass="levelClass" let-indentClass="indentClass" let-branchClass="branchClass">
         @for (risk of risks; track risk.id) {
           <tr class="risk-data-row {{ levelClass }}">
             <td class="risk-name-cell {{ indentClass }}">
-              <div class="risk-name-stack">
-                <span class="risk-id-line">
-                  <span class="risk-id-code">{{ risk.id }}</span>
-                  <span pmConsoleIcon="triangle-alert" aria-label="Needs attention"></span>
-                </span>
-                <strong>{{ risk.name }}</strong>
-                <small>{{ riskLineageLabel(risk) }}</small>
+              <div class="risk-name-row">
+                <ng-container *ngTemplateOutlet="riskBranchMarker; context: { branchClass: branchClass }"></ng-container>
+                <div class="risk-name-stack">
+                  <span class="risk-id-line">
+                    <span class="risk-id-code">{{ risk.id }}</span>
+                    <span pmConsoleIcon="triangle-alert" aria-label="Needs attention"></span>
+                  </span>
+                  <strong>{{ risk.name }}</strong>
+                  <small>{{ riskLineageLabel(risk) }}</small>
+                </div>
               </div>
             </td>
             <td class="risk-category-cell">
@@ -1510,6 +1536,10 @@ interface RiskAppliedFilter {
       width: 34%;
     }
 
+    .risk-structure-table th.risk-col-name {
+      padding-left: 78px;
+    }
+
     .risk-col-ar,
     .risk-col-rr {
       width: 4.5%;
@@ -1554,24 +1584,9 @@ interface RiskAppliedFilter {
       background: #fbfcff;
     }
 
-    .risk-data-row.portfolio-risk .risk-name-cell {
-      --risk-level-marker: #10069f;
-    }
-
-    .risk-data-row.program-risk .risk-name-cell {
-      --risk-level-marker: #2d72d9;
-    }
-
-    .risk-data-row.project-risk .risk-name-cell {
-      --risk-level-marker: #1d8b5b;
-    }
-
-    .risk-structure-table td.risk-name-cell.ind-program {
-      padding-left: 26px;
-    }
-
+    .risk-structure-table td.risk-name-cell.ind-program,
     .risk-structure-table td.risk-name-cell.ind-project {
-      padding-left: 42px;
+      padding-left: 10px;
     }
 
     .risk-group-row td {
@@ -1605,25 +1620,19 @@ interface RiskAppliedFilter {
       cursor: pointer;
       display: flex;
       font: inherit;
-      gap: 10px;
+      gap: 8px;
       min-height: 56px;
-      padding: 0 16px;
+      padding: 0 16px 0 10px;
       text-align: left;
       width: 100%;
     }
 
-    .risk-program-row .risk-group-toggle {
-      padding-left: 40px;
-    }
-
     .risk-project-row .risk-group-toggle {
       min-height: 52px;
-      padding-left: 72px;
     }
 
     .risk-standalone-row .risk-group-toggle {
       min-height: 56px;
-      padding-left: 40px;
     }
 
     .risk-group-toggle:hover {
@@ -1640,7 +1649,7 @@ interface RiskAppliedFilter {
       min-height: 56px;
     }
 
-    .risk-portfolio-toggle .icon:nth-of-type(2) {
+    .risk-portfolio-symbol.icon {
       color: #10069f;
     }
 
@@ -1688,26 +1697,181 @@ interface RiskAppliedFilter {
       margin-left: 2px;
     }
 
+    .risk-name-row {
+      align-items: center;
+      display: flex;
+      min-height: 58px;
+      min-width: 0;
+    }
+
+    .risk-branch-map {
+      --node-color: #10069f;
+      --node-size: 12px;
+      --node-x: 10px;
+      --portfolio-track-color: rgba(16, 6, 159, 0.36);
+      --program-track-color: rgba(45, 114, 217, 0.34);
+      --project-track-color: rgba(29, 139, 91, 0.34);
+      --elbow-color: rgba(16, 6, 159, 0.42);
+      --elbow-left: 10px;
+      --elbow-width: 0px;
+      align-self: stretch;
+      display: inline-flex;
+      flex: 0 0 58px;
+      min-height: inherit;
+      position: relative;
+    }
+
+    .risk-name-row .risk-branch-map {
+      margin: -12px 0;
+      min-height: calc(100% + 24px);
+    }
+
+    .risk-branch-track,
+    .risk-branch-elbow,
+    .risk-branch-node {
+      position: absolute;
+    }
+
+    .risk-branch-track,
+    .risk-branch-elbow {
+      display: none;
+      pointer-events: none;
+    }
+
+    .risk-branch-track {
+      border-radius: 999px;
+      bottom: 0;
+      top: 0;
+      width: 2px;
+    }
+
+    .risk-branch-track.portfolio {
+      background: var(--portfolio-track-color);
+      left: 9px;
+    }
+
+    .risk-branch-track.program {
+      background: var(--program-track-color);
+      left: 25px;
+    }
+
+    .risk-branch-track.project {
+      background: var(--project-track-color);
+      left: 41px;
+    }
+
+    .risk-branch-elbow {
+      background: var(--elbow-color);
+      border-radius: 999px;
+      height: 2px;
+      left: var(--elbow-left);
+      top: calc(50% - 1px);
+      width: var(--elbow-width);
+    }
+
+    .risk-branch-node {
+      background: #ffffff;
+      border: 2px solid var(--node-color);
+      border-radius: 999px;
+      box-shadow: 0 0 0 3px #ffffff;
+      height: var(--node-size);
+      left: var(--node-x);
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: var(--node-size);
+      z-index: 1;
+    }
+
+    .risk-branch-map.portfolio-risk-node,
+    .risk-branch-map.program-risk-node,
+    .risk-branch-map.project-risk-node,
+    .risk-branch-map.standalone-risk-node {
+      --node-size: 8px;
+    }
+
+    .risk-branch-map.portfolio-risk-node .risk-branch-node,
+    .risk-branch-map.program-risk-node .risk-branch-node,
+    .risk-branch-map.project-risk-node .risk-branch-node,
+    .risk-branch-map.standalone-risk-node .risk-branch-node {
+      background: var(--node-color);
+      box-shadow: 0 0 0 3px #ffffff;
+    }
+
+    .risk-branch-map.portfolio-node,
+    .risk-branch-map.portfolio-risk-node {
+      --node-color: #10069f;
+      --node-x: 10px;
+    }
+
+    .risk-branch-map.program-node,
+    .risk-branch-map.program-risk-node {
+      --elbow-color: rgba(45, 114, 217, 0.56);
+      --elbow-left: 10px;
+      --elbow-width: 16px;
+      --node-color: #2d72d9;
+      --node-x: 26px;
+    }
+
+    .risk-branch-map.project-node,
+    .risk-branch-map.project-risk-node {
+      --elbow-color: rgba(29, 139, 91, 0.56);
+      --elbow-left: 26px;
+      --elbow-width: 16px;
+      --node-color: #1d8b5b;
+      --node-x: 42px;
+    }
+
+    .risk-branch-map.standalone-node,
+    .risk-branch-map.standalone-project-node,
+    .risk-branch-map.standalone-risk-node {
+      --elbow-color: rgba(183, 121, 31, 0.58);
+      --elbow-left: 10px;
+      --elbow-width: 16px;
+      --node-color: #b7791f;
+      --node-x: 26px;
+      --program-track-color: rgba(183, 121, 31, 0.34);
+    }
+
+    .risk-branch-map.portfolio-node .risk-branch-track.portfolio,
+    .risk-branch-map.portfolio-risk-node .risk-branch-track.portfolio,
+    .risk-branch-map.program-node .risk-branch-track.portfolio,
+    .risk-branch-map.program-node .risk-branch-track.program,
+    .risk-branch-map.program-risk-node .risk-branch-track.portfolio,
+    .risk-branch-map.program-risk-node .risk-branch-track.program,
+    .risk-branch-map.project-node .risk-branch-track.portfolio,
+    .risk-branch-map.project-node .risk-branch-track.program,
+    .risk-branch-map.project-node .risk-branch-track.project,
+    .risk-branch-map.project-risk-node .risk-branch-track.portfolio,
+    .risk-branch-map.project-risk-node .risk-branch-track.program,
+    .risk-branch-map.project-risk-node .risk-branch-track.project,
+    .risk-branch-map.standalone-node .risk-branch-track.portfolio,
+    .risk-branch-map.standalone-node .risk-branch-track.program,
+    .risk-branch-map.standalone-project-node .risk-branch-track.portfolio,
+    .risk-branch-map.standalone-project-node .risk-branch-track.program,
+    .risk-branch-map.standalone-risk-node .risk-branch-track.portfolio,
+    .risk-branch-map.standalone-risk-node .risk-branch-track.program,
+    .risk-branch-map.program-node .risk-branch-elbow,
+    .risk-branch-map.program-risk-node .risk-branch-elbow,
+    .risk-branch-map.project-node .risk-branch-elbow,
+    .risk-branch-map.project-risk-node .risk-branch-elbow,
+    .risk-branch-map.standalone-node .risk-branch-elbow,
+    .risk-branch-map.standalone-project-node .risk-branch-elbow,
+    .risk-branch-map.standalone-risk-node .risk-branch-elbow {
+      display: block;
+    }
+
     .risk-name-stack {
       align-items: flex-start;
       display: flex;
       flex-direction: column;
       gap: 2px;
       min-width: 0;
-      padding-left: 10px;
+      padding-left: 0;
       position: relative;
     }
 
     .risk-name-stack::before {
-      background: var(--risk-level-marker, transparent);
-      border-radius: 999px;
-      bottom: 2px;
-      content: "";
-      left: 0;
-      opacity: 0.72;
-      position: absolute;
-      top: 2px;
-      width: 3px;
+      display: none;
     }
 
     .risk-id-line {
@@ -2313,6 +2477,13 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
     if (kind === 'program') return 'program-risk';
     if (kind === 'project' || kind === 'standalone') return 'project-risk';
     return 'portfolio-risk';
+  }
+
+  riskTreeBranchClass(kind: RiskTreeSelectionKind): string {
+    if (kind === 'program') return 'program-risk-node';
+    if (kind === 'project') return 'project-risk-node';
+    if (kind === 'standalone') return 'standalone-risk-node';
+    return 'portfolio-risk-node';
   }
 
   openAddRiskDrawer(): void {

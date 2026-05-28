@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, HostListener, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PmConsoleIconComponent } from '../shared/pm-console-icon.component';
@@ -103,7 +103,7 @@ const unassignedManager = 'Unassigned';
                   <span class="pill-badge-circle">{{ standaloneList.length }}</span>
                 </div>
               </div>
-              
+
               <div class="toolbar-right">
                 <!-- Toggleable Search -->
                 <div class="search-toggle-container" [class.is-expanded]="showSearch">
@@ -356,10 +356,6 @@ const unassignedManager = 'Unassigned';
       flex: 1;
       min-height: 0;
       overflow: hidden;
-    }
-
-    .portfolio-register-shell.without-register-nav {
-      grid-template-columns: minmax(0, 1fr);
     }
 
     .portfolio-register-nav {
@@ -947,7 +943,7 @@ const unassignedManager = 'Unassigned';
       color: #de350b;
       cursor: help;
     }
-    
+
     .review-needed-alert ::ng-deep .icon {
       width: 12px !important;
       height: 12px !important;
@@ -977,7 +973,7 @@ export class PortfolioWorkspaceRegistersComponent {
   readonly createMenuOptions = createMenuOptions;
   readonly portfolioOptions = portfolioOptions;
 
-  activeSubTab: SubTab = 'projects';
+  activeSubTab: SubTab = 'risks';
   expandedProgramIds = new Set<string>(); // default closed by default
   searchQuery = '';
   statusFilter: string | null = null;
@@ -1230,33 +1226,33 @@ export class PortfolioWorkspaceRegistersComponent {
       'prog-1': ['check', 'bell', 'bell'],
       'proj-1-1': ['check', 'check', 'bell'],
       'proj-1-2': ['check', 'check', 'check'],
-      
+
       'prog-2': ['bell', 'cross', 'bell'],
       'proj-2-1': ['bell', 'cross', 'cross'],
       'proj-2-2': ['bell', 'bell', 'check'],
-      
+
       'prog-3': ['check', 'check', 'check'],
       'proj-3-1': ['check', 'check', 'check'],
       'proj-3-2': ['check', 'check', 'bell'],
-      
+
       'prog-4': ['bell', 'cross', 'check'],
       'proj-4-1': ['cross', 'cross', 'bell'],
       'proj-4-2': ['bell', 'cross', 'check'],
-      
+
       'prog-5': ['bell', 'cross', 'check'],
       'proj-5-1': ['bell', 'cross', 'check'],
-      
+
       'prog-6': ['check', 'check', 'bell'],
       'proj-6-1': ['check', 'check', 'check'],
       'proj-6-2': ['check', 'bell', 'bell'],
-      
+
       'prog-7': ['check', 'bell', 'cross'],
       'proj-7-1': ['check', 'bell', 'bell'],
-      
+
       'prog-8': ['check', 'check', 'check'],
       'proj-8-1': ['check', 'check', 'check'],
       'proj-8-2': ['check', 'check', 'bell'],
-      
+
       'sa-proj-1': ['check', 'check', 'check'],
       'sa-proj-2': ['bell', 'bell', 'check'],
       'sa-proj-3': ['check', 'check', 'check'],

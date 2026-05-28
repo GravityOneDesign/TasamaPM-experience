@@ -66,9 +66,7 @@ const portfolioWorkspaceTabs: readonly PmConsoleModeTabItem[] = [
       display: flex;
       flex-direction: column;
       height: 100%;
-      background:
-        radial-gradient(circle at 29% 0%, rgba(16, 6, 159, 0.055) 0, rgba(16, 6, 159, 0) 220px),
-        linear-gradient(180deg, #fbfbff 0%, #f8f9fc 42%);
+      background: #F1F7FA;
       color: #202633;
       padding: 16px 24px 24px 24px;
     }

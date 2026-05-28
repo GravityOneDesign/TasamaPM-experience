@@ -29,7 +29,7 @@ export type PmConsoleFrontdoorActionCtaMode = 'label' | 'arrow';
       .frontdoor-action-grid {
         display: grid;
         gap: 10px;
-        grid-template-columns: repeat(5, minmax(185px, 1fr));
+        grid-template-columns: repeat(var(--frontdoor-action-columns, 5), minmax(185px, 1fr));
         justify-content: start;
         margin: 0 -18px -24px;
         min-width: 0;
@@ -278,13 +278,13 @@ export type PmConsoleFrontdoorActionCtaMode = 'label' | 'arrow';
 
       @media (max-width: 1180px) {
         .frontdoor-action-grid {
-          grid-template-columns: repeat(5, minmax(185px, 1fr));
+          grid-template-columns: repeat(var(--frontdoor-action-columns, 5), minmax(185px, 1fr));
         }
       }
 
       @media (max-width: 780px) {
         .frontdoor-action-grid {
-          grid-template-columns: repeat(5, minmax(185px, 1fr));
+          grid-template-columns: repeat(var(--frontdoor-action-columns, 5), minmax(185px, 1fr));
         }
       }
 
@@ -297,7 +297,7 @@ export type PmConsoleFrontdoorActionCtaMode = 'label' | 'arrow';
     `,
   ],
   template: `
-    <section class="frontdoor-action-grid" [class.without-edge-bleed]="!edgeBleed" [attr.aria-label]="ariaLabel">
+    <section class="frontdoor-action-grid" [class.without-edge-bleed]="!edgeBleed" [style.--frontdoor-action-columns]="columnCount" [attr.aria-label]="ariaLabel">
       @for (action of actions; track action.id) {
         <button
           class="frontdoor-action-card decor-{{ action.decor || 'waves' }}"
@@ -342,6 +342,7 @@ export class PmConsoleFrontdoorActionCardsComponent {
   @Input() projectName = '';
   @Input() edgeBleed = true;
   @Input() ctaMode: PmConsoleFrontdoorActionCtaMode = 'label';
+  @Input() columnCount = 5;
 
   @Output() readonly actionSelected = new EventEmitter<string>();
 
