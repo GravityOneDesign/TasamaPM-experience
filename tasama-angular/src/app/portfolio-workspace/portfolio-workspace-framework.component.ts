@@ -1752,222 +1752,143 @@ export interface TaxonomyCard {
     @if (selectedCard) {
       <app-pm-console-plan-drawer
         [eyebrow]="selectedCard.id === 'priority' ? 'Portfolio Setup' : selectedCardGroup"
-        [title]="selectedCard.id === 'priority' ? 'Manage Priorities' : 'Add ' + selectedCard.title.toLowerCase()"
+        [title]="'Manage ' + selectedCard.title"
         [description]="'Manage and configure the active guidelines and options for ' + selectedCard.title.toLowerCase() + '.' "
         submitLabel="Add item"
         cancelLabel="Cancel"
-        [hideFooter]="selectedCard.id === 'priority'"
-        [panelClass]="selectedCard.id === 'priority' ? 'priority-drawer-view' : ''"
+        [hideFooter]="true"
+        [panelClass]="'priority-drawer-view'"
         (close)="closeDrawer()"
         (submitForm)="saveDrawer($event)"
       >
         <div planDrawerBody class="standards-drawer-body">
-          @if (selectedCard.id === 'priority') {
-            <div class="priority-drawer-table-wrapper" style="margin-top: 10px;">
-              <!-- Add new item and search row aligned to the top-right of the table -->
-              <div class="priority-add-row" style="display: flex; gap: 12px; justify-content: flex-end; align-items: center; margin-bottom: 16px;">
-                <!-- Expandable Search Box -->
-                <div class="priority-expandable-search" title="Search priorities">
-                  <span pmConsoleIcon="search" class="search-icon"></span>
-                  <input 
-                    type="text" 
-                    class="search-input" 
-                    placeholder="Search priorities..." 
-                    [(ngModel)]="searchQuery"
-                  />
-                </div>
-
-                <button 
-                  type="button" 
-                  class="add-workflow-btn" 
-                  (click)="addPriorityItem()"
-                  style="height: 32px; padding: 0 14px; border-radius: 8px; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px;"
-                >
-                  <span pmConsoleIcon="plus" style="font-size: 12px;"></span>
-                  <span>Add item</span>
-                </button>
+          <div class="priority-drawer-table-wrapper" style="margin-top: 10px;">
+            
+            <!-- Top bar: Count and Search aligned to the top matching Image 2 -->
+            <div class="priority-top-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; width: 100%;">
+              <div class="priority-count-label" style="font-size: 14px; font-weight: 500; color: #475569;">
+                Showing all {{ getFilteredItems().length }} {{ selectedCard.id === 'priority' ? 'priorities' : selectedCard.title.toLowerCase() }}
               </div>
-
-              <!-- Sleek platform table matching Image 2 and User table style -->
-              <div class="user-table-wrapper" style="border-radius: 8px;">
-                <table class="user-table" style="margin: 0; width: 100%;">
-                  <thead>
-                    <tr>
-                      <th style="width: 75%; padding: 10px 16px; font-size: 11px;">Name</th>
-                      <th style="width: 25%; padding: 10px 16px; font-size: 11px; text-align: center;">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (item of getFilteredPriorities(); track item) {
-                      <tr>
-                        <td style="padding: 10px 16px; font-size: 13px;">
-                          @if (editingPriorityIndex === selectedCard.items.indexOf(item)) {
-                            <input 
-                              type="text" 
-                              class="form-control" 
-                              [(ngModel)]="editingPriorityValue"
-                              (keydown.enter)="saveEditPriority(selectedCard.items.indexOf(item))"
-                              (keydown.escape)="cancelEditPriority()"
-                              style="height: 28px; padding: 4px 8px; font-size: 12.5px; width: 100%; box-sizing: border-box;"
-                              autofocus
-                            />
-                          } @else {
-                            <span style="font-weight: 500; color: #1e293b;">{{ item }}</span>
-                          }
-                        </td>
-                        <td style="padding: 10px 16px; text-align: center; overflow: visible;">
-                          <div style="display: flex; gap: 8px; justify-content: center; align-items: center; overflow: visible; position: relative;">
-                            @if (editingPriorityIndex === selectedCard.items.indexOf(item)) {
-                              <button 
-                                type="button" 
-                                class="priority-action-btn" 
-                                (click)="saveEditPriority(selectedCard.items.indexOf(item))" 
-                                title="Save"
-                                style="color: #059669;"
-                              >
-                                <span pmConsoleIcon="check"></span>
-                              </button>
-                              <button 
-                                type="button" 
-                                class="priority-action-btn delete" 
-                                (click)="cancelEditPriority()" 
-                                title="Cancel"
-                              >
-                                <span pmConsoleIcon="x"></span>
-                              </button>
-                            } @else {
-                              <!-- Actions Container three dot menu with popup dropdown -->
-                              <div style="position: relative; display: inline-block; overflow: visible;">
-                                <button 
-                                  type="button" 
-                                  class="priority-action-btn" 
-                                  (click)="toggleActionMenu($event, selectedCard.items.indexOf(item))"
-                                  title="Actions"
-                                >
-                                  <span pmConsoleIcon="more-horizontal"></span>
-                                </button>
-                                
-                                @if (activeActionMenuIndex === selectedCard.items.indexOf(item)) {
-                                  <div class="priority-dropdown-menu animation-fade" style="position: absolute; right: 0; top: 32px; background: #ffffff; border: 1px solid #dfe4ee; border-radius: 8px; box-shadow: 0 4px 12px rgba(25, 33, 61, 0.08); z-index: 100; min-width: 100px; padding: 4px 0;">
-                                    <button 
-                                      type="button" 
-                                      class="dropdown-item" 
-                                      (click)="triggerEditRow(selectedCard.items.indexOf(item), item)" 
-                                      style="display: flex; align-items: center; gap: 8px; width: 100%; border: none; background: transparent; padding: 8px 12px; font-size: 12.5px; color: #334155; text-align: left; cursor: pointer;"
-                                    >
-                                      <span pmConsoleIcon="edit-2" style="font-size: 12px; color: #64748b;"></span>
-                                      <span>Edit</span>
-                                    </button>
-                                    <button 
-                                      type="button" 
-                                      class="dropdown-item delete" 
-                                      (click)="triggerDeleteRow(item)" 
-                                      style="display: flex; align-items: center; gap: 8px; width: 100%; border: none; background: transparent; padding: 8px 12px; font-size: 12.5px; color: #ef4444; text-align: left; cursor: pointer;"
-                                    >
-                                      <span pmConsoleIcon="trash-2" style="font-size: 12px; color: #ef4444;"></span>
-                                      <span>Delete</span>
-                                    </button>
-                                  </div>
-                                }
-                              </div>
-                            }
-                          </div>
-                        </td>
-                      </tr>
-                    }
-                    @if (getFilteredPriorities().length === 0) {
-                      <tr>
-                        <td colspan="2" style="padding: 24px; text-align: center; color: #94a3b8; font-style: italic;">
-                          No priority items match search.
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-
-                <!-- Image 2 styled footer replacing pagination footer entirely -->
-                <div class="priority-footer" style="padding: 10px 16px; background: #f8fafc; border-top: 1px solid #dfe4ee; font-size: 12px; color: #64748b; font-weight: 500; text-align: right;">
-                  {{ getFilteredPriorities().length }} {{ getFilteredPriorities().length === 1 ? 'item' : 'items' }}
-                </div>
-              </div>
-            </div>
-          } @else {
-            <!-- Current Items List tags -->
-            <div class="drawer-section compact" style="margin-bottom: 24px;">
-              <span class="drawer-section-title">Current {{ selectedCard.title }} Options</span>
-              <div class="standards-tags-list">
-                @for (item of selectedCard.items; track item; let i = $index) {
-                  <span class="standards-tag">
-                    <span class="tag-text">{{ item }}</span>
-                    <button type="button" class="tag-delete-btn" (click)="removeDrawerItem(i)" aria-label="Delete item">
-                      <span pmConsoleIcon="x"></span>
-                    </button>
-                  </span>
-                }
-                @if (selectedCard.items.length === 0) {
-                  <p class="empty-items-text">No active categories defined.</p>
-                }
+              
+              <!-- Expandable Search Box -->
+              <div class="priority-expandable-search" [attr.title]="'Search ' + (selectedCard.id === 'priority' ? 'priorities' : selectedCard.title.toLowerCase())">
+                <span pmConsoleIcon="search" class="search-icon"></span>
+                <input 
+                  type="text" 
+                  class="search-input" 
+                  [placeholder]="'Search ' + (selectedCard.id === 'priority' ? 'priorities' : selectedCard.title.toLowerCase()) + '...'" 
+                  [(ngModel)]="searchQuery"
+                />
               </div>
             </div>
 
-            <!-- outcome styled text area from Image 2 -->
-            <div class="drawer-section">
-              <label class="form-label" for="newItemName">
-                {{ selectedCard.title }} *
-              </label>
-              <textarea 
-                id="newItemName"
-                class="form-control text-area-outcome" 
-                placeholder="Describe the {{ selectedCard.title.toLowerCase() }} users should see" 
-                [(ngModel)]="newDrawerItem"
-                name="newDrawerItem"
-                rows="3"
-                required
-              ></textarea>
-            </div>
-
-            <!-- measure styled input from Image 2 -->
-            <div class="drawer-section" style="margin-top: 20px;">
-              <label class="form-label" for="newMeasure">
-                Measure
-              </label>
+            <!-- Input Row: Enter new item and Add button matching Image 2 -->
+            <div class="priority-add-input-row" style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px; width: 100%;">
               <input 
-                id="newMeasure"
                 type="text" 
                 class="form-control" 
-                placeholder="How will this be measured?" 
-                [(ngModel)]="drawerMeasure"
-                name="drawerMeasure"
+                [placeholder]="'Enter new ' + (selectedCard.id === 'priority' ? 'priority' : selectedCard.title.toLowerCase()) + '...'" 
+                [(ngModel)]="newPriorityName"
+                (keydown.enter)="addItem()"
+                style="height: 38px; font-size: 13px; flex: 1; border: 1px solid #d0d5dd; border-radius: 8px; padding: 8px 12px;"
               />
+              <button 
+                type="button" 
+                class="priority-add-btn" 
+                (click)="addItem()"
+                style="height: 38px; padding: 0 18px; border-radius: 8px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; background-color: #10069f; color: #ffffff; border: none; cursor: pointer; transition: all 0.2s;"
+              >
+                <span pmConsoleIcon="plus" style="font-size: 12px;"></span>
+                <span>Add</span>
+              </button>
             </div>
 
-            <!-- owner and status side by side select from Image 2 -->
-            <div class="form-row-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px;">
-              <div class="drawer-section">
-                <label class="form-label" for="drawerOwner">Owner</label>
-                <div class="select-wrapper">
-                  <select id="drawerOwner" [(ngModel)]="drawerOwner" name="drawerOwner" class="form-control select-control">
-                    <option value="Fatima Qahtani">Fatima Qahtani</option>
-                    <option value="Muna Hassan">Muna Hassan</option>
-                    <option value="PMO Desk">PMO Desk</option>
-                  </select>
-                  <span pmConsoleIcon="chevron-down" class="select-chevron"></span>
-                </div>
-              </div>
-
-              <div class="drawer-section">
-                <label class="form-label" for="drawerStatus">Status</label>
-                <div class="select-wrapper">
-                  <select id="drawerStatus" [(ngModel)]="drawerStatus" name="drawerStatus" class="form-control select-control">
-                    <option value="Active">Active</option>
-                    <option value="Draft">Draft</option>
-                    <option value="Archived">Archived</option>
-                  </select>
-                  <span pmConsoleIcon="chevron-down" class="select-chevron"></span>
-                </div>
-              </div>
+            <!-- Sleek platform table matching Image 2 -->
+            <div class="priority-table-wrapper">
+              <table class="priority-table" style="margin: 0; width: 100%;">
+                <thead>
+                  <tr>
+                    <th style="width: 15%; text-align: left;">S.No</th>
+                    <th style="width: 60%; text-align: left;">{{ selectedCard.title }}</th>
+                    <th style="width: 25%; text-align: center;">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of getFilteredItems(); track item; let i = $index) {
+                    <tr>
+                      <td style="font-size: 13px; color: #475569; font-weight: 500;">
+                        {{ i + 1 }}
+                      </td>
+                      <td style="font-size: 13px;">
+                        @if (editingPriorityIndex === selectedCard.items.indexOf(item)) {
+                          <input 
+                            type="text" 
+                            class="form-control" 
+                            [(ngModel)]="editingPriorityValue"
+                            (keydown.enter)="saveEditItem(selectedCard.items.indexOf(item))"
+                            (keydown.escape)="cancelEditItem()"
+                            style="height: 28px; padding: 4px 8px; font-size: 12.5px; width: 100%; box-sizing: border-box;"
+                            autofocus
+                          />
+                        } @else {
+                          <span style="font-weight: 500; color: #1e293b;">{{ item }}</span>
+                        }
+                      </td>
+                      <td style="text-align: center; vertical-align: middle;">
+                        <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+                          @if (editingPriorityIndex === selectedCard.items.indexOf(item)) {
+                            <button 
+                              type="button" 
+                              class="priority-action-btn" 
+                              (click)="saveEditItem(selectedCard.items.indexOf(item))" 
+                              title="Save"
+                              style="color: #059669; background: transparent; border: none; display: inline-flex; align-items: center; justify-content: center;"
+                            >
+                              <span pmConsoleIcon="check" style="font-size: 16px;"></span>
+                            </button>
+                            <button 
+                              type="button" 
+                              class="priority-action-btn delete" 
+                              (click)="cancelEditItem()" 
+                              title="Cancel"
+                              style="color: #ef4444; background: transparent; border: none; display: inline-flex; align-items: center; justify-content: center;"
+                            >
+                              <span pmConsoleIcon="x" style="font-size: 16px;"></span>
+                            </button>
+                          } @else {
+                            <!-- Actions Container: Edit & Delete available on first click matching Image 2 -->
+                            <button 
+                              type="button" 
+                              class="priority-row-action-btn edit-btn" 
+                              (click)="startEditItem(selectedCard.items.indexOf(item), item)" 
+                              title="Edit"
+                            >
+                              <span pmConsoleIcon="edit-2" style="font-size: 14px;"></span>
+                            </button>
+                            <button 
+                              type="button" 
+                              class="priority-row-action-btn delete-btn" 
+                              (click)="deleteItem(selectedCard.items.indexOf(item))" 
+                              title="Delete"
+                            >
+                              <span pmConsoleIcon="trash-2" style="font-size: 14px;"></span>
+                            </button>
+                          }
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                  @if (getFilteredItems().length === 0) {
+                    <tr>
+                      <td colspan="3" style="padding: 24px; text-align: center; color: #94a3b8; font-style: italic;">
+                        No items match search.
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
             </div>
-          }
+          </div>
         </div>
       </app-pm-console-plan-drawer>
     }
@@ -5337,6 +5258,73 @@ export interface TaxonomyCard {
       color: #ef4444;
     }
 
+    /* Custom Priority Table styles to avoid inheritance issues from User Management */
+    .priority-table-wrapper {
+      background: #ffffff;
+      border: 1px solid #e3e5e9;
+      border-radius: 12px;
+      overflow: hidden;
+      width: 100%;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    }
+    .priority-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      text-align: left;
+    }
+    .priority-table th {
+      background: #f8fafc;
+      border-bottom: 1px solid #eceef3;
+      color: #475569;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px 16px;
+    }
+    .priority-table td {
+      border-bottom: 1px solid #eceef3;
+      color: #1e293b;
+      font-size: 13px;
+      padding: 10px 16px;
+      vertical-align: middle;
+    }
+    .priority-table tr:last-child td {
+      border-bottom: none;
+    }
+    .priority-table tr:hover td {
+      background: #f8fafc;
+    }
+
+    /* Direct Edit & Delete Buttons */
+    .priority-row-action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      padding: 0;
+    }
+    .priority-row-action-btn.edit-btn {
+      border: 1px solid #cbd5e1;
+      color: #10069f;
+    }
+    .priority-row-action-btn.edit-btn:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+    .priority-row-action-btn.delete-btn {
+      border: 1px solid #fecaca;
+      color: #ef4444;
+    }
+    .priority-row-action-btn.delete-btn:hover {
+      background: #fee2e2;
+      border-color: #fca5a5;
+    }
+
     .priority-expandable-search {
       position: relative;
       display: flex;
@@ -6230,7 +6218,20 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
   drawerOwner = 'Fatima Qahtani';
   drawerStatus = 'Active';
 
+  private readonly disabledDrawerGroups = new Set([
+    'Change Request Management',
+    'Stage Gate Management',
+    'Monitoring & Reporting',
+    'Portfolio & Investment Prioritization',
+    'Risk Management',
+    'Funding Sources',
+    'Financial Cycle'
+  ]);
+
   openCardDrawer(card: TaxonomyCard, group: string): void {
+    if (this.disabledDrawerGroups.has(group)) {
+      return;
+    }
     if (group === 'Workflow Designer') {
       this.isCreatingWorkflow = true;
       this.editingWorkflowId = card.id;
@@ -6401,7 +6402,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
   searchQuery = '';
   activeActionMenuIndex: number | null = null;
 
-  getFilteredPriorities(): string[] {
+  getFilteredItems(): string[] {
     if (!this.selectedCard) return [];
     const q = this.searchQuery.trim().toLowerCase();
     if (!q) return this.selectedCard.items;
@@ -6416,7 +6417,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
 
   triggerEditRow(index: number, item: string): void {
     this.activeActionMenuIndex = null;
-    this.startEditPriority(index, item);
+    this.startEditItem(index, item);
   }
 
   triggerDeleteRow(item: string): void {
@@ -6424,65 +6425,73 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     if (this.selectedCard) {
       const idx = this.selectedCard.items.indexOf(item);
       if (idx !== -1) {
-        this.deletePriorityItem(idx);
+        this.deleteItem(idx);
       }
     }
   }
 
-  addPriorityItem(): void {
+  addItem(): void {
     const val = this.newPriorityName.trim();
     if (val && this.selectedCard) {
       this.selectedCard.items = [...this.selectedCard.items, val];
       this.newPriorityName = '';
-
-      // Update parent list
-      const idx = this.projectSetupCards.findIndex(c => c.id === 'priority');
-      if (idx !== -1) {
-        this.projectSetupCards[idx].items = [...this.selectedCard.items];
-      }
-      this.changeDetector.markForCheck();
+      this.syncSelectedCardBack();
     }
   }
 
-  deletePriorityItem(index: number): void {
+  deleteItem(index: number): void {
     if (this.selectedCard) {
       this.selectedCard.items = this.selectedCard.items.filter((_, i) => i !== index);
-
-      // Update parent list
-      const idx = this.projectSetupCards.findIndex(c => c.id === 'priority');
-      if (idx !== -1) {
-        this.projectSetupCards[idx].items = [...this.selectedCard.items];
-      }
-      this.changeDetector.markForCheck();
+      this.syncSelectedCardBack();
     }
   }
 
-  startEditPriority(index: number, val: string): void {
+  startEditItem(index: number, val: string): void {
     this.editingPriorityIndex = index;
     this.editingPriorityValue = val;
     this.changeDetector.markForCheck();
   }
 
-  saveEditPriority(index: number): void {
+  saveEditItem(index: number): void {
     const val = this.editingPriorityValue.trim();
     if (val && this.selectedCard) {
       this.selectedCard.items[index] = val;
       this.selectedCard.items = [...this.selectedCard.items];
       this.editingPriorityIndex = null;
       this.editingPriorityValue = '';
-
-      // Update parent list
-      const idx = this.projectSetupCards.findIndex(c => c.id === 'priority');
-      if (idx !== -1) {
-        this.projectSetupCards[idx].items = [...this.selectedCard.items];
-      }
-      this.changeDetector.markForCheck();
+      this.syncSelectedCardBack();
     }
   }
 
-  cancelEditPriority(): void {
+  cancelEditItem(): void {
     this.editingPriorityIndex = null;
     this.editingPriorityValue = '';
+    this.changeDetector.markForCheck();
+  }
+
+  private syncSelectedCardBack(): void {
+    if (!this.selectedCard) return;
+    const cardId = this.selectedCard.id;
+    const items = [...this.selectedCard.items];
+    const group = this.selectedCardGroup;
+
+    let arr: TaxonomyCard[] | null = null;
+    if (group === 'Project Setup') {
+      arr = this.projectSetupCards;
+    } else if (group === 'Project Planning') {
+      arr = this.projectPlanningCards;
+    } else if (group === 'Project Closure') {
+      arr = this.projectClosureCards;
+    } else if (group === 'Benefits and Config') {
+      arr = this.benefitsConfigCards;
+    }
+
+    if (arr) {
+      const idx = arr.findIndex(c => c.id === cardId);
+      if (idx !== -1) {
+        arr[idx].items = items;
+      }
+    }
     this.changeDetector.markForCheck();
   }
 
