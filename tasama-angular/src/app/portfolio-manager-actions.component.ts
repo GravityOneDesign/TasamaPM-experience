@@ -1552,45 +1552,6 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
     this.changeDetector.markForCheck();
   }
 
-  // New implementation for calendar tasks
-  generateCalendarItems(): PortfolioCalendarItem[] {
-    const tasks = [
-      { label: 'Status Reports', kind: 'report', tone: 'blue' },
-      { label: 'Project Plans', kind: 'plan', tone: 'blue' },
-      { label: 'Change Requests', kind: 'change', tone: 'red' },
-      { label: 'Benefits', kind: 'benefit', tone: 'blue' },
-      { label: 'Governance Register', kind: 'governance', tone: 'green' },
-    ];
-
-    const calendarItems: PortfolioCalendarItem[] = [];
-    const today = new Date();
-    const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
-
-    // Generate tasks for the current month
-    for (let day = 1; day <= new Date(currentYear, currentMonth + 1, 0).getDate(); day++) {
-      const date = new Date(currentYear, currentMonth, day);
-      const numTasks = Math.floor(Math.random() * 4); // 0 to 3 tasks per day
-
-      for (let i = 0; i < numTasks; i++) {
-        const randomTask = tasks[Math.floor(Math.random() * tasks.length)];
-        calendarItems.push({
-          id: `${randomTask.kind}-${date.toISOString()}-${i}`,
-          date: date.toISOString().split('T')[0], // YYYY-MM-DD
-          label: randomTask.label,
-          tone: randomTask.tone,
-          project: 'Various Projects',
-          kind: randomTask.kind,
-          targetType: 'portfolio',
-        });
-      }
-    }
-
-    return calendarItems;
-  }
-
-  calendarActionItems: PortfolioCalendarItem[] = this.generateCalendarItems();
-
   // Private helpers
   private parseDate(value: string): Date {
     return new Date(`${value}T00:00:00`);

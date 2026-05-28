@@ -476,7 +476,7 @@ interface CalendarPopoverPosition {
         border-radius: 8px;
         box-shadow: 0 18px 40px rgba(25, 33, 61, 0.18);
         color: #252a34;
-        max-width: 280px;
+        max-width: 370px;
         min-width: 248px;
         padding: 12px;
         position: fixed;

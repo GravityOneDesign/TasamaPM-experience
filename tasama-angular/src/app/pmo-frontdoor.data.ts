@@ -143,353 +143,76 @@ export const pmoFrontdoorWorkFilters: readonly PortfolioBoardFilter[] = [
   { id: 'governance', label: 'Governance committees', icon: 'calendar' },
 ];
 
-const pmoWorkTargets: readonly { readonly project: string; readonly targetType: PmoFrontdoorWorkItem['targetType']; readonly owner: string }[] = [
-  { project: 'Client Portfolio 1', targetType: 'portfolio', owner: 'MH' },
-  { project: 'Client Portfolio 2', targetType: 'portfolio', owner: 'JT' },
-  { project: 'TASAMA Internal', targetType: 'portfolio', owner: 'VD' },
-  { project: 'Business Excellence', targetType: 'portfolio', owner: 'AK' },
-  { project: 'ICT Division', targetType: 'portfolio', owner: 'KA' },
-  { project: 'Sustainable Infrastructure', targetType: 'portfolio', owner: 'RS' },
-  { project: 'Farm Tech Initiative', targetType: 'project', owner: 'CS' },
-  { project: 'I - Chamber Sustainability Network', targetType: 'project', owner: 'CN' },
-  { project: 'Audit Committee', targetType: 'portfolio', owner: 'HA' },
-  { project: 'Design Decisions Committee', targetType: 'portfolio', owner: 'CV' },
-];
+// Generate randomized calendar work items for PMO calendar view
+function generatePmoCalendarWorkItems(): readonly PmoFrontdoorWorkItem[] {
+  const tasks = [
+    { label: 'Status Reports', kind: 'report' as const, tone: 'blue' as const },
+    { label: 'Project Plans', kind: 'plan' as const, tone: 'blue' as const },
+    { label: 'Change Requests', kind: 'change' as const, tone: 'red' as const },
+    { label: 'Benefits', kind: 'benefit' as const, tone: 'blue' as const },
+    { label: 'Governance Committees', kind: 'governance' as const, tone: 'green' as const },
+  ];
 
-interface PmoWorkGroupConfig {
-  readonly id: string;
-  readonly date: string;
-  readonly label: string;
-  readonly project: string;
-  readonly type: string;
-  readonly kind: PmoFrontdoorWorkItem['kind'];
-  readonly tone: PmoFrontdoorWorkItem['tone'];
-  readonly owner: string;
-  readonly meta: string;
-  readonly cta: string;
-  readonly column: PmoFrontdoorWorkItem['column'];
-  readonly count: number;
-  readonly detailLabel: string;
-  readonly detailType?: string;
-  readonly detailDates: readonly string[];
-  readonly detailMetas: readonly string[];
-  readonly detailSummary: string;
+  const calendarItems: PmoFrontdoorWorkItem[] = [];
+  const today = new Date(2026, 4, 26); // May 26, 2026
+  const daysInMonth = new Date(2026, 5, 0).getDate(); // May has 31 days
+
+  // Generate tasks for each day of May, with varied distribution
+  for (let day = 1; day <= daysInMonth; day++) {
+    // Weighted randomization: 40% no tasks, 35% 1-2 tasks, 25% 3-5 tasks
+    // Force dates 25 & 26 to have 3+ tasks so they display consolidated summary
+    let numTasks = 0;
+    
+    if (day === 25 || day === 26) {
+      numTasks = Math.floor(Math.random() * 2) + 3; // 3-4 tasks for dates 25 & 26
+    } else {
+      const rand = Math.random();
+      if (rand < 0.4) {
+        numTasks = 0; // 40% no tasks
+      } else if (rand < 0.75) {
+        numTasks = Math.random() < 0.5 ? 1 : 2; // 35% have 1-2 tasks
+      } else {
+        numTasks = Math.floor(Math.random() * 3) + 3; // 25% have 3-5 tasks
+      }
+    }
+
+    for (let i = 0; i < numTasks; i++) {
+      const randomTask = tasks[Math.floor(Math.random() * tasks.length)];
+      const dateStr = `2026-05-${String(day).padStart(2, '0')}`;
+      
+      // Determine column based on date relative to today (May 26, 2026)
+      let column: 'Overdue' | 'This week' | 'Upcoming';
+      if (day < 26) {
+        column = 'Overdue';
+      } else if (day <= 30) {
+        column = 'This week';
+      } else {
+        column = 'Upcoming';
+      }
+      
+      calendarItems.push({
+        id: `pmo-cal-${dateStr}-${i}`,
+        date: dateStr,
+        label: randomTask.label,
+        project: 'PMO Workspace',
+        targetType: 'portfolio',
+        type: randomTask.label,
+        kind: randomTask.kind,
+        tone: randomTask.tone,
+        owner: 'PMO',
+        meta: 'Pending',
+        cta: 'Review',
+        column: column,
+        detailItems: [],
+        detailSummary: `Review ${randomTask.label}`,
+      });
+    }
+  }
+
+  return calendarItems;
 }
 
-function createPmoWorkGroup(config: PmoWorkGroupConfig): PmoFrontdoorWorkItem {
-  const detailItems = Array.from({ length: config.count }, (_, index): PmoFrontdoorWorkItem => {
-    const target = pmoWorkTargets[index % pmoWorkTargets.length];
-    const dueDate = config.detailDates[index % config.detailDates.length];
-    return {
-      id: `${config.id}-item-${String(index + 1).padStart(2, '0')}`,
-      date: dueDate,
-      label: `${config.detailLabel} ${target.project}`,
-      project: target.project,
-      targetType: target.targetType,
-      type: config.detailType || config.type,
-      kind: config.kind,
-      tone: config.tone,
-      owner: target.owner,
-      meta: config.detailMetas[index % config.detailMetas.length],
-      cta: config.kind === 'change' ? 'Assess' : config.kind === 'governance' ? 'Open' : 'Review',
-      column: config.column,
-    };
-  });
-
-  return {
-    id: config.id,
-    date: config.date,
-    label: config.label,
-    project: config.project,
-    targetType: 'portfolio',
-    type: config.type,
-    kind: config.kind,
-    tone: config.tone,
-    owner: config.owner,
-    meta: config.meta,
-    cta: config.cta,
-    column: config.column,
-    detailSummary: config.detailSummary,
-    detailItems,
-  };
-}
-
-const overdueDates = ['2026-05-20', '2026-05-21', '2026-05-22', '2026-05-25'] as const;
-const thisWeekDates = ['2026-05-26', '2026-05-27', '2026-05-28', '2026-05-29', '2026-05-30'] as const;
-const upcomingDates = ['2026-06-01', '2026-06-03', '2026-06-05', '2026-06-08', '2026-06-12'] as const;
-
-export const pmoFrontdoorWorkItems: readonly PmoFrontdoorWorkItem[] = [
-  createPmoWorkGroup({
-    id: 'pmo-plan-overdue',
-    date: '2026-05-20',
-    label: 'Approve / review plans',
-    project: '5 plans overdue',
-    type: 'Project Plans',
-    kind: 'plan',
-    tone: 'blue',
-    owner: 'MH',
-    meta: '5 overdue',
-    cta: 'View',
-    column: 'Overdue',
-    count: 5,
-    detailLabel: 'Review plan for',
-    detailDates: overdueDates,
-    detailMetas: ['Overdue by 6 days', 'Overdue by 5 days', 'Overdue by 4 days', 'Overdue by 1 day'],
-    detailSummary: 'Plans awaiting PMO approval before teams can proceed with execution baselines.',
-  }),
-  createPmoWorkGroup({
-    id: 'pmo-report-overdue',
-    date: '2026-05-21',
-    label: 'Review status reports',
-    project: '7 reports overdue',
-    type: 'Status Reports',
-    kind: 'report',
-    tone: 'blue',
-    owner: 'MH',
-    meta: '5 overdue',
-    cta: 'View',
-    column: 'Overdue',
-    count: 5,
-    detailLabel: 'Review status report for',
-    detailDates: overdueDates,
-    detailMetas: ['Overdue by 6 days', 'Overdue by 5 days', 'Overdue by 2 days'],
-    detailSummary: 'Submitted status reports need PMO validation, comments, and follow-up decisions.',
-  }),
-  createPmoWorkGroup({
-    id: 'pmo-cr-overdue',
-    date: '2026-05-22',
-    label: 'Assess change requests',
-    project: '5 CRs overdue',
-    type: 'Change Requests',
-    kind: 'change',
-    tone: 'red',
-    owner: 'JT',
-    meta: '5 overdue',
-    cta: 'View',
-    column: 'Overdue',
-    count: 5,
-    detailLabel: 'Assess CR for',
-    detailDates: overdueDates,
-    detailMetas: ['Overdue by 4 days', 'Overdue by 3 days', 'Overdue by 1 day'],
-    detailSummary: 'Change requests need impact validation before committee decisions are recorded.',
-  }),
-  createPmoWorkGroup({
-    id: 'pmo-governance-overdue',
-    date: '2026-05-25',
-    label: 'Prepare governance committees',
-    project: '1 committee pack overdue',
-    type: 'Governance Committees',
-    kind: 'governance',
-    tone: 'green',
-    owner: 'HA',
-    meta: '1 overdue',
-    cta: 'View',
-    column: 'Overdue',
-    count: 1,
-    detailLabel: 'Prepare committee pack for',
-    detailDates: overdueDates,
-    detailMetas: ['Pack overdue', 'Decision record overdue'],
-    detailSummary: 'Governance committee packs and decision records require PMO completion.',
-  }),
-  createPmoWorkGroup({
-    id: 'pmo-benefit-overdue',
-    date: '2026-05-25',
-    label: 'Review benefits',
-    project: '2 benefits overdue',
-    type: 'Benefits',
-    kind: 'benefit',
-    tone: 'blue',
-    owner: 'CS',
-    meta: '2 overdue',
-    cta: 'View',
-    column: 'Overdue',
-    count: 2,
-    detailLabel: 'Review benefit evidence for',
-    detailDates: overdueDates,
-    detailMetas: ['Evidence overdue', 'Measure overdue'],
-    detailSummary: 'Overdue benefit evidence and measure updates are ready for PMO assurance.',
-  }),
-  createPmoWorkGroup({
-    id: 'pmo-plan-week',
-    date: '2026-05-26',
-    label: 'Approve / review plans',
-    project: '2 plans this week',
-    type: 'Project Plans',
-    kind: 'plan',
-    tone: 'blue',
-    owner: 'MH',
-    meta: '2 this week',
-    cta: 'View',
-    column: 'This week',
-    count: 2,
-    detailLabel: 'Review plan for',
-    detailDates: thisWeekDates,
-    detailMetas: ['Due today', 'Due tomorrow', 'Due in 2 days', 'Due Friday'],
-    detailSummary: 'High-volume planning reviews due this week across active portfolios and projects.',
-  }),
-  createPmoWorkGroup({
-    id: 'pmo-report-week',
-    date: '2026-05-26',
-    label: 'Review status reports',
-    project: '2 reports this week',
-    type: 'Status Reports',
-    kind: 'report',
-    tone: 'blue',
-    owner: 'MH',
-    meta: '2 this week',
-    cta: 'View',
-    column: 'This week',
-    count: 2,
-    detailLabel: 'Review status report for',
-    detailDates: thisWeekDates,
-    detailMetas: ['Due today', 'Due tomorrow', 'Due in 2 days', 'Due this week'],
-    detailSummary: 'Status reports need review before the portfolio digest and management update.',
-  }),
-  createPmoWorkGroup({
-    id: 'pmo-benefit-week',
-    date: '2026-05-28',
-    label: 'Review benefits',
-    project: '1 benefit this week',
-    type: 'Benefits',
-    kind: 'benefit',
-    tone: 'blue',
-    owner: 'CS',
-    meta: '1 this week',
-    cta: 'View',
-    column: 'This week',
-    count: 1,
-    detailLabel: 'Review benefit evidence for',
-    detailDates: thisWeekDates,
-    detailMetas: ['Evidence due today', 'Measure due tomorrow', 'Owner response due Friday'],
-    detailSummary: 'Benefit evidence and measure updates are ready for PMO assurance.',
-  }),
-  createPmoWorkGroup({
-    id: 'pmo-cr-week',
-    date: '2026-05-29',
-    label: 'Assess change requests',
-    project: '4 CRs this week',
-    type: 'Change Requests',
-    kind: 'change',
-    tone: 'red',
-    owner: 'JT',
-    meta: '4 this week',
-    cta: 'View',
-    column: 'This week',
-    count: 4,
-    detailLabel: 'Assess CR for',
-    detailDates: thisWeekDates,
-    detailMetas: ['Impact due today', 'Finance review due tomorrow', 'Committee route due Friday'],
-    detailSummary: 'Change requests require PMO impact review, routing, and recommendation notes.',
-  }),
-  createPmoWorkGroup({
-    id: 'pmo-governance-week',
-    date: '2026-05-30',
-    label: 'Prepare governance committees',
-    project: '3 committees this week',
-    type: 'Governance Committees',
-    kind: 'governance',
-    tone: 'green',
-    owner: 'HA',
-    meta: '3 this week',
-    cta: 'View',
-    column: 'This week',
-    count: 3,
-    detailLabel: 'Prepare committee pack for',
-    detailDates: thisWeekDates,
-    detailMetas: ['Agenda due today', 'Pack due tomorrow', 'Record due Friday'],
-    detailSummary: 'Governance forums need agendas, evidence packs, and decision records prepared.',
-  }),
-  createPmoWorkGroup({
-    id: 'pmo-plan-upcoming',
-    date: '2026-06-01',
-    label: 'Approve / review plans',
-    project: '2 plans upcoming',
-    type: 'Project Plans',
-    kind: 'plan',
-    tone: 'blue',
-    owner: 'MH',
-    meta: '2 upcoming',
-    cta: 'View',
-    column: 'Upcoming',
-    count: 2,
-    detailLabel: 'Review plan for',
-    detailDates: upcomingDates,
-    detailMetas: ['Due 01 Jun', 'Due 03 Jun', 'Due 05 Jun', 'Due 08 Jun'],
-    detailSummary: 'Upcoming baseline and replanning submissions are queued for PMO review.',
-  }),
-  createPmoWorkGroup({
-    id: 'pmo-report-upcoming',
-    date: '2026-06-03',
-    label: 'Review status reports',
-    project: '5 reports upcoming',
-    type: 'Status Reports',
-    kind: 'report',
-    tone: 'blue',
-    owner: 'MH',
-    meta: '5 upcoming',
-    cta: 'View',
-    column: 'Upcoming',
-    count: 5,
-    detailLabel: 'Review status report for',
-    detailDates: upcomingDates,
-    detailMetas: ['Due 03 Jun', 'Due 05 Jun', 'Due 08 Jun'],
-    detailSummary: 'Scheduled reports will need PMO review in the next reporting cycle.',
-  }),
-  createPmoWorkGroup({
-    id: 'pmo-benefit-upcoming',
-    date: '2026-06-05',
-    label: 'Review benefits',
-    project: '2 benefits upcoming',
-    type: 'Benefits',
-    kind: 'benefit',
-    tone: 'blue',
-    owner: 'CS',
-    meta: '2 upcoming',
-    cta: 'View',
-    column: 'Upcoming',
-    count: 2,
-    detailLabel: 'Review benefit evidence for',
-    detailDates: upcomingDates,
-    detailMetas: ['Due 05 Jun', 'Due 08 Jun', 'Due 12 Jun'],
-    detailSummary: 'Upcoming benefit assurance checks are queued for PMO validation.',
-  }),
-  createPmoWorkGroup({
-    id: 'pmo-cr-upcoming',
-    date: '2026-06-08',
-    label: 'Assess change requests',
-    project: '3 CRs upcoming',
-    type: 'Change Requests',
-    kind: 'change',
-    tone: 'red',
-    owner: 'JT',
-    meta: '3 upcoming',
-    cta: 'View',
-    column: 'Upcoming',
-    count: 3,
-    detailLabel: 'Assess CR for',
-    detailDates: upcomingDates,
-    detailMetas: ['Due 08 Jun', 'Due 12 Jun', 'Next committee'],
-    detailSummary: 'Upcoming change requests need impact review before governance routing.',
-  }),
-  createPmoWorkGroup({
-    id: 'pmo-governance-upcoming',
-    date: '2026-06-12',
-    label: 'Prepare governance committees',
-    project: '1 committee upcoming',
-    type: 'Governance Committees',
-    kind: 'governance',
-    tone: 'green',
-    owner: 'HA',
-    meta: '1 upcoming',
-    cta: 'View',
-    column: 'Upcoming',
-    count: 1,
-    detailLabel: 'Prepare committee pack for',
-    detailDates: upcomingDates,
-    detailMetas: ['Due 12 Jun', 'Next forum cycle', 'Decision record pending'],
-    detailSummary: 'Upcoming governance committees need PMO agenda and evidence preparation.',
-  }),
-];
+export const pmoFrontdoorWorkItems: readonly PmoFrontdoorWorkItem[] = generatePmoCalendarWorkItems();
 
 export const pmoFrontdoorQuickLinks: readonly PmoFrontdoorQuickLink[] = [
   {
