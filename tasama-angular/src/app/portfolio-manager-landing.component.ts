@@ -183,7 +183,7 @@ function portfolioActionDecor(decor: string): PmConsoleFrontdoorAction['decor'] 
                       projectId="portfolio"
                       projectName="Portfolio Name"
                       projectIcon="folder"
-                      heroImageSrc="./assets/Card-visual-2.jpg"
+                      heroImageSrc="./assets/Portfolio manager card.png"
                       stageLabel="Portfolio overview"
                       statusLabel="On Track"
                       statusTone="green"

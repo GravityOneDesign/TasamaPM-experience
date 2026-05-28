@@ -74,7 +74,7 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (item; as selected) {
-      @switch (selected.kind) {
+      @switch (normalizedKind) {
         @case ('report') {
           @if (activeReportDetails; as details) {
             <app-pm-console-report-drawer
@@ -410,6 +410,13 @@ export class PortfolioManagerActionDrawerComponent implements OnChanges, OnDestr
   @Output() readonly close = new EventEmitter<void>();
 
   readonly projectOptions = portfolioActionProjectOptions;
+
+  get normalizedKind(): string {
+    const kind = this.item?.kind;
+    if (kind === 'status-reports') return 'report';
+    if (kind === 'benefits') return 'benefit';
+    return kind || '';
+  }
   readonly benefitProfileOptions = portfolioActionBenefitProfileOptions;
   readonly riskProfileConfig = portfolioActionRiskProfileConfig;
   readonly reportSections = portfolioActionReportSections;
@@ -467,7 +474,7 @@ export class PortfolioManagerActionDrawerComponent implements OnChanges, OnDestr
   }
 
   stageGateContextForAction(action: PortfolioActionItem): StageGateContext | null {
-    if (action.kind !== 'milestone') return null;
+    if ((action.kind as string) !== 'milestone') return null;
     const profile = this.stageProfileForAction(action);
     const stageIndex = this.stageCurrentIndex(profile);
     const stage = stageDefinitions[stageIndex] || stageDefinitions[0];
@@ -682,20 +689,21 @@ export class PortfolioManagerActionDrawerComponent implements OnChanges, OnDestr
     this.reportSection = 'Overview';
 
     if (!action) return;
-    if (action.kind === 'risk') {
+    const kind = this.normalizedKind;
+    if (kind === 'risk') {
       this.activeRiskProfile = clonePortfolioActionRiskProfile(action.project);
       return;
     }
-    if (action.kind === 'benefit') {
+    if (kind === 'benefit') {
       this.activeBenefitProfile = clonePortfolioActionBenefitProfile(action.project);
       return;
     }
-    if (action.kind === 'milestone') {
+    if (kind === 'milestone') {
       const gate = this.stageGateContextForAction(action);
       if (gate) this.ensureStageGateChecklistState(gate.profile, gate.stageIndex);
       return;
     }
-    if (action.kind === 'report') {
+    if (kind === 'report') {
       this.activeReportDetails = portfolioActionReportDetails(action);
       this.activeReportCards = portfolioActionReportCards(action);
       this.activeReportOverviewFields = portfolioActionReportOverviewFields(action);

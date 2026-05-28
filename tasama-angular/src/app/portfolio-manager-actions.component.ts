@@ -209,19 +209,24 @@ interface PortfolioWorkTargetGroup {
                 </header>
                 <div class="task-stack">
                   @for (item of column.items; track item.id) {
-                    <article class="task-card {{ taskCardClass(item.type) }}" [attr.data-card-kind]="item.kind">
+                    <article class="task-card {{ item.tone }}" [attr.data-card-kind]="item.kind" (click)="handleTaskAction(item)">
                       <div class="task-top">
-                        <span>{{ item.type }}</span>
+                        <span class="kanban-type-chip {{ item.tone }}">{{ actionTypeLabel(item) }}</span>
                       </div>
-                      <h3>{{ item.label }}</h3>
-                      <p>{{ item.project }}</p>
+                      <h3 class="task-title">{{ item.label }}</h3>
+                      <p class="task-project">{{ item.project }}</p>
+                      
+                      <hr class="task-divider" />
+                      
                       <div class="task-bottom">
-                        <span class="avatar-sm">{{ item.owner }}</span>
-                        <small>{{ item.meta }}</small>
-                        <button class="task-action" type="button" (click)="handleTaskAction(item)">
+                        <div class="task-meta-group">
+                          <span pmConsoleIcon="calendar-fold" class="task-calendar-icon" aria-hidden="true"></span>
+                          <span class="task-due-text">{{ formatKanbanDate(item) }}</span>
+                        </div>
+                        <div class="task-action">
                           <span>{{ item.cta }}</span>
-                          <span class="icon" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
-                        </button>
+                          <span pmConsoleIcon="chevron-right" aria-hidden="true"></span>
+                        </div>
                       </div>
                     </article>
                   } @empty {
@@ -252,6 +257,120 @@ interface PortfolioWorkTargetGroup {
     </div>
   `,
   styles: [`
+    .kanban-type-chip {
+      align-items: center;
+      border-radius: 999px;
+      display: inline-flex;
+      font-size: 10px;
+      font-weight: 600;
+      line-height: 1;
+      padding: 5px 8px;
+      text-transform: capitalize;
+    }
+
+    .kanban-type-chip.plans {
+      background: rgba(141, 200, 232, 0.12);
+      border: 1px solid rgba(141, 200, 232, 0.25);
+      color: #8DC8E8;
+    }
+    .kanban-type-chip.governance {
+      background: rgba(52, 84, 196, 0.1);
+      border: 1px solid rgba(52, 84, 196, 0.22);
+      color: #3454C4;
+    }
+    .kanban-type-chip.status-reports {
+      background: rgba(111, 32, 149, 0.1);
+      border: 1px solid rgba(111, 32, 149, 0.22);
+      color: #6F2095;
+    }
+    .kanban-type-chip.change-requests {
+      background: rgba(196, 52, 114, 0.1);
+      border: 1px solid rgba(196, 52, 114, 0.22);
+      color: #C43472;
+    }
+    .kanban-type-chip.benefits {
+      background: rgba(22, 107, 73, 0.1);
+      border: 1px solid rgba(22, 107, 73, 0.22);
+      color: #166B49;
+    }
+
+    .task-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+    .task-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .task-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #1a202c;
+      margin: 0;
+      line-height: 1.35;
+    }
+
+    .task-project {
+      font-size: 11.5px;
+      color: #718096;
+      margin: 0;
+    }
+
+    .task-divider {
+      border: 0;
+      border-top: 1px solid #edf2f7;
+      margin: 4px 0;
+      width: 100%;
+    }
+
+    .task-meta-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #718096;
+    }
+
+    .task-calendar-icon {
+      height: 14px;
+      width: 14px;
+      color: #718096;
+    }
+
+    .task-due-text {
+      font-size: 11px;
+      font-weight: 500;
+      color: #718096;
+    }
+
+    .task-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: #10069f;
+      background: transparent;
+      border: 0;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0;
+      transition: color 160ms ease;
+    }
+    .task-action:hover {
+      color: #3454C4;
+    }
+    .task-action .icon {
+      height: 14px;
+      width: 14px;
+    }
+
     :host {
       display: flex;
       flex-direction: column;
@@ -713,7 +832,7 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
         key,
         day: date.getDate(),
         current,
-        today: key === '2026-05-12',
+        today: key === '2026-05-26',
         items: current ? this.visibleMonthItems.filter((item) => item.date === key) : [],
       };
     });
@@ -843,5 +962,22 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
     if (target.type === 'all') return true;
     if (target.type === 'project') return item.project === target.label;
     return item.project === target.label || Boolean(target.projectNames?.includes(item.project));
+  }
+
+  actionTypeLabel(item: PortfolioActionItem): string {
+    const kind = item.kind;
+    if (kind === 'plans') return 'Plans';
+    if (kind === 'governance') return 'Governance & Committees';
+    if (kind === 'status-reports') return 'Status Reports';
+    if (kind === 'change-requests') return 'Change Requests';
+    if (kind === 'benefits') return 'Benefits';
+    return kind;
+  }
+
+  formatKanbanDate(item: PortfolioActionItem): string {
+    const parsed = new Date(`${item.date}T00:00:00`);
+    if (Number.isNaN(parsed.getTime())) return item.date;
+    const dateStr = parsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `${dateStr} (${item.meta})`;
   }
 }
