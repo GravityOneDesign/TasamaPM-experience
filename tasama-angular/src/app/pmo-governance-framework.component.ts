@@ -1372,6 +1372,388 @@ export interface TaxonomyCard {
             }
           </div>
         </div>
+      } @else if (activeSectionId === 'strategic-plan') {
+        <div class="standards-split-layout animation-fade">
+
+          <!-- Left Sidebar: category nav -->
+          <div class="standards-sidebar" style="padding-top: 48px;">
+            <nav class="standards-category-nav" aria-label="Strategic Plan categories" style="gap: 8px;">
+              <!-- Profile Accordion -->
+              <div class="sidebar-accordion">
+                <button type="button" class="sidebar-accordion-header" [class.is-open]="strategicProfileOpen" (click)="toggleStrategicAccordion('profile')">
+                  <span>Profile</span>
+                  @if (strategicProfileOpen) {
+                    <span pmConsoleIcon="chevron-up" style="font-size: 16px; color: #64748b;"></span>
+                  } @else {
+                    <span pmConsoleIcon="chevron-down" style="font-size: 16px; color: #64748b;"></span>
+                  }
+                </button>
+                @if (strategicProfileOpen) {
+                  <div class="sidebar-accordion-content animation-slide">
+                    @for (cat of strategicProfileCategories; track cat.id) {
+                      <button
+                        type="button"
+                        class="standards-cat-btn"
+                        [class.active]="activeStrategicPlanCategory === cat.id"
+                        (click)="setStrategicPlanCategory(cat.id)"
+                      >
+                        <div class="cat-content-left">
+                          <span class="cat-label">{{ cat.label }}</span>
+                        </div>
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+
+              <!-- Manage Business Plan -->
+              <button
+                type="button"
+                class="standards-cat-btn"
+                [class.active]="activeStrategicPlanCategory === 'business-plan'"
+                (click)="setStrategicPlanCategory('business-plan')"
+                style="padding-left: 16px; margin-top: 4px; margin-bottom: 4px;"
+              >
+                <div class="cat-content-left">
+                  <span class="cat-label" style="font-weight: 600;">Manage Business Plan</span>
+                </div>
+              </button>
+
+              <!-- Manage Registers Accordion -->
+              <div class="sidebar-accordion">
+                <button type="button" class="sidebar-accordion-header" [class.is-open]="strategicRegistersOpen" (click)="toggleStrategicAccordion('registers')">
+                  <span>Manage Registers</span>
+                  @if (strategicRegistersOpen) {
+                    <span pmConsoleIcon="chevron-up" style="font-size: 16px; color: #64748b;"></span>
+                  } @else {
+                    <span pmConsoleIcon="chevron-down" style="font-size: 16px; color: #64748b;"></span>
+                  }
+                </button>
+                @if (strategicRegistersOpen) {
+                  <div class="sidebar-accordion-content animation-slide">
+                    @for (cat of strategicRegistersCategories; track cat.id) {
+                      <button
+                        type="button"
+                        class="standards-cat-btn"
+                        [class.active]="activeStrategicPlanCategory === cat.id"
+                        (click)="setStrategicPlanCategory(cat.id)"
+                      >
+                        <div class="cat-content-left">
+                          <span class="cat-label">{{ cat.label }}</span>
+                        </div>
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            </nav>
+          </div>
+
+          <!-- Right Panel: cards for the selected category -->
+          <div class="standards-cards-panel">
+            @if (activeStrategicPlanCategory === 'context') {
+              <div class="standards-grid animation-fade">
+                @for (card of strategicContextCards; track card.id) {
+                  <button type="button" class="standards-card" (click)="openCardDrawer(card, 'Context')">
+                    @if (card.needsAttention) {
+                      <span class="attention-dot" title="Needs attention"></span>
+                    }
+                    <div class="standards-card-icon-container setup-color">
+                      <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
+                    </div>
+                    <div class="standards-card-body">
+                      <h4>
+                        {{ card.title }}
+                        @if (card.items && card.items.length > 0) {
+                          <span class="standards-card-item-count">
+                            <span class="standards-card-item-count-inner">{{ card.items.length }}</span>
+                          </span>
+                        }
+                      </h4>
+                      <p>{{ card.description }}</p>
+                    </div>
+                    <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
+                  </button>
+                }
+              </div>
+            } @else if (activeStrategicPlanCategory === 'capabilities') {
+              <div class="standards-grid animation-fade">
+                @for (card of strategicCapabilitiesCards; track card.id) {
+                  <button type="button" class="standards-card" (click)="openCardDrawer(card, 'Capabilities')">
+                    @if (card.needsAttention) {
+                      <span class="attention-dot" title="Needs attention"></span>
+                    }
+                    <div class="standards-card-icon-container setup-color">
+                      <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
+                    </div>
+                    <div class="standards-card-body">
+                      <h4>
+                        {{ card.title }}
+                        @if (card.items && card.items.length > 0) {
+                          <span class="standards-card-item-count">
+                            <span class="standards-card-item-count-inner">{{ card.items.length }}</span>
+                          </span>
+                        }
+                      </h4>
+                      <p>{{ card.description }}</p>
+                    </div>
+                    <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
+                  </button>
+                }
+              </div>
+            } @else if (activeStrategicPlanCategory === 'workforce') {
+              <div class="standards-grid animation-fade">
+                @for (card of strategicWorkforceCards; track card.id) {
+                  <button type="button" class="standards-card" (click)="openCardDrawer(card, 'Workforce')">
+                    @if (card.needsAttention) {
+                      <span class="attention-dot" title="Needs attention"></span>
+                    }
+                    <div class="standards-card-icon-container setup-color">
+                      <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
+                    </div>
+                    <div class="standards-card-body">
+                      <h4>
+                        {{ card.title }}
+                        @if (card.items && card.items.length > 0) {
+                          <span class="standards-card-item-count">
+                            <span class="standards-card-item-count-inner">{{ card.items.length }}</span>
+                          </span>
+                        }
+                      </h4>
+                      <p>{{ card.description }}</p>
+                    </div>
+                    <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
+                  </button>
+                }
+              </div>
+            } @else if (activeStrategicPlanCategory === 'budget') {
+              <div class="standards-grid animation-fade">
+                @for (card of strategicBudgetCards; track card.id) {
+                  <button type="button" class="standards-card" (click)="openCardDrawer(card, 'Budget')">
+                    @if (card.needsAttention) {
+                      <span class="attention-dot" title="Needs attention"></span>
+                    }
+                    <div class="standards-card-icon-container setup-color">
+                      <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
+                    </div>
+                    <div class="standards-card-body">
+                      <h4>
+                        {{ card.title }}
+                        @if (card.items && card.items.length > 0) {
+                          <span class="standards-card-item-count">
+                            <span class="standards-card-item-count-inner">{{ card.items.length }}</span>
+                          </span>
+                        }
+                      </h4>
+                      <p>{{ card.description }}</p>
+                    </div>
+                    <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
+                  </button>
+                }
+              </div>
+            } @else if (activeStrategicPlanCategory === 'business-plan') {
+              <div class="standards-grid animation-fade">
+                @for (card of strategicBusinessPlanCards; track card.id) {
+                  <button type="button" class="standards-card" (click)="openCardDrawer(card, 'Business Plan')">
+                    @if (card.needsAttention) {
+                      <span class="attention-dot" title="Needs attention"></span>
+                    }
+                    <div class="standards-card-icon-container setup-color">
+                      <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
+                    </div>
+                    <div class="standards-card-body">
+                      <h4>
+                        {{ card.title }}
+                        @if (card.items && card.items.length > 0) {
+                          <span class="standards-card-item-count">
+                            <span class="standards-card-item-count-inner">{{ card.items.length }}</span>
+                          </span>
+                        }
+                      </h4>
+                      <p>{{ card.description }}</p>
+                    </div>
+                    <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
+                  </button>
+                }
+              </div>
+            } @else if (activeStrategicPlanCategory === 'objectives') {
+              <div class="standards-grid animation-fade">
+                @for (card of strategicObjectivesCards; track card.id) {
+                  <button type="button" class="standards-card" (click)="openCardDrawer(card, 'Strategic Objectives')">
+                    @if (card.needsAttention) {
+                      <span class="attention-dot" title="Needs attention"></span>
+                    }
+                    <div class="standards-card-icon-container setup-color">
+                      <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
+                    </div>
+                    <div class="standards-card-body">
+                      <h4>
+                        {{ card.title }}
+                        @if (card.items && card.items.length > 0) {
+                          <span class="standards-card-item-count">
+                            <span class="standards-card-item-count-inner">{{ card.items.length }}</span>
+                          </span>
+                        }
+                      </h4>
+                      <p>{{ card.description }}</p>
+                    </div>
+                    <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
+                  </button>
+                }
+              </div>
+            } @else if (activeStrategicPlanCategory === 'kpis') {
+              <div class="standards-grid animation-fade">
+                @for (card of strategicKpisCards; track card.id) {
+                  <button type="button" class="standards-card" (click)="openCardDrawer(card, 'Strategic KPIs')">
+                    @if (card.needsAttention) {
+                      <span class="attention-dot" title="Needs attention"></span>
+                    }
+                    <div class="standards-card-icon-container setup-color">
+                      <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
+                    </div>
+                    <div class="standards-card-body">
+                      <h4>
+                        {{ card.title }}
+                        @if (card.items && card.items.length > 0) {
+                          <span class="standards-card-item-count">
+                            <span class="standards-card-item-count-inner">{{ card.items.length }}</span>
+                          </span>
+                        }
+                      </h4>
+                      <p>{{ card.description }}</p>
+                    </div>
+                    <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
+                  </button>
+                }
+              </div>
+            } @else if (activeStrategicPlanCategory === 'outputs') {
+              <div class="standards-grid animation-fade">
+                @for (card of strategicOutputsCards; track card.id) {
+                  <button type="button" class="standards-card" (click)="openCardDrawer(card, 'Strategic Outputs')">
+                    @if (card.needsAttention) {
+                      <span class="attention-dot" title="Needs attention"></span>
+                    }
+                    <div class="standards-card-icon-container setup-color">
+                      <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
+                    </div>
+                    <div class="standards-card-body">
+                      <h4>
+                        {{ card.title }}
+                        @if (card.items && card.items.length > 0) {
+                          <span class="standards-card-item-count">
+                            <span class="standards-card-item-count-inner">{{ card.items.length }}</span>
+                          </span>
+                        }
+                      </h4>
+                      <p>{{ card.description }}</p>
+                    </div>
+                    <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
+                  </button>
+                }
+              </div>
+            } @else if (activeStrategicPlanCategory === 'projects') {
+              <div class="standards-grid animation-fade">
+                @for (card of strategicProjectsCards; track card.id) {
+                  <button type="button" class="standards-card" (click)="openCardDrawer(card, 'Projects')">
+                    @if (card.needsAttention) {
+                      <span class="attention-dot" title="Needs attention"></span>
+                    }
+                    <div class="standards-card-icon-container setup-color">
+                      <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
+                    </div>
+                    <div class="standards-card-body">
+                      <h4>
+                        {{ card.title }}
+                        @if (card.items && card.items.length > 0) {
+                          <span class="standards-card-item-count">
+                            <span class="standards-card-item-count-inner">{{ card.items.length }}</span>
+                          </span>
+                        }
+                      </h4>
+                      <p>{{ card.description }}</p>
+                    </div>
+                    <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
+                  </button>
+                }
+              </div>
+            } @else if (activeStrategicPlanCategory === 'risks') {
+              <div class="standards-grid animation-fade">
+                @for (card of strategicRisksCards; track card.id) {
+                  <button type="button" class="standards-card" (click)="openCardDrawer(card, 'Strategic Risks')">
+                    @if (card.needsAttention) {
+                      <span class="attention-dot" title="Needs attention"></span>
+                    }
+                    <div class="standards-card-icon-container setup-color">
+                      <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
+                    </div>
+                    <div class="standards-card-body">
+                      <h4>
+                        {{ card.title }}
+                        @if (card.items && card.items.length > 0) {
+                          <span class="standards-card-item-count">
+                            <span class="standards-card-item-count-inner">{{ card.items.length }}</span>
+                          </span>
+                        }
+                      </h4>
+                      <p>{{ card.description }}</p>
+                    </div>
+                    <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
+                  </button>
+                }
+              </div>
+            } @else if (activeStrategicPlanCategory === 'issues') {
+              <div class="standards-grid animation-fade">
+                @for (card of strategicIssuesCards; track card.id) {
+                  <button type="button" class="standards-card" (click)="openCardDrawer(card, 'Issues')">
+                    @if (card.needsAttention) {
+                      <span class="attention-dot" title="Needs attention"></span>
+                    }
+                    <div class="standards-card-icon-container setup-color">
+                      <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
+                    </div>
+                    <div class="standards-card-body">
+                      <h4>
+                        {{ card.title }}
+                        @if (card.items && card.items.length > 0) {
+                          <span class="standards-card-item-count">
+                            <span class="standards-card-item-count-inner">{{ card.items.length }}</span>
+                          </span>
+                        }
+                      </h4>
+                      <p>{{ card.description }}</p>
+                    </div>
+                    <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
+                  </button>
+                }
+              </div>
+            } @else if (activeStrategicPlanCategory === 'bau-activities') {
+              <div class="standards-grid animation-fade">
+                @for (card of strategicBauActivitiesCards; track card.id) {
+                  <button type="button" class="standards-card" (click)="openCardDrawer(card, 'BAU Activities')">
+                    @if (card.needsAttention) {
+                      <span class="attention-dot" title="Needs attention"></span>
+                    }
+                    <div class="standards-card-icon-container setup-color">
+                      <span [pmConsoleIcon]="card.icon" class="standards-card-icon"></span>
+                    </div>
+                    <div class="standards-card-body">
+                      <h4>
+                        {{ card.title }}
+                        @if (card.items && card.items.length > 0) {
+                          <span class="standards-card-item-count">
+                            <span class="standards-card-item-count-inner">{{ card.items.length }}</span>
+                          </span>
+                        }
+                      </h4>
+                      <p>{{ card.description }}</p>
+                    </div>
+                    <span pmConsoleIcon="arrow-right" class="standards-card-arrow-right"></span>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        </div>
       } @else if (activeSectionId === 'financial') {
         <div class="standards-split-layout animation-fade">
 
@@ -4830,6 +5212,44 @@ export interface TaxonomyCard {
       gap: 16px;
     }
 
+    .sidebar-accordion {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .sidebar-accordion-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 10px 16px;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.2s;
+    }
+    .sidebar-accordion-header:hover {
+      background: #f1f5f9;
+    }
+    .sidebar-accordion-header.is-open {
+      border-bottom: 1px solid #e2e8f0;
+      border-radius: 8px 8px 0 0;
+      margin-bottom: 4px;
+    }
+    .sidebar-accordion-content {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding-left: 12px;
+      margin-top: 4px;
+    }
+
     .standards-cat-btn {
       display: flex;
       align-items: center;
@@ -6094,7 +6514,106 @@ export class PmoGovernanceFrameworkComponent implements OnInit {
     { id: 'risk-plan-library', title: 'Planning Library', icon: 'book', description: 'Manage mitigation guides and baseline documents.', items: ['Standard Security Checklist', 'Disaster Recovery Template', 'GDPR Compliance Guidelines'] }
   ];
 
-  // Financial category sidebar state
+  // Strategic Plan Management State
+  activeStrategicPlanCategory = 'context';
+  strategicProfileOpen = true;
+  strategicRegistersOpen = false;
+
+  readonly strategicProfileCategories = [
+    { id: 'context', label: 'Context' },
+    { id: 'capabilities', label: 'Capabilities' },
+    { id: 'workforce', label: 'Workforce' },
+    { id: 'budget', label: 'Budget' }
+  ];
+
+  readonly strategicRegistersCategories = [
+    { id: 'objectives', label: 'Strategic Objectives' },
+    { id: 'kpis', label: 'Strategic KPIs' },
+    { id: 'outputs', label: 'Strategic Outputs' },
+    { id: 'projects', label: 'Projects' },
+    { id: 'risks', label: 'Strategic Risks' },
+    { id: 'issues', label: 'Issues' },
+    { id: 'bau-activities', label: 'BAU Activities' }
+  ];
+
+  toggleStrategicAccordion(section: 'profile' | 'registers') {
+    if (section === 'profile') this.strategicProfileOpen = !this.strategicProfileOpen;
+    if (section === 'registers') this.strategicRegistersOpen = !this.strategicRegistersOpen;
+    this.changeDetector.markForCheck();
+  }
+
+  setStrategicPlanCategory(id: string): void {
+    this.activeStrategicPlanCategory = id;
+    this.changeDetector.markForCheck();
+  }
+
+  getStrategicPlanCategoryCount(id: string): number {
+    switch (id) {
+      case 'context': return this.strategicContextCards.length;
+      case 'capabilities': return this.strategicCapabilitiesCards.length;
+      case 'workforce': return this.strategicWorkforceCards.length;
+      case 'budget': return this.strategicBudgetCards.length;
+      case 'objectives': return this.strategicObjectivesCards.length;
+      case 'kpis': return this.strategicKpisCards.length;
+      case 'outputs': return this.strategicOutputsCards.length;
+      case 'projects': return this.strategicProjectsCards.length;
+      case 'risks': return this.strategicRisksCards.length;
+      case 'issues': return this.strategicIssuesCards.length;
+      case 'bau-activities': return this.strategicBauActivitiesCards.length;
+      case 'business-plan': return this.strategicBusinessPlanCards.length;
+      default: return 0;
+    }
+  }
+
+  // Strategic Plan Management Cards Data State
+  strategicContextCards: TaxonomyCard[] = [
+    { id: 'context-setup', title: 'Context', icon: 'map', description: 'Define the strategic context for the organization.', items: [] }
+  ];
+
+  strategicCapabilitiesCards: TaxonomyCard[] = [
+    { id: 'capabilities-setup', title: 'Capabilities', icon: 'zap', description: 'Define organizational capabilities.', items: [] }
+  ];
+  
+  strategicWorkforceCards: TaxonomyCard[] = [
+    { id: 'workforce-setup', title: 'Workforce', icon: 'users', description: 'Manage workforce planning and structure.', items: [] }
+  ];
+  
+  strategicBudgetCards: TaxonomyCard[] = [
+    { id: 'budget-setup', title: 'Budget', icon: 'wallet', description: 'Configure strategic budgeting parameters.', items: [] }
+  ];
+
+  strategicBusinessPlanCards: TaxonomyCard[] = [
+    { id: 'bp-setup', title: 'Business Plan Setup', icon: 'briefcase', description: 'Configure business plan parameters and templates.', items: [] }
+  ];
+
+  strategicObjectivesCards: TaxonomyCard[] = [
+    { id: 'org-objectives', title: 'Strategic Objectives', icon: 'flag', description: 'Set top-level objectives aligned with strategic pillars.', items: ['Increase Market Share by 15%', 'Launch 3 New Products'] }
+  ];
+
+  strategicKpisCards: TaxonomyCard[] = [
+    { id: 'kpis', title: 'Strategic KPIs', icon: 'bar-chart-2', description: 'Define metrics to measure objective progress.', items: ['Revenue Growth', 'Customer Retention Rate'] }
+  ];
+
+  strategicOutputsCards: TaxonomyCard[] = [
+    { id: 'outputs', title: 'Strategic Outputs', icon: 'package', description: 'Define the strategic outputs expected.', items: [] }
+  ];
+
+  strategicProjectsCards: TaxonomyCard[] = [
+    { id: 'projects', title: 'Projects', icon: 'briefcase', description: 'Manage projects related to the strategic plan.', items: [] }
+  ];
+
+  strategicRisksCards: TaxonomyCard[] = [
+    { id: 'risks', title: 'Strategic Risks', icon: 'alert-triangle', description: 'Configure strategic risks.', items: [] }
+  ];
+
+  strategicIssuesCards: TaxonomyCard[] = [
+    { id: 'issues', title: 'Issues', icon: 'alert-circle', description: 'Manage issues impacting the strategic plan.', items: [] }
+  ];
+
+  strategicBauActivitiesCards: TaxonomyCard[] = [
+    { id: 'bau-activities', title: 'BAU Activities', icon: 'activity', description: 'Configure Business As Usual activities.', items: [] }
+  ];
+
   activeFinancialCategory = 'funding-sources';
 
   readonly financialCategories = [
@@ -6396,6 +6915,7 @@ export class PmoGovernanceFrameworkComponent implements OnInit {
     { id: 'workflow-designer', label: 'Workflow Designer', icon: 'activity', widthPx: 166 },
     { id: 'standards', label: 'Standards & Taxonomies', icon: 'book-open', widthPx: 196 },
     { id: 'governance', label: 'Governance & Controls', icon: 'shield', widthPx: 186 },
+    { id: 'strategic-plan', label: 'Strategic Plan Management', icon: 'map', widthPx: 216 },
     { id: 'financial', label: 'Financial & Budget Management', icon: 'wallet', widthPx: 236 },
     { id: 'glossary', label: 'Glossary', icon: 'list', widthPx: 116 }
   ];
