@@ -112,34 +112,36 @@ interface CalendarPopoverPosition {
               <div class="calendar-event-stack" [attr.aria-label]="cellAgendaLabel(cell)">
                 @if (isCollapsedCell(cell)) {
                   <button
-                    class="calendar-event {{ cell.items[0].tone }}"
+                    class="calendar-event"
+                    [attr.data-event-type]="getCalendarChipType(cell.items[0])"
                     type="button"
                     [attr.aria-label]="calendarEventLabel(cell.items[0])"
                     [attr.title]="cell.items[0].project"
-                    (mouseenter)="queueItemPreview(cell.items[0], $event)"
+                    (mouseenter)="queueDayPreview(cell, $event)"
                     (mouseleave)="hidePreviewSoon()"
-                    (focus)="showItemPreview(cell.items[0], $event)"
+                    (focus)="showDayPreview(cell, $event)"
                     (blur)="hidePreviewSoon()"
                     (click)="openAgendaItem(cell.items[0], $event)"
                   >
                     <span class="calendar-event-dot"></span>
-                    <span class="calendar-event-title">{{ calendarEventProjectTitle(cell.items[0]) }}</span>
+                    <span class="calendar-event-title">{{ getCalendarChipType(cell.items[0]) }}</span>
                   </button>
 
                   <div class="calendar-event-with-more">
                     <button
-                      class="calendar-event {{ cell.items[1].tone }}"
+                      class="calendar-event"
+                      [attr.data-event-type]="getCalendarChipType(cell.items[1])"
                       type="button"
                       [attr.aria-label]="calendarEventLabel(cell.items[1])"
                       [attr.title]="cell.items[1].project"
-                      (mouseenter)="queueItemPreview(cell.items[1], $event)"
+                      (mouseenter)="queueDayPreview(cell, $event)"
                       (mouseleave)="hidePreviewSoon()"
-                      (focus)="showItemPreview(cell.items[1], $event)"
+                      (focus)="showDayPreview(cell, $event)"
                       (blur)="hidePreviewSoon()"
                       (click)="openAgendaItem(cell.items[1], $event)"
                     >
                       <span class="calendar-event-dot"></span>
-                      <span class="calendar-event-title">{{ calendarEventProjectTitle(cell.items[1]) }}</span>
+                      <span class="calendar-event-title">{{ getCalendarChipType(cell.items[1]) }}</span>
                     </button>
                     <button
                       class="calendar-more-badge"
@@ -155,7 +157,8 @@ interface CalendarPopoverPosition {
                 } @else {
                   @for (item of visibleCellItems(cell); track item.date + item.label + item.project) {
                     <button
-                      class="calendar-event {{ item.tone }}"
+                      class="calendar-event"
+                      [attr.data-event-type]="getCalendarChipType(item)"
                       type="button"
                       [attr.aria-label]="calendarEventLabel(item)"
                       [attr.title]="item.label"
@@ -166,7 +169,7 @@ interface CalendarPopoverPosition {
                       (click)="openAgendaItem(item, $event)"
                     >
                       <span class="calendar-event-dot"></span>
-                      <span class="calendar-event-title">{{ calendarEventTitle(item) }}</span>
+                      <span class="calendar-event-title">{{ getCalendarChipType(item) }}</span>
                     </button>
                   }
                 }
@@ -193,15 +196,12 @@ interface CalendarPopoverPosition {
         (click)="$event.stopPropagation()"
       >
         <div class="calendar-popover-tag-row">
-          <span class="calendar-popover-kind {{ previewItem.tone }}">{{ itemKindLabel(previewItem) }}</span>
+          <span class="calendar-popover-kind" [attr.data-event-type]="getCalendarChipType(previewItem)">{{ getCalendarChipType(previewItem) }}</span>
           <span class="calendar-popover-context-tag">{{ itemTargetLabel(previewItem) }}</span>
         </div>
         <strong>{{ previewItem.label }}</strong>
-        <div class="calendar-popover-meta">
-          <span><b>Date</b>{{ dateLabel(previewItem.date) }}</span>
-        </div>
         <button class="calendar-popover-action" type="button" (click)="openAgendaItem(previewItem, $event)">
-          <span>{{ actionLabel(previewItem) }}</span>
+          <span>View</span>
           <span pmConsoleIcon="arrow-right" aria-hidden="true"></span>
         </button>
       </aside>
@@ -226,14 +226,17 @@ interface CalendarPopoverPosition {
         <strong>{{ previewCell.items.length }} item{{ previewCell.items.length === 1 ? '' : 's' }} scheduled</strong>
         <div class="calendar-day-agenda-list preview-agenda-list">
           @for (item of previewCell.items; track item.date + item.label + item.project) {
-            <button class="calendar-agenda-row {{ item.tone }}" type="button" (click)="openAgendaItem(item, $event)">
-              <span class="calendar-event-dot {{ item.tone }}"></span>
+            <button class="calendar-agenda-row" [attr.data-event-type]="getCalendarChipType(item)" type="button" (click)="openAgendaItem(item, $event)" style="grid-template-columns: auto minmax(0, 1fr) auto; padding: 12px 14px; min-height: 58px;">
+              <span class="calendar-event-dot"></span>
               <span class="calendar-agenda-info">
-                <span class="calendar-agenda-title">{{ item.label }}</span>
-                <span class="calendar-agenda-subtitle">{{ item.project }} - {{ itemKindLabel(item) }}</span>
+                <span class="calendar-popover-tag-row" style="margin-bottom: 4px; gap: 4px; display: flex; flex-wrap: wrap;">
+                  <span class="calendar-popover-kind" [attr.data-event-type]="getCalendarChipType(item)" style="font-size: 8.5px; font-weight: 600; line-height: 1; padding: 3px 6px; text-transform: uppercase;">{{ getCalendarChipType(item) }}</span>
+                  <span class="calendar-popover-context-tag" style="font-size: 9px; font-weight: 600; line-height: 1.2; padding: 2.5px 6px; background: #fbfcff; border: 1px solid #dfe4ee; border-radius: 999px; color: #3f4654;">{{ item.project }}</span>
+                </span>
+                <span class="calendar-agenda-title" style="white-space: normal; overflow: visible; text-overflow: unset; font-size: 12px; line-height: 1.3; margin-top: 1px;">{{ item.label }}</span>
               </span>
               <span class="calendar-agenda-cta">
-                <span>View</span>
+                <span>{{ actionLabel(item) }}</span>
                 <span pmConsoleIcon="arrow-right" aria-hidden="true"></span>
               </span>
             </button>
@@ -555,6 +558,11 @@ interface CalendarPopoverPosition {
         pointer-events: auto;
       }
 
+      .calendar-item-hover-card {
+        gap: 16px;
+        padding: 16px;
+      }
+
       .calendar-hover-card.above {
         transform: translateY(-100%);
       }
@@ -708,8 +716,6 @@ interface CalendarPopoverPosition {
       .calendar-day-agenda-list {
         display: grid;
         gap: 6px;
-        max-height: 240px;
-        overflow: auto;
         padding-right: 2px;
       }
 
@@ -892,6 +898,135 @@ interface CalendarPopoverPosition {
           right: 12px;
           width: auto;
         }
+      }
+
+      /* Custom Event Type styles for Calendar Chips/Pills & Popovers */
+      .calendar-event[data-event-type="Plans"] {
+        background: rgba(141, 200, 232, 0.1) !important;
+        border-color: rgba(141, 200, 232, 0.25) !important;
+        color: #8dc8e8 !important;
+      }
+      .calendar-event[data-event-type="Plans"] .calendar-event-dot {
+        background: #8dc8e8 !important;
+      }
+
+      .calendar-event[data-event-type="Governance Committees"] {
+        background: rgba(52, 84, 196, 0.1) !important;
+        border-color: rgba(52, 84, 196, 0.25) !important;
+        color: #3454c4 !important;
+      }
+      .calendar-event[data-event-type="Governance Committees"] .calendar-event-dot {
+        background: #3454c4 !important;
+      }
+
+      .calendar-event[data-event-type="Status reports"] {
+        background: rgba(111, 32, 149, 0.1) !important;
+        border-color: rgba(111, 32, 149, 0.25) !important;
+        color: #6f2095 !important;
+      }
+      .calendar-event[data-event-type="Status reports"] .calendar-event-dot {
+        background: #6f2095 !important;
+      }
+
+      .calendar-event[data-event-type="Change requests"] {
+        background: rgba(196, 52, 114, 0.1) !important;
+        border-color: rgba(196, 52, 114, 0.25) !important;
+        color: #c43472 !important;
+      }
+      .calendar-event[data-event-type="Change requests"] .calendar-event-dot {
+        background: #c43472 !important;
+      }
+
+      .calendar-event[data-event-type="Benefits"] {
+        background: rgba(22, 107, 73, 0.1) !important;
+        border-color: rgba(22, 107, 73, 0.25) !important;
+        color: #166b49 !important;
+      }
+      .calendar-event[data-event-type="Benefits"] .calendar-event-dot {
+        background: #166b49 !important;
+      }
+
+      /* Popover kinds */
+      .calendar-popover-kind[data-event-type="Plans"] {
+        background: rgba(141, 200, 232, 0.1) !important;
+        color: #8dc8e8 !important;
+      }
+      .calendar-popover-kind[data-event-type="Governance Committees"] {
+        background: rgba(52, 84, 196, 0.1) !important;
+        color: #3454c4 !important;
+      }
+      .calendar-popover-kind[data-event-type="Status reports"] {
+        background: rgba(111, 32, 149, 0.1) !important;
+        color: #6f2095 !important;
+      }
+      .calendar-popover-kind[data-event-type="Change requests"] {
+        background: rgba(196, 52, 114, 0.1) !important;
+        color: #c43472 !important;
+      }
+      .calendar-popover-kind[data-event-type="Benefits"] {
+        background: rgba(22, 107, 73, 0.1) !important;
+        color: #166b49 !important;
+      }
+
+      /* Agenda rows */
+      .calendar-agenda-row[data-event-type="Plans"] {
+        background: #ffffff !important;
+        border-color: rgba(141, 200, 232, 0.25) !important;
+      }
+      .calendar-agenda-row[data-event-type="Plans"] .calendar-event-dot {
+        background: #8dc8e8 !important;
+      }
+      .calendar-agenda-row[data-event-type="Plans"]:hover {
+        background: rgba(141, 200, 232, 0.05) !important;
+        border-color: rgba(141, 200, 232, 0.4) !important;
+      }
+
+      .calendar-agenda-row[data-event-type="Governance Committees"] {
+        background: #ffffff !important;
+        border-color: rgba(52, 84, 196, 0.25) !important;
+      }
+      .calendar-agenda-row[data-event-type="Governance Committees"] .calendar-event-dot {
+        background: #3454c4 !important;
+      }
+      .calendar-agenda-row[data-event-type="Governance Committees"]:hover {
+        background: rgba(52, 84, 196, 0.05) !important;
+        border-color: rgba(52, 84, 196, 0.4) !important;
+      }
+
+      .calendar-agenda-row[data-event-type="Status reports"] {
+        background: #ffffff !important;
+        border-color: rgba(111, 32, 149, 0.25) !important;
+      }
+      .calendar-agenda-row[data-event-type="Status reports"] .calendar-event-dot {
+        background: #6f2095 !important;
+      }
+      .calendar-agenda-row[data-event-type="Status reports"]:hover {
+        background: rgba(111, 32, 149, 0.05) !important;
+        border-color: rgba(111, 32, 149, 0.4) !important;
+      }
+
+      .calendar-agenda-row[data-event-type="Change requests"] {
+        background: #ffffff !important;
+        border-color: rgba(196, 52, 114, 0.25) !important;
+      }
+      .calendar-agenda-row[data-event-type="Change requests"] .calendar-event-dot {
+        background: #c43472 !important;
+      }
+      .calendar-agenda-row[data-event-type="Change requests"]:hover {
+        background: rgba(196, 52, 114, 0.05) !important;
+        border-color: rgba(196, 52, 114, 0.4) !important;
+      }
+
+      .calendar-agenda-row[data-event-type="Benefits"] {
+        background: #ffffff !important;
+        border-color: rgba(22, 107, 73, 0.25) !important;
+      }
+      .calendar-agenda-row[data-event-type="Benefits"] .calendar-event-dot {
+        background: #166b49 !important;
+      }
+      .calendar-agenda-row[data-event-type="Benefits"]:hover {
+        background: rgba(22, 107, 73, 0.05) !important;
+        border-color: rgba(22, 107, 73, 0.4) !important;
       }
     `,
   ],
@@ -1080,6 +1215,15 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
     return `Show ${cell.items.length} actions on ${this.dateLabel(cell.key)}`;
   }
 
+  getCalendarChipType(item: PmConsoleCalendarItem): string {
+    const kind = item.kind || 'task';
+    if (kind === 'report') return 'Status reports';
+    if (kind === 'benefit') return 'Benefits';
+    if (kind === 'change') return 'Change requests';
+    if (kind === 'governance' || kind === 'risk') return 'Governance Committees';
+    return 'Plans';
+  }
+
   itemKindLabel(item: PmConsoleCalendarItem): string {
     const kind = item.kind || 'task';
     return kind
@@ -1133,7 +1277,7 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
   }
 
   private dayPopoverHeight(cell: PmConsoleCalendarCell): number {
-    return Math.min(340, 118 + cell.items.length * 54);
+    return 118 + cell.items.length * 68;
   }
 
   private clearPreviewHideTimer(): void {

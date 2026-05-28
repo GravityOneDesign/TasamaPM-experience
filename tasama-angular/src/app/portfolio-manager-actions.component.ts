@@ -5,10 +5,10 @@ import { PmConsoleIconService } from './pm-console-icon.service';
 import { iconName } from './portfolio-manager-icon.utils';
 import { portfolioActionItems, portfolioBoardFilters, PortfolioActionItem, PortfolioBoardFilter, PortfolioBoardColumn } from './portfolio-manager-actions.data';
 import { PortfolioManagerActionDrawerService } from './portfolio-manager-action-drawer.service';
-import { portfolioProgramRows, standaloneProjects, type ProgramRow } from './portfolio-workspace/portfolio-workspace.data';
+import { portfolioProgramRows, standaloneProjects, portfolioRows, type ProgramRow } from './portfolio-workspace/portfolio-workspace.data';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 
-type PortfolioWorkTargetType = 'all' | 'program' | 'project';
+type PortfolioWorkTargetType = 'all' | 'portfolio' | 'program' | 'project';
 type PortfolioActionsBoardPresentation = 'kanban' | 'compact';
 
 type PortfolioCalendarItem = PmConsoleCalendarItem & {
@@ -25,7 +25,7 @@ interface PortfolioWorkTargetOption {
 }
 
 interface PortfolioWorkTargetGroup {
-  id: 'programs' | 'projects';
+  id: 'portfolios' | 'programs' | 'projects';
   label: string;
   options: PortfolioWorkTargetOption[];
 }
@@ -119,7 +119,7 @@ interface PortfolioWorkTargetGroup {
                             @if (target.parentLabel) {
                               <small>{{ target.parentLabel }}</small>
                             } @else {
-                              <small>{{ target.type === 'program' ? targetCountLabel(target) : 'Standalone project' }}</small>
+                              <small>{{ target.type === 'program' || target.type === 'portfolio' ? targetCountLabel(target) : 'Standalone project' }}</small>
                             }
                           </span>
                         </button>
@@ -1301,52 +1301,64 @@ interface PortfolioWorkTargetGroup {
     /* Type-specific colors and opacities (25% stroke, 10% icon container, 100% icon) */
     [data-card-type="Governance Committees"]::before,
     [data-card-type="Governance Committees"] .compact-action-accent {
-      background: rgba(11, 4, 130, 0.25) !important;
+      background: rgba(52, 84, 196, 0.25) !important;
     }
     [data-card-type="Governance Committees"] .compact-action-icon,
     [data-card-type="Governance Committees"] .task-card-icon {
-      background: rgba(11, 4, 130, 0.1) !important;
-      color: #0b0482 !important;
+      background: rgba(52, 84, 196, 0.1) !important;
+      color: #3454c4 !important;
     }
 
+    [data-card-type="Change requests"]::before,
+    [data-card-type="Change requests"] .compact-action-accent,
     [data-card-type="Change Requests"]::before,
     [data-card-type="Change Requests"] .compact-action-accent {
       background: rgba(196, 52, 114, 0.25) !important;
     }
+    [data-card-type="Change requests"] .compact-action-icon,
+    [data-card-type="Change requests"] .task-card-icon,
     [data-card-type="Change Requests"] .compact-action-icon,
     [data-card-type="Change Requests"] .task-card-icon {
       background: rgba(196, 52, 114, 0.1) !important;
       color: #c43472 !important;
     }
 
+    [data-card-type="Status reports"]::before,
+    [data-card-type="Status reports"] .compact-action-accent,
     [data-card-type="Status Reports"]::before,
     [data-card-type="Status Reports"] .compact-action-accent {
-      background: rgba(132, 80, 157, 0.25) !important;
+      background: rgba(111, 32, 149, 0.25) !important;
     }
+    [data-card-type="Status reports"] .compact-action-icon,
+    [data-card-type="Status reports"] .task-card-icon,
     [data-card-type="Status Reports"] .compact-action-icon,
     [data-card-type="Status Reports"] .task-card-icon {
-      background: rgba(132, 80, 157, 0.1) !important;
-      color: #84509d !important;
+      background: rgba(111, 32, 149, 0.1) !important;
+      color: #6f2095 !important;
     }
 
+    [data-card-type="Plans"]::before,
+    [data-card-type="Plans"] .compact-action-accent,
     [data-card-type="Project Plans"]::before,
     [data-card-type="Project Plans"] .compact-action-accent {
-      background: rgba(52, 84, 196, 0.25) !important;
+      background: rgba(121, 186, 221, 0.25) !important;
     }
+    [data-card-type="Plans"] .compact-action-icon,
+    [data-card-type="Plans"] .task-card-icon,
     [data-card-type="Project Plans"] .compact-action-icon,
     [data-card-type="Project Plans"] .task-card-icon {
-      background: rgba(52, 84, 196, 0.1) !important;
-      color: #3454c4 !important;
+      background: rgba(121, 186, 221, 0.1) !important;
+      color: #79badd !important;
     }
 
     [data-card-type="Benefits"]::before,
     [data-card-type="Benefits"] .compact-action-accent {
-      background: rgba(78, 208, 255, 0.25) !important;
+      background: rgba(22, 107, 73, 0.25) !important;
     }
     [data-card-type="Benefits"] .compact-action-icon,
     [data-card-type="Benefits"] .task-card-icon {
-      background: rgba(78, 208, 255, 0.1) !important;
-      color: #4ed0ff !important;
+      background: rgba(22, 107, 73, 0.1) !important;
+      color: #166b49 !important;
     }
   `],
 })
@@ -1354,7 +1366,7 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
   @Input() workspaceTitle = 'Portfolio Name';
   @Input() searchPlaceholder = 'Search actions...';
   @Input() targetPickerAriaLabel = 'Portfolio work target selector';
-  @Input() targetAllLabel = 'All programs and projects';
+  @Input() targetAllLabel = 'All portfolios';
   @Input() actionItems: readonly PortfolioActionItem[] = portfolioActionItems;
   @Input() boardFilters: readonly PortfolioBoardFilter[] = portfolioBoardFilters;
   @Input() showTargetPicker = true;
@@ -1374,6 +1386,7 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
 
   readonly programs = portfolioProgramRows;
   readonly standaloneProjects = standaloneProjects;
+  readonly portfolios = portfolioRows;
   readonly collapsedTargetGroupIds = new Set<PortfolioWorkTargetGroup['id']>();
 
   private iconsHydrated = false;
@@ -1511,6 +1524,16 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
       .map((projectName) => this.createProjectTarget(projectName, 'Action workspace'));
 
     return [
+      {
+        id: 'portfolios',
+        label: 'Portfolios',
+        options: this.portfolios.map((portfolio) => ({
+          id: `portfolio::${portfolio.name}`,
+          label: portfolio.name,
+          type: 'portfolio',
+          projectNames: (portfolio.programs || []).flatMap((prog) => (prog.projects || []).map((proj) => proj.name)),
+        })),
+      },
       {
         id: 'programs',
         label: 'Programs',
@@ -1651,6 +1674,7 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
   }
 
   targetIconName(target: PortfolioWorkTargetOption): string {
+    if (target.type === 'portfolio') return 'briefcase';
     if (target.type === 'program') return 'network';
     if (target.type === 'project') return 'folder';
     return 'grid';
@@ -1835,6 +1859,9 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
     const target = this.selectedTargetOption;
     if (target.type === 'all') return true;
     if (target.type === 'project') return item.project === target.label;
+    if (target.type === 'portfolio') {
+      return item.project === target.label || Boolean(target.projectNames?.includes(item.project));
+    }
     return item.project === target.label || Boolean(target.projectNames?.includes(item.project));
   }
 
