@@ -67,6 +67,8 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
                 }
               </div>
             </footer>
+          } @else {
+            <ng-content select="[planDrawerFooter]"></ng-content>
           }
         </form>
       </aside>

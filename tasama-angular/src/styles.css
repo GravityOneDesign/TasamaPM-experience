@@ -13181,12 +13181,29 @@ button.pm-project-table-stat:focus-visible {
   background: #22a06b;
 }
 
+.report-table-icon-badge.low {
+  background: #3fa049;
+}
+
 .report-table-icon-badge.amber {
   background: #e87722;
 }
 
+.report-table-icon-badge.medium {
+  background: #ffc928;
+  color: #202633;
+}
+
+.report-table-icon-badge.high {
+  background: #ff4e1d;
+}
+
 .report-table-icon-badge.red {
   background: #b91c1c;
+}
+
+.report-table-icon-badge.extreme {
+  background: #fb171b;
 }
 
 .report-table-icon-badge.neutral {

@@ -45,7 +45,7 @@ const portfolioWorkspaceTabs: readonly PmConsoleModeTabItem[] = [
           ></app-pm-console-mode-tabs>
         </header>
 
-        <main class="portfolio-workspace-body">
+        <main class="portfolio-workspace-body" [class.is-registers-fill]="activeTab === 'registers'">
           @switch (activeTab) {
             @case ('overview') {
               <app-portfolio-workspace-overview></app-portfolio-workspace-overview>
@@ -83,6 +83,11 @@ const portfolioWorkspaceTabs: readonly PmConsoleModeTabItem[] = [
       overflow-y: auto;
       background: #ffffff;
       padding: 10px 24px 18px;
+    }
+
+    .portfolio-workspace-body.is-registers-fill {
+      overflow: hidden;
+      padding: 0;
     }
   `]
 })
