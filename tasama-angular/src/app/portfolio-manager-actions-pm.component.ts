@@ -1,6 +1,6 @@
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PmConsoleWorkCalendarPmComponent, PmConsoleCalendarCell, PmConsoleCalendarItem, PmConsoleCalendarFilter } from './shared/pm-console-work-calendar-pm.component';
+import { PmConsoleWorkCalendarComponent, PmConsoleCalendarCell, PmConsoleCalendarItem, PmConsoleCalendarFilter } from './shared/pm-console-work-calendar.component';
 import { PmConsoleIconService } from './pm-console-icon.service';
 import { iconName } from './portfolio-manager-icon.utils';
 import { portfolioActionItems, portfolioBoardFilters, PortfolioActionItem, PortfolioBoardFilter, PortfolioBoardColumn } from './portfolio-manager-actions.data';
@@ -38,7 +38,7 @@ interface PortfolioTargetRow {
 @Component({
   selector: 'app-portfolio-manager-actions-pm',
   standalone: true,
-  imports: [CommonModule, PmConsoleIconComponent, PmConsoleWorkCalendarPmComponent],
+  imports: [CommonModule, PmConsoleIconComponent, PmConsoleWorkCalendarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="actions-workspace">
@@ -344,7 +344,7 @@ interface PortfolioTargetRow {
 
         <!-- Calendar view -->
         <div class="calendar-view" [class.is-hidden]="activeView !== 'calendar'" data-work-view="calendar">
-          <app-pm-console-work-calendar-pm
+          <app-pm-console-work-calendar
             [monthLabel]="calendarMonthLabel"
             [monthItemCount]="visibleMonthItemCount"
             [cells]="calendarCells"
@@ -355,7 +355,7 @@ interface PortfolioTargetRow {
             (monthShift)="shiftMonth($event)"
             (filterChange)="setBoardFilter($event)"
             (itemOpen)="handleCalendarItemOpen($event)"
-          ></app-pm-console-work-calendar-pm>
+          ></app-pm-console-work-calendar>
         </div>
       </div>
 
@@ -1040,7 +1040,7 @@ interface PortfolioTargetRow {
       height: 24px;
       width: 24px;
     }
-    app-pm-console-work-calendar-pm {
+    app-pm-console-work-calendar {
       height: 100%;
       display: flex;
       flex-direction: column;
