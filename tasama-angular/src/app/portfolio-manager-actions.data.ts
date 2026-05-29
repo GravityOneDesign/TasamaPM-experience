@@ -21,6 +21,7 @@ export interface PortfolioActionItem {
   kind: 'plan' | 'report' | 'risk' | 'benefit' | 'change' | 'governance' | 'milestone' | 'task' | 'dependency'; // mapped for filters
   tone: 'green' | 'red' | 'blue' | 'neutral'; // tone color class
   owner: string;         // initials, e.g. 'FA'
+  ownerName?: string;    // full name, e.g. 'Muna Hasan'
   meta: string;          // due label, e.g. 'Overdue by 5 days'
   cta: string;           // action label, e.g. 'Submit'
   column: 'Overdue' | 'This week' | 'Upcoming';

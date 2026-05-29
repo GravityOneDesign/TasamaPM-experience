@@ -4,6 +4,7 @@ import { PmConsoleWorkCalendarComponent, PmConsoleCalendarCell, PmConsoleCalenda
 import { PmConsoleIconService } from './pm-console-icon.service';
 import { iconName } from './portfolio-manager-icon.utils';
 import { portfolioActionItems, portfolioBoardFilters, PortfolioActionItem, PortfolioBoardFilter, PortfolioBoardColumn } from './portfolio-manager-actions.data';
+import { portfolioManagerActionItems } from './portfolio-manager-actions-pm.data';
 import { PortfolioManagerActionDrawerService } from './portfolio-manager-action-drawer.service';
 import { portfolioProgramRows, standaloneProjects, type ProgramRow } from './portfolio-workspace/portfolio-workspace.data';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
@@ -270,27 +271,51 @@ interface PortfolioTargetRow {
                   <div class="task-stack">
                     @for (item of column.items; track item.id) {
                       <button
-                        class="task-card {{ taskCardClass(item.type) }} {{ item.tone }}"
+                        class="new-task-card"
                         [class.is-selected]="activeBoardItem?.id === item.id"
-                        [attr.data-card-kind]="item.kind"
-                        [attr.data-card-type]="item.type"
+                        [class.is-clickable]="item.kind === 'plan' || item.kind === 'governance'"
+                        [class.is-disabled]="item.kind !== 'plan' && item.kind !== 'governance'"
                         type="button"
                         [attr.aria-label]="actionItemAriaLabel(item)"
                         (click)="selectBoardItem(item)"
                       >
-                        <span class="task-card-icon {{ item.tone }}">
-                          <span [pmConsoleIcon]="boardDetailIcon(item)" aria-hidden="true"></span>
-                        </span>
-                        
-                        <div class="task-card-title-container">
-                          <span class="task-card-title">{{ item.label }}</span>
-                          <span class="task-card-count">{{ actionItemTotal(item) }}</span>
+                        <!-- Top: Type Pill -->
+                        <div class="card-top-row">
+                          <span class="card-type-pill" [ngClass]="getCardTypePillClass(item.type)">{{ item.type }}</span>
                         </div>
 
-                        <span class="task-card-action">
-                          <span>View All</span>
-                          <span pmConsoleIcon="chevron-right" class="arrow-icon" aria-hidden="true"></span>
-                        </span>
+                        <!-- Middle 1: Due date with calendar icon -->
+                        <div class="card-due-row">
+                          <span pmConsoleIcon="calendar" class="card-due-icon" aria-hidden="true"></span>
+                          <span class="card-due-text">{{ item.meta }}</span>
+                        </div>
+
+                        <!-- Middle 2: Action name -->
+                        <div class="card-title-row">
+                          <strong class="card-action-title">{{ item.label }}</strong>
+                        </div>
+
+                        <!-- Middle 3: Project/Program name -->
+                        <div class="card-project-row">
+                          <span class="card-project-name">
+                            {{ (item.kind === 'governance' ? 'Program: ' : 'Project: ') + item.project }}
+                          </span>
+                        </div>
+
+                        <!-- Divider -->
+                        <div class="card-divider"></div>
+
+                        <!-- Bottom: Owner + Open CTA -->
+                        <div class="card-bottom-row">
+                          <div class="card-owner">
+                            <div class="card-owner-avatar" [ngStyle]="getAvatarStyle(item.owner)">{{ item.owner }}</div>
+                            <span class="card-owner-name">{{ item.ownerName || 'PMO' }}</span>
+                          </div>
+                          <div class="card-cta">
+                            <span>{{ item.cta || 'Open' }}</span>
+                            <span pmConsoleIcon="chevron-right" class="card-cta-icon" aria-hidden="true"></span>
+                          </div>
+                        </div>
                       </button>
                     } @empty {
                       <div class="empty-column">No actions in this lane.</div>
@@ -379,29 +404,67 @@ interface PortfolioTargetRow {
       height: 100%;
     }
     .actions-control-row {
-      padding: 0 0 8px;
+      padding: 0 0 20px !important;
       overflow: visible;
       position: relative;
       z-index: 180;
     }
     .workspace-body {
-      display: flex;
-      flex-direction: column;
-      flex: 1 1 auto;
-      height: auto;
-      min-height: 0;
-      overflow: hidden;
-      padding: 0;
-      position: relative;
-      z-index: 0;
+      display: flex !important;
+      flex-direction: column !important;
+      flex: 1 1 auto !important;
+      height: 100% !important;
+      min-height: 0 !important;
+      overflow: hidden !important;
+      padding: 0 !important;
+      position: relative !important;
+      z-index: 0 !important;
     }
-    .calendar-view,
     .board-view {
       display: flex;
-      flex-direction: column;
-      flex: 1 1 auto;
-      height: auto;
-      min-height: 0;
+      flex-direction: column !important;
+      flex: 1 1 auto !important;
+      height: 100% !important;
+      min-height: 0 !important;
+      overflow: hidden !important;
+    }
+    .kanban-board {
+      display: grid !important;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      gap: 20px !important;
+      flex: 1 1 auto !important;
+      height: 100% !important;
+      min-height: 0 !important;
+      overflow: hidden !important;
+    }
+    .kanban-column {
+      display: flex !important;
+      flex-direction: column !important;
+      height: 100% !important;
+      min-height: 0 !important;
+      overflow: hidden !important;
+      background: #f7f8fb !important;
+      border: 1px solid #eef1f6 !important;
+      border-radius: 8px !important;
+    }
+    .task-stack {
+      display: flex !important;
+      flex: 1 1 auto !important;
+      flex-direction: column !important;
+      gap: 18px !important;
+      min-height: 0 !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      padding: 18px !important;
+      scrollbar-width: thin !important;
+    }
+    .calendar-view {
+      display: flex;
+      flex-direction: column !important;
+      flex: 1 1 auto !important;
+      height: 100% !important;
+      min-height: 0 !important;
+      overflow: hidden !important;
     }
 
     .board-view.has-detail-panel {
@@ -1365,6 +1428,193 @@ interface PortfolioTargetRow {
       background: rgba(22, 107, 73, 0.1) !important;
       color: #166b49 !important;
     }
+
+    /* REDESIGNED TASK CARD STYLES FOR PORTFOLIO MANAGER ACTIONS */
+    .new-task-card {
+      background: #ffffff !important;
+      border: 1px solid #eef1f6 !important;
+      border-radius: 16px !important;
+      box-shadow: 0 1px 2px rgba(25, 33, 61, 0.04) !important;
+      color: #2f2f2f !important;
+      cursor: default !important;
+      display: flex !important;
+      flex-direction: column !important;
+      font: inherit !important;
+      gap: 12px !important;
+      overflow: hidden !important;
+      padding: 16px 16px 24px 16px !important;
+      position: relative !important;
+      text-align: left !important;
+      transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease !important;
+      width: 100% !important;
+      height: auto !important;
+      min-height: 180px !important;
+      box-sizing: border-box !important;
+    }
+
+    .new-task-card.is-clickable {
+      cursor: pointer !important;
+    }
+
+    .new-task-card.is-clickable:hover {
+      border-color: rgba(16, 6, 159, 0.22) !important;
+      box-shadow: 0 6px 14px rgba(25, 33, 61, 0.08) !important;
+      transform: translateY(-1px) !important;
+    }
+
+    .new-task-card.is-clickable.is-selected {
+      border-color: rgba(16, 6, 159, 0.46) !important;
+      box-shadow: 0 8px 20px rgba(25, 33, 61, 0.1) !important;
+    }
+
+    .new-task-card:focus-visible {
+      border-color: rgba(16, 6, 159, 0.42) !important;
+      box-shadow: 0 0 0 3px rgba(16, 6, 159, 0.12) !important;
+      outline: 0 !important;
+    }
+
+    .new-task-card.is-disabled .card-cta {
+      color: #737b8c !important;
+    }
+
+    .card-top-row {
+      display: flex;
+      align-items: center;
+    }
+
+    .card-type-pill {
+      display: inline-flex;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 999px;
+      text-transform: none;
+      width: fit-content;
+      line-height: 1;
+    }
+
+    .card-type-pill.plans {
+      background: rgba(49, 136, 181, 0.1);
+      color: #3188b5;
+    }
+    .card-type-pill.governance-committee {
+      background: rgba(52, 84, 196, 0.1);
+      color: #3454c4;
+    }
+    .card-type-pill.status-reports {
+      background: rgba(111, 32, 149, 0.1);
+      color: #6f2095;
+    }
+    .card-type-pill.change-requests {
+      background: rgba(196, 152, 79, 0.1);
+      color: #c4984f;
+    }
+    .card-type-pill.benefits {
+      background: rgba(22, 108, 73, 0.1);
+      color: #166c49;
+    }
+    .card-type-pill.risk {
+      background: rgba(185, 28, 28, 0.1);
+      color: #b91c1c;
+    }
+
+    .card-due-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #737b8c;
+      font-size: 12px;
+    }
+
+    .card-due-icon {
+      height: 14px;
+      width: 14px;
+      color: #737b8c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-due-text {
+      line-height: 1;
+    }
+
+    .card-title-row {
+      margin-top: 2px;
+    }
+
+    .card-action-title {
+      color: #0b0b0b;
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.3;
+      display: block;
+    }
+
+    .card-project-row {
+      margin-top: -4px;
+    }
+
+    .card-project-name {
+      color: #737b8c;
+      font-size: 13px;
+      font-weight: 400;
+    }
+
+    .card-divider {
+      height: 1px;
+      background-color: #eef1f6;
+      width: 100%;
+      margin: 4px 0;
+    }
+
+    .card-bottom-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .card-owner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-owner-avatar {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .card-owner-name {
+      color: #737b8c;
+      font-size: 13px;
+      font-weight: 400;
+    }
+
+    .card-cta {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: #10069f;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .card-cta-icon {
+      height: 14px;
+      width: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
   `],
 })
 export class PortfolioManagerActionsPmComponent implements AfterViewChecked, OnDestroy {
@@ -1372,7 +1622,7 @@ export class PortfolioManagerActionsPmComponent implements AfterViewChecked, OnD
   @Input() searchPlaceholder = 'Search actions...';
   @Input() targetPickerAriaLabel = 'Portfolio work target selector';
   @Input() targetAllLabel = 'All programs & projects';
-  @Input() actionItems: readonly PortfolioActionItem[] = portfolioActionItems;
+  @Input() actionItems: readonly PortfolioActionItem[] = portfolioManagerActionItems;
   @Input() boardFilters: readonly PortfolioBoardFilter[] = portfolioBoardFilters;
   @Input() showTargetPicker = true;
   @Input() openItemsInDrawer = true;
@@ -1714,6 +1964,10 @@ export class PortfolioManagerActionsPmComponent implements AfterViewChecked, OnD
   }
 
   selectBoardItem(item: PortfolioActionItem): void {
+    // Disable clicks on all card types except 'Plans' and 'Governance & committee'
+    if (item.kind !== 'plan' && item.kind !== 'governance') {
+      return;
+    }
     if (!this.showBoardDetailPanel) {
       this.openActionDrawer(item);
       return;
@@ -1815,6 +2069,31 @@ export class PortfolioManagerActionsPmComponent implements AfterViewChecked, OnD
       .trim()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
+  }
+
+  getCardTypePillClass(type: string): string {
+    const normalized = type.toLowerCase().trim();
+    if (normalized.includes('plan')) return 'plans';
+    if (normalized.includes('governance')) return 'governance-committee';
+    if (normalized.includes('report')) return 'status-reports';
+    if (normalized.includes('change')) return 'change-requests';
+    if (normalized.includes('benefit')) return 'benefits';
+    if (normalized.includes('risk')) return 'risk';
+    return 'plans'; // default
+  }
+
+  getAvatarStyle(owner: string): { [key: string]: string } {
+    const colors: Record<string, { bg: string, color: string }> = {
+      'MH': { bg: '#eef4ff', color: '#3454c4' },
+      'AH': { bg: '#fff0f0', color: '#b91c1c' },
+      'FA': { bg: '#eefbf5', color: '#166c49' },
+      'SA': { bg: '#f2f4f8', color: '#536071' },
+    };
+    const match = colors[owner.toUpperCase()] || { bg: '#f2f4f8', color: '#536071' };
+    return {
+      'background-color': match.bg,
+      'color': match.color
+    };
   }
 
   shiftMonth(delta: number): void {
