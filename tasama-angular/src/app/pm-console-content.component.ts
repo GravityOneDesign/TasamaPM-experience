@@ -70,11 +70,17 @@ import { PmConsoleStatusPillComponent } from './shared/pm-console-status-pill.co
 import { PmConsoleTableActionComponent } from './shared/pm-console-table-action.component';
 import { PmConsoleToolbarComponent } from './shared/pm-console-toolbar.component';
 import {
-  PmConsoleWorkCalendarComponent,
   type PmConsoleCalendarCell,
   type PmConsoleCalendarFilter,
   type PmConsoleCalendarItem,
 } from './shared/pm-console-work-calendar.component';
+// PM-specific "My Calendar" variant (isolated pill/chip styling — see component header).
+import { PmMyCalendarComponent } from './pm-my-calendar.component';
+// Reusable PM card (same design as the calendar hover cards) — used by My Actions.
+import { PmActionCardComponent } from './pm-action-card.component';
+// PM "My Calendar" is sourced from the same dataset the PMO calendar uses, so the two
+// calendars render identical pills / "+N" overflow / hover popovers within a session.
+import { pmoFrontdoorWorkItems } from './pmo-frontdoor.data';
 
 type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground';
 type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages' | 'quicklinks';
@@ -174,6 +180,7 @@ interface WorkBoardItem {
   project: string;
   meta: string;
   owner: string;
+  ownerName: string;
   cta: string;
   actions: readonly WorkItemAction[];
 }
@@ -1607,24 +1614,25 @@ const actions: WorkBoardColumn[] = [
     column: 'Overdue',
     tone: 'red',
     items: [
-      { type: 'Project Status Report', title: 'Submit Vision 2030 weekly report', project: 'Vision 2030', meta: 'Overdue by 5 days', owner: 'SA', cta: 'Submit', actions: reportWorkItemActions },
-      { type: 'Risk Escalation', title: 'Budget overrun response', project: 'NEOM Integration', meta: 'High priority', owner: 'AH', cta: 'Resolve', actions: riskWorkItemActions },
+      { type: 'Project Status Report', title: 'Submit Vision 2030 weekly report', project: 'Vision 2030', meta: 'Overdue by 5 days', owner: 'SA', ownerName: 'Sara Al Amri', cta: 'Submit', actions: reportWorkItemActions },
+      { type: 'Plan', title: 'Update Vision 2030 delivery plan', project: 'Vision 2030', meta: 'Overdue by 3 days', owner: 'MH', ownerName: 'Muna Hassan', cta: 'Update', actions: defaultWorkItemActions },
+      { type: 'Risk Escalation', title: 'Budget overrun response', project: 'NEOM Integration', meta: 'High priority', owner: 'AH', ownerName: 'Ahmed Al Habsi', cta: 'Resolve', actions: riskWorkItemActions },
     ],
   },
   {
     column: 'This week',
     tone: 'blue',
     items: [
-      { type: 'Dependency', title: 'Confirm API dependency owner', project: 'Smart City Alpha', meta: 'Due today', owner: 'FA', cta: 'Chase', actions: defaultWorkItemActions },
-      { type: 'Benefit', title: 'Benefits owner response', project: 'Smart City Alpha', meta: 'Due in 2 days', owner: 'FA', cta: 'Review', actions: defaultWorkItemActions },
+      { type: 'Dependency', title: 'Confirm API dependency owner', project: 'Smart City Alpha', meta: 'Due today', owner: 'FA', ownerName: 'Fatima Al Naimi', cta: 'Chase', actions: defaultWorkItemActions },
+      { type: 'Benefit', title: 'Benefits owner response', project: 'Smart City Alpha', meta: 'Due in 2 days', owner: 'FA', ownerName: 'Fatima Al Naimi', cta: 'Review', actions: defaultWorkItemActions },
     ],
   },
   {
     column: 'Upcoming',
     tone: 'amber',
     items: [
-      { type: 'Milestone', title: 'Execution gate readiness', project: 'Vision 2030', meta: 'Due Jun 12', owner: 'MH', cta: 'Open', actions: defaultWorkItemActions },
-      { type: 'Risk', title: 'Initial RAID refresh', project: 'NEOM Integration', meta: 'Next week', owner: 'AH', cta: 'Plan', actions: riskWorkItemActions },
+      { type: 'Milestone', title: 'Execution gate readiness', project: 'Vision 2030', meta: 'Due Jun 12', owner: 'MH', ownerName: 'Muna Hassan', cta: 'Open', actions: defaultWorkItemActions },
+      { type: 'Risk', title: 'Initial RAID refresh', project: 'NEOM Integration', meta: 'Next week', owner: 'AH', ownerName: 'Ahmed Al Habsi', cta: 'Plan', actions: riskWorkItemActions },
     ],
   },
 ];
@@ -3341,19 +3349,24 @@ const guidedTourSteps: GuidedTourStep[] = [
   },
 ];
 
-const timelineItems: PmConsoleCalendarItem[] = [
-  { date: '2026-05-04', label: 'PMO pack', tone: 'green', project: 'PMO Capability', kind: 'management-product' },
-  { date: '2026-05-06', label: 'Benefit baseline', tone: 'green', project: 'Vision 2030', kind: 'benefit' },
-  { date: '2026-05-09', label: 'Status report', tone: 'red', project: 'Vision 2030', kind: 'report' },
-  { date: '2026-05-10', label: 'Budget risk', tone: 'red', project: 'NEOM Integration', kind: 'risk' },
-  { date: '2026-05-15', label: 'Forum pack', tone: 'neutral', project: 'PMO Capability', kind: 'management-product' },
-  { date: '2026-05-15', label: 'Risk review', tone: 'red', project: 'UAE Research Map', kind: 'risk' },
-  { date: '2026-05-15', label: 'Owner follow-up', tone: 'blue', project: 'Vision 2030', kind: 'dependency' },
-  { date: '2026-05-19', label: 'API dependency', tone: 'red', project: 'Smart City Alpha', kind: 'dependency' },
-  { date: '2026-05-22', label: 'Product evidence', tone: 'neutral', project: 'Vision 2030', kind: 'end-product' },
-  { date: '2026-05-25', label: 'CSAT target', tone: 'blue', project: 'Smart City Alpha', kind: 'benefit' },
-  { date: '2026-05-29', label: 'Benefits review', tone: 'blue', project: 'Smart City Alpha', kind: 'benefit' },
-];
+// Mirror the PMO calendar dataset so the PM "My Calendar" shows the same pills per
+// date (including 3+ item days that collapse to "+N" overflow badges) and the same
+// hover popovers. Both calendars reference the single generated array, so within a
+// session they stay in lock-step. Only the calendar-facing fields are mapped.
+const timelineItems: PmConsoleCalendarItem[] = pmoFrontdoorWorkItems
+  // "Change requests" (kind: 'change') are not relevant to Project Managers, so they
+  // are excluded from the PM "My Calendar". PMO keeps the full dataset (it reads
+  // pmoFrontdoorWorkItems directly), so this exclusion is PM-only.
+  .filter((item) => item.kind !== 'change')
+  .map((item) => ({
+    id: item.id,
+    date: item.date,
+    label: item.label,
+    tone: item.tone,
+    project: item.project,
+    targetType: item.targetType,
+    kind: item.kind,
+  }));
 
 const currentReportingTrendProjectOrder = [firstAssignedProject.id, 'Global Anti-Scam Taskforce', 'Counter Terrorism Operations'];
 
@@ -4087,7 +4100,8 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
     PmConsoleStatusPillComponent,
     PmConsoleTableActionComponent,
     PmConsoleToolbarComponent,
-    PmConsoleWorkCalendarComponent,
+    PmMyCalendarComponent,
+    PmActionCardComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
@@ -8985,19 +8999,20 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                             </header>
                             <div class="task-stack">
                               @for (item of column.items; track item.title) {
-                                <article class="task-card {{ taskCardClass(item.type) }}" [attr.data-card-kind]="filterKind(item.type)">
-                                  <div class="task-top"><span>{{ item.type }}</span></div>
-                                  <h3>{{ item.title }}</h3>
-                                  <p>{{ item.project }}</p>
-                                  <div class="task-bottom">
-                                    <span class="avatar-sm">{{ item.owner }}</span>
-                                    <small>{{ item.meta }}</small>
-                                    <button class="task-action" type="button" [attr.data-tour-target]="filterKind(item.type) === 'report' ? 'create-psr' : null" (click)="handleTaskAction(item)">
-                                      <span>{{ item.cta }}</span>
-                                      <span pmConsoleIcon="chevron-right" aria-hidden="true"></span>
-                                    </button>
-                                  </div>
-                                </article>
+                                <app-pm-action-card
+                                  [attr.data-card-kind]="filterKind(item.type)"
+                                  [attr.data-tour-target]="filterKind(item.type) === 'report' ? 'create-psr' : null"
+                                  [eventType]="actionChipType(item.type)"
+                                  [tag]="item.type"
+                                  [title]="item.title"
+                                  [subtitle]="item.project"
+                                  [due]="item.meta"
+                                  [ownerInitials]="item.owner"
+                                  [ownerName]="item.ownerName"
+                                  [actionLabel]="item.cta"
+                                  [clickable]="isActionClickable(item.type)"
+                                  (cardClick)="handleTaskAction(item)"
+                                ></app-pm-action-card>
                               } @empty {
                                 <div class="empty-column">No {{ boardEmptyStateLabel }} in this lane.</div>
                               }
@@ -9007,7 +9022,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                       </div>
                     </div>
                     <div class="calendar-view" [class.is-hidden]="selectedView !== 'calendar'" data-work-view="calendar">
-                      <app-pm-console-work-calendar
+                      <app-pm-my-calendar
                         [monthLabel]="calendarMonthLabel"
                         [monthItemCount]="visibleMonthItems.length"
                         [cells]="calendarCells"
@@ -9017,7 +9032,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                         (monthShift)="shiftMonth($event)"
                         (filterChange)="setBoardFilter($event)"
                         (itemOpen)="handleCalendarItemOpen($event)"
-                      ></app-pm-console-work-calendar>
+                      ></app-pm-my-calendar>
                     </div>
                     <div class="quicklinks-view" [class.is-hidden]="selectedView !== 'quicklinks'" data-work-view="quicklinks">
                       <section class="workspace-quick-links-view" [attr.aria-label]="quickLinksWorkspaceTitle + ' Quick links'">
@@ -12490,7 +12505,10 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
         key,
         day: date.getDate(),
         current,
-        today: key === '2026-05-12',
+        // Keep the "today" date highlight (navy day-number badge + cell outline).
+        // The "Today" text label badge is suppressed via CSS in the PM calendar
+        // component (see pm-my-calendar.component.ts), so only the highlight shows.
+        today: key === '2026-05-26',
         items: current ? this.visibleMonthItems.filter((item) => item.date === key) : [],
       };
     });
@@ -17846,10 +17864,16 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   handleTaskAction(item: (typeof actions)[number]['items'][number]): void {
-    if (this.filterKind(item.type) === 'report') {
+    // Navigate to the same destination the PM calendar uses for this kind, and
+    // capture the current (board / My Actions) view as the return state so the
+    // back action from the opened page returns here.
+    const kind = this.filterKind(item.type);
+    if (kind === 'report') {
       this.openReport(item.project);
       return;
     }
+    this.openProject(item.project, this.currentProjectPlanReturnState());
+    this.projectPlanActiveSection = this.projectPlanSectionForCalendarItem(kind);
     this.iconsHydrated = false;
   }
 
@@ -18033,6 +18057,29 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     if (normalized.includes('milestone') || normalized.includes('gate')) return 'milestone';
     return 'task';
   }
+
+  /**
+   * Maps a My Actions item type to a calendar chip type, so action cards reuse the
+   * exact same tag palette as the PM calendar hover cards.
+   */
+  actionChipType(type: string): string {
+    const kind = this.filterKind(type);
+    if (kind === 'report') return 'Status reports';
+    if (kind === 'benefit') return 'Benefits';
+    if (kind === 'risk') return 'Risk';
+    return 'Plans';
+  }
+
+  /**
+   * Only Plan and Status report action cards are clickable (mirrors the calendar
+   * rule). All other cards still render the arrow for visual consistency but are
+   * not interactive.
+   */
+  isActionClickable(type: string): boolean {
+    const normalized = type.toLowerCase();
+    return normalized.includes('plan') || normalized.includes('report');
+  }
+
 
   timelineItemKind(item: PmConsoleCalendarItem): string {
     if (item.kind === 'end-product' || item.kind === 'management-product') return 'milestone';
