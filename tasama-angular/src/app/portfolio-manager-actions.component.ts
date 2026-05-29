@@ -5,7 +5,7 @@ import { PmConsoleIconService } from './pm-console-icon.service';
 import { iconName } from './portfolio-manager-icon.utils';
 import { portfolioActionItems, portfolioBoardFilters, PortfolioActionItem, PortfolioBoardFilter, PortfolioBoardColumn } from './portfolio-manager-actions.data';
 import { PortfolioManagerActionDrawerService } from './portfolio-manager-action-drawer.service';
-import { portfolioProgramRows, standaloneProjects, portfolioRows, type ProgramRow } from './portfolio-workspace/portfolio-workspace.data';
+import { portfolioProgramRows, standaloneProjects, type ProgramRow } from './portfolio-workspace/portfolio-workspace.data';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 
 type PortfolioWorkTargetType = 'all' | 'portfolio' | 'program' | 'project';
@@ -28,6 +28,11 @@ interface PortfolioWorkTargetGroup {
   id: 'portfolios' | 'programs' | 'projects';
   label: string;
   options: PortfolioWorkTargetOption[];
+}
+
+interface PortfolioTargetRow {
+  name: string;
+  programs?: readonly ProgramRow[];
 }
 
 @Component({
@@ -1386,7 +1391,9 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
 
   readonly programs = portfolioProgramRows;
   readonly standaloneProjects = standaloneProjects;
-  readonly portfolios = portfolioRows;
+  readonly portfolios: readonly PortfolioTargetRow[] = [
+    { name: 'Tasama Client 1', programs: portfolioProgramRows },
+  ];
   readonly collapsedTargetGroupIds = new Set<PortfolioWorkTargetGroup['id']>();
 
   private iconsHydrated = false;

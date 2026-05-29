@@ -57,19 +57,18 @@ export interface TaxonomyCard {
     </header>
 
     <!-- Scrollable full-width tab content area -->
-    <main class="portfolio-workspace-body" style="grid-row: 2; overflow-y: auto; background: #ffffff; padding: 24px; display: flex; flex-direction: column; flex: 1; min-height: 0;">
+    <main class="portfolio-workspace-body" style="grid-row: 2; overflow-y: auto; background: #ffffff; padding: 12px 24px 24px 24px; display: flex; flex-direction: column;">
       
       @if (activeSectionId === 'org-structure') {
-        <div class="org-structure-container animation-fade" style="display: flex; flex-direction: column; width: 100%; height: 100%;">
+        <div class="org-structure-container animation-fade" style="display: flex; flex-direction: column; width: 100%; height: 100%; gap: 16px; margin-top: 0px;">
           
-          <!-- Top Header Section with Add Division Button -->
-          <div class="org-structure-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <!-- Tab Heading and Subheading Row -->
+          <div class="org-structure-header-row" style="margin-bottom: 8px;">
             <div class="org-structure-intro">
-              <h2 style="font-size: 20px; font-weight: 600; color: #0b0b0b; margin: 0 0 6px 0;">Organisational Structure</h2>
-              <p style="font-size: 13.5px; color: #687182; margin: 0;">Configure divisions, brands, and sections to define the portfolio's hierarchical architecture.</p>
+              <h2>Organisational Structure</h2>
+              <p>Configure divisions, branches, and sections to define the portfolio's hierarchical architecture.</p>
             </div>
           </div>
-
           @if (groupObjects.length === 0) {
             @if (!isAddingGroup) {
               <!-- Empty state when no Divisions exist -->
@@ -93,159 +92,203 @@ export interface TaxonomyCard {
             }
           } @else {
             
-            <!-- Level of Flat Tabs (underlined, plain text, borderless) below heading and subheading -->
-            <div class="groups-tabs-row" style="display: flex; flex-direction: row; gap: 24px; padding: 0; margin-bottom: -1px; width: 100%; overflow-x: auto; scrollbar-width: none; font-family: Montserrat, -apple-system, sans-serif; align-items: center; position: relative; z-index: 10;">
-              @for (group of groupObjects; track $index; let gIdx = $index) {
-                <button 
-                  type="button"
-                  class="division-tab-btn pointer animation-fade" 
-                  [class.active]="selectedGroupIndex === gIdx"
-                  (click)="selectGroup(gIdx)"
-                  style="background: transparent; border: none; padding: 12px 4px; cursor: pointer; font-weight: 600; font-size: 15px; transition: all 0.2s ease; border-bottom: 3.5px solid transparent; color: #64748b; outline: none; margin-bottom: -1px; display: inline-flex; align-items: center;"
-                  [style.border-bottom-color]="selectedGroupIndex === gIdx ? '#10069f' : 'transparent'"
-                  [style.color]="selectedGroupIndex === gIdx ? '#10069f' : '#64748b'"
-                >
-                  <span>{{ group.name }}</span>
-                </button>
+            <!-- Level of Tabs below heading and subheading (Image 2 band container format) -->
+            <div class="groups-tabs-row" style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%; margin-top: 0px; margin-bottom: 6px; font-family: Montserrat, -apple-system, sans-serif; position: relative; z-index: 10;">
+              
+              <!-- Tab band: only appears if there are 2 or more divisions (Rectangle with rounded corners) -->
+              @if (groupObjects.length >= 2) {
+                <div class="division-pill-band" style="background: #F1F5F9; border: 1px solid #E2E8F0; border-radius: 12px; padding: 4px; display: inline-flex; align-items: center; gap: 4px; box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);">
+                  @for (group of groupObjects; track $index; let gIdx = $index) {
+                    <button 
+                      type="button"
+                      class="division-tab-btn pointer animation-fade" 
+                      [class.active]="selectedGroupIndex === gIdx"
+                      (click)="selectGroup(gIdx)"
+                      style="border: none; padding: 6px 20px; cursor: pointer; font-size: 14px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 8px; outline: none; display: inline-flex; align-items: center; justify-content: center;"
+                      [style.background]="selectedGroupIndex === gIdx ? '#ffffff' : 'transparent'"
+                      [style.color]="selectedGroupIndex === gIdx ? '#10069f' : '#64748b'"
+                      [style.font-weight]="'500'"
+                      [style.box-shadow]="selectedGroupIndex === gIdx ? '0 2px 6px rgba(16, 6, 159, 0.08)' : 'none'"
+                      onmouseover="if (this.style.background === 'transparent') { this.style.color='#0f172a'; this.style.background='rgba(0, 0, 0, 0.04)'; }"
+                      onmouseout="if (this.style.boxShadow === 'none') { this.style.color='#64748b'; this.style.background='transparent'; }"
+                    >
+                      <span>{{ group.name }}</span>
+                    </button>
+                  }
+                </div>
+              } @else {
+                <!-- Empty spacer block to maintain flex structure when no tabs are present -->
+                <div></div>
               }
               
-              <!-- Tab button to trigger drawer -->
+              <!-- Tab button to trigger drawer (always positioned at the top right) -->
               <button 
                 type="button"
-                class="division-tab-btn pointer animation-fade" 
+                class="division-add-btn pointer animation-fade" 
                 (click)="openAddGroupDrawer()"
-                style="background: transparent; border: none; padding: 12px 4px; cursor: pointer; font-weight: 600; font-size: 15px; transition: all 0.2s ease; color: #94a3b8; outline: none; margin-bottom: -1px; display: inline-flex; align-items: center;"
-                onmouseover="this.style.color='#10069f'"
-                onmouseout="this.style.color='#94a3b8'"
+                style="background: transparent; border: 0.75px solid #475569; padding: 8px 18px; border-radius: 100px; cursor: pointer; font-weight: 600; font-size: 13.5px; transition: all 0.2s ease; color: #475569; outline: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px;"
+                onmouseover="this.style.color='#10069f'; this.style.borderColor='#10069f'; this.style.background='#f4f6fc';"
+                onmouseout="this.style.color='#475569'; this.style.borderColor='#475569'; this.style.background='transparent';"
               >
-                <span>+Add Division</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 2px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span>Add Division</span>
               </button>
             </div>
 
             <!-- Active Division Hierarchy Area -->
-            @if (groupObjects[selectedGroupIndex]) {
-              <div class="active-group-details animation-fade" style="border: 1px solid rgba(16, 6, 159, 0.25); border-radius: 16px; padding: 24px; background: #ffffff; display: flex; flex-direction: column; width: 100%; box-sizing: border-box; margin-top: 0; font-family: Montserrat, -apple-system, sans-serif; gap: 12px; position: relative; box-shadow: 0 4px 12px rgba(25, 33, 61, 0.03);">
+            @if (groupObjects[selectedGroupIndex]; as activeGroup) {
+              <div class="active-group-details animation-fade" style="border: none; border-radius: 0; padding: 0px 0 0 0; background: transparent; display: flex; flex-direction: column; width: 100%; box-sizing: border-box; margin-top: 0; font-family: Montserrat, -apple-system, sans-serif; position: relative;">
                 
-                <!-- Title Row -->
-                <div style="display: flex; align-items: center; width: 100%;">
-                  <div 
-                    (click)="openEditGroupDrawer(selectedGroupIndex)"
-                    style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer;"
-                    title="Open Division Details"
-                    onmouseover="this.querySelector('h3').style.color='#10069f'; this.querySelector('.heading-arrow').style.color='#10069f';"
-                    onmouseout="this.querySelector('h3').style.color='#1d252d'; this.querySelector('.heading-arrow').style.color='#64748b';"
-                  >
-                    <h3 style="font-size: 18px; font-weight: 700; color: #1d252d; margin: 0; font-family: Montserrat, -apple-system, sans-serif; transition: color 0.2s ease;">
-                      {{ groupObjects[selectedGroupIndex].name }}
-                    </h3>
-                    <span class="heading-arrow" pmConsoleIcon="arrow-up-right" style="font-size: 16px; width: 16px; height: 16px; color: #64748b; transition: color 0.2s ease;"></span>
+                <!-- Center Aligned Division Card (Image 2 - Rounded rectangle with left side highlight border) -->
+                <div class="division-card-row" style="display: flex; justify-content: center; width: 100%; margin-bottom: 48px; position: relative; z-index: 10;">
+                  <div class="division-unified-card animation-fade" style="background: #FAFBFF; border: 0.75px solid #CFDEFD; border-left: 3px solid #5D55DB; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; width: 290px; height: 112px; padding: 16px 20px; box-sizing: border-box; box-shadow: 0 4px 16px rgba(16, 6, 159, 0.04); position: relative;">
+                    <!-- Top Row: Pill and Actions menu -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                      <span class="pill-division" style="background: #DFDFEE; color: #10069f; font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 100px; line-height: 1;">Division</span>
+                      
+                      <!-- Three-dot menu button -->
+                      <button 
+                        type="button" 
+                        (click)="openEditGroupDrawer(selectedGroupIndex)"
+                        style="border: none; background: transparent; cursor: pointer; color: #64748b; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%;"
+                        title="Division Actions"
+                        onmouseover="this.style.background='rgba(16, 6, 159, 0.08)';"
+                        onmouseout="this.style.background='transparent';"
+                      >
+                        <span pmConsoleIcon="more-vertical" style="font-size: 18px; width: 18px; height: 18px;"></span>
+                      </button>
+                    </div>
+
+                    <!-- Division Name -->
+                    <h4 style="font-size: 16px; font-weight: 600; color: #000000; margin: 0; word-break: break-word; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="activeGroup.name">
+                      {{ activeGroup.name }}
+                    </h4>
                   </div>
                 </div>
 
-                <!-- Subtitle (Description) -->
-                @if (groupObjects[selectedGroupIndex].purpose) {
-                  <p style="font-size: 14px; color: #687182; margin: 0 0 16px 0; max-width: 800px; line-height: 1.5;">
-                    {{ groupObjects[selectedGroupIndex].purpose }}
-                  </p>
+                <!-- SVG Connector Lines Overlay (Curved Elbow Connectors in Royal Blue) -->
+                @if (activeGroup.divisions && activeGroup.divisions.length > 0) {
+                  @let branchCount = activeGroup.divisions.length;
+                  <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 170px; pointer-events: none; z-index: 1;">
+                    @for (div of activeGroup.divisions; track $index; let idx = $index) {
+                      <path 
+                        [attr.d]="getElbowPath(idx, branchCount)" 
+                        stroke="#DDDDDD" 
+                        stroke-width="1.2" 
+                        fill="none" 
+                      />
+                    }
+                  </svg>
                 }
 
-                <!-- Wrap-around Branches Flex Row (4 per row max or wraps naturally) -->
-                <div class="branches-row-flex" style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 24px; align-items: flex-start; padding: 8px 4px 24px 4px; width: 100%;">
+                <!-- Branches and Sections Columns Flex Row -->
+                <div class="branches-columns-flex" style="display: flex; flex-direction: row; gap: 40px; align-items: flex-start; justify-content: flex-start; padding: 0 4px 24px 4px; width: 100%; box-sizing: border-box; position: relative; z-index: 10;">
                   
-                  @for (div of groupObjects[selectedGroupIndex].divisions; track $index; let dIdx = $index) {
-                    <!-- Unified Branch Card Layout (Figma Selected Node: Container) -->
-                    <div class="branch-unified-card animation-fade" style="background: linear-gradient(135deg, #FAFBFF 0%, #FFFFFF 100%); border: 1px solid #CFDEFD; border-radius: 16px; display: flex; flex-direction: column; width: 290px; min-width: 290px; height: 283px; box-shadow: 0 4px 16px 0 rgba(16, 6, 159, 0.05); position: relative; box-sizing: border-box; font-family: Montserrat, -apple-system, sans-serif; overflow: hidden;">
+                  @for (div of activeGroup.divisions; track $index; let dIdx = $index) {
+                    <!-- Branch Column -->
+                    <div class="branch-column-vertical" style="display: flex; flex-direction: column; gap: 16px; width: 240px; min-width: 240px;">
                       
-                      <!-- Header portion with linear gradient from Figma (exactly 89px height) -->
-                      <div style="background: linear-gradient(132deg, #F4F5FF 36.64%, #D5E3FF 100%); padding: 12px 20px 10px 20px; display: flex; flex-direction: column; justify-content: space-between; height: 89px; box-sizing: border-box; border-bottom: 1px solid #CFDEFD; border-radius: 16px 16px 0 0;">
-                        <!-- Header Row: Pill & Actions -->
+                      <!-- Branch Unified Card Layout (Image 3 - Left side indigo highlight border) -->
+                      <div class="branch-unified-card animation-fade" style="background: #FAFBFF; border: 0.75px solid #CFDEFD; border-left: 3px solid #7C9FF1; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; width: 240px; height: 112px; padding: 16px 20px; box-sizing: border-box; box-shadow: 0 4px 16px rgba(16, 6, 159, 0.04); position: relative;">
+                        <!-- Top Row: Pill and Actions menu -->
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                          <span class="pill-branch" style="background: #ffffff; color: #10069f; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 100px; line-height: 1; border: 1px solid #CFDEFD;">Branch</span>
+                          <span class="pill-branch" style="background: #E1E9FF; color: #10069f; font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 100px; line-height: 1; border: none;">Branch</span>
                           
-                          <!-- arrow-up-right CTA / View Details trigger -->
+                          <!-- Three-dot menu button -->
                           <button 
                             type="button" 
                             (click)="openViewBranchDrawer(selectedGroupIndex, dIdx)"
-                            style="border: none; background: transparent; cursor: pointer; color: #10069f; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%;"
-                            title="View Details"
+                            style="border: none; background: transparent; cursor: pointer; color: #64748b; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%;"
+                            title="Branch Actions"
                             onmouseover="this.style.background='rgba(16, 6, 159, 0.08)';"
                             onmouseout="this.style.background='transparent';"
                           >
-                            <span pmConsoleIcon="arrow-up-right" style="font-size: 16px; width: 16px; height: 16px;"></span>
+                            <span pmConsoleIcon="more-vertical" style="font-size: 18px; width: 18px; height: 18px;"></span>
                           </button>
                         </div>
 
                         <!-- Branch Info (Name + Owner) -->
                         <div style="display: flex; flex-direction: column; gap: 4px;">
                           <!-- Branch Name -->
-                          <h4 style="font-size: 15px; font-weight: 700; color: #000000; margin: 0; word-break: break-word; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="div.name">{{ div.name }}</h4>
+                          <h4 style="font-size: 16px; font-weight: 600; color: #000000; margin: 0; word-break: break-word; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="div.name">
+                            {{ div.name }}
+                          </h4>
                           
-                          <!-- Owner (shown only if entered, user icon + name, no "Owner" label) -->
+                          <!-- Owner (user icon + name) -->
                           @if (div.owner) {
                             <div style="font-size: 11.5px; color: #475569; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px;">
-                              <span pmConsoleIcon="user" style="width: 13px; height: 13px; color: #475569; display: inline-flex; align-items: center; justify-content: center;"></span>
+                              <span style="width: 20px; height: 20px; border-radius: 50%; background: rgba(71, 85, 105, 0.1); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <span pmConsoleIcon="user" style="width: 11px; height: 11px; color: #475569; display: inline-flex; align-items: center; justify-content: center;"></span>
+                              </span>
                               <span>{{ div.owner }}</span>
                             </div>
                           }
                         </div>
                       </div>
 
-                      <!-- Body portion with transparent background (showing the card's gradient, exactly 194px height) -->
-                      <div style="padding: 16px 20px 18px 20px; display: flex; flex-direction: column; gap: 12px; height: 194px; box-sizing: border-box; background: transparent;">
-                        <!-- Nested Sections List -->
-                        @if (div.branches && div.branches.length > 0) {
-                          <div class="sections-scroll-list" style="display: flex; flex-direction: column; gap: 8px; width: 100%; overflow-y: auto; flex-grow: 1; padding-right: 4px;">
-                            @for (br of div.branches; track $index; let bIdx = $index) {
-                              <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                                <div 
-                                  class="section-clickable-row"
-                                  (click)="openViewSectionDrawer(dIdx, bIdx)"
-                                  title="View Section Details"
-                                >
-                                  <span class="icon icon-branch" aria-hidden="true">
-                                    <span pmConsoleIcon="git-branch" style="width: 14px; height: 14px;"></span>
-                                  </span>
-                                  <span class="section-name-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="br.name">{{ br.name }}</span>
-                                </div>
-                              </div>
-                            }
+                      <!-- Nested Sections List (Vertical Stack without elbow connectors) -->
+                      @if (div.branches && div.branches.length > 0) {
+                        @for (br of div.branches; track $index; let bIdx = $index) {
+                          <!-- Section Unified Card Layout (Image 4 - Left side amber highlight border) -->
+                          <div 
+                            class="section-unified-card animation-fade" 
+                            (click)="openViewSectionDrawer(dIdx, bIdx)"
+                            title="View Section Details"
+                            style="background: #ffffff; border: 0.75px solid #CFDEFD; border-left: 3px solid #EFB882; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start; gap: 6px; width: 240px; height: 68px; padding: 10px 16px; box-sizing: border-box; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02); cursor: pointer; transition: all 0.2s ease; position: relative;"
+                            onmouseover="this.style.borderColor='#10069f'; this.style.boxShadow='0 4px 12px rgba(16, 6, 159, 0.08)';"
+                            onmouseout="this.style.borderColor='#CFDEFD'; this.style.boxShadow='0 2px 8px rgba(0, 0, 0, 0.02)';"
+                          >
+                            <!-- Top Row: Pill and Actions menu -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                              <span class="pill-section" style="background: #FFF8EB; border: 1px solid #FFEECF; color: #92400e; font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 100px; line-height: 1;">Section</span>
+                              
+                              <!-- Actions menu indicator ⋮ -->
+                              <span pmConsoleIcon="more-vertical" style="font-size: 16px; width: 16px; height: 16px; color: #94a3b8;"></span>
+                            </div>
+
+                            <!-- Section Name -->
+                            <h5 style="font-size: 16px; font-weight: 600; color: #000000; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="br.name">
+                              {{ br.name }}
+                            </h5>
                           </div>
                         }
+                      }
 
-                        <!-- Add Section Pill Button Centered at the Bottom -->
-                        <div style="display: flex; justify-content: center; width: 100%; margin-top: auto; padding-top: 8px;">
-                          <button 
-                            type="button" 
-                            (click)="openAddSectionDrawer(dIdx, dIdx)"
-                            style="background: transparent; border: 1px dashed #cbd5e1; border-radius: 100px; padding: 6px 16px; display: flex; align-items: center; justify-content: center; gap: 6px; color: #687182; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-sizing: border-box;"
-                            onmouseover="this.style.borderColor='#10069f'; this.style.background='#E6ECF8'; this.style.color='#10069f';"
-                            onmouseout="this.style.borderColor='#cbd5e1'; this.style.background='transparent'; this.style.color='#687182';"
-                          >
-                            <span pmConsoleIcon="plus" style="width: 12px; height: 12px;"></span>
-                            <span>Add Section</span>
-                          </button>
-                        </div>
-                      </div>
+                      <!-- Add Section Slot Card (Image 4 bottom) -->
+                      <button 
+                        type="button" 
+                        (click)="openAddSectionDrawer(dIdx, dIdx)"
+                        style="background: transparent; border: 0.75px solid #CFDEFD; border-radius: 12px; padding: 0 16px; display: flex; align-items: center; justify-content: center; gap: 8px; color: #475569; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-sizing: border-box; width: 240px; height: 68px;"
+                        onmouseover="this.style.borderColor='#10069f'; this.style.background='#F4F5FF'; this.style.color='#10069f';"
+                        onmouseout="this.style.borderColor='#CFDEFD'; this.style.background='transparent'; this.style.color='#475569';"
+                      >
+                        <span class="plus-icon-circle" style="width: 24px; height: 24px; border-radius: 50%; background: #FFF8EC; border: 1px solid #FFEED0; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        </span>
+                        <span>Add Section</span>
+                      </button>
 
                     </div>
                   }
-                  
-                  <!-- Stroke Container to the right of Branch cards labeled 'Add Branch' (matches image 2 vertical rectangle when empty) -->
+
+                  <!-- Add Branch Slot Card (Image 4 rightmost) -->
                   <button 
                     type="button" 
                     (click)="openAddBranchDrawer(selectedGroupIndex)"
-                    style="background: transparent; border: 1.5px dashed #cbd5e1; border-radius: 16px; min-width: 290px; width: 290px; height: 283px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 16px 20px; color: #10069f; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-sizing: border-box; font-family: Montserrat, -apple-system, sans-serif;"
-                    onmouseover="this.style.borderColor='#10069f'; this.style.color='#10069f'; this.style.background='#f4f6fc';"
-                    onmouseout="this.style.borderColor='#cbd5e1'; this.style.color='#10069f'; this.style.background='transparent';"
+                    style="background: transparent; border: 0.75px solid #CFDEFD; border-radius: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0 20px; color: #475569; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-sizing: border-box; width: 240px; height: 112px; font-family: Montserrat, -apple-system, sans-serif;"
+                    onmouseover="this.style.borderColor='#10069f'; this.style.background='#f4f6fc'; this.style.color='#10069f';"
+                    onmouseout="this.style.borderColor='#CFDEFD'; this.style.background='transparent'; this.style.color='#475569';"
                   >
-                    <span pmConsoleIcon="plus" style="font-size: 24px; width: 24px; height: 24px;"></span>
+                    <span class="branch-plus-icon-circle" style="width: 28px; height: 28px; border-radius: 50%; background: #CBD9FD; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </span>
                     <span>Add Branch</span>
                   </button>
 
                 </div>
 
               </div>
-          }
+            }
         }
 
           <!-- Drawer 1: Repurposed Division Drawer (originally Group) -->
@@ -331,9 +374,9 @@ export interface TaxonomyCard {
 
                 <hr style="border: 0; border-top: 1px solid #e4e7ef; margin: 12px 0;" />
 
-                <!-- Branches & Sections (Nested Hierarchy) builder -->
+                <!-- Branches & Sections builder -->
                 <div class="ud-field">
-                  <h3 style="font-size: 16px; font-weight: 700; color: #1d252d; margin: 0 0 16px 0; font-family: Montserrat, -apple-system, sans-serif;">Branches & Sections (Nested Hierarchy)</h3>
+                  <h3 style="font-size: 16px; font-weight: 700; color: #1d252d; margin: 0 0 16px 0; font-family: Montserrat, -apple-system, sans-serif;">Branches & Sections</h3>
                   
                   @if (drawerBranches.length > 0) {
                     <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px;">
@@ -401,7 +444,7 @@ export interface TaxonomyCard {
                   <button 
                     type="button" 
                     (click)="addBranchToDrawer()"
-                    style="background: #ffffff; border: 1.5px solid #10069f; color: #10069f; font-size: 13.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px 18px; border-radius: 8px; width: fit-content; transition: all 0.2s ease; font-family: Montserrat, -apple-system, sans-serif;"
+                    style="background: #ffffff; border: 1.5px solid #10069f; color: #10069f; font-size: 13.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px 18px; border-radius: 100px; width: fit-content; transition: all 0.2s ease; font-family: Montserrat, -apple-system, sans-serif;"
                     onmouseover="this.style.background='#f4f6fc';"
                     onmouseout="this.style.background='#ffffff';"
                   >
@@ -1478,8 +1521,8 @@ export interface TaxonomyCard {
               <!-- Glossary Header Block & Search (No Add Button) -->
               <div class="glossary-top-bar" style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 12px; width: 100%;">
                 <div class="glossary-header-block" style="text-align: left;">
-                  <h2 style="font-size: 20px; font-weight: 600; color: #1e293b; margin: 0 0 6px 0; font-family: inherit;">Glossary</h2>
-                  <p style="font-size: 13.5px; color: #64748b; margin: 0; line-height: 1.5;">Configure contextual help for each and every label used in the p3m module.</p>
+                  <h2 style="font-size: 20px; font-weight: 600; color: #1e293b; margin: 0 0 6px 0; font-family: inherit;">{{ glossaryHeaderTitle }}</h2>
+                  <p style="font-size: 13.5px; color: #64748b; margin: 0; line-height: 1.5;">{{ glossaryHeaderDescription }}</p>
                 </div>
                 
                 <!-- Search bar -->
@@ -1503,7 +1546,7 @@ export interface TaxonomyCard {
                 <table class="pm-project-table" style="width: 100%; min-width: 800px; table-layout: auto; border-collapse: separate; border-spacing: 0;">
                   <thead>
                     <tr>
-                      <th style="width: 25%; background: #fbfcff; color: #555555; font-weight: 600; padding: 15px 14px; border-bottom: 1px solid #eceef3; font-size: 12px; text-align: left;">System Label</th>
+                      <th style="width: 25%; background: #fbfcff; color: #555555; font-weight: 600; padding: 15px 14px; border-bottom: 1px solid #eceef3; font-size: 12px; text-align: left;">{{ glossarySystemLabelHeader }}</th>
                       <th style="width: 25%; background: #fbfcff; color: #555555; font-weight: 600; padding: 15px 14px; border-bottom: 1px solid #eceef3; font-size: 12px; text-align: left;">Custom Label</th>
                       <th style="width: 40%; background: #fbfcff; color: #555555; font-weight: 600; padding: 15px 14px; border-bottom: 1px solid #eceef3; font-size: 12px; text-align: left;">Contextual Help</th>
                       <th style="width: 10%; background: #fbfcff; color: #555555; font-weight: 600; padding: 15px 14px; border-bottom: 1px solid #eceef3; font-size: 12px; text-align: center;">Action</th>
@@ -1709,222 +1752,143 @@ export interface TaxonomyCard {
     @if (selectedCard) {
       <app-pm-console-plan-drawer
         [eyebrow]="selectedCard.id === 'priority' ? 'Portfolio Setup' : selectedCardGroup"
-        [title]="selectedCard.id === 'priority' ? 'Manage Priorities' : 'Add ' + selectedCard.title.toLowerCase()"
+        [title]="'Manage ' + selectedCard.title"
         [description]="'Manage and configure the active guidelines and options for ' + selectedCard.title.toLowerCase() + '.' "
         submitLabel="Add item"
         cancelLabel="Cancel"
-        [hideFooter]="selectedCard.id === 'priority'"
-        [panelClass]="selectedCard.id === 'priority' ? 'priority-drawer-view' : ''"
+        [hideFooter]="true"
+        [panelClass]="'priority-drawer-view'"
         (close)="closeDrawer()"
         (submitForm)="saveDrawer($event)"
       >
         <div planDrawerBody class="standards-drawer-body">
-          @if (selectedCard.id === 'priority') {
-            <div class="priority-drawer-table-wrapper" style="margin-top: 10px;">
-              <!-- Add new item and search row aligned to the top-right of the table -->
-              <div class="priority-add-row" style="display: flex; gap: 12px; justify-content: flex-end; align-items: center; margin-bottom: 16px;">
-                <!-- Expandable Search Box -->
-                <div class="priority-expandable-search" title="Search priorities">
-                  <span pmConsoleIcon="search" class="search-icon"></span>
-                  <input 
-                    type="text" 
-                    class="search-input" 
-                    placeholder="Search priorities..." 
-                    [(ngModel)]="searchQuery"
-                  />
-                </div>
-
-                <button 
-                  type="button" 
-                  class="add-workflow-btn" 
-                  (click)="addPriorityItem()"
-                  style="height: 32px; padding: 0 14px; border-radius: 8px; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px;"
-                >
-                  <span pmConsoleIcon="plus" style="font-size: 12px;"></span>
-                  <span>Add item</span>
-                </button>
+          <div class="priority-drawer-table-wrapper" style="margin-top: 10px;">
+            
+            <!-- Top bar: Count and Search aligned to the top matching Image 2 -->
+            <div class="priority-top-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; width: 100%;">
+              <div class="priority-count-label" style="font-size: 14px; font-weight: 500; color: #475569;">
+                Showing all {{ getFilteredItems().length }} {{ selectedCard.id === 'priority' ? 'priorities' : selectedCard.title.toLowerCase() }}
               </div>
-
-              <!-- Sleek platform table matching Image 2 and User table style -->
-              <div class="user-table-wrapper" style="border-radius: 8px;">
-                <table class="user-table" style="margin: 0; width: 100%;">
-                  <thead>
-                    <tr>
-                      <th style="width: 75%; padding: 10px 16px; font-size: 11px;">Name</th>
-                      <th style="width: 25%; padding: 10px 16px; font-size: 11px; text-align: center;">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (item of getFilteredPriorities(); track item) {
-                      <tr>
-                        <td style="padding: 10px 16px; font-size: 13px;">
-                          @if (editingPriorityIndex === selectedCard.items.indexOf(item)) {
-                            <input 
-                              type="text" 
-                              class="form-control" 
-                              [(ngModel)]="editingPriorityValue"
-                              (keydown.enter)="saveEditPriority(selectedCard.items.indexOf(item))"
-                              (keydown.escape)="cancelEditPriority()"
-                              style="height: 28px; padding: 4px 8px; font-size: 12.5px; width: 100%; box-sizing: border-box;"
-                              autofocus
-                            />
-                          } @else {
-                            <span style="font-weight: 500; color: #1e293b;">{{ item }}</span>
-                          }
-                        </td>
-                        <td style="padding: 10px 16px; text-align: center; overflow: visible;">
-                          <div style="display: flex; gap: 8px; justify-content: center; align-items: center; overflow: visible; position: relative;">
-                            @if (editingPriorityIndex === selectedCard.items.indexOf(item)) {
-                              <button 
-                                type="button" 
-                                class="priority-action-btn" 
-                                (click)="saveEditPriority(selectedCard.items.indexOf(item))" 
-                                title="Save"
-                                style="color: #059669;"
-                              >
-                                <span pmConsoleIcon="check"></span>
-                              </button>
-                              <button 
-                                type="button" 
-                                class="priority-action-btn delete" 
-                                (click)="cancelEditPriority()" 
-                                title="Cancel"
-                              >
-                                <span pmConsoleIcon="x"></span>
-                              </button>
-                            } @else {
-                              <!-- Actions Container three dot menu with popup dropdown -->
-                              <div style="position: relative; display: inline-block; overflow: visible;">
-                                <button 
-                                  type="button" 
-                                  class="priority-action-btn" 
-                                  (click)="toggleActionMenu($event, selectedCard.items.indexOf(item))"
-                                  title="Actions"
-                                >
-                                  <span pmConsoleIcon="more-horizontal"></span>
-                                </button>
-                                
-                                @if (activeActionMenuIndex === selectedCard.items.indexOf(item)) {
-                                  <div class="priority-dropdown-menu animation-fade" style="position: absolute; right: 0; top: 32px; background: #ffffff; border: 1px solid #dfe4ee; border-radius: 8px; box-shadow: 0 4px 12px rgba(25, 33, 61, 0.08); z-index: 100; min-width: 100px; padding: 4px 0;">
-                                    <button 
-                                      type="button" 
-                                      class="dropdown-item" 
-                                      (click)="triggerEditRow(selectedCard.items.indexOf(item), item)" 
-                                      style="display: flex; align-items: center; gap: 8px; width: 100%; border: none; background: transparent; padding: 8px 12px; font-size: 12.5px; color: #334155; text-align: left; cursor: pointer;"
-                                    >
-                                      <span pmConsoleIcon="edit-2" style="font-size: 12px; color: #64748b;"></span>
-                                      <span>Edit</span>
-                                    </button>
-                                    <button 
-                                      type="button" 
-                                      class="dropdown-item delete" 
-                                      (click)="triggerDeleteRow(item)" 
-                                      style="display: flex; align-items: center; gap: 8px; width: 100%; border: none; background: transparent; padding: 8px 12px; font-size: 12.5px; color: #ef4444; text-align: left; cursor: pointer;"
-                                    >
-                                      <span pmConsoleIcon="trash-2" style="font-size: 12px; color: #ef4444;"></span>
-                                      <span>Delete</span>
-                                    </button>
-                                  </div>
-                                }
-                              </div>
-                            }
-                          </div>
-                        </td>
-                      </tr>
-                    }
-                    @if (getFilteredPriorities().length === 0) {
-                      <tr>
-                        <td colspan="2" style="padding: 24px; text-align: center; color: #94a3b8; font-style: italic;">
-                          No priority items match search.
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-
-                <!-- Image 2 styled footer replacing pagination footer entirely -->
-                <div class="priority-footer" style="padding: 10px 16px; background: #f8fafc; border-top: 1px solid #dfe4ee; font-size: 12px; color: #64748b; font-weight: 500; text-align: right;">
-                  {{ getFilteredPriorities().length }} {{ getFilteredPriorities().length === 1 ? 'item' : 'items' }}
-                </div>
-              </div>
-            </div>
-          } @else {
-            <!-- Current Items List tags -->
-            <div class="drawer-section compact" style="margin-bottom: 24px;">
-              <span class="drawer-section-title">Current {{ selectedCard.title }} Options</span>
-              <div class="standards-tags-list">
-                @for (item of selectedCard.items; track item; let i = $index) {
-                  <span class="standards-tag">
-                    <span class="tag-text">{{ item }}</span>
-                    <button type="button" class="tag-delete-btn" (click)="removeDrawerItem(i)" aria-label="Delete item">
-                      <span pmConsoleIcon="x"></span>
-                    </button>
-                  </span>
-                }
-                @if (selectedCard.items.length === 0) {
-                  <p class="empty-items-text">No active categories defined.</p>
-                }
+              
+              <!-- Expandable Search Box -->
+              <div class="priority-expandable-search" [attr.title]="'Search ' + (selectedCard.id === 'priority' ? 'priorities' : selectedCard.title.toLowerCase())">
+                <span pmConsoleIcon="search" class="search-icon"></span>
+                <input 
+                  type="text" 
+                  class="search-input" 
+                  [placeholder]="'Search ' + (selectedCard.id === 'priority' ? 'priorities' : selectedCard.title.toLowerCase()) + '...'" 
+                  [(ngModel)]="searchQuery"
+                />
               </div>
             </div>
 
-            <!-- outcome styled text area from Image 2 -->
-            <div class="drawer-section">
-              <label class="form-label" for="newItemName">
-                {{ selectedCard.title }} *
-              </label>
-              <textarea 
-                id="newItemName"
-                class="form-control text-area-outcome" 
-                placeholder="Describe the {{ selectedCard.title.toLowerCase() }} users should see" 
-                [(ngModel)]="newDrawerItem"
-                name="newDrawerItem"
-                rows="3"
-                required
-              ></textarea>
-            </div>
-
-            <!-- measure styled input from Image 2 -->
-            <div class="drawer-section" style="margin-top: 20px;">
-              <label class="form-label" for="newMeasure">
-                Measure
-              </label>
+            <!-- Input Row: Enter new item and Add button matching Image 2 -->
+            <div class="priority-add-input-row" style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px; width: 100%;">
               <input 
-                id="newMeasure"
                 type="text" 
                 class="form-control" 
-                placeholder="How will this be measured?" 
-                [(ngModel)]="drawerMeasure"
-                name="drawerMeasure"
+                [placeholder]="'Enter new ' + (selectedCard.id === 'priority' ? 'priority' : selectedCard.title.toLowerCase()) + '...'" 
+                [(ngModel)]="newPriorityName"
+                (keydown.enter)="addItem()"
+                style="height: 38px; font-size: 13px; flex: 1; border: 1px solid #d0d5dd; border-radius: 8px; padding: 8px 12px;"
               />
+              <button 
+                type="button" 
+                class="priority-add-btn" 
+                (click)="addItem()"
+                style="height: 38px; padding: 0 18px; border-radius: 8px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; background-color: #10069f; color: #ffffff; border: none; cursor: pointer; transition: all 0.2s;"
+              >
+                <span pmConsoleIcon="plus" style="font-size: 12px;"></span>
+                <span>Add</span>
+              </button>
             </div>
 
-            <!-- owner and status side by side select from Image 2 -->
-            <div class="form-row-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px;">
-              <div class="drawer-section">
-                <label class="form-label" for="drawerOwner">Owner</label>
-                <div class="select-wrapper">
-                  <select id="drawerOwner" [(ngModel)]="drawerOwner" name="drawerOwner" class="form-control select-control">
-                    <option value="Fatima Qahtani">Fatima Qahtani</option>
-                    <option value="Muna Hassan">Muna Hassan</option>
-                    <option value="PMO Desk">PMO Desk</option>
-                  </select>
-                  <span pmConsoleIcon="chevron-down" class="select-chevron"></span>
-                </div>
-              </div>
-
-              <div class="drawer-section">
-                <label class="form-label" for="drawerStatus">Status</label>
-                <div class="select-wrapper">
-                  <select id="drawerStatus" [(ngModel)]="drawerStatus" name="drawerStatus" class="form-control select-control">
-                    <option value="Active">Active</option>
-                    <option value="Draft">Draft</option>
-                    <option value="Archived">Archived</option>
-                  </select>
-                  <span pmConsoleIcon="chevron-down" class="select-chevron"></span>
-                </div>
-              </div>
+            <!-- Sleek platform table matching Image 2 -->
+            <div class="priority-table-wrapper">
+              <table class="priority-table" style="margin: 0; width: 100%;">
+                <thead>
+                  <tr>
+                    <th style="width: 15%; text-align: left;">S.No</th>
+                    <th style="width: 60%; text-align: left;">{{ selectedCard.title }}</th>
+                    <th style="width: 25%; text-align: center;">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of getFilteredItems(); track item; let i = $index) {
+                    <tr>
+                      <td style="font-size: 13px; color: #475569; font-weight: 500;">
+                        {{ i + 1 }}
+                      </td>
+                      <td style="font-size: 13px;">
+                        @if (editingPriorityIndex === selectedCard.items.indexOf(item)) {
+                          <input 
+                            type="text" 
+                            class="form-control" 
+                            [(ngModel)]="editingPriorityValue"
+                            (keydown.enter)="saveEditItem(selectedCard.items.indexOf(item))"
+                            (keydown.escape)="cancelEditItem()"
+                            style="height: 28px; padding: 4px 8px; font-size: 12.5px; width: 100%; box-sizing: border-box;"
+                            autofocus
+                          />
+                        } @else {
+                          <span style="font-weight: 500; color: #1e293b;">{{ item }}</span>
+                        }
+                      </td>
+                      <td style="text-align: center; vertical-align: middle;">
+                        <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+                          @if (editingPriorityIndex === selectedCard.items.indexOf(item)) {
+                            <button 
+                              type="button" 
+                              class="priority-action-btn" 
+                              (click)="saveEditItem(selectedCard.items.indexOf(item))" 
+                              title="Save"
+                              style="color: #059669; background: transparent; border: none; display: inline-flex; align-items: center; justify-content: center;"
+                            >
+                              <span pmConsoleIcon="check" style="font-size: 16px;"></span>
+                            </button>
+                            <button 
+                              type="button" 
+                              class="priority-action-btn delete" 
+                              (click)="cancelEditItem()" 
+                              title="Cancel"
+                              style="color: #ef4444; background: transparent; border: none; display: inline-flex; align-items: center; justify-content: center;"
+                            >
+                              <span pmConsoleIcon="x" style="font-size: 16px;"></span>
+                            </button>
+                          } @else {
+                            <!-- Actions Container: Edit & Delete available on first click matching Image 2 -->
+                            <button 
+                              type="button" 
+                              class="priority-row-action-btn edit-btn" 
+                              (click)="startEditItem(selectedCard.items.indexOf(item), item)" 
+                              title="Edit"
+                            >
+                              <span pmConsoleIcon="edit-2" style="font-size: 14px;"></span>
+                            </button>
+                            <button 
+                              type="button" 
+                              class="priority-row-action-btn delete-btn" 
+                              (click)="deleteItem(selectedCard.items.indexOf(item))" 
+                              title="Delete"
+                            >
+                              <span pmConsoleIcon="trash-2" style="font-size: 14px;"></span>
+                            </button>
+                          }
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                  @if (getFilteredItems().length === 0) {
+                    <tr>
+                      <td colspan="3" style="padding: 24px; text-align: center; color: #94a3b8; font-style: italic;">
+                        No items match search.
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
             </div>
-          }
+          </div>
         </div>
       </app-pm-console-plan-drawer>
     }
@@ -4800,7 +4764,6 @@ export interface TaxonomyCard {
       display: flex;
       gap: 24px;
       width: 100%;
-      height: 100%;
       min-height: 0;
       flex: 1;
       color: #202633;
@@ -5295,6 +5258,73 @@ export interface TaxonomyCard {
       color: #ef4444;
     }
 
+    /* Custom Priority Table styles to avoid inheritance issues from User Management */
+    .priority-table-wrapper {
+      background: #ffffff;
+      border: 1px solid #e3e5e9;
+      border-radius: 12px;
+      overflow: hidden;
+      width: 100%;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    }
+    .priority-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      text-align: left;
+    }
+    .priority-table th {
+      background: #f8fafc;
+      border-bottom: 1px solid #eceef3;
+      color: #475569;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px 16px;
+    }
+    .priority-table td {
+      border-bottom: 1px solid #eceef3;
+      color: #1e293b;
+      font-size: 13px;
+      padding: 10px 16px;
+      vertical-align: middle;
+    }
+    .priority-table tr:last-child td {
+      border-bottom: none;
+    }
+    .priority-table tr:hover td {
+      background: #f8fafc;
+    }
+
+    /* Direct Edit & Delete Buttons */
+    .priority-row-action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      padding: 0;
+    }
+    .priority-row-action-btn.edit-btn {
+      border: 1px solid #cbd5e1;
+      color: #10069f;
+    }
+    .priority-row-action-btn.edit-btn:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+    .priority-row-action-btn.delete-btn {
+      border: 1px solid #fecaca;
+      color: #ef4444;
+    }
+    .priority-row-action-btn.delete-btn:hover {
+      background: #fee2e2;
+      border-color: #fca5a5;
+    }
+
     .priority-expandable-search {
       position: relative;
       display: flex;
@@ -5424,11 +5454,11 @@ export interface TaxonomyCard {
       gap: 8px;
       color: #334155;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 500;
       min-width: 0;
       flex-grow: 1;
       cursor: pointer;
-      padding: 8px 12px;
+      padding: 10px 12px;
       border-radius: 8px;
       border: 1px solid #CFDEFD;
       background: #ffffff;
@@ -5482,6 +5512,43 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
 
   activeSectionId = 'org-structure';
 
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    // Triggers change detection on resize
+  }
+
+  getElbowPath(idx: number, branchCount: number): string {
+    const container = document.querySelector('.active-group-details');
+    const xDiv = container ? container.clientWidth / 2 : 400;
+    const xBranch = 124 + idx * 280;
+    const yStart = 112;
+    const yMid = 136;
+    const yEnd = 160;
+    const r = 12; // corner radius
+    
+    if (xBranch === xDiv) {
+      return `M ${xDiv} ${yStart} L ${xDiv} ${yEnd}`;
+    }
+    
+    if (xBranch < xDiv) {
+      // Left branch: curves to left, then curves down
+      return `M ${xDiv} ${yStart} ` +
+             `L ${xDiv} ${yMid - r} ` +
+             `A ${r} ${r} 0 0 1 ${xDiv - r} ${yMid} ` +
+             `L ${xBranch + r} ${yMid} ` +
+             `A ${r} ${r} 0 0 0 ${xBranch} ${yMid + r} ` +
+             `L ${xBranch} ${yEnd}`;
+    } else {
+      // Right branch: curves to right, then curves down
+      return `M ${xDiv} ${yStart} ` +
+             `L ${xDiv} ${yMid - r} ` +
+             `A ${r} ${r} 0 0 0 ${xDiv + r} ${yMid} ` +
+             `L ${xBranch - r} ${yMid} ` +
+             `A ${r} ${r} 0 0 1 ${xBranch} ${yMid + r} ` +
+             `L ${xBranch} ${yEnd}`;
+    }
+  }
+
   groupObjects: Array<{
     name: string;
     owner?: string;
@@ -5526,6 +5593,22 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     { id: 'risk', label: 'Risk Glossary' },
     { id: 'benefits', label: 'Benefits glossary' }
   ];
+
+  get glossaryHeaderTitle(): string {
+    if (this.activeGlossaryTab === 'risk') return 'Risk Glossary';
+    if (this.activeGlossaryTab === 'benefits') return 'Benefits Glossary';
+    return 'Glossary';
+  }
+
+  get glossaryHeaderDescription(): string {
+    if (this.activeGlossaryTab === 'risk') return 'Risk Labels currently used in the organisation';
+    if (this.activeGlossaryTab === 'benefits') return 'Benefits Management Labels currently used in the organisation';
+    return 'Configure contextual help for each and every label used in the P3M module.';
+  }
+
+  get glossarySystemLabelHeader(): string {
+    return this.activeGlossaryTab === 'risk' ? 'Label name' : 'System Label';
+  }
 
   p3mGlossary: GlossaryItem[] = [...initialP3mGlossary];
   riskGlossary: GlossaryItem[] = [...initialRiskGlossary];
@@ -5741,9 +5824,9 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
 
   // Standards & Taxonomies Cards Data State
   projectSetupCards: TaxonomyCard[] = [
-    { id: 'category', title: 'Project Category', icon: 'layers', description: 'Define different types of project classifications.', items: ['Research & Development', 'Compliance & Regulatory', 'Business Expansion', 'Infrastructure', 'Software Development'] },
-    { id: 'priority', title: 'Priority', icon: 'alert-circle', description: 'Set system-wide priority tiers.', items: ['Critical', 'High', 'Medium', 'Low'], needsAttention: true },
-    { id: 'size', title: 'Project Size', icon: 'maximize', description: 'Scale definitions for sizing.', items: ['Small', 'Medium', 'Large', 'Enterprise'] },
+    { id: 'category', title: 'Project Category', icon: 'layers', description: 'Define different types of project Category.', items: ['Research & Development', 'Compliance & Regulatory', 'Business Expansion', 'Infrastructure', 'Software Development'] },
+    { id: 'priority', title: 'Priority', icon: 'alert-circle', description: 'Set priority levels for ranking and filtering of projects.', items: ['Critical', 'High', 'Medium', 'Low'], needsAttention: true },
+    { id: 'size', title: 'Project Size', icon: 'maximize', description: 'Configure size bands based on project scale.', items: ['Small', 'Medium', 'Large', 'Enterprise'] },
     { id: 'tier', title: 'Project Tier', icon: 'bar-chart', description: 'Tier rankings for governance and reviews.', items: ['Tier 1 (High Governance)', 'Tier 2 (Medium Governance)', 'Tier 3 (Light Governance)'] },
     { id: 'procurement', title: 'Procurement Type', icon: 'shopping-bag', description: 'Purchase and sourcing classifications.', items: ['Direct Purchase', 'Request For Proposal (RFP)', 'Sole Source', 'Contract Expansion'] },
     { id: 'supplier', title: 'External Senior Supplier', icon: 'users', description: 'Define third-party vendor categories.', items: ['Vendor Partner', 'Offshore Contractor', 'Independent Consultant', 'OEM Supplier'] }
@@ -5751,18 +5834,18 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
 
   projectPlanningCards: TaxonomyCard[] = [
     { id: 'resource', title: 'Resource', icon: 'user-check', description: 'Resource naming standards and capacities.', items: ['Developer', 'Project Manager', 'Business Analyst', 'QA Engineer', 'Solution Architect'] },
-    { id: 'change-impact', title: 'Change Impact', icon: 'refresh-cw', description: 'Change levels.', items: ['Disruptive', 'Major', 'Moderate', 'Minor'], needsAttention: true },
-    { id: 'schedule', title: 'Schedule Range', icon: 'calendar', description: 'Timeline margins and baseline parameters.', items: ['Short-term (< 3 months)', 'Medium-term (3-12 months)', 'Long-term (> 12 months)'] },
+    { id: 'change-impact', title: 'Change Impact', icon: 'refresh-cw', description: 'Levels of change impact expected from the projects.', items: ['Disruptive', 'Major', 'Moderate', 'Minor'], needsAttention: true },
+    { id: 'schedule', title: 'Schedule Range', icon: 'calendar', description: 'Timeline margins that provide indicative schedules for concepts and business cases.', items: ['Short-term (< 3 months)', 'Medium-term (3-12 months)', 'Long-term (> 12 months)'] },
     { id: 'dependency-impact', title: 'Impact of Dependency', icon: 'git-commit', description: 'Severity ratings of dependent delays.', items: ['High Impact (Blocker)', 'Medium Impact (Workaround)', 'Low Impact (Negligible)'] },
     { id: 'resource-type', title: 'Resource Type', icon: 'briefcase', description: 'Staffing categories.', items: ['Internal Staff', 'External Consultant', 'Subcontractor'] },
-    { id: 'product-type', title: 'Product Type', icon: 'package', description: 'Output deliverable definitions.', items: ['Software Release', 'Infrastructure Upgrade', 'Process Definition', 'Audit Report'] },
+    { id: 'product-type', title: 'Product Type', icon: 'package', description: 'Product deliverable definitions.', items: ['Software Release', 'Infrastructure Upgrade', 'Process Definition', 'Audit Report'] },
     { id: 'issue-type', title: 'Issue Type', icon: 'bug', description: 'Problem classifications.', items: ['Blocker', 'Bug', 'Risk', 'Change Request', 'Task'] },
     { id: 'miscellaneous', title: 'Miscellaneous', icon: 'help-circle', description: 'General settings and custom fields.', items: ['Custom Field A', 'Custom Field B'] }
   ];
 
   projectClosureCards: TaxonomyCard[] = [
-    { id: 'closure-content', title: 'Project Closure Content', icon: 'check-circle', description: 'Required deliverables and checks for ending projects.', items: ['Handover Document', 'Final Budget Report', 'Stakeholder Sign-off', 'Closure Certificate'] },
-    { id: 'program-closure', title: 'Program Closure Content', icon: 'archive', description: 'Criteria and summary templates for closing entire programs.', items: ['Program Benefits Report', 'Consolidated Asset Register', 'Executive Sponsor Review'] },
+    { id: 'closure-content', title: 'Project Closure Content', icon: 'check-circle', description: 'Define the message displayed to users when a project closure is initiated.', items: ['Handover Document', 'Final Budget Report', 'Stakeholder Sign-off', 'Closure Certificate'] },
+    { id: 'program-closure', title: 'Program Closure Content', icon: 'archive', description: 'Define the message displayed to users when a program closure is initiated.', items: ['Program Benefits Report', 'Consolidated Asset Register', 'Executive Sponsor Review'] },
     { id: 'lessons-learnt', title: 'Lessons Learnt Category', icon: 'book-open', description: 'Group lessons by domain.', items: ['Technical Execution', 'Procurement & Legal', 'Resource Management', 'Scope & Timeline'], needsAttention: true },
     { id: 'closure-reasons', title: 'Reasons for Closure', icon: 'x-circle', description: 'Allowed closure grounds.', items: ['Successful Delivery', 'Budget Exhaustion', 'Strategic Alignment Shift', 'Cancelled by Sponsor'] }
   ];
@@ -6098,7 +6181,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
   activeFinancialCategory = 'funding-sources';
 
   readonly financialCategories = [
-    { id: 'funding-sources', label: 'Funding Sources' },
+    { id: 'funding-sources', label: 'Budget Management' },
     { id: 'financial-cycle', label: 'Financial Cycle' }
   ];
 
@@ -6117,6 +6200,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
 
   // Financial & Budget Management Cards Data State
   fundingSourcesCards: TaxonomyCard[] = [
+    { id: 'funding-sources', title: 'Funding Sources', icon: 'wallet', description: 'Define the funding sources available for allocation to projects', items: [] },
     { id: 'cost-centre', title: 'Cost Centre', icon: 'wallet', description: 'Define the cost centres for tracking department and team budgets.', items: ['Safe Security HQ', 'Product & Engineering', 'Global Sales', 'Marketing', 'Customer Success'] },
     { id: 'ongoing-cost', title: 'Ongoing Cost', icon: 'refresh-cw', description: 'Configure recurring operating and support expenses.', items: ['SaaS Subscriptions', 'Cloud Infrastructure', 'Consulting Fees', 'Hardware Maintenance'] },
     { id: 'budget-range', title: 'Budget Range', icon: 'sliders', description: 'Set standard funding thresholds and priority levels.', items: ['Micro (< $50k)', 'Small ($50k - $250k)', 'Medium ($250k - $1M)', 'Enterprise (> $1M)'] }
@@ -6134,7 +6218,20 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
   drawerOwner = 'Fatima Qahtani';
   drawerStatus = 'Active';
 
+  private readonly disabledDrawerGroups = new Set([
+    'Change Request Management',
+    'Stage Gate Management',
+    'Monitoring & Reporting',
+    'Portfolio & Investment Prioritization',
+    'Risk Management',
+    'Funding Sources',
+    'Financial Cycle'
+  ]);
+
   openCardDrawer(card: TaxonomyCard, group: string): void {
+    if (this.disabledDrawerGroups.has(group)) {
+      return;
+    }
     if (group === 'Workflow Designer') {
       this.isCreatingWorkflow = true;
       this.editingWorkflowId = card.id;
@@ -6305,7 +6402,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
   searchQuery = '';
   activeActionMenuIndex: number | null = null;
 
-  getFilteredPriorities(): string[] {
+  getFilteredItems(): string[] {
     if (!this.selectedCard) return [];
     const q = this.searchQuery.trim().toLowerCase();
     if (!q) return this.selectedCard.items;
@@ -6320,7 +6417,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
 
   triggerEditRow(index: number, item: string): void {
     this.activeActionMenuIndex = null;
-    this.startEditPriority(index, item);
+    this.startEditItem(index, item);
   }
 
   triggerDeleteRow(item: string): void {
@@ -6328,65 +6425,73 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     if (this.selectedCard) {
       const idx = this.selectedCard.items.indexOf(item);
       if (idx !== -1) {
-        this.deletePriorityItem(idx);
+        this.deleteItem(idx);
       }
     }
   }
 
-  addPriorityItem(): void {
+  addItem(): void {
     const val = this.newPriorityName.trim();
     if (val && this.selectedCard) {
       this.selectedCard.items = [...this.selectedCard.items, val];
       this.newPriorityName = '';
-
-      // Update parent list
-      const idx = this.projectSetupCards.findIndex(c => c.id === 'priority');
-      if (idx !== -1) {
-        this.projectSetupCards[idx].items = [...this.selectedCard.items];
-      }
-      this.changeDetector.markForCheck();
+      this.syncSelectedCardBack();
     }
   }
 
-  deletePriorityItem(index: number): void {
+  deleteItem(index: number): void {
     if (this.selectedCard) {
       this.selectedCard.items = this.selectedCard.items.filter((_, i) => i !== index);
-
-      // Update parent list
-      const idx = this.projectSetupCards.findIndex(c => c.id === 'priority');
-      if (idx !== -1) {
-        this.projectSetupCards[idx].items = [...this.selectedCard.items];
-      }
-      this.changeDetector.markForCheck();
+      this.syncSelectedCardBack();
     }
   }
 
-  startEditPriority(index: number, val: string): void {
+  startEditItem(index: number, val: string): void {
     this.editingPriorityIndex = index;
     this.editingPriorityValue = val;
     this.changeDetector.markForCheck();
   }
 
-  saveEditPriority(index: number): void {
+  saveEditItem(index: number): void {
     const val = this.editingPriorityValue.trim();
     if (val && this.selectedCard) {
       this.selectedCard.items[index] = val;
       this.selectedCard.items = [...this.selectedCard.items];
       this.editingPriorityIndex = null;
       this.editingPriorityValue = '';
-
-      // Update parent list
-      const idx = this.projectSetupCards.findIndex(c => c.id === 'priority');
-      if (idx !== -1) {
-        this.projectSetupCards[idx].items = [...this.selectedCard.items];
-      }
-      this.changeDetector.markForCheck();
+      this.syncSelectedCardBack();
     }
   }
 
-  cancelEditPriority(): void {
+  cancelEditItem(): void {
     this.editingPriorityIndex = null;
     this.editingPriorityValue = '';
+    this.changeDetector.markForCheck();
+  }
+
+  private syncSelectedCardBack(): void {
+    if (!this.selectedCard) return;
+    const cardId = this.selectedCard.id;
+    const items = [...this.selectedCard.items];
+    const group = this.selectedCardGroup;
+
+    let arr: TaxonomyCard[] | null = null;
+    if (group === 'Project Setup') {
+      arr = this.projectSetupCards;
+    } else if (group === 'Project Planning') {
+      arr = this.projectPlanningCards;
+    } else if (group === 'Project Closure') {
+      arr = this.projectClosureCards;
+    } else if (group === 'Benefits and Config') {
+      arr = this.benefitsConfigCards;
+    }
+
+    if (arr) {
+      const idx = arr.findIndex(c => c.id === cardId);
+      if (idx !== -1) {
+        arr[idx].items = items;
+      }
+    }
     this.changeDetector.markForCheck();
   }
 
@@ -7388,5 +7493,3 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     return name.slice(0, 2).toUpperCase();
   }
 }
-
-

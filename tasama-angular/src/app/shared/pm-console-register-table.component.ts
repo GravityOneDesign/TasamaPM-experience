@@ -45,7 +45,7 @@ export interface PmConsoleRegisterTableTrendItem {
 }
 
 export interface PmConsoleRegisterTableCell {
-  kind: 'text' | 'primary' | 'status' | 'budget' | 'person' | 'action' | 'iconAction' | 'menu' | 'checkbox' | 'tags' | 'trend';
+  kind: 'text' | 'primary' | 'status' | 'budget' | 'person' | 'action' | 'iconAction' | 'menu' | 'checkbox' | 'tags' | 'trend' | 'chip-text';
   text?: string;
   title?: string;
   subtitle?: string;
@@ -69,6 +69,8 @@ export interface PmConsoleRegisterTableCell {
   prefixIcon?: string;
   tag?: string;
   tagTone?: string;
+  chipLabel?: string;
+  chipTone?: 'portfolio' | 'program' | 'project';
   indentLevel?: number;
   alert?: boolean;
   alertLabel?: string;
@@ -825,6 +827,14 @@ let registerTableInstance = 0;
 	                              }
 	                            </span>
 	                          }
+                          @case ('chip-text') {
+                            <span class="pm-register-cell-inline">
+                              @if (cell.chipLabel) {
+                                <span class="pm-table-chip {{ cell.chipTone || '' }}">{{ cell.chipLabel }}</span>
+                              }
+                              <span class="pm-register-cell-text">{{ cell.text || cell.label }}</span>
+                            </span>
+                          }
 	                          @case ('trend') {
 	                            <span class="pm-register-trend-list" [attr.aria-label]="cell.ariaLabel || 'Report status trend'">
 	                              @for (item of cell.trend || []; track item.label) {
