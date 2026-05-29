@@ -956,8 +956,11 @@ When a user asks for UI from Figma:
   - Implemented encapsulated independent scroll containers on each column by defining explicit height restrictions and scroll properties (`overflow-y: auto !important`) locally, preventing parent container stretch and page-level scrolls.
   - Programmatically and visually restricted card interaction (clicks) to only "Plans" and "Governance & committee" items. Disabled hover transitions and changed cursor to `default` for non-clickable cards, and set the "Open" CTA color to muted gray for disabled items.
   - Resolved display specificity collisions by removing local `!important` from flex displays on `.board-view` and `.calendar-view`. This allows the global `.is-hidden` helper to apply correctly, hiding the inactive view and restoring the calendar to its clean, full-height appearance.
-  - Increased bottom padding inside `.new-task-card` to `24px` to add more space below the owner name and CTA.
+  - Increased bottom padding inside `.new-task-card` to `12px` to add a neat, visual gap below the owner row, shifting it up slightly while maintaining a balanced card bottom.
+  - Converted the card elements from `<button>` to accessible `<div>` tags with ARIA `role="button"`, `tabindex="0"`, and Enter/Space keyboard bindings. This completely bypasses the WebKit/Blink browser layout bug that clips bottom elements inside flex-column buttons in Safari/Chrome.
   - Increased the gap between columns and filters by setting the control row padding to `padding: 0 0 20px !important`.
+  - Aligned 'date', 'project name', and 'Open CTA' text to the exact same visual size (`13px !important`), maintaining typographer harmony across card metadata.
+  - Replaced the light divider with a prominent, crisp separator line (`#e2e8f0`) above the owner section and styled it with `flex-shrink: 0` to prevent layout collapse.
 
 - Redesigned the cards in the 'Portfolio manager' 'My actions' Kanban view to match Image 2:
   - Updated `portfolio-manager-actions-pm.component.ts` to render the redesigned `.new-task-card` button layout: Type pill on top, due date with calendar icon below it, action/item name in bold heading font, project/program name in muted grey subtitle font, a horizontal separator line, owner's initials avatar alongside their full name on the left, and a blue/indigo "Open" CTA with a chevron arrow on the right.
