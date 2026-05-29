@@ -1,6 +1,6 @@
 # Tasama Project Bible
 
-Last updated: 2026-05-28
+Last updated: 2026-05-29
 
 This file is the long-term handoff, memory, architecture guide, and AI-agent operating manual for the Tasama project. It exists so another coding agent, developer, or design engineer can restart work in a different tool and still understand the project language, product context, structure, and constraints.
 
@@ -949,6 +949,21 @@ When a user asks for UI from Figma:
 ## Memory Log
 
 2026-05-29:
+
+- Refined the Portfolio Manager "My Actions" Kanban cards and lane scroll behaviors in `portfolio-manager-actions-pm.component.ts`:
+  - Ensured divider lines, owner name text, avatar icons, and the "Open" CTA display consistently and beautifully for cards in all three columns (Overdue, This week, and Upcoming).
+  - Dynamically prefixed project/program names with "Project: " or "Program: " based on `item.kind` (`kind === 'governance'` translates to "Program", all other kinds are "Project").
+  - Implemented encapsulated independent scroll containers on each column by defining explicit height restrictions and scroll properties (`overflow-y: auto !important`) locally, preventing parent container stretch and page-level scrolls.
+  - Programmatically and visually restricted card interaction (clicks) to only "Plans" and "Governance & committee" items. Disabled hover transitions and changed cursor to `default` for non-clickable cards, and set the "Open" CTA color to muted gray for disabled items.
+  - Resolved display specificity collisions by removing local `!important` from flex displays on `.board-view` and `.calendar-view`. This allows the global `.is-hidden` helper to apply correctly, hiding the inactive view and restoring the calendar to its clean, full-height appearance.
+  - Increased bottom padding inside `.new-task-card` to `24px` to add more space below the owner name and CTA.
+  - Increased the gap between columns and filters by setting the control row padding to `padding: 0 0 20px !important`.
+
+- Redesigned the cards in the 'Portfolio manager' 'My actions' Kanban view to match Image 2:
+  - Updated `portfolio-manager-actions-pm.component.ts` to render the redesigned `.new-task-card` button layout: Type pill on top, due date with calendar icon below it, action/item name in bold heading font, project/program name in muted grey subtitle font, a horizontal separator line, owner's initials avatar alongside their full name on the left, and a blue/indigo "Open" CTA with a chevron arrow on the right.
+  - Implemented `getCardTypePillClass(type)` to apply type-specific pill class names and `getAvatarStyle(owner)` to paint coordinated avatar text/background colors.
+  - Integrated customized type pill CSS rules with precise HSL/hex color palettes matching "My calendar" view exactly: Plans (`#3188b5`), Governance committee (`#3454c4`), Status reports (`#6f2095`), Change requests (`#c4984f`), Benefits (`#166c49`), and Risk (`#b91c1c`).
+  - Added new typed data fixture file `portfolio-manager-actions-pm.data.ts` containing the custom action items specifically for the Portfolio Manager (4 Overdue, 6 This week, and 12 Upcoming) distributed across all 6 action types to avoid component-level mock data and maintain proper counts.
 
 - Isolated picker and visual refinements for 'Portfolio manager' 'My calendar' view:
   - Added component-scoped CSS rule in `pm-console-work-calendar.component.ts` to hide the Today badge in the Today date cell.
