@@ -124,7 +124,7 @@ interface CalendarPopoverPosition {
                     (click)="openAgendaItem(cell.items[0], $event)"
                   >
                     <span class="calendar-event-dot"></span>
-                    <span class="calendar-event-title">{{ getCalendarChipType(cell.items[0]) }}</span>
+                    <span class="calendar-event-title">{{ getCalendarChipLabel(cell.items[0]) }}</span>
                   </button>
 
                   <div class="calendar-event-with-more">
@@ -141,7 +141,7 @@ interface CalendarPopoverPosition {
                       (click)="openAgendaItem(cell.items[1], $event)"
                     >
                       <span class="calendar-event-dot"></span>
-                      <span class="calendar-event-title">{{ getCalendarChipType(cell.items[1]) }}</span>
+                      <span class="calendar-event-title">{{ getCalendarChipLabel(cell.items[1]) }}</span>
                     </button>
                     <button
                       class="calendar-more-badge"
@@ -169,7 +169,7 @@ interface CalendarPopoverPosition {
                       (click)="openAgendaItem(item, $event)"
                     >
                       <span class="calendar-event-dot"></span>
-                      <span class="calendar-event-title">{{ getCalendarChipType(item) }}</span>
+                      <span class="calendar-event-title">{{ getCalendarChipLabel(item) }}</span>
                     </button>
                   }
                 }
@@ -200,7 +200,7 @@ interface CalendarPopoverPosition {
             <span class="calendar-popover-kind" [attr.data-event-type]="getCalendarChipType(previewItem)">{{ getCalendarChipType(previewItem) }}</span>
             <span pmConsoleIcon="arrow-right" class="calendar-popover-arrow" aria-hidden="true"></span>
           </div>
-          <strong class="calendar-popover-title">{{ previewItem.label }}</strong>
+          <strong class="calendar-popover-title">{{ getItemDisplayTitle(previewItem) }}</strong>
           <span class="calendar-popover-subtitle">{{ getItemSubtitle(previewItem) }}</span>
         </div>
       </aside>
@@ -236,7 +236,7 @@ interface CalendarPopoverPosition {
                 <span class="calendar-popover-kind" [attr.data-event-type]="getCalendarChipType(item)">{{ getCalendarChipType(item) }}</span>
                 <span pmConsoleIcon="arrow-right" class="calendar-popover-arrow" aria-hidden="true"></span>
               </div>
-              <strong class="calendar-popover-title">{{ item.label }}</strong>
+              <strong class="calendar-popover-title">{{ getItemDisplayTitle(item) }}</strong>
               <span class="calendar-popover-subtitle">{{ getItemSubtitle(item) }}</span>
             </button>
           }
@@ -290,17 +290,25 @@ interface CalendarPopoverPosition {
       }
 
       .calendar-event {
+        display: inline-flex;
+        align-items: center;
+        width: fit-content;
+        max-width: calc(100% - 2px);
         box-sizing: border-box;
-        cursor: pointer;
+        cursor: default;
         font-size: 10.25px;
         height: 22px;
         margin-top: 0;
-        max-width: calc(100% - 2px);
         min-width: 0;
         overflow: hidden;
-        padding: 0 8px;
+        padding: 0 6px;
         position: relative;
         z-index: 70;
+      }
+
+      .calendar-event[data-event-type="Plans"],
+      .calendar-event[data-event-type="Governance committee"] {
+        cursor: pointer;
       }
 
       .calendar-event-title {
@@ -309,6 +317,7 @@ interface CalendarPopoverPosition {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        flex: 1 1 auto;
       }
 
       .calendar-action-summary {
@@ -994,7 +1003,8 @@ interface CalendarPopoverPosition {
         font-size: 15px;
         font-weight: 700;
         color: #0b0b0b;
-        margin: 4px 0;
+        margin-top: 4px;
+        margin-bottom: 8px;
         line-height: 1.35;
         display: block;
       }
@@ -1071,8 +1081,6 @@ interface CalendarPopoverPosition {
       }
 
       .calendar-popover-multi-list {
-        max-height: 400px;
-        overflow-y: auto;
         display: flex;
         flex-direction: column;
       }
@@ -1097,7 +1105,10 @@ interface CalendarPopoverPosition {
       .calendar-popover-multi-item:last-child {
         border-bottom: 0;
       }
-    
+
+      .calendar-cell.today::after {
+        display: none !important;
+      }
     `,
   ],
 })
@@ -1257,6 +1268,10 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
 
   openAgendaItem(item: PmConsoleCalendarItem, event: MouseEvent): void {
     event.stopPropagation();
+    const type = this.getCalendarChipType(item);
+    if (type !== 'Plans' && type !== 'Governance committee') {
+      return; // click ignored/disabled!
+    }
     this.hidePreview();
     this.itemOpen.emit(item);
   }
@@ -1303,6 +1318,24 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
     if (kind === 'governance') return item.project;
     if (kind === 'report') return `Program : ${item.project}`;
     return `Project Plan | ${item.project}`;
+  }
+
+  getCalendarChipLabel(item: PmConsoleCalendarItem): string {
+    const type = this.getCalendarChipType(item);
+    if (type.length <= 16) return type;
+    return `${type.substring(0, 15)}...`;
+  }
+
+  getItemDisplayTitle(item: PmConsoleCalendarItem): string {
+    const type = this.getCalendarChipType(item);
+    if (type === 'Governance committee') {
+      const label = item.label;
+      if (label.toLowerCase().includes('meeting') || label.toLowerCase().includes('upcoming')) {
+        return label;
+      }
+      return `${label} (Upcoming Meeting)`;
+    }
+    return item.label;
   }
 
   itemKindLabel(item: PmConsoleCalendarItem): string {

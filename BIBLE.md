@@ -950,6 +950,13 @@ When a user asks for UI from Figma:
 
 2026-05-29:
 
+- Isolated picker and visual refinements for 'Portfolio manager' 'My calendar' view:
+  - Added component-scoped CSS rule in `pm-console-work-calendar.component.ts` to hide the Today badge in the Today date cell.
+  - Added 4 new Risk kind action items to `portfolioActionItems` in `portfolio-manager-actions.data.ts` to show up on May 13, May 19, May 20, and May 27.
+  - Created a dedicated isolated `PortfolioManagerActionsPmComponent` (`portfolio-manager-actions-pm.component.ts`) for the Portfolio Manager console to protect other views/personas like PMO.
+  - Updated the dropdown target picker in `PortfolioManagerActionsPmComponent` to default to "All programs & projects" and removed the "Portfolios" group entirely from `targetGroups` list.
+  - Integrated the new `PortfolioManagerActionsPmComponent` in `portfolio-manager-landing.component.ts`.
+
 - Completed changes to 'Portfolio manager' 'My calendar' view:
   - Populated the calendar with more chips of types Benefits, Change Requests, Risk, Plans, Governance Committee, Status reports with exact hex colors: Benefits (`#166C49`), Change requests (`#C4984F`), Risk (`#B91C1C`), Plans (`#3188B5`), Governance committee (`#3454C4`), Status reports (`#6F2095`), retaining 10% soft background and 25% border color opacity.
   - Added 6 new mock items on May 26, 2026 to populate the calendar with all requested types matching Figma Image 5.
@@ -958,6 +965,13 @@ When a user asks for UI from Figma:
   - Redesigned the single-item hover detail card (Figma Image 4) to show only the type pill, an arrow, bold label description, and subtitle, removing View buttons or metadata headers.
   - Redesigned the multi-item day agenda hover popup (Figma Image 5) for tiles with more than two items to display a clean header with date and items count, followed by a list of cards matching the single-item layout.
   - Successfully verified building type safety with a zero-warning, zero-error Angular CLI build.
+  - Implemented `getCalendarChipLabel(item)` to truncate long chip titles to a maximum of 16 characters (e.g. "Governance committee" -> "Governance comm...").
+  - Configured chips `.calendar-event` and `.calendar-event-title` in CSS with full flexbox dynamic scaling and ellipsis overflow to ensure all chips fit cleanly within the day tile without any border clipping.
+  - Removed all `max-height` and `overflow-y` scrolls from the `.calendar-popover-multi-list` styles, allowing the day agenda popup cards container to expand in height dynamically.
+  - Increased the vertical gap between the action name (`.calendar-popover-title`) and project/program subtitle (`.calendar-popover-subtitle`) in popovers by exactly 4px.
+  - Updated calendar event pills `.calendar-event` in CSS to hug content using `width: fit-content; display: inline-flex; padding: 0 6px;` to prevent unnecessary expansion for shorter content.
+  - Disabled pointer clicks on status reports, benefits, change requests, and risks chips globally in `openAgendaItem` while restricting cursor pointer styling specifically toclickable `'Plans'` and `'Governance committee'` types.
+  - Implemented the `getItemDisplayTitle(item)` helper which dynamically appends `" (Upcoming Meeting)"` to `'Governance committee'` items in popups to indicate meeting status unless already specified.
 
 2026-05-28:
 
