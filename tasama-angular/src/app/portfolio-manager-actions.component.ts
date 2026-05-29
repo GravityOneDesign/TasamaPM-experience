@@ -1584,13 +1584,22 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
     return this.targetOptions.find((option) => option.id === this.selectedTargetId) || this.allTargetOption;
   }
 
+  getFilterIdForKind(kind: string): string {
+    if (kind === 'report') return 'report';
+    if (kind === 'benefit') return 'benefit';
+    if (kind === 'change') return 'change';
+    if (kind === 'risk') return 'risk';
+    if (kind === 'governance') return 'governance';
+    return 'plan';
+  }
+
   get filteredItems(): PortfolioActionItem[] {
     return this.actionItems.filter((item) => {
       if (!this.matchesSelectedTarget(item)) {
         return false;
       }
-      // Filter category
-      if (this.selectedFilter !== 'all' && item.kind !== this.selectedFilter) {
+      // Filter category using the mapper
+      if (this.selectedFilter !== 'all' && this.getFilterIdForKind(item.kind) !== this.selectedFilter) {
         return false;
       }
       // Search query
@@ -1668,7 +1677,7 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
   countCalendarFilter(filter: PortfolioBoardFilter): number {
     const items = this.filteredItems.filter((item) => this.sameMonth(this.parseDate(item.date), this.calendarMonth));
     if (filter.id === 'all') return this.sumActionItems(items);
-    return this.sumActionItems(items.filter((item) => item.kind === filter.id));
+    return this.sumActionItems(items.filter((item) => this.getFilterIdForKind(item.kind) === filter.id));
   }
 
   countForActionFilter(filter: PortfolioBoardFilter): number {
@@ -1677,7 +1686,7 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
       ? targetItems.filter((item) => this.matchesSearch(item, this.searchQuery))
       : targetItems;
     if (filter.id === 'all') return this.sumActionItems(searchedItems);
-    return this.sumActionItems(searchedItems.filter((item) => item.kind === filter.id));
+    return this.sumActionItems(searchedItems.filter((item) => this.getFilterIdForKind(item.kind) === filter.id));
   }
 
   targetIconName(target: PortfolioWorkTargetOption): string {
