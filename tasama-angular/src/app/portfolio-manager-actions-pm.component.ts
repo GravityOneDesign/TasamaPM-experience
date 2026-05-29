@@ -1,6 +1,6 @@
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PmConsoleWorkCalendarComponent, PmConsoleCalendarCell, PmConsoleCalendarItem, PmConsoleCalendarFilter } from './shared/pm-console-work-calendar.component';
+import { PmConsoleWorkCalendarPmComponent, PmConsoleCalendarCell, PmConsoleCalendarItem, PmConsoleCalendarFilter } from './shared/pm-console-work-calendar-pm.component';
 import { PmConsoleIconService } from './pm-console-icon.service';
 import { iconName } from './portfolio-manager-icon.utils';
 import { portfolioActionItems, portfolioBoardFilters, PortfolioActionItem, PortfolioBoardFilter, PortfolioBoardColumn } from './portfolio-manager-actions.data';
@@ -36,9 +36,9 @@ interface PortfolioTargetRow {
 }
 
 @Component({
-  selector: 'app-portfolio-manager-actions',
+  selector: 'app-portfolio-manager-actions-pm',
   standalone: true,
-  imports: [CommonModule, PmConsoleIconComponent, PmConsoleWorkCalendarComponent],
+  imports: [CommonModule, PmConsoleIconComponent, PmConsoleWorkCalendarPmComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="actions-workspace">
@@ -344,7 +344,7 @@ interface PortfolioTargetRow {
 
         <!-- Calendar view -->
         <div class="calendar-view" [class.is-hidden]="activeView !== 'calendar'" data-work-view="calendar">
-          <app-pm-console-work-calendar
+          <app-pm-console-work-calendar-pm
             [monthLabel]="calendarMonthLabel"
             [monthItemCount]="visibleMonthItemCount"
             [cells]="calendarCells"
@@ -355,7 +355,7 @@ interface PortfolioTargetRow {
             (monthShift)="shiftMonth($event)"
             (filterChange)="setBoardFilter($event)"
             (itemOpen)="handleCalendarItemOpen($event)"
-          ></app-pm-console-work-calendar>
+          ></app-pm-console-work-calendar-pm>
         </div>
       </div>
 
@@ -1040,7 +1040,7 @@ interface PortfolioTargetRow {
       height: 24px;
       width: 24px;
     }
-    app-pm-console-work-calendar {
+    app-pm-console-work-calendar-pm {
       height: 100%;
       display: flex;
       flex-direction: column;
@@ -1367,11 +1367,11 @@ interface PortfolioTargetRow {
     }
   `],
 })
-export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDestroy {
+export class PortfolioManagerActionsPmComponent implements AfterViewChecked, OnDestroy {
   @Input() workspaceTitle = 'Portfolio Name';
   @Input() searchPlaceholder = 'Search actions...';
   @Input() targetPickerAriaLabel = 'Portfolio work target selector';
-  @Input() targetAllLabel = 'All portfolios';
+  @Input() targetAllLabel = 'All programs & projects';
   @Input() actionItems: readonly PortfolioActionItem[] = portfolioActionItems;
   @Input() boardFilters: readonly PortfolioBoardFilter[] = portfolioBoardFilters;
   @Input() showTargetPicker = true;
@@ -1531,16 +1531,6 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
       .map((projectName) => this.createProjectTarget(projectName, 'Action workspace'));
 
     return [
-      {
-        id: 'portfolios',
-        label: 'Portfolios',
-        options: this.portfolios.map((portfolio) => ({
-          id: `portfolio::${portfolio.name}`,
-          label: portfolio.name,
-          type: 'portfolio',
-          projectNames: (portfolio.programs || []).flatMap((prog) => (prog.projects || []).map((proj) => proj.name)),
-        })),
-      },
       {
         id: 'programs',
         label: 'Programs',

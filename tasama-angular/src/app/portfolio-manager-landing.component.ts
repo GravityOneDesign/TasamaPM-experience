@@ -4,7 +4,7 @@ import { PmConsoleIconService } from './pm-console-icon.service';
 import { portfolioManagerSteps, Pm101Step } from './portfolio-manager-pm101-steps';
 import { iconName } from './portfolio-manager-icon.utils';
 import { PortfolioManagerMountOptions } from './portfolio-manager.types';
-import { PortfolioManagerActionsComponent } from './portfolio-manager-actions.component';
+import { PortfolioManagerActionsPmComponent } from './portfolio-manager-actions-pm.component';
 import {
   PmConsoleDigestPanelComponent,
   type PmConsoleDigestSection,
@@ -156,7 +156,7 @@ function portfolioActionDecor(decor: string): PmConsoleFrontdoorAction['decor'] 
     PmConsoleFrontdoorOverviewComponent,
     PmConsoleIconComponent,
     PmConsoleModeTabsComponent,
-    PortfolioManagerActionsComponent,
+    PortfolioManagerActionsPmComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -202,7 +202,7 @@ function portfolioActionDecor(decor: string): PmConsoleFrontdoorAction['decor'] 
                     ></app-pm-console-frontdoor-overview>
                   </div>
                 } @else if (selectedTab === 'manage-work') {
-                  <app-portfolio-manager-actions />
+                  <app-portfolio-manager-actions-pm />
                 } @else {
                   <div class="quicklinks-view portfolio-quicklinks-view" data-work-view="quicklinks">
                     <section class="workspace-quick-links-view" aria-label="Portfolio Name Quick links">
