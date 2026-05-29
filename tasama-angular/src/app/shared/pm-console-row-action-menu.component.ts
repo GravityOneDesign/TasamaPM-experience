@@ -28,7 +28,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
         aria-haspopup="menu"
         (click)="toggleMenu($event)"
       >
-        <span pmConsoleIcon="ellipsis-vertical" aria-hidden="true"></span>
+        <span [pmConsoleIcon]="icon" aria-hidden="true"></span>
       </button>
 
       @if (isOpen) {
@@ -53,18 +53,35 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
         position: relative;
       }
 
-      .pm-row-action-trigger {
-        background: #ffffff;
-        border-color: #dfe7f2;
-        border-radius: 999px;
+      .schedule-table-action.pm-row-action-trigger,
+      .schedule-table-action.pm-row-action-trigger:hover,
+      .schedule-table-action.pm-row-action-trigger[aria-expanded='true'] {
+        background: transparent;
+        border: 0;
+        box-shadow: none;
       }
 
-      .pm-row-action-trigger:hover,
-      .pm-row-action-trigger:focus-visible,
-      .pm-row-action-trigger[aria-expanded='true'] {
-        background: #f7f7ff;
-        border-color: rgba(16, 6, 159, 0.28);
+      .schedule-table-action.pm-row-action-trigger {
+        border-radius: 6px;
         color: #10069f;
+        height: 28px;
+        width: 28px;
+      }
+
+      .schedule-table-action.pm-row-action-trigger:hover,
+      .schedule-table-action.pm-row-action-trigger:focus-visible,
+      .schedule-table-action.pm-row-action-trigger[aria-expanded='true'] {
+        color: #08036d;
+      }
+
+      .schedule-table-action.pm-row-action-trigger:focus-visible {
+        outline: 2px solid rgba(16, 6, 159, 0.28);
+        outline-offset: 2px;
+      }
+
+      .schedule-table-action.pm-row-action-trigger .icon {
+        height: 18px;
+        width: 18px;
       }
 
       .pm-row-action-popover {
@@ -126,6 +143,7 @@ export class PmConsoleRowActionMenuComponent implements OnDestroy {
   private static activeMenu: PmConsoleRowActionMenuComponent | null = null;
 
   @Input() ariaLabel = 'Row actions';
+  @Input() icon = 'ellipsis-vertical';
 
   @ViewChild('triggerButton') private triggerButton?: ElementRef<HTMLButtonElement>;
   @ViewChild('popover') private popover?: ElementRef<HTMLElement>;

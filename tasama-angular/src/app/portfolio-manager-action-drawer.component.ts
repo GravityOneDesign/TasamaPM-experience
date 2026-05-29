@@ -51,10 +51,8 @@ import {
   type RiskTreatmentDraftChange,
   type RiskTreatmentRecord,
 } from './shared/pm-console-risk-profile.component';
-import {
-  PortfolioManagerStageGateDrawerComponent,
-  type StageGateAttachment,
-} from './portfolio-manager-stage-gate-drawer.component';
+import { PortfolioManagerStageGateDrawerComponent, type StageGateAttachment } from './portfolio-manager-stage-gate-drawer.component';
+import { pmoStatusReports, type PmoStatusReport } from './pmo-frontdoor.data';
 
 type ReportDetailMode = 'simple' | 'detailed';
 type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
@@ -74,126 +72,194 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (item; as selected) {
-      @switch (normalizedKind) {
-        @case ('report') {
-          @if (activeReportDetails; as details) {
-            <app-pm-console-report-drawer
-              [projectName]="selected.project"
-              [details]="details"
-              [submitted]="false"
-              [presentationMode]="reportPresentationMode"
-              [activeMode]="reportMode"
-              [activeSection]="reportSection"
-              [reportSections]="reportSections"
-              [statusOptions]="reportStatusOptions"
-              [trendOptions]="reportTrendOptions"
-              [overviewCard]="activeReportCards[0] || null"
-              [simpleCards]="activeReportCards"
-              [detailedCards]="activeReportCards"
-              [overviewFields]="activeReportOverviewFields"
-              [scopeProducts]="activeReportScopeProducts"
-              [sectionDetails]="emptySectionDetails"
-              [detailItemMap]="emptyDetailItemMap"
+      @if (activeGroupItems.length) {
+        <div class="portfolio-action-profile-drawer-shell" aria-live="polite">
+          <button class="portfolio-action-profile-backdrop" type="button" (click)="close.emit()" [attr.aria-label]="'Close drawer'"></button>
+          <aside class="portfolio-action-group-drawer overdue-reports-drawer" role="dialog" aria-modal="true" [attr.aria-label]="selected.type + ' list'">
+            
+            <!-- Header -->
+            <header class="overdue-reports-header">
+              <div class="header-left">
+                <span class="report-icon-bg {{ selected.tone }}">
+                  <span [pmConsoleIcon]="groupIcon(selected)" aria-hidden="true"></span>
+                </span>
+                <h2>{{ selected.type }}</h2>
+                <span class="overdue-pill {{ selected.column === 'Overdue' ? 'red' : selected.column === 'This week' ? 'blue' : 'amber' }}">
+                  {{ selected.column }}
+                </span>
+              </div>
+              <button class="overdue-reports-close" type="button" (click)="close.emit()" aria-label="Close list">
+                <span pmConsoleIcon="x" aria-hidden="true"></span>
+              </button>
+            </header>
+
+            <!-- Search Area -->
+            <section class="overdue-reports-search-section">
+              <div class="search-input-wrapper">
+                <span pmConsoleIcon="search" class="search-icon" aria-hidden="true"></span>
+                <input
+                  type="text"
+                  placeholder="Search.."
+                  aria-label="Search items"
+                  [value]="searchQuery"
+                  (input)="onSearchInput($event)"
+                />
+              </div>
+              <div class="showing-count-label">
+                Showing all {{ filteredGroupItems.length }} {{ selected.type.toLowerCase() }}
+              </div>
+            </section>
+
+            <!-- Scrollable List of Cards -->
+            <section class="overdue-reports-list" [attr.aria-label]="selected.type">
+              @for (report of filteredGroupItems; track report.id) {
+                <div class="overdue-report-card">
+                  <div class="card-top-pill">
+                    <span class="action-type-pill" [attr.data-card-type]="getNormalizedCardType(report)">
+                      {{ getNormalizedCardType(report) }}
+                    </span>
+                  </div>
+                  <h3 class="card-title">{{ report.label }}</h3>
+                  <p class="card-project">{{ report.project }}</p>
+                  <div class="card-divider"></div>
+                  <footer class="card-footer">
+                    <div class="card-footer-left">
+                      <span pmConsoleIcon="calendar" class="calendar-icon" aria-hidden="true"></span>
+                      <span>{{ formatCardDate(report.date) }} ({{ getReportMeta(report, selected.column) }})</span>
+                    </div>
+                    <button class="open-link" type="button" (click)="handleDetailItemClick(report)">
+                      <span>{{ report.cta || 'Open' }}</span>
+                      <span pmConsoleIcon="chevron-right" class="arrow-icon" aria-hidden="true"></span>
+                    </button>
+                  </footer>
+                </div>
+              }
+            </section>
+
+          </aside>
+        </div>
+      } @else {
+        @switch (selected.kind) {
+          @case ('report') {
+            @if (activeReportDetails; as details) {
+              <app-pm-console-report-drawer
+                [projectName]="selected.project"
+                [details]="details"
+                [submitted]="false"
+                [presentationMode]="reportPresentationMode"
+                [activeMode]="reportMode"
+                [activeSection]="reportSection"
+                [reportSections]="reportSections"
+                [statusOptions]="reportStatusOptions"
+                [trendOptions]="reportTrendOptions"
+                [overviewCard]="activeReportCards[0] || null"
+                [simpleCards]="activeReportCards"
+                [detailedCards]="activeReportCards"
+                [overviewFields]="activeReportOverviewFields"
+                [scopeProducts]="activeReportScopeProducts"
+                [sectionDetails]="emptySectionDetails"
+                [detailItemMap]="emptyDetailItemMap"
+                (close)="close.emit()"
+                (save)="submitAndClose($event)"
+                (preview)="reportPresentationMode = 'pdf-preview'"
+                (previewBack)="reportPresentationMode = 'compose'"
+                (modeChange)="setReportMode($any($event))"
+                (sectionChange)="reportSection = $event"
+              ></app-pm-console-report-drawer>
+            }
+          }
+          @case ('risk') {
+            @if (activeRiskProfile; as risk) {
+              <div class="portfolio-action-profile-drawer-shell" aria-live="polite">
+                <button class="portfolio-action-profile-backdrop" type="button" (click)="close.emit()" aria-label="Close risk drawer"></button>
+                <aside class="portfolio-action-profile-drawer" role="dialog" aria-modal="true" [attr.aria-label]="'Review risk ' + risk.id">
+                  <app-pm-console-risk-profile
+                    [risk]="risk"
+                    [config]="riskProfileConfig"
+                    [activeTab]="activeRiskProfileTab"
+                    [treatmentDraft]="riskTreatmentDraft"
+                    [projectRiskCount]="1"
+                    (closeProfile)="close.emit()"
+                    (tabChange)="activeRiskProfileTab = $event"
+                    (fieldChange)="updateRiskProfileField($event)"
+                    (sharedRiskChange)="updateRiskSharedRisk($event)"
+                    (matrixChange)="updateRiskProfileMatrix($event)"
+                    (treatmentDraftChange)="updateRiskTreatmentDraft($event)"
+                    (treatmentAdd)="addRiskTreatment()"
+                    (treatmentRemove)="removeRiskTreatment($event)"
+                  ></app-pm-console-risk-profile>
+                </aside>
+              </div>
+            }
+          }
+          @case ('benefit') {
+            @if (activeBenefitProfile; as benefit) {
+              <div class="portfolio-action-profile-drawer-shell" aria-live="polite">
+                <button class="portfolio-action-profile-backdrop" type="button" (click)="close.emit()" aria-label="Close benefit drawer"></button>
+                <aside class="portfolio-action-profile-drawer benefit" role="dialog" aria-modal="true" [attr.aria-label]="'Review benefit ' + benefit.id">
+                  <app-pm-console-benefit-profile
+                    [benefit]="benefit"
+                    [projectOptions]="projectOptions"
+                    [categoryOptions]="benefitProfileOptions.categoryOptions"
+                    [ownerOptions]="benefitProfileOptions.ownerOptions"
+                    [productOptions]="benefitProfileOptions.productOptions"
+                    [strategicObjectiveOptions]="benefitProfileOptions.strategicObjectiveOptions"
+                    (closeProfile)="close.emit()"
+                    (completeProfile)="completeBenefitProfile($event)"
+                    (fieldChange)="updateBenefitProfileField($event)"
+                    (objectiveAdd)="addBenefitObjective($event)"
+                    (recipientAdd)="addBenefitRecipient($event)"
+                    (measureAdd)="addBenefitMeasure($event)"
+                    (removeMeasure)="removeBenefitMeasure($event)"
+                  ></app-pm-console-benefit-profile>
+                </aside>
+              </div>
+            }
+          }
+          @case ('milestone') {
+            @if (stageGateContextForAction(selected); as gate) {
+              <app-portfolio-manager-stage-gate-drawer
+                [project]="gate.profile.project"
+                [gate]="gate.stage.gate"
+                [stageLabel]="gate.stage.label"
+                [status]="gate.status"
+                [checkedCount]="gate.checkedCount"
+                [gateTotal]="gate.profile.gateTotal"
+                [dueLabel]="gate.profile.gateDue"
+                [checkpoint]="gate.profile.checkpoint"
+                [checklist]="gate.profile.checklist"
+                [checklistState]="stageGateChecklistStateFor(gate)"
+                [comment]="stageGateCommentFor(gate)"
+                [attachments]="stageGateAttachmentsFor(gate)"
+                [ariaLabel]="gate.profile.project + ' ' + gate.stage.gate + ' submission'"
+                (close)="close.emit()"
+                (submitGate)="submitStageGateAction($event, gate)"
+                (commentChange)="updateStageGateComment(gate, $event)"
+                (checklistChange)="toggleStageGateChecklistItem(gate, $event.index, $event.checked)"
+                (attachmentsSelected)="addStageGateFiles($event, gate)"
+                (attachmentRemove)="removeStageGateAttachment(gate, $event)"
+              ></app-portfolio-manager-stage-gate-drawer>
+            }
+          }
+          @default {
+            <app-pm-console-plan-drawer
+              [title]="selected.label"
+              eyebrow="Portfolio action"
+              [description]="'Review and close this quick action for ' + selected.project + '.'"
+              [summaryLabel]="selected.project"
+              [summary]="selected.meta"
+              submitLabel="Mark reviewed"
+              cancelLabel="Close"
+              closeAriaLabel="Close action drawer"
               (close)="close.emit()"
-              (save)="submitAndClose($event)"
-              (preview)="reportPresentationMode = 'pdf-preview'"
-              (previewBack)="reportPresentationMode = 'compose'"
-              (modeChange)="setReportMode($any($event))"
-              (sectionChange)="reportSection = $event"
-            ></app-pm-console-report-drawer>
+              (submitForm)="submitAndClose($event)"
+            >
+              <div planDrawerBody class="portfolio-action-review-body">
+                <ng-container [ngTemplateOutlet]="actionContext" [ngTemplateOutletContext]="{ action: selected }"></ng-container>
+                <ng-container [ngTemplateOutlet]="checklist" [ngTemplateOutletContext]="{ items: genericChecklist(selected) }"></ng-container>
+              </div>
+            </app-pm-console-plan-drawer>
           }
-        }
-        @case ('risk') {
-          @if (activeRiskProfile; as risk) {
-            <div class="portfolio-action-profile-drawer-shell" aria-live="polite">
-              <button class="portfolio-action-profile-backdrop" type="button" (click)="close.emit()" aria-label="Close risk drawer"></button>
-              <aside class="portfolio-action-profile-drawer" role="dialog" aria-modal="true" [attr.aria-label]="'Review risk ' + risk.id">
-                <app-pm-console-risk-profile
-                  [risk]="risk"
-                  [config]="riskProfileConfig"
-                  [activeTab]="activeRiskProfileTab"
-                  [treatmentDraft]="riskTreatmentDraft"
-                  [projectRiskCount]="1"
-                  (closeProfile)="close.emit()"
-                  (tabChange)="activeRiskProfileTab = $event"
-                  (fieldChange)="updateRiskProfileField($event)"
-                  (sharedRiskChange)="updateRiskSharedRisk($event)"
-                  (matrixChange)="updateRiskProfileMatrix($event)"
-                  (treatmentDraftChange)="updateRiskTreatmentDraft($event)"
-                  (treatmentAdd)="addRiskTreatment()"
-                  (treatmentRemove)="removeRiskTreatment($event)"
-                ></app-pm-console-risk-profile>
-              </aside>
-            </div>
-          }
-        }
-        @case ('benefit') {
-          @if (activeBenefitProfile; as benefit) {
-            <div class="portfolio-action-profile-drawer-shell" aria-live="polite">
-              <button class="portfolio-action-profile-backdrop" type="button" (click)="close.emit()" aria-label="Close benefit drawer"></button>
-              <aside class="portfolio-action-profile-drawer benefit" role="dialog" aria-modal="true" [attr.aria-label]="'Review benefit ' + benefit.id">
-                <app-pm-console-benefit-profile
-                  [benefit]="benefit"
-                  [projectOptions]="projectOptions"
-                  [categoryOptions]="benefitProfileOptions.categoryOptions"
-                  [ownerOptions]="benefitProfileOptions.ownerOptions"
-                  [productOptions]="benefitProfileOptions.productOptions"
-                  [strategicObjectiveOptions]="benefitProfileOptions.strategicObjectiveOptions"
-                  (closeProfile)="close.emit()"
-                  (completeProfile)="completeBenefitProfile($event)"
-                  (fieldChange)="updateBenefitProfileField($event)"
-                  (objectiveAdd)="addBenefitObjective($event)"
-                  (recipientAdd)="addBenefitRecipient($event)"
-                  (measureAdd)="addBenefitMeasure($event)"
-                  (removeMeasure)="removeBenefitMeasure($event)"
-                ></app-pm-console-benefit-profile>
-              </aside>
-            </div>
-          }
-        }
-        @case ('milestone') {
-          @if (stageGateContextForAction(selected); as gate) {
-            <app-portfolio-manager-stage-gate-drawer
-              [project]="gate.profile.project"
-              [gate]="gate.stage.gate"
-              [stageLabel]="gate.stage.label"
-              [status]="gate.status"
-              [checkedCount]="gate.checkedCount"
-              [gateTotal]="gate.profile.gateTotal"
-              [dueLabel]="gate.profile.gateDue"
-              [checkpoint]="gate.profile.checkpoint"
-              [checklist]="gate.profile.checklist"
-              [checklistState]="stageGateChecklistStateFor(gate)"
-              [comment]="stageGateCommentFor(gate)"
-              [attachments]="stageGateAttachmentsFor(gate)"
-              [ariaLabel]="gate.profile.project + ' ' + gate.stage.gate + ' submission'"
-              (close)="close.emit()"
-              (submitGate)="submitStageGateAction($event, gate)"
-              (commentChange)="updateStageGateComment(gate, $event)"
-              (checklistChange)="toggleStageGateChecklistItem(gate, $event.index, $event.checked)"
-              (attachmentsSelected)="addStageGateFiles($event, gate)"
-              (attachmentRemove)="removeStageGateAttachment(gate, $event)"
-            ></app-portfolio-manager-stage-gate-drawer>
-          }
-        }
-        @default {
-          <app-pm-console-plan-drawer
-            [title]="selected.label"
-            eyebrow="Portfolio action"
-            [description]="'Review and close this quick action for ' + selected.project + '.'"
-            [summaryLabel]="selected.project"
-            [summary]="selected.meta"
-            submitLabel="Mark reviewed"
-            cancelLabel="Close"
-            closeAriaLabel="Close action drawer"
-            (close)="close.emit()"
-            (submitForm)="submitAndClose($event)"
-          >
-            <div planDrawerBody class="portfolio-action-review-body">
-              <ng-container [ngTemplateOutlet]="actionContext" [ngTemplateOutletContext]="{ action: selected }"></ng-container>
-              <ng-container [ngTemplateOutlet]="checklist" [ngTemplateOutletContext]="{ items: genericChecklist(selected) }"></ng-container>
-            </div>
-          </app-pm-console-plan-drawer>
         }
       }
     }
@@ -285,6 +351,294 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
 
       .portfolio-action-profile-drawer.benefit {
         width: min(900px, calc(100vw - 72px));
+      }
+
+      .portfolio-action-group-drawer {
+        animation: motion-drawer-in var(--motion-medium) var(--motion-ease) backwards;
+        background: #ffffff;
+        bottom: 0;
+        box-shadow: -22px 0 50px rgba(25, 33, 61, 0.2);
+        display: grid;
+        grid-template-rows: auto auto minmax(0, 1fr) auto;
+        max-width: calc(100vw - 28px);
+        overflow: hidden;
+        pointer-events: auto;
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: min(720px, calc(100vw - 72px));
+      }
+
+      .portfolio-action-group-header {
+        align-items: start;
+        border-bottom: 1px solid #e4e8f1;
+        display: grid;
+        gap: 14px;
+        grid-template-columns: auto auto minmax(0, 1fr) auto;
+        padding: 22px 24px 20px;
+      }
+
+      .portfolio-action-group-close {
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid #dfe4ee;
+        border-radius: 8px;
+        color: #536071;
+        display: inline-flex;
+        height: 34px;
+        justify-content: center;
+        width: 34px;
+      }
+
+      .portfolio-action-group-close:hover,
+      .portfolio-action-group-close:focus-visible {
+        background: #f7f7ff;
+        border-color: rgba(16, 6, 159, 0.22);
+        color: #10069f;
+        outline: 0;
+      }
+
+      .portfolio-action-group-close .icon {
+        height: 16px;
+        width: 16px;
+      }
+
+      .portfolio-action-group-icon {
+        align-items: center;
+        background: #f5f7fb;
+        border-radius: 10px;
+        color: #536071;
+        display: inline-flex;
+        height: 42px;
+        justify-content: center;
+        width: 42px;
+      }
+
+      .portfolio-action-group-icon.blue,
+      .portfolio-action-group-row-icon.blue {
+        background: #eef4ff;
+        color: #1f4fb8;
+      }
+
+      .portfolio-action-group-icon.green,
+      .portfolio-action-group-row-icon.green {
+        background: #eefbf5;
+        color: #166b49;
+      }
+
+      .portfolio-action-group-icon.red,
+      .portfolio-action-group-row-icon.red {
+        background: #fff0f0;
+        color: #9e2f2f;
+      }
+
+      .portfolio-action-group-icon.neutral,
+      .portfolio-action-group-row-icon.neutral {
+        background: #f5f7fb;
+        color: #536071;
+      }
+
+      .portfolio-action-group-icon .icon {
+        height: 20px;
+        width: 20px;
+      }
+
+      .portfolio-action-group-header small,
+      .portfolio-action-group-header p,
+      .portfolio-action-group-summary small,
+      .portfolio-action-group-row small {
+        color: #657084;
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .portfolio-action-group-header h2 {
+        color: #0b0b0b;
+        font-size: 22px;
+        font-weight: 600;
+        line-height: 1.16;
+        margin: 2px 0 6px;
+      }
+
+      .portfolio-action-group-header p {
+        margin: 0;
+      }
+
+      .portfolio-action-group-header > strong {
+        align-items: center;
+        background: #10069f;
+        border-radius: 999px;
+        color: #ffffff;
+        display: inline-flex;
+        font-size: 13px;
+        font-weight: 600;
+        height: 32px;
+        justify-content: center;
+        min-width: 32px;
+        padding: 0 10px;
+      }
+
+      .portfolio-action-group-summary {
+        background: #fbfcff;
+        border-bottom: 1px solid #e4e8f1;
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        padding: 14px 24px;
+      }
+
+      .portfolio-action-group-summary span {
+        background: #ffffff;
+        border: 1px solid #edf0f6;
+        border-radius: 8px;
+        display: grid;
+        gap: 4px;
+        min-width: 0;
+        padding: 10px 12px;
+      }
+
+      .portfolio-action-group-summary strong {
+        color: #252a34;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .portfolio-action-group-list {
+        align-content: start;
+        display: grid;
+        gap: 10px;
+        grid-auto-rows: max-content;
+        min-height: 0;
+        overflow: auto;
+        padding: 18px 24px 20px;
+      }
+
+      .portfolio-action-group-row {
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid #e4e8f1;
+        border-radius: 8px;
+        display: grid;
+        gap: 12px;
+        grid-template-columns: auto minmax(0, 1fr) minmax(116px, auto) auto;
+        min-height: 72px;
+        padding: 12px;
+      }
+
+      .portfolio-action-group-row-icon {
+        align-items: center;
+        border-radius: 8px;
+        display: inline-flex;
+        height: 34px;
+        justify-content: center;
+        width: 34px;
+      }
+
+      .portfolio-action-group-row-icon .icon {
+        height: 16px;
+        width: 16px;
+      }
+
+      .portfolio-action-group-row-copy,
+      .portfolio-action-group-row-meta {
+        display: grid;
+        gap: 4px;
+        min-width: 0;
+      }
+
+      .portfolio-action-group-row-copy strong {
+        color: #252a34;
+        font-size: 13.5px;
+        font-weight: 600;
+        line-height: 1.25;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .portfolio-action-group-row-meta {
+        justify-items: end;
+        text-align: right;
+      }
+
+      .portfolio-action-group-row-meta b {
+        align-items: center;
+        background: #f2f4f8;
+        border: 1px solid #e3e7ef;
+        border-radius: 999px;
+        color: #667085;
+        display: inline-flex;
+        font-size: 10px;
+        font-weight: 600;
+        height: 24px;
+        justify-content: center;
+        min-width: 24px;
+        padding: 0 6px;
+      }
+
+      .portfolio-action-group-row button {
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid #dfe4ee;
+        border-radius: 8px;
+        color: #303645;
+        display: inline-flex;
+        font-size: 12px;
+        font-weight: 600;
+        gap: 6px;
+        height: 34px;
+        justify-content: center;
+        padding: 0 10px;
+        white-space: nowrap;
+      }
+
+      .portfolio-action-group-row button:hover,
+      .portfolio-action-group-row button:focus-visible {
+        background: #f7f7ff;
+        border-color: rgba(16, 6, 159, 0.22);
+        color: #10069f;
+        outline: 0;
+      }
+
+      .portfolio-action-group-row button .icon {
+        height: 14px;
+        width: 14px;
+      }
+
+      .portfolio-action-group-footer {
+        align-items: center;
+        border-top: 1px solid #e4e8f1;
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        padding: 14px 24px;
+      }
+
+      .portfolio-action-group-footer button {
+        align-items: center;
+        border-radius: 8px;
+        display: inline-flex;
+        font-size: 13px;
+        font-weight: 600;
+        height: 38px;
+        justify-content: center;
+        padding: 0 14px;
+      }
+
+      .portfolio-action-group-footer .secondary {
+        background: #ffffff;
+        border: 1px solid #dfe4ee;
+        color: #303645;
+      }
+
+      .portfolio-action-group-footer .primary {
+        background: #10069f;
+        border: 1px solid #10069f;
+        color: #ffffff;
       }
 
       app-pm-console-risk-profile,
@@ -393,7 +747,8 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
 
       @media (max-width: 760px) {
         .portfolio-action-profile-drawer,
-        .portfolio-action-profile-drawer.benefit {
+        .portfolio-action-profile-drawer.benefit,
+        .portfolio-action-group-drawer {
           max-width: 100vw;
           width: 100vw;
         }
@@ -401,6 +756,322 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
         .portfolio-action-context-grid {
           grid-template-columns: 1fr;
         }
+
+        .portfolio-action-group-header {
+          grid-template-columns: auto minmax(0, 1fr) auto;
+        }
+
+        .portfolio-action-group-close {
+          grid-column: 1;
+        }
+
+        .portfolio-action-group-icon {
+          display: none;
+        }
+
+        .portfolio-action-group-summary,
+        .portfolio-action-group-row {
+          grid-template-columns: 1fr;
+        }
+
+        .portfolio-action-group-row-meta {
+          justify-items: start;
+          text-align: left;
+        }
+      }
+
+      .overdue-reports-drawer {
+        width: min(420px, calc(100vw - 72px));
+        display: flex;
+        flex-direction: column;
+      }
+
+      .overdue-reports-header {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        padding: 24px 24px 16px;
+      }
+
+      .overdue-reports-header .header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .overdue-reports-header .report-icon-bg {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .overdue-reports-header .report-icon-bg.blue {
+        background: #eef4ff;
+        color: #1f4fb8;
+      }
+
+      .overdue-reports-header .report-icon-bg.red {
+        background: #fff0f0;
+        color: #9e2f2f;
+      }
+
+      .overdue-reports-header .report-icon-bg.green {
+        background: #eefbf5;
+        color: #166b49;
+      }
+
+      .overdue-reports-header .report-icon-bg.amber {
+        background: #fff8e7;
+        color: #8a5c12;
+      }
+
+      .overdue-reports-header .report-icon-bg.neutral {
+        background: #f5f7fb;
+        color: #536071;
+      }
+
+      .overdue-reports-header .report-icon-bg span {
+        width: 20px;
+        height: 20px;
+      }
+
+      .overdue-reports-header h2 {
+        color: #0b0b0b;
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      .overdue-reports-header .overdue-pill {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: 6px;
+        line-height: 1;
+      }
+
+      .overdue-reports-header .overdue-pill.red {
+        background: #fde2e2;
+        color: #d32f2f;
+      }
+
+      .overdue-reports-header .overdue-pill.blue {
+        background: #eef4ff;
+        color: #1f4fb8;
+      }
+
+      .overdue-reports-header .overdue-pill.amber {
+        background: #fff8e7;
+        color: #8a5c12;
+      }
+
+      .overdue-reports-close {
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid #dfe4ee;
+        border-radius: 8px;
+        color: #536071;
+        display: inline-flex;
+        height: 34px;
+        justify-content: center;
+        width: 34px;
+      }
+
+      .overdue-reports-close:hover,
+      .overdue-reports-close:focus-visible {
+        background: #f7f7ff;
+        border-color: rgba(16, 6, 159, 0.22);
+        color: #10069f;
+        outline: 0;
+      }
+
+      .overdue-reports-close span {
+        width: 16px;
+        height: 16px;
+      }
+
+      .overdue-reports-search-section {
+        padding: 0 24px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .search-input-wrapper {
+        position: relative;
+        width: 100%;
+      }
+
+      .search-input-wrapper input {
+        padding: 0 12px 0 36px;
+        height: 38px;
+        border: 1px solid #dfe4ee;
+        border-radius: 8px;
+        width: 100%;
+        font-size: 13px;
+        color: #2f2f2f;
+        background: #ffffff;
+        outline: none;
+      }
+
+      .search-input-wrapper input:focus {
+        border-color: #10069f;
+      }
+
+      .search-input-wrapper .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #888;
+        width: 16px;
+        height: 16px;
+      }
+
+      .showing-count-label {
+        font-size: 13px;
+        color: #657084;
+        font-weight: 400;
+      }
+
+      .overdue-reports-list {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        padding: 0 24px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .overdue-report-card {
+        background: #ffffff;
+        border: 1px solid #eef1f6;
+        border-radius: 12px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        box-shadow: 0 1px 3px rgba(25, 33, 61, 0.03);
+      }
+
+      .overdue-report-card .card-top-pill {
+        display: flex;
+        justify-content: flex-start;
+      }
+
+      .overdue-report-card .action-type-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: 6px;
+        line-height: 1;
+        border: 1px solid transparent;
+      }
+
+      .overdue-report-card .action-type-pill[data-card-type="Plans"] {
+        border-color: rgba(121, 186, 221, 0.25);
+        background: rgba(121, 186, 221, 0.1);
+        color: #79badd;
+      }
+
+      .overdue-report-card .action-type-pill[data-card-type="Governance Committees"] {
+        border-color: rgba(52, 84, 196, 0.25);
+        background: rgba(52, 84, 196, 0.1);
+        color: #3454c4;
+      }
+
+      .overdue-report-card .action-type-pill[data-card-type="Status reports"] {
+        border-color: rgba(111, 32, 149, 0.25);
+        background: rgba(111, 32, 149, 0.1);
+        color: #6f2095;
+      }
+
+      .overdue-report-card .action-type-pill[data-card-type="Change requests"] {
+        border-color: rgba(196, 52, 114, 0.25);
+        background: rgba(196, 52, 114, 0.1);
+        color: #c43472;
+      }
+
+      .overdue-report-card .action-type-pill[data-card-type="Benefits"] {
+        border-color: rgba(22, 107, 73, 0.25);
+        background: rgba(22, 107, 73, 0.1);
+        color: #166b49;
+      }
+
+      .overdue-report-card .action-type-pill[data-card-type="Dependency"] {
+        border-color: rgba(121, 186, 221, 0.25);
+        background: rgba(121, 186, 221, 0.1);
+        color: #79badd;
+      }
+
+      .overdue-report-card .action-type-pill[data-card-type="Risk"] {
+        border-color: rgba(196, 52, 114, 0.25);
+        background: rgba(196, 52, 114, 0.1);
+        color: #c43472;
+      }
+
+      .overdue-report-card .card-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #0b0b0b;
+        margin: 0;
+        line-height: 1.35;
+      }
+
+      .overdue-report-card .card-project {
+        font-size: 13px;
+        color: #657084;
+        margin: 0;
+      }
+
+      .overdue-report-card .card-divider {
+        height: 1px;
+        background: #eef1f6;
+        margin: 4px 0;
+      }
+
+      .overdue-report-card .card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .overdue-report-card .card-footer-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #737b8c;
+        font-size: 12.5px;
+      }
+
+      .overdue-report-card .card-footer-left .calendar-icon {
+        width: 14px;
+        height: 14px;
+        color: #737b8c;
+      }
+
+      .overdue-report-card .open-link {
+        background: transparent;
+        border: none;
+        padding: 0;
+        color: #10069f;
+        font-size: 13px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+      }
+
+      .overdue-report-card .open-link .arrow-icon {
+        width: 13px;
+        height: 13px;
       }
     `,
   ],
@@ -409,14 +1080,111 @@ export class PortfolioManagerActionDrawerComponent implements OnChanges, OnDestr
   @Input() item: PortfolioActionItem | null = null;
   @Output() readonly close = new EventEmitter<void>();
 
-  readonly projectOptions = portfolioActionProjectOptions;
+  searchQuery = '';
 
-  get normalizedKind(): string {
-    const kind = this.item?.kind;
-    if (kind === 'status-reports') return 'report';
-    if (kind === 'benefits') return 'benefit';
-    return kind || '';
+  onSearchInput(event: Event): void {
+    this.searchQuery = (event.target as HTMLInputElement).value;
   }
+
+  get filteredReports(): readonly PmoStatusReport[] {
+    if (!this.searchQuery) return pmoStatusReports;
+    const q = this.searchQuery.toLowerCase().trim();
+    return pmoStatusReports.filter((r) =>
+      r.title.toLowerCase().includes(q) ||
+      r.project.toLowerCase().includes(q) ||
+      r.ownerName.toLowerCase().includes(q)
+    );
+  }
+
+  get filteredGroupItems(): readonly PortfolioActionItem[] {
+    if (!this.activeGroupItems.length) return [];
+    if (!this.searchQuery) return this.activeGroupItems;
+    const q = this.searchQuery.toLowerCase().trim();
+    return this.activeGroupItems.filter((item) =>
+      item.label.toLowerCase().includes(q) ||
+      item.project.toLowerCase().includes(q) ||
+      (item.owner && item.owner.toLowerCase().includes(q))
+    );
+  }
+
+  getAvatarClass(initials: string): string {
+    const mapping: Record<string, string> = {
+      'MH': 'avatar-mh',
+      'OK': 'avatar-ok',
+      'NH': 'avatar-nh',
+      'JS': 'avatar-js',
+      'DG': 'avatar-dg',
+      'FQ': 'avatar-fq',
+      'AH': 'avatar-ah',
+      'SA': 'avatar-sa',
+      'FA': 'avatar-fa',
+    };
+    return mapping[initials] || 'avatar-mh';
+  }
+
+  formatCardDate(dateStr: string): string {
+    const parsed = new Date(`${dateStr}T00:00:00`);
+    if (Number.isNaN(parsed.getTime())) return dateStr;
+    return parsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  getNormalizedCardType(report: PortfolioActionItem): string {
+    const type = report.type || '';
+    if (type.toLowerCase().includes('plan')) return 'Plans';
+    if (type.toLowerCase().includes('governance')) return 'Governance Committees';
+    if (type.toLowerCase().includes('status') || type.toLowerCase().includes('report')) return 'Status reports';
+    if (type.toLowerCase().includes('change')) return 'Change requests';
+    if (type.toLowerCase().includes('benefit')) return 'Benefits';
+    if (type.toLowerCase().includes('dependency')) return 'Dependency';
+    if (type.toLowerCase().includes('risk')) return 'Risk';
+    if (type.toLowerCase().includes('task')) return 'Task';
+    if (type.toLowerCase().includes('milestone')) return 'Milestone';
+    return type || 'Action';
+  }
+
+  getReportMeta(report: PortfolioActionItem, parentColumn?: string): string {
+    if (report.meta !== 'Pending') {
+      return report.meta;
+    }
+    const col = parentColumn || report.column || 'This week';
+    if (col === 'Overdue') {
+      return 'Overdue';
+    }
+    // Calculate difference in days relative to today: May 26, 2026
+    const today = new Date('2026-05-26T00:00:00');
+    const reportDate = new Date(`${report.date}T00:00:00`);
+    if (Number.isNaN(reportDate.getTime())) {
+      return 'Due soon';
+    }
+    const diffTime = reportDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays <= 0) {
+      return 'Due today';
+    }
+    return `Due in ${diffDays} day${diffDays === 1 ? '' : 's'}`;
+  }
+
+  getOwnerFullName(initials: string): string {
+    const mapping: Record<string, string> = {
+      'FQ': 'Fatima Qahtani',
+      'MH': 'Muna Hassan',
+      'AH': 'Ahmed Hassan',
+      'SA': 'Sarah Al Saud',
+      'FA': 'Fatima Al-Saud',
+      'OK': 'Osman Khan',
+      'NH': 'Nadia Hossain',
+      'JS': 'Jasmine Smith',
+      'DG': 'David Garcia',
+    };
+    return mapping[initials] || initials;
+  }
+
+  handleDetailItemClick(detail: PortfolioActionItem): void {
+    this.item = detail;
+    this.hydrateDrawerState();
+  }
+
+  readonly projectOptions = portfolioActionProjectOptions;
   readonly benefitProfileOptions = portfolioActionBenefitProfileOptions;
   readonly riskProfileConfig = portfolioActionRiskProfileConfig;
   readonly reportSections = portfolioActionReportSections;
@@ -433,6 +1201,7 @@ export class PortfolioManagerActionDrawerComponent implements OnChanges, OnDestr
   activeReportCards: PortfolioActionReportCard[] = [];
   activeReportOverviewFields: PortfolioActionReportOverviewField[] = [];
   activeReportScopeProducts: PortfolioActionScopeProduct[] = [];
+  activeGroupItems: readonly PortfolioActionItem[] = [];
   reportMode: ReportDetailMode = 'simple';
   reportPresentationMode: ReportDrawerPresentationMode = 'compose';
   reportSection = 'Overview';
@@ -465,6 +1234,27 @@ export class PortfolioManagerActionDrawerComponent implements OnChanges, OnDestr
     return `${this.capitalize(action.targetType)} · ${action.project}`;
   }
 
+  groupIcon(action: PortfolioActionItem): string {
+    if (action.kind === 'plan') return 'file-text';
+    if (action.kind === 'report') return 'chart-column';
+    if (action.kind === 'benefit') return 'circle-check';
+    if (action.kind === 'change') return 'git-pull-request';
+    if (action.kind === 'governance') return 'landmark';
+    if (action.kind === 'milestone') return 'flag';
+    if (action.kind === 'risk') return 'triangle-alert';
+    if (action.kind === 'dependency') return 'network';
+    return 'check-square';
+  }
+
+  groupActionLabel(action: PortfolioActionItem): string {
+    if (action.kind === 'plan') return 'Review';
+    if (action.kind === 'report') return 'Open report';
+    if (action.kind === 'benefit') return 'Review';
+    if (action.kind === 'change') return 'Assess';
+    if (action.kind === 'governance') return 'Open';
+    return action.cta || 'Open';
+  }
+
   stageChecklist(action: PortfolioActionItem): PortfolioActionChecklistItem[] {
     return portfolioActionStageChecklist(action);
   }
@@ -474,7 +1264,7 @@ export class PortfolioManagerActionDrawerComponent implements OnChanges, OnDestr
   }
 
   stageGateContextForAction(action: PortfolioActionItem): StageGateContext | null {
-    if ((action.kind as string) !== 'milestone') return null;
+    if (action.kind !== 'milestone') return null;
     const profile = this.stageProfileForAction(action);
     const stageIndex = this.stageCurrentIndex(profile);
     const stage = stageDefinitions[stageIndex] || stageDefinitions[0];
@@ -684,26 +1474,30 @@ export class PortfolioManagerActionDrawerComponent implements OnChanges, OnDestr
     this.activeReportCards = [];
     this.activeReportOverviewFields = [];
     this.activeReportScopeProducts = [];
+    this.activeGroupItems = [];
     this.reportMode = 'simple';
     this.reportPresentationMode = 'compose';
     this.reportSection = 'Overview';
 
     if (!action) return;
-    const kind = this.normalizedKind;
-    if (kind === 'risk') {
+    if (action.detailItems?.length) {
+      this.activeGroupItems = action.detailItems;
+      return;
+    }
+    if (action.kind === 'risk') {
       this.activeRiskProfile = clonePortfolioActionRiskProfile(action.project);
       return;
     }
-    if (kind === 'benefit') {
+    if (action.kind === 'benefit') {
       this.activeBenefitProfile = clonePortfolioActionBenefitProfile(action.project);
       return;
     }
-    if (kind === 'milestone') {
+    if (action.kind === 'milestone') {
       const gate = this.stageGateContextForAction(action);
       if (gate) this.ensureStageGateChecklistState(gate.profile, gate.stageIndex);
       return;
     }
-    if (kind === 'report') {
+    if (action.kind === 'report') {
       this.activeReportDetails = portfolioActionReportDetails(action);
       this.activeReportCards = portfolioActionReportCards(action);
       this.activeReportOverviewFields = portfolioActionReportOverviewFields(action);

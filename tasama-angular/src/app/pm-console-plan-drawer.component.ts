@@ -10,7 +10,14 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
   template: `
     <div class="plan-entry-drawer-shell" aria-hidden="false">
       <button class="plan-entry-drawer-backdrop" type="button" [attr.aria-label]="closeAriaLabel" (click)="close.emit()"></button>
-      <aside class="plan-entry-drawer" [ngClass]="panelClass" role="dialog" aria-modal="true" [attr.aria-label]="ariaLabel || title">
+      <aside
+        class="plan-entry-drawer"
+        [ngClass]="panelClass"
+        [style.--plan-entry-drawer-width]="panelWidth || null"
+        role="dialog"
+        aria-modal="true"
+        [attr.aria-label]="ariaLabel || title"
+      >
         <form class="plan-entry-drawer-form" (submit)="submitForm.emit($event)">
           <header class="plan-entry-drawer-head">
             <div class="plan-entry-drawer-title">
@@ -20,7 +27,7 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
               <h2>{{ title }}</h2>
               <p>{{ description }}</p>
             </div>
-            <div class="plan-entry-drawer-head-actions">
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0;">
               <button class="plan-entry-drawer-close" type="button" [attr.aria-label]="closeAriaLabel" (click)="close.emit()">
                 <span pmConsoleIcon="x" aria-hidden="true"></span>
               </button>
@@ -43,23 +50,23 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
           </section>
 
           @if (!hideFooter) {
-            <footer class="plan-entry-drawer-footer" [class.has-delete]="showDelete">
-              @if (showDelete) {
-                <button class="plan-entry-drawer-delete" type="button" (click)="delete.emit($event)">Delete</button>
-              }
+            <footer class="plan-entry-drawer-footer" [style.justify-content]="showDelete ? 'space-between' : 'flex-end'">
               <span class="plan-entry-drawer-footer-prefix">
                 <ng-content select="[planDrawerFooterPrefix]"></ng-content>
               </span>
-              @if (submitFirst) {
-                <button class="plan-entry-drawer-submit" type="submit" [disabled]="submitDisabled">{{ submitLabel }}</button>
-                <button class="plan-entry-drawer-cancel" type="button" (click)="close.emit()">{{ cancelLabel }}</button>
-              } @else {
-                <button class="plan-entry-drawer-cancel" type="button" (click)="close.emit()">{{ cancelLabel }}</button>
-                <button class="plan-entry-drawer-submit" type="submit" [disabled]="submitDisabled">{{ submitLabel }}</button>
+              @if (showDelete) {
+                <button class="plan-entry-drawer-delete" type="button" (click)="delete.emit($event)" style="background: transparent; border: 1px solid #ef4444; color: #ef4444; border-radius: 8px; font-size: 10.5px; font-weight: 600; height: 32px; padding: 0 15px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'">Delete</button>
               }
+              <div style="display: flex; gap: 10px; align-items: center;">
+                @if (submitFirst) {
+                  <button class="plan-entry-drawer-submit" type="submit" [disabled]="submitDisabled">{{ submitLabel }}</button>
+                  <button class="plan-entry-drawer-cancel" type="button" (click)="close.emit()">{{ cancelLabel }}</button>
+                } @else {
+                  <button class="plan-entry-drawer-cancel" type="button" (click)="close.emit()">{{ cancelLabel }}</button>
+                  <button class="plan-entry-drawer-submit" type="submit" [disabled]="submitDisabled">{{ submitLabel }}</button>
+                }
+              </div>
             </footer>
-          } @else {
-            <ng-content select="[planDrawerFooter]"></ng-content>
           }
         </form>
       </aside>
@@ -99,7 +106,7 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
         position: absolute;
         right: 0;
         top: 0;
-        width: min(640px, calc(100vw - 72px));
+        width: var(--plan-entry-drawer-width, min(640px, calc(100vw - 72px)));
         will-change: opacity;
       }
 
@@ -164,14 +171,6 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
         height: 36px;
         justify-content: center;
         width: 36px;
-      }
-
-      .plan-entry-drawer-head-actions {
-        align-items: flex-end;
-        display: flex;
-        flex-direction: column;
-        flex-shrink: 0;
-        gap: 8px;
       }
 
       .plan-entry-drawer-close:hover,
@@ -244,7 +243,6 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
       }
 
       .plan-entry-drawer-cancel,
-      .plan-entry-drawer-delete,
       .plan-entry-drawer-submit {
         align-items: center;
         border-radius: 8px;
@@ -277,18 +275,6 @@ import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
         cursor: default;
       }
 
-      .plan-entry-drawer-delete {
-        background: transparent;
-        border: 1px solid #ef4444;
-        color: #ef4444;
-      }
-
-      .plan-entry-drawer-delete:hover,
-      .plan-entry-drawer-delete:focus-visible {
-        background: #fef2f2;
-        outline: none;
-      }
-
       @media (max-width: 760px) {
         .plan-entry-drawer {
           max-width: 100vw;
@@ -317,6 +303,7 @@ export class PmConsolePlanDrawerComponent {
   @Input() closeAriaLabel = 'Close drawer';
   @Input() ariaLabel = '';
   @Input() panelClass: string | string[] | Set<string> | Record<string, unknown> = '';
+  @Input() panelWidth = '';
   @Input() hideFooter = false;
   @Input() showDelete = false;
 

@@ -131,6 +131,7 @@ import { PmConsoleModeTabsComponent } from './shared/pm-console-mode-tabs.compon
                     [boardFilters]="workFilters"
                     [showTargetPicker]="true"
                     [showBoardDetailPanel]="false"
+                    boardPresentation="compact"
                     [openItemsInDrawer]="true"
                     todayKey="2026-05-26"
                   />

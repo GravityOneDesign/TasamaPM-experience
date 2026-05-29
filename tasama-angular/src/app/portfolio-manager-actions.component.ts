@@ -1,14 +1,15 @@
-import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy } from '@angular/core';
+import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PmConsoleWorkCalendarComponent, PmConsoleCalendarCell, PmConsoleCalendarItem, PmConsoleCalendarFilter } from './shared/pm-console-work-calendar.component';
 import { PmConsoleIconService } from './pm-console-icon.service';
 import { iconName } from './portfolio-manager-icon.utils';
 import { portfolioActionItems, portfolioBoardFilters, PortfolioActionItem, PortfolioBoardFilter, PortfolioBoardColumn } from './portfolio-manager-actions.data';
 import { PortfolioManagerActionDrawerService } from './portfolio-manager-action-drawer.service';
-import { portfolioProgramRows, standaloneProjects, type ProgramRow } from './portfolio-workspace/portfolio-workspace.data';
+import { portfolioProgramRows, standaloneProjects, portfolioRows, type ProgramRow } from './portfolio-workspace/portfolio-workspace.data';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 
-type PortfolioWorkTargetType = 'all' | 'program' | 'project';
+type PortfolioWorkTargetType = 'all' | 'portfolio' | 'program' | 'project';
+type PortfolioActionsBoardPresentation = 'kanban' | 'compact';
 
 type PortfolioCalendarItem = PmConsoleCalendarItem & {
   id: string;
@@ -24,7 +25,7 @@ interface PortfolioWorkTargetOption {
 }
 
 interface PortfolioWorkTargetGroup {
-  id: 'programs' | 'projects';
+  id: 'portfolios' | 'programs' | 'projects';
   label: string;
   options: PortfolioWorkTargetOption[];
 }
@@ -47,14 +48,14 @@ interface PortfolioWorkTargetGroup {
           <input
             type="search"
             [placeholder]="searchPlaceholder"
-            aria-label="Search actions"
+            [attr.aria-label]="searchPlaceholder"
             (input)="onSearchChange($event)"
           />
         </label>
 
         <!-- Program / Project selector -->
         @if (showTargetPicker) {
-        <div class="portfolio-target-picker" aria-label="Portfolio work target selector">
+        <div class="portfolio-target-picker" [attr.aria-label]="targetPickerAriaLabel">
           <details class="work-filter-dropdown target-picker-dropdown">
             <summary [attr.aria-label]="'Select program or project: ' + selectedTargetOption.label">
               <span class="work-filter-selected-icon">
@@ -118,7 +119,7 @@ interface PortfolioWorkTargetGroup {
                             @if (target.parentLabel) {
                               <small>{{ target.parentLabel }}</small>
                             } @else {
-                              <small>{{ target.type === 'program' ? targetCountLabel(target) : 'Standalone project' }}</small>
+                              <small>{{ target.type === 'program' || target.type === 'portfolio' ? targetCountLabel(target) : 'Standalone project' }}</small>
                             }
                           </span>
                         </button>
@@ -199,57 +200,148 @@ interface PortfolioWorkTargetGroup {
       <!-- Views container -->
       <div class="workspace-body">
         <!-- Board view -->
-        <div class="board-view" [class.is-hidden]="activeView !== 'board'" [class.has-detail-panel]="showBoardDetailPanel" data-work-view="board">
-          <div class="kanban-board">
-            @for (column of visibleBoardColumns; track column.column) {
-              <section class="kanban-column {{ column.tone }}">
-                <header>
-                  <div>
-                    <span class="board-column-icon {{ column.tone }}">
-                      <span class="icon" aria-hidden="true">
-                        <i [attr.data-lucide]="boardColumnIcon(column.column)"></i>
+        <div
+          class="board-view"
+          [class.is-hidden]="activeView !== 'board'"
+          [class.has-detail-panel]="showBoardDetailPanel && boardPresentation !== 'compact'"
+          [class.is-compact-board]="boardPresentation === 'compact'"
+          data-work-view="board"
+        >
+          @if (boardPresentation === 'compact') {
+            <div class="compact-action-board" aria-label="PMO action board">
+              @for (column of visibleBoardColumns; track column.column) {
+                <section class="compact-action-column {{ column.tone }}">
+                  <header>
+                    <span class="compact-column-title">
+                      <span class="compact-column-icon {{ column.tone }}">
+                        <span [pmConsoleIcon]="boardColumnIcon(column.column)" aria-hidden="true"></span>
                       </span>
+                      <span>{{ column.column }}</span>
                     </span>
-                    <h3>{{ column.column }}</h3>
-                  </div>
-                  <strong>{{ column.items.length }}</strong>
-                </header>
-                <div class="task-stack">
-                  @for (item of column.items; track item.id) {
-                    <article class="task-card {{ item.tone }}" [attr.data-card-kind]="item.kind" (click)="handleTaskAction(item)">
-                      <div class="task-top">
-                        <span class="kanban-type-chip {{ item.tone }}">{{ actionTypeLabel(item) }}</span>
-                      </div>
-                      <h3 class="task-title">{{ item.label }}</h3>
-                      <p class="task-project">{{ item.project }}</p>
-                      
-                      <hr class="task-divider" />
-                      
-                      <div class="task-bottom">
-                        <div class="task-meta-group">
-                          <span pmConsoleIcon="calendar-fold" class="task-calendar-icon" aria-hidden="true"></span>
-                          <span class="task-due-text">{{ formatKanbanDate(item) }}</span>
-                        </div>
-                        <div class="task-action">
+                    <strong>{{ boardColumnCount(column.items) }}</strong>
+                  </header>
+                  <div class="compact-action-stack">
+                    @for (item of compactColumnItems(column); track item.id) {
+                      <button
+                        class="compact-action-card {{ item.tone }}"
+                        [attr.data-card-kind]="item.kind"
+                        [attr.data-card-type]="item.type"
+                        type="button"
+                        [attr.aria-label]="actionItemAriaLabel(item)"
+                        (click)="selectBoardItem(item)"
+                      >
+                        <span class="compact-action-icon {{ item.tone }}">
+                          <span [pmConsoleIcon]="boardDetailIcon(item)" aria-hidden="true"></span>
+                        </span>
+                        <span class="compact-action-title">{{ item.type }}</span>
+                        <strong class="compact-action-count">{{ actionItemTotal(item) }}</strong>
+                        <span class="compact-action-view">
                           <span>{{ item.cta }}</span>
                           <span pmConsoleIcon="chevron-right" aria-hidden="true"></span>
+                        </span>
+                      </button>
+                    } @empty {
+                      <div class="empty-column">No actions in this lane.</div>
+                    }
+                  </div>
+                </section>
+              }
+            </div>
+          } @else {
+            <div class="kanban-board">
+              @for (column of visibleBoardColumns; track column.column) {
+                <section class="kanban-column {{ column.tone }}">
+                  <header>
+                    <div>
+                      <span class="board-column-icon {{ column.tone }}">
+                        <span class="icon" aria-hidden="true">
+                          <i [attr.data-lucide]="boardColumnIcon(column.column)"></i>
+                        </span>
+                      </span>
+                      <h3>{{ column.column }}</h3>
+                    </div>
+                    <strong>{{ boardColumnCount(column.items) }}</strong>
+                  </header>
+                  <div class="task-stack">
+                    @for (item of column.items; track item.id) {
+                      <button
+                        class="task-card {{ taskCardClass(item.type) }} {{ item.tone }}"
+                        [class.is-selected]="activeBoardItem?.id === item.id"
+                        [attr.data-card-kind]="item.kind"
+                        [attr.data-card-type]="item.type"
+                        type="button"
+                        [attr.aria-label]="actionItemAriaLabel(item)"
+                        (click)="selectBoardItem(item)"
+                      >
+                        <span class="task-card-icon {{ item.tone }}">
+                          <span [pmConsoleIcon]="boardDetailIcon(item)" aria-hidden="true"></span>
+                        </span>
+                        
+                        <div class="task-card-title-container">
+                          <span class="task-card-title">{{ item.label }}</span>
+                          <span class="task-card-count">{{ actionItemTotal(item) }}</span>
                         </div>
-                      </div>
-                    </article>
-                  } @empty {
-                    <div class="empty-column">No actions in this lane.</div>
+
+                        <span class="task-card-action">
+                          <span>View All</span>
+                          <span pmConsoleIcon="chevron-right" class="arrow-icon" aria-hidden="true"></span>
+                        </span>
+                      </button>
+                    } @empty {
+                      <div class="empty-column">No actions in this lane.</div>
+                    }
+                  </div>
+                </section>
+              }
+            </div>
+          }
+
+          @if (showBoardDetailPanel) {
+            <aside class="board-detail-panel" aria-label="Selected action list">
+              @if (activeBoardItem; as selectedBoardAction) {
+                <header>
+                  <span class="board-detail-icon {{ selectedBoardAction.tone }}">
+                    <span [pmConsoleIcon]="boardDetailIcon(selectedBoardAction)" aria-hidden="true"></span>
+                  </span>
+                  <span>
+                    <small>{{ selectedBoardAction.column }}</small>
+                    <strong>{{ selectedBoardAction.label }}</strong>
+                  </span>
+                  <b>{{ actionItemTotal(selectedBoardAction) }}</b>
+                </header>
+                <p>{{ boardDetailSummary(selectedBoardAction) }}</p>
+                <div class="board-detail-list">
+                  @for (detail of detailItemsFor(selectedBoardAction); track detail.id) {
+                    <button class="board-detail-row" type="button" (click)="openActionDrawer(selectedBoardAction)">
+                      <span class="board-detail-row-dot {{ detail.tone }}" aria-hidden="true"></span>
+                      <span>
+                        <strong>{{ detail.label }}</strong>
+                        <small>{{ detail.project }} · {{ detail.meta }}</small>
+                      </span>
+                      <span class="board-detail-row-owner">{{ detail.owner }}</span>
+                    </button>
                   }
                 </div>
-              </section>
-            }
-          </div>
+                <button class="board-detail-open" type="button" (click)="openActionDrawer(selectedBoardAction)">
+                  <span>{{ selectedBoardAction.cta }}</span>
+                  <span pmConsoleIcon="arrow-right" aria-hidden="true"></span>
+                </button>
+              } @else {
+                <div class="board-detail-empty">
+                  <span pmConsoleIcon="list-checks" aria-hidden="true"></span>
+                  <strong>Select an action tile</strong>
+                  <small>The expanded list will appear here before you open the full review panel.</small>
+                </div>
+              }
+            </aside>
+          }
         </div>
 
         <!-- Calendar view -->
         <div class="calendar-view" [class.is-hidden]="activeView !== 'calendar'" data-work-view="calendar">
           <app-pm-console-work-calendar
             [monthLabel]="calendarMonthLabel"
-            [monthItemCount]="visibleMonthItems.length"
+            [monthItemCount]="visibleMonthItemCount"
             [cells]="calendarCells"
             [filters]="calendarFilterOptions"
             [selectedFilterId]="selectedFilter"
@@ -265,120 +357,6 @@ interface PortfolioWorkTargetGroup {
     </div>
   `,
   styles: [`
-    .kanban-type-chip {
-      align-items: center;
-      border-radius: 999px;
-      display: inline-flex;
-      font-size: 10px;
-      font-weight: 600;
-      line-height: 1;
-      padding: 5px 8px;
-      text-transform: capitalize;
-    }
-
-    .kanban-type-chip.plans {
-      background: rgba(141, 200, 232, 0.12);
-      border: 1px solid rgba(141, 200, 232, 0.25);
-      color: #8DC8E8;
-    }
-    .kanban-type-chip.governance {
-      background: rgba(52, 84, 196, 0.1);
-      border: 1px solid rgba(52, 84, 196, 0.22);
-      color: #3454C4;
-    }
-    .kanban-type-chip.status-reports {
-      background: rgba(111, 32, 149, 0.1);
-      border: 1px solid rgba(111, 32, 149, 0.22);
-      color: #6F2095;
-    }
-    .kanban-type-chip.change-requests {
-      background: rgba(196, 52, 114, 0.1);
-      border: 1px solid rgba(196, 52, 114, 0.22);
-      color: #C43472;
-    }
-    .kanban-type-chip.benefits {
-      background: rgba(22, 107, 73, 0.1);
-      border: 1px solid rgba(22, 107, 73, 0.22);
-      color: #166B49;
-    }
-
-    .task-card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
-      transition: transform 160ms ease, box-shadow 160ms ease;
-    }
-    .task-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-    }
-
-    .task-title {
-      font-size: 13.5px;
-      font-weight: 700;
-      color: #1a202c;
-      margin: 0;
-      line-height: 1.35;
-    }
-
-    .task-project {
-      font-size: 11.5px;
-      color: #718096;
-      margin: 0;
-    }
-
-    .task-divider {
-      border: 0;
-      border-top: 1px solid #edf2f7;
-      margin: 4px 0;
-      width: 100%;
-    }
-
-    .task-meta-group {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: #718096;
-    }
-
-    .task-calendar-icon {
-      height: 14px;
-      width: 14px;
-      color: #718096;
-    }
-
-    .task-due-text {
-      font-size: 11px;
-      font-weight: 500;
-      color: #718096;
-    }
-
-    .task-action {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      color: #10069f;
-      background: transparent;
-      border: 0;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      padding: 0;
-      transition: color 160ms ease;
-    }
-    .task-action:hover {
-      color: #3454C4;
-    }
-    .task-action .icon {
-      height: 14px;
-      width: 14px;
-    }
-
     :host {
       display: flex;
       flex-direction: column;
@@ -419,6 +397,643 @@ interface PortfolioWorkTargetGroup {
       flex: 1 1 auto;
       height: auto;
       min-height: 0;
+    }
+
+    .board-view.has-detail-panel {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: minmax(0, 1fr) minmax(292px, 332px);
+      overflow: hidden;
+    }
+
+    .board-view.has-detail-panel .kanban-board {
+      min-width: 0;
+    }
+
+    .board-view.is-compact-board {
+      overflow: hidden;
+    }
+
+    .compact-action-board {
+      display: grid;
+      flex: 1 1 auto;
+      gap: 16px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      min-height: 0;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .compact-action-column {
+      background: #f7f8fb;
+      border: 1px solid #eef1f6;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 0;
+      min-width: 0;
+      padding: 14px 12px;
+    }
+
+    .compact-action-column header {
+      align-items: center;
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      min-height: 24px;
+      min-width: 0;
+    }
+
+    .compact-column-title {
+      align-items: center;
+      color: #0b0b0b;
+      display: inline-flex;
+      font-size: 13px;
+      font-weight: 600;
+      gap: 7px;
+      line-height: 18px;
+      min-width: 0;
+    }
+
+    .compact-column-icon,
+    .compact-action-icon {
+      align-items: center;
+      border-radius: 6px;
+      display: inline-flex;
+      flex: 0 0 auto;
+      justify-content: center;
+    }
+
+    .compact-column-icon {
+      height: 20px;
+      width: 20px;
+    }
+
+    .compact-column-icon .icon {
+      height: 13px;
+      width: 13px;
+    }
+
+    .compact-column-icon.red,
+    .compact-action-icon.red {
+      background: #fff0f0;
+      color: #9e2f2f;
+    }
+
+    .compact-column-icon.blue,
+    .compact-action-icon.blue {
+      background: #eef4ff;
+      color: #1f4fb8;
+    }
+
+    .compact-column-icon.amber {
+      background: #fff8e7;
+      color: #8a5c12;
+    }
+
+    .compact-column-icon.green,
+    .compact-action-icon.green {
+      background: #eefbf5;
+      color: #166b49;
+    }
+
+    .compact-action-icon.neutral {
+      background: #f2f4f8;
+      color: #536071;
+    }
+
+    .compact-action-column header strong {
+      color: #536071;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 16px;
+    }
+
+    .compact-action-stack {
+      display: grid;
+      gap: 10px;
+      min-height: 0;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .compact-action-card {
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid #eef1f6;
+      border-radius: 7px;
+      box-shadow: 0 1px 2px rgba(25, 33, 61, 0.04);
+      color: #2f2f2f;
+      cursor: pointer;
+      display: grid;
+      font: inherit;
+      gap: 8px;
+      grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+      min-height: 50px;
+      overflow: hidden;
+      padding: 8px 8px 8px 0;
+      position: relative;
+      text-align: left;
+      transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+      width: 100%;
+    }
+
+    .compact-action-card::before,
+    .task-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      border-radius: 7px 0 0 7px;
+    }
+
+    .compact-action-card.red::before,
+    .task-card.red::before {
+      background: #e05252;
+      
+    }
+
+    .compact-action-card.blue::before,
+    .task-card.blue::before {
+      background: #2563eb;
+    }
+
+    .compact-action-card.green::before,
+    .task-card.green::before {
+      background: #22a06b;
+    }
+
+    .compact-action-card.amber::before,
+    .task-card.amber::before {
+      background: #8a5c12;
+    }
+
+    .compact-action-card.neutral::before,
+    .task-card.neutral::before {
+      background: #98a1b2;
+    }
+
+    /* Override side stroke colors by card kind */
+    .compact-action-card[data-card-kind="report"]::before,
+    .task-card[data-card-kind="report"]::before {
+      background: #3426f7;
+    }
+
+    .compact-action-card[data-card-kind="plan"]::before,
+    .task-card[data-card-kind="plan"]::before {
+      background: #1f4fb8;
+    }
+
+    .compact-action-card[data-card-kind="change"]::before,
+    .task-card[data-card-kind="change"]::before {
+      background: #9e2f2f;
+    }
+
+    .compact-action-card[data-card-kind="benefit"]::before,
+    .task-card[data-card-kind="benefit"]::before {
+      background: #1f4fb8;
+    }
+
+    .compact-action-card[data-card-kind="governance"]::before,
+    .task-card[data-card-kind="governance"]::before {
+      background: #166b49;
+    }
+
+    .compact-action-card:hover,
+    .compact-action-card:focus-visible {
+      border-color: rgba(16, 6, 159, 0.22);
+      box-shadow: 0 6px 14px rgba(25, 33, 61, 0.08);
+      outline: 0;
+    }
+
+    .compact-action-accent {
+      align-self: stretch;
+      border-radius: 999px;
+      display: block;
+      height: 34px;
+      margin-left: 0;
+      width: 3px;
+    }
+
+    .compact-action-accent.blue {
+      background: #2563eb;
+    }
+
+    .compact-action-accent.red {
+      background: #e05252;
+    }
+
+    .compact-action-accent.green {
+      background: #22a06b;
+    }
+
+    .compact-action-accent.neutral {
+      background: #98a1b2;
+    }
+
+    .compact-action-icon {
+      height: 26px;
+      width: 26px;
+    }
+
+    .compact-action-icon .icon {
+      height: 15px;
+      width: 15px;
+    }
+
+    .compact-action-title {
+      color: #252a34;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 16px;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .compact-action-count {
+      align-items: center;
+      color: #10069f;
+      display: inline-flex;
+      font-size: 12px;
+      font-weight: 600;
+      justify-content: center;
+      line-height: 16px;
+      min-width: 18px;
+    }
+
+    .compact-action-view {
+      align-items: center;
+      color: #10069f;
+      display: inline-flex;
+      font-size: 11px;
+      font-weight: 600;
+      gap: 4px;
+      line-height: 16px;
+      white-space: nowrap;
+    }
+
+    .compact-action-view .icon {
+      height: 13px;
+      width: 13px;
+    }
+
+    .task-card {
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid #eef1f6;
+      border-radius: 12px !important;
+      box-shadow: 0 1px 2px rgba(25, 33, 61, 0.04);
+      color: #2f2f2f;
+      cursor: pointer;
+      display: grid !important;
+      font: inherit;
+      gap: 8px;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      min-height: 50px !important;
+      overflow: hidden;
+      padding: 8px 12px 8px 14px !important;
+      position: relative;
+      text-align: left;
+      transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+      width: 100%;
+    }
+
+    .task-card:hover {
+      border-color: rgba(16, 6, 159, 0.22);
+      box-shadow: 0 6px 14px rgba(25, 33, 61, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .task-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      border-radius: 12px 0 0 12px !important;
+    }
+
+    .task-card:focus-visible {
+      border-color: rgba(16, 6, 159, 0.42);
+      box-shadow: 0 0 0 3px rgba(16, 6, 159, 0.12);
+      outline: 0;
+    }
+
+    .task-card.is-selected {
+      border-color: rgba(16, 6, 159, 0.46);
+      box-shadow: 0 8px 20px rgba(25, 33, 61, 0.1);
+    }
+
+    .task-card-icon {
+      align-items: center;
+      border-radius: 6px;
+      display: inline-flex;
+      flex: 0 0 auto;
+      justify-content: center;
+      height: 26px;
+      width: 26px;
+    }
+
+    .task-card-icon .icon {
+      height: 15px;
+      width: 15px;
+    }
+
+    .task-card-icon.blue {
+      background: #eef4ff;
+      color: #1f4fb8;
+    }
+
+    .task-card-icon.red {
+      background: #fff0f0;
+      color: #9e2f2f;
+    }
+
+    .task-card-icon.green {
+      background: #eefbf5;
+      color: #166b49;
+    }
+
+    .task-card-icon.amber {
+      background: #fff8e7;
+      color: #8a5c12;
+    }
+
+    .task-card-icon.neutral {
+      background: #f2f4f8;
+      color: #536071;
+    }
+
+    .task-card-title-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .task-card-title {
+      color: #252a34;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 16px;
+      margin: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .task-card-count {
+      align-items: center;
+      background: #eef4ff;
+      color: #10069f;
+      border-radius: 999px;
+      display: inline-flex;
+      font-size: 11px;
+      font-weight: 600;
+      height: 20px;
+      justify-content: center;
+      min-width: 20px;
+      padding: 0 4px;
+    }
+
+    .task-card-action {
+      align-items: center;
+      color: #10069f;
+      display: inline-flex;
+      font-size: 11px;
+      font-weight: 600;
+      gap: 4px;
+      line-height: 16px;
+      white-space: nowrap;
+      margin-left: auto;
+    }
+
+    .task-card-action .arrow-icon {
+      height: 13px;
+      width: 13px;
+    }
+
+    .board-detail-panel {
+      background: #ffffff;
+      border: 1px solid #e3e8f0;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(25, 33, 61, 0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 0;
+      overflow: hidden;
+      padding: 14px;
+    }
+
+    .board-detail-panel header {
+      align-items: center;
+      border-bottom: 1px solid #edf0f6;
+      display: grid;
+      gap: 10px;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      padding-bottom: 12px;
+    }
+
+    .board-detail-icon {
+      align-items: center;
+      background: #f5f7fb;
+      border-radius: 8px;
+      color: #536071;
+      display: inline-flex;
+      height: 36px;
+      justify-content: center;
+      width: 36px;
+    }
+
+    .board-detail-icon.blue {
+      background: #eef4ff;
+      color: #1f4fb8;
+    }
+
+    .board-detail-icon.green {
+      background: #eefbf5;
+      color: #166b49;
+    }
+
+    .board-detail-icon.red {
+      background: #fff0f0;
+      color: #9e2f2f;
+    }
+
+    .board-detail-icon .icon {
+      height: 18px;
+      width: 18px;
+    }
+
+    .board-detail-panel header small,
+    .board-detail-panel p,
+    .board-detail-row small,
+    .board-detail-empty small {
+      color: #657084;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .board-detail-panel header strong,
+    .board-detail-empty strong {
+      color: #0b0b0b;
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.3;
+      margin-top: 2px;
+    }
+
+    .board-detail-panel header b {
+      align-items: center;
+      background: #10069f;
+      border-radius: 999px;
+      color: #ffffff;
+      display: inline-flex;
+      font-size: 12px;
+      font-weight: 600;
+      height: 28px;
+      justify-content: center;
+      min-width: 28px;
+      padding: 0 9px;
+    }
+
+    .board-detail-panel p {
+      margin: 0;
+    }
+
+    .board-detail-list {
+      display: grid;
+      gap: 8px;
+      min-height: 0;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .board-detail-row {
+      align-items: center;
+      background: #fbfcff;
+      border: 1px solid #edf0f6;
+      border-radius: 8px;
+      color: inherit;
+      display: grid;
+      gap: 8px;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      min-height: 54px;
+      padding: 9px 10px;
+      text-align: left;
+    }
+
+    .board-detail-row:hover,
+    .board-detail-row:focus-visible {
+      background: #f7f7ff;
+      border-color: rgba(16, 6, 159, 0.22);
+      outline: 0;
+    }
+
+    .board-detail-row strong,
+    .board-detail-row small {
+      display: block;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .board-detail-row strong {
+      color: #252a34;
+      font-size: 12.5px;
+      font-weight: 600;
+      line-height: 1.25;
+    }
+
+    .board-detail-row-dot {
+      border-radius: 999px;
+      height: 8px;
+      width: 8px;
+    }
+
+    .board-detail-row-dot.blue {
+      background: #2563eb;
+    }
+
+    .board-detail-row-dot.green {
+      background: #22a06b;
+    }
+
+    .board-detail-row-dot.red {
+      background: #e05252;
+    }
+
+    .board-detail-row-dot.neutral {
+      background: #98a1b2;
+    }
+
+    .board-detail-row-owner {
+      align-items: center;
+      background: #f2f4f8;
+      border: 1px solid #e3e7ef;
+      border-radius: 999px;
+      color: #667085;
+      display: inline-flex;
+      font-size: 10px;
+      font-weight: 600;
+      height: 24px;
+      justify-content: center;
+      min-width: 24px;
+      padding: 0 6px;
+    }
+
+    .board-detail-open {
+      align-items: center;
+      background: #10069f;
+      border: 1px solid #10069f;
+      border-radius: 8px;
+      color: #ffffff;
+      display: inline-flex;
+      font-size: 12.5px;
+      font-weight: 600;
+      gap: 8px;
+      height: 38px;
+      justify-content: center;
+      margin-top: auto;
+      padding: 0 14px;
+    }
+
+    .board-detail-open:hover,
+    .board-detail-open:focus-visible {
+      background: #1c16b8;
+      outline: 2px solid rgba(16, 6, 159, 0.18);
+      outline-offset: 2px;
+    }
+
+    .board-detail-open .icon {
+      height: 15px;
+      width: 15px;
+    }
+
+    .board-detail-empty {
+      align-content: center;
+      color: #657084;
+      display: grid;
+      gap: 8px;
+      height: 100%;
+      justify-items: center;
+      min-height: 220px;
+      text-align: center;
+    }
+
+    .board-detail-empty .icon {
+      color: #10069f;
+      height: 24px;
+      width: 24px;
     }
     app-pm-console-work-calendar {
       height: 100%;
@@ -597,33 +1212,181 @@ interface PortfolioWorkTargetGroup {
       .target-picker-menu {
         min-width: min(330px, calc(100vw - 48px));
       }
+
+      .board-view.has-detail-panel {
+        grid-template-columns: minmax(0, 1fr);
+        overflow: auto;
+      }
+
+      .compact-action-board {
+        grid-template-columns: minmax(0, 1fr);
+        overflow: auto;
+      }
+
+      .board-detail-panel {
+        min-height: 320px;
+      }
+    }
+
+    .compact-column-icon {
+      background: transparent !important;
+      color: #657084 !important;
+      height: 20px;
+      width: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .compact-column-icon .icon {
+      height: 16px !important;
+      width: 16px !important;
+    }
+
+    .compact-action-card {
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid #eef1f6;
+      border-radius: 12px !important;
+      box-shadow: 0 1px 2px rgba(25, 33, 61, 0.04);
+      color: #2f2f2f;
+      cursor: pointer;
+      display: grid;
+      font: inherit;
+      gap: 8px;
+      grid-template-columns: auto minmax(0, 1fr) auto auto !important;
+      min-height: 64px !important;
+      overflow: hidden;
+      padding: 14px 12px 14px 12px !important;
+      position: relative;
+      text-align: left;
+      transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+      width: 100%;
+    }
+
+    .compact-action-card::before {
+      border-radius: 12px 0 0 12px !important;
+    }
+
+    .compact-action-title,
+    .task-card-title {
+      font-size: 13px !important;
+      font-weight: 300 !important;
+    }
+
+    .compact-action-count {
+      align-items: center;
+      background: #eef4ff !important;
+      color: #2f2f2f !important;
+      border-radius: 50% !important;
+      display: inline-flex;
+      font-size: 12px;
+      font-weight: 300 !important;
+      height: 24px !important;
+      justify-content: center;
+      min-width: 24px !important;
+      padding: 0 !important;
+    }
+
+    .compact-action-view,
+    .task-card-action {
+      font-weight: 300 !important;
+    }
+
+    .compact-action-view span,
+    .task-card-action span {
+      font-weight: 300 !important;
+    }
+
+    /* Type-specific colors and opacities (25% stroke, 10% icon container, 100% icon) */
+    [data-card-type="Governance Committees"]::before,
+    [data-card-type="Governance Committees"] .compact-action-accent {
+      background: rgba(52, 84, 196, 0.25) !important;
+    }
+    [data-card-type="Governance Committees"] .compact-action-icon,
+    [data-card-type="Governance Committees"] .task-card-icon {
+      background: rgba(52, 84, 196, 0.1) !important;
+      color: #3454c4 !important;
+    }
+
+    [data-card-type="Change requests"]::before,
+    [data-card-type="Change requests"] .compact-action-accent,
+    [data-card-type="Change Requests"]::before,
+    [data-card-type="Change Requests"] .compact-action-accent {
+      background: rgba(196, 52, 114, 0.25) !important;
+    }
+    [data-card-type="Change requests"] .compact-action-icon,
+    [data-card-type="Change requests"] .task-card-icon,
+    [data-card-type="Change Requests"] .compact-action-icon,
+    [data-card-type="Change Requests"] .task-card-icon {
+      background: rgba(196, 52, 114, 0.1) !important;
+      color: #c43472 !important;
+    }
+
+    [data-card-type="Status reports"]::before,
+    [data-card-type="Status reports"] .compact-action-accent,
+    [data-card-type="Status Reports"]::before,
+    [data-card-type="Status Reports"] .compact-action-accent {
+      background: rgba(111, 32, 149, 0.25) !important;
+    }
+    [data-card-type="Status reports"] .compact-action-icon,
+    [data-card-type="Status reports"] .task-card-icon,
+    [data-card-type="Status Reports"] .compact-action-icon,
+    [data-card-type="Status Reports"] .task-card-icon {
+      background: rgba(111, 32, 149, 0.1) !important;
+      color: #6f2095 !important;
+    }
+
+    [data-card-type="Plans"]::before,
+    [data-card-type="Plans"] .compact-action-accent,
+    [data-card-type="Project Plans"]::before,
+    [data-card-type="Project Plans"] .compact-action-accent {
+      background: rgba(121, 186, 221, 0.25) !important;
+    }
+    [data-card-type="Plans"] .compact-action-icon,
+    [data-card-type="Plans"] .task-card-icon,
+    [data-card-type="Project Plans"] .compact-action-icon,
+    [data-card-type="Project Plans"] .task-card-icon {
+      background: rgba(121, 186, 221, 0.1) !important;
+      color: #79badd !important;
+    }
+
+    [data-card-type="Benefits"]::before,
+    [data-card-type="Benefits"] .compact-action-accent {
+      background: rgba(22, 107, 73, 0.25) !important;
+    }
+    [data-card-type="Benefits"] .compact-action-icon,
+    [data-card-type="Benefits"] .task-card-icon {
+      background: rgba(22, 107, 73, 0.1) !important;
+      color: #166b49 !important;
     }
   `],
 })
 export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDestroy {
   @Input() workspaceTitle = 'Portfolio Name';
   @Input() searchPlaceholder = 'Search actions...';
+  @Input() targetPickerAriaLabel = 'Portfolio work target selector';
+  @Input() targetAllLabel = 'All portfolios';
   @Input() actionItems: readonly PortfolioActionItem[] = portfolioActionItems;
   @Input() boardFilters: readonly PortfolioBoardFilter[] = portfolioBoardFilters;
   @Input() showTargetPicker = true;
   @Input() openItemsInDrawer = true;
   @Input() showBoardDetailPanel = false;
+  @Input() boardPresentation: PortfolioActionsBoardPresentation = 'kanban';
   @Input() todayKey = '2026-05-12';
+  @Output() readonly actionSelected = new EventEmitter<PortfolioActionItem>();
 
   activeView: 'calendar' | 'board' = 'calendar';
   calendarMonth = new Date(2026, 4, 1); // May 2026
   selectedFilter = 'all';
   selectedTargetId = 'all';
+  selectedBoardItemId = '';
   searchQuery = '';
   targetSearchQuery = '';
 
-  readonly allTargetOption: PortfolioWorkTargetOption = {
-    id: 'all',
-    label: 'All programs and projects',
-    type: 'all',
-  };
   readonly programs = portfolioProgramRows;
   readonly standaloneProjects = standaloneProjects;
+  readonly portfolios = portfolioRows;
   readonly collapsedTargetGroupIds = new Set<PortfolioWorkTargetGroup['id']>();
 
   private iconsHydrated = false;
@@ -632,7 +1395,7 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
     private readonly changeDetector: ChangeDetectorRef,
     private readonly actionDrawer: PortfolioManagerActionDrawerService,
     private readonly iconsService: PmConsoleIconService
-  ) {}
+  ) { }
 
   ngAfterViewChecked(): void {
     if (this.iconsHydrated) return;
@@ -641,7 +1404,9 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
   }
 
   ngOnDestroy(): void {
-    this.actionDrawer.close();
+    if (this.openItemsInDrawer) {
+      this.actionDrawer.close();
+    }
   }
 
   iconName(name: string): string {
@@ -706,7 +1471,8 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
     alert('Create Action flow coming soon');
   }
 
-  handleTaskAction(item: PortfolioActionItem): void {
+  handleTaskAction(item: PortfolioActionItem, event?: Event): void {
+    event?.stopPropagation();
     this.openActionDrawer(item);
   }
 
@@ -724,6 +1490,7 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
   }
 
   openActionDrawer(item: PortfolioActionItem): void {
+    this.actionSelected.emit(item);
     if (!this.openItemsInDrawer) return;
     this.actionDrawer.open(item);
     this.iconsHydrated = false;
@@ -731,6 +1498,14 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
   }
 
   // Getters
+  get allTargetOption(): PortfolioWorkTargetOption {
+    return {
+      id: 'all',
+      label: this.targetAllLabel,
+      type: 'all',
+    };
+  }
+
   get selectedFilterOption(): PortfolioBoardFilter {
     return this.boardFilters.find((f) => f.id === this.selectedFilter) || this.boardFilters[0];
   }
@@ -749,6 +1524,16 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
       .map((projectName) => this.createProjectTarget(projectName, 'Action workspace'));
 
     return [
+      {
+        id: 'portfolios',
+        label: 'Portfolios',
+        options: this.portfolios.map((portfolio) => ({
+          id: `portfolio::${portfolio.name}`,
+          label: portfolio.name,
+          type: 'portfolio',
+          projectNames: (portfolio.programs || []).flatMap((prog) => (prog.projects || []).map((proj) => proj.name)),
+        })),
+      },
       {
         id: 'programs',
         label: 'Programs',
@@ -803,15 +1588,18 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
       }
       // Search query
       if (this.searchQuery) {
-        const matchesLabel = item.label.toLowerCase().includes(this.searchQuery);
-        const matchesProject = item.project.toLowerCase().includes(this.searchQuery);
-        const matchesType = item.type.toLowerCase().includes(this.searchQuery);
-        if (!matchesLabel && !matchesProject && !matchesType) {
+        if (!this.matchesSearch(item, this.searchQuery)) {
           return false;
         }
       }
       return true;
     });
+  }
+
+  get activeBoardItem(): PortfolioActionItem | null {
+    const items = this.visibleBoardColumns.flatMap((column) => column.items);
+    if (!items.length) return null;
+    return items.find((item) => item.id === this.selectedBoardItemId) || items[0];
   }
 
   // Calendar getters and cells logic
@@ -831,6 +1619,12 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
         targetType: item.targetType,
         kind: item.kind
       }));
+  }
+
+  get visibleMonthItemCount(): number {
+    return this.filteredItems
+      .filter((item) => this.sameMonth(this.parseDate(item.date), this.calendarMonth))
+      .reduce((total, item) => total + this.actionItemTotal(item), 0);
   }
 
   get calendarCells(): PmConsoleCalendarCell[] {
@@ -866,25 +1660,21 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
 
   countCalendarFilter(filter: PortfolioBoardFilter): number {
     const items = this.filteredItems.filter((item) => this.sameMonth(this.parseDate(item.date), this.calendarMonth));
-    if (filter.id === 'all') return items.length;
-    return items.filter((item) => item.kind === filter.id).length;
+    if (filter.id === 'all') return this.sumActionItems(items);
+    return this.sumActionItems(items.filter((item) => item.kind === filter.id));
   }
 
   countForActionFilter(filter: PortfolioBoardFilter): number {
     const targetItems = this.actionItems.filter((item) => this.matchesSelectedTarget(item));
     const searchedItems = this.searchQuery
-      ? targetItems.filter((item) => {
-          const matchesLabel = item.label.toLowerCase().includes(this.searchQuery);
-          const matchesProject = item.project.toLowerCase().includes(this.searchQuery);
-          const matchesType = item.type.toLowerCase().includes(this.searchQuery);
-          return matchesLabel || matchesProject || matchesType;
-        })
+      ? targetItems.filter((item) => this.matchesSearch(item, this.searchQuery))
       : targetItems;
-    if (filter.id === 'all') return searchedItems.length;
-    return searchedItems.filter((item) => item.kind === filter.id).length;
+    if (filter.id === 'all') return this.sumActionItems(searchedItems);
+    return this.sumActionItems(searchedItems.filter((item) => item.kind === filter.id));
   }
 
   targetIconName(target: PortfolioWorkTargetOption): string {
+    if (target.type === 'portfolio') return 'briefcase';
     if (target.type === 'program') return 'network';
     if (target.type === 'project') return 'folder';
     return 'grid';
@@ -915,6 +1705,96 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
         items: items.filter((item) => item.column === 'Upcoming')
       }
     ];
+  }
+
+  selectBoardItem(item: PortfolioActionItem): void {
+    if (!this.showBoardDetailPanel) {
+      this.openActionDrawer(item);
+      return;
+    }
+    this.selectedBoardItemId = item.id;
+    this.iconsHydrated = false;
+    this.changeDetector.markForCheck();
+  }
+
+  boardColumnCount(items: readonly PortfolioActionItem[]): number {
+    return this.sumActionItems(items);
+  }
+
+  compactColumnItems(column: PortfolioBoardColumn): PortfolioActionItem[] {
+    const grouped: Record<string, PortfolioActionItem[]> = {};
+    for (const item of column.items) {
+      const typeKey = item.type || 'Other';
+      if (!grouped[typeKey]) {
+        grouped[typeKey] = [];
+      }
+      grouped[typeKey].push(item);
+    }
+
+    const orderByColumn: Record<PortfolioBoardColumn['column'], readonly string[]> = {
+      Overdue: ['Status Reports', 'Project Plans', 'Change Requests', 'Benefits', 'Governance Committees'],
+      'This week': ['Project Plans', 'Governance Committees', 'Status Reports', 'Change Requests', 'Benefits'],
+      Upcoming: ['Change Requests', 'Benefits', 'Status Reports', 'Project Plans', 'Governance Committees'],
+    };
+    const order = orderByColumn[column.column];
+
+    const result: PortfolioActionItem[] = [];
+    for (const [typeKey, items] of Object.entries(grouped)) {
+      const firstItem = items[0];
+      result.push({
+        id: `pmo-group-${column.column}-${firstItem.kind}`,
+        date: firstItem.date,
+        label: typeKey,
+        project: firstItem.project,
+        targetType: 'portfolio',
+        type: typeKey,
+        kind: firstItem.kind,
+        tone: firstItem.tone,
+        owner: 'PMO',
+        meta: `Showing all ${items.length} ${typeKey.toLowerCase()}`,
+        cta: 'View All',
+        column: column.column,
+        detailItems: items,
+        detailSummary: `Showing all ${items.length} ${typeKey.toLowerCase()}`,
+      });
+    }
+
+    return result.sort((first, second) => {
+      const firstIndex = order.indexOf(first.type);
+      const secondIndex = order.indexOf(second.type);
+      return (firstIndex === -1 ? order.length : firstIndex) - (secondIndex === -1 ? order.length : secondIndex);
+    });
+  }
+
+  actionItemTotal(item: PortfolioActionItem): number {
+    return item.detailItems?.length || 1;
+  }
+
+  actionItemAriaLabel(item: PortfolioActionItem): string {
+    const total = this.actionItemTotal(item);
+    const suffix = total === 1 ? '1 item' : `${total} items`;
+    return `${item.label}, ${item.column}, ${suffix}. Select action list.`;
+  }
+
+  detailItemsFor(item: PortfolioActionItem): readonly PortfolioActionItem[] {
+    return item.detailItems?.length ? item.detailItems : [item];
+  }
+
+  boardDetailIcon(item: PortfolioActionItem): string {
+    if (item.kind === 'plan') return 'file-text';
+    if (item.kind === 'report') return 'chart-column';
+    if (item.kind === 'benefit') return 'circle-check';
+    if (item.kind === 'change') return 'git-pull-request';
+    if (item.kind === 'governance') return 'landmark';
+    return this.boardColumnIcon(item.column);
+  }
+
+  boardDetailSummary(item: PortfolioActionItem): string {
+    if (item.detailSummary) return item.detailSummary;
+    const total = this.actionItemTotal(item);
+    return total === 1
+      ? `${item.project} has one action ready for review.`
+      : `${item.project} has ${total} actions ready for review.`;
   }
 
   boardColumnIcon(column: string): string {
@@ -975,26 +1855,28 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
   }
 
   private matchesSelectedTarget(item: PortfolioActionItem): boolean {
+    if (!this.showTargetPicker) return true;
     const target = this.selectedTargetOption;
     if (target.type === 'all') return true;
     if (target.type === 'project') return item.project === target.label;
+    if (target.type === 'portfolio') {
+      return item.project === target.label || Boolean(target.projectNames?.includes(item.project));
+    }
     return item.project === target.label || Boolean(target.projectNames?.includes(item.project));
   }
 
-  actionTypeLabel(item: PortfolioActionItem): string {
-    const kind = item.kind;
-    if (kind === 'plans') return 'Plans';
-    if (kind === 'governance') return 'Governance & Committees';
-    if (kind === 'status-reports') return 'Status Reports';
-    if (kind === 'change-requests') return 'Change Requests';
-    if (kind === 'benefits') return 'Benefits';
-    return kind;
+  private matchesSearch(item: PortfolioActionItem, query: string): boolean {
+    const values = [
+      item.label,
+      item.project,
+      item.type,
+      item.meta,
+      ...this.detailItemsFor(item).flatMap((detail) => [detail.label, detail.project, detail.type, detail.meta]),
+    ];
+    return values.some((value) => value.toLowerCase().includes(query));
   }
 
-  formatKanbanDate(item: PortfolioActionItem): string {
-    const parsed = new Date(`${item.date}T00:00:00`);
-    if (Number.isNaN(parsed.getTime())) return item.date;
-    const dateStr = parsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    return `${dateStr} (${item.meta})`;
+  private sumActionItems(items: readonly PortfolioActionItem[]): number {
+    return items.reduce((total, item) => total + this.actionItemTotal(item), 0);
   }
 }

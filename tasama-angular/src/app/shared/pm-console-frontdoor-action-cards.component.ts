@@ -7,6 +7,7 @@ export interface PmConsoleFrontdoorAction {
   description: string;
   icon: string;
   badgeLabel?: string;
+  ctaLabel?: string;
   disabled?: boolean;
   decor?: 'waves' | 'loops' | 'hex' | 'plus' | 'burst';
 }
@@ -318,7 +319,7 @@ export type PmConsoleFrontdoorActionCtaMode = 'label' | 'arrow';
           >
             @if (action.badgeLabel) {
               <span class="frontdoor-action-badge">{{ action.badgeLabel }}</span>
-            } @else if (ctaMode === 'arrow') {
+            } @else if (ctaMode === 'arrow' && !action.disabled) {
               <span pmConsoleIcon="arrow-right" aria-hidden="true"></span>
             } @else if (action.ctaLabel) {
               <span>{{ action.ctaLabel }}</span>

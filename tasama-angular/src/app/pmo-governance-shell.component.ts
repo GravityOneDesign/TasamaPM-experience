@@ -15,8 +15,9 @@ import { PmoDecisionIntelligenceComponent } from './pmo-decision-intelligence.co
 import { PmoFrontdoorComponent } from './pmo-frontdoor.component';
 import { PmoReportReviewDrawerComponent } from './pmo-report-review-drawer.component';
 import { PmoReportReviewProgressComponent } from './pmo-report-review-progress.component';
-import type { PmoReportReviewCard } from './pmo-report-review-progress.data';
+import { addScheduledReport, type PmoReportReviewCard } from './pmo-report-review-progress.data';
 import { PmoGovernanceFrameworkComponent } from './pmo-governance-framework.component';
+import { PmoReportBuilderComponent } from './pmo-report-builder.component';
 import { PmConsoleAgentDockComponent } from './shared/pm-console-agent-dock.component';
 import { PmConsoleSideNavComponent, type PmConsoleSideNavItem } from './shared/pm-console-side-nav.component';
 import { PmConsoleTopBarComponent } from './shared/pm-console-top-bar.component';
@@ -32,6 +33,7 @@ import { PmConsoleTopBarComponent } from './shared/pm-console-top-bar.component'
     PmoReportReviewDrawerComponent,
     PmoReportReviewProgressComponent,
     PmoGovernanceFrameworkComponent,
+    PmoReportBuilderComponent,
     PmConsoleAgentDockComponent,
     PmConsoleNotificationsComponent,
     PmConsoleSideNavComponent,
@@ -83,10 +85,13 @@ import { PmConsoleTopBarComponent } from './shared/pm-console-top-bar.component'
             <app-pmo-governance-framework (back)="goHome()" />
           </div>
         </div>
+      } @else if (activeSurface === 'report-builder') {
+        <app-pmo-report-builder (backSelected)="openReportReview()" (saveReport)="onReportSaved($event)" />
       } @else {
         <app-pmo-report-review-progress
           (backSelected)="goHome()"
           (reportDrawerRequested)="openReportDrawer($event)"
+          (reportBuilderRequested)="openReportBuilder()"
         />
       }
       <app-pm-console-notifications [open]="notificationPanelOpen" (closePanel)="closeNotifications()" />
@@ -147,7 +152,7 @@ export class PmoGovernanceShellComponent implements AfterViewChecked {
     { id: 'sign-out', icon: 'log-out', label: 'Sign out' },
   ];
 
-  activeSurface: 'frontdoor' | 'governance' | 'report-review' | 'decision-intelligence' | 'framework' = 'frontdoor';
+  activeSurface: 'frontdoor' | 'governance' | 'report-review' | 'decision-intelligence' | 'framework' | 'report-builder' = 'frontdoor';
   forums: readonly PmoGovernanceForumRow[] = pmoGovernanceForumRows;
   workspaceTarget: PmoGovernanceWorkspaceTarget = pmoGovernanceDefaultWorkspaceTarget;
   notificationPanelOpen = false;
@@ -212,6 +217,21 @@ export class PmoGovernanceShellComponent implements AfterViewChecked {
       this.notificationPanelOpen = false;
       this.markShellChanged();
     }
+  }
+
+  openReportBuilder(): void {
+    if (this.activeSurface !== 'report-builder') {
+      this.activeSurface = 'report-builder';
+      this.selectedForum = null;
+      this.selectedReport = null;
+      this.notificationPanelOpen = false;
+      this.markShellChanged();
+    }
+  }
+
+  onReportSaved(report: { title: string; recursOn: string }): void {
+    addScheduledReport(report.title, report.recursOn);
+    this.openReportReview();
   }
 
   openDecisionIntelligence(): void {
