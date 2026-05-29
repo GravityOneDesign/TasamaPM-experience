@@ -110,7 +110,22 @@ import { PmConsoleFieldComponent } from './shared/pm-console-field.component';
         </nav>
 
         <div class="pmo-report-builder-sidebar-bg" aria-hidden="true">
-          <img src="assets/workspace-line-art.svg" alt="" />
+          <svg class="sidebar-pattern" width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g stroke="white" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="1">
+              <path d="M100 100 L126 115 L126 145 L100 160 L74 145 L74 115 Z"/>
+              <path d="M100 130 L100 100 M100 130 L126 145 M100 130 L74 145"/>
+              <path d="M152 70 L178 85 L178 115 L152 130 L126 115 L126 85 Z"/>
+              <path d="M152 100 L152 70 M152 100 L178 115 M152 100 L126 115"/>
+              <path d="M48 70 L74 85 L74 115 L48 130 L22 115 L22 85 Z"/>
+              <path d="M48 100 L48 70 M48 100 L74 115 M48 100 L22 115"/>
+              <path d="M152 130 L178 145 L178 175 L152 190 L126 175 L126 145 Z"/>
+              <path d="M152 160 L152 130 M152 160 L178 175 M152 160 L126 175"/>
+              <path d="M48 130 L74 145 L74 175 L48 190 L22 175 L22 145 Z"/>
+              <path d="M48 160 L48 130 M48 160 L74 175 M48 160 L22 175"/>
+              <path d="M100 40 L126 55 L126 85 L100 100 L74 85 L74 55 Z"/>
+              <path d="M100 70 L100 40 M100 70 L126 85 M100 70 L74 85"/>
+            </g>
+          </svg>
         </div>
       </div>
 
@@ -120,7 +135,11 @@ import { PmConsoleFieldComponent } from './shared/pm-console-field.component';
             <header class="pmo-report-step-header">
               <div class="pmo-report-step-title-group">
                 <div class="pmo-report-step-icon">
-                  <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="6" y="20" width="12" height="2.5" rx="1" fill="#86efac"/>
+                    <path d="M15.5 5.5L18.5 8.5L9.5 17.5H6.5V14.5L15.5 5.5Z" fill="#10069f"/>
+                    <path d="M16.5 4.5L15.5 5.5L18.5 8.5L19.5 7.5C20.0523 6.94772 20.0523 6.05228 19.5 5.5L18.5 4.5C17.9477 3.94772 17.0523 3.94772 16.5 4.5Z" fill="#86efac"/>
+                  </svg>
                 </div>
                 <div class="pmo-report-step-title">
                   <h2>Report Profile</h2>
@@ -141,42 +160,44 @@ import { PmConsoleFieldComponent } from './shared/pm-console-field.component';
 
             <div class="pmo-report-step-body">
               <div class="pmo-report-form">
-                <div class="pmo-report-form-group">
-                  <label for="report-title">
-                    Report Title<span class="required" aria-hidden="true">*</span>
-                  </label>
-                  <input id="report-title" class="pmo-report-input" [class.has-error]="showTitleError()" type="text" placeholder="Enter Title" [value]="reportTitle()" (input)="onTitleInput($event)" />
-                  @if (showTitleError()) {
-                    <div class="pmo-report-error-msg">Please fill out the Report Title</div>
-                  }
+                <div class="pmo-report-form-row">
+                  <div class="pmo-report-form-group">
+                    <label for="report-title">
+                      Report Title<span class="required" aria-hidden="true">*</span>
+                    </label>
+                    <input id="report-title" class="pmo-report-input" [class.has-error]="showTitleError()" type="text" placeholder="Enter Title" [value]="reportTitle()" (input)="onTitleInput($event)" />
+                    @if (showTitleError()) {
+                      <div class="pmo-report-error-msg">Please fill out the Report Title</div>
+                    }
+                  </div>
+
+                  <div class="pmo-report-form-group">
+                    <label for="report-tags">Tags</label>
+                    <div class="pmo-report-select-wrapper">
+                      <select id="report-tags" class="pmo-report-select">
+                        <option value="" disabled selected>Select</option>
+                      </select>
+                      <span pmConsoleIcon="chevron-down" aria-hidden="true" class="select-icon"></span>
+                    </div>
+                    
+                    <div class="pmo-report-tags-list">
+                      <span class="pmo-report-tag">
+                        high priority <button type="button" aria-label="Remove tag"><span pmConsoleIcon="x" aria-hidden="true"></span></button>
+                      </span>
+                      <span class="pmo-report-tag">
+                        watchlist <button type="button" aria-label="Remove tag"><span pmConsoleIcon="x" aria-hidden="true"></span></button>
+                      </span>
+                      <span class="pmo-report-tag">
+                        critical path <button type="button" aria-label="Remove tag"><span pmConsoleIcon="x" aria-hidden="true"></span></button>
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
                 <div class="pmo-report-form-group">
                   <label for="report-description">Description</label>
                   <textarea id="report-description" class="pmo-report-textarea" placeholder="Enter Portfolio Dossier Description"></textarea>
                   <span class="char-count">3000 characters remaining</span>
-                </div>
-
-                <div class="pmo-report-form-group">
-                  <label for="report-tags">Tags</label>
-                  <div class="pmo-report-select-wrapper">
-                    <select id="report-tags" class="pmo-report-select">
-                      <option value="" disabled selected>Select</option>
-                    </select>
-                    <span pmConsoleIcon="chevron-down" aria-hidden="true" class="select-icon"></span>
-                  </div>
-                  
-                  <div class="pmo-report-tags-list">
-                    <span class="pmo-report-tag">
-                      high priority <button type="button" aria-label="Remove tag"><span pmConsoleIcon="x" aria-hidden="true"></span></button>
-                    </span>
-                    <span class="pmo-report-tag">
-                      watchlist <button type="button" aria-label="Remove tag"><span pmConsoleIcon="x" aria-hidden="true"></span></button>
-                    </span>
-                    <span class="pmo-report-tag">
-                      critical path <button type="button" aria-label="Remove tag"><span pmConsoleIcon="x" aria-hidden="true"></span></button>
-                    </span>
-                  </div>
                 </div>
               </div>
             </div>
@@ -186,7 +207,12 @@ import { PmConsoleFieldComponent } from './shared/pm-console-field.component';
             <header class="pmo-report-step-header">
               <div class="pmo-report-step-title-group">
                 <div class="pmo-report-step-icon step2-icon">
-                  <span pmConsoleIcon="layers" aria-hidden="true"></span>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="7" y="12" width="12" height="6" rx="3" transform="rotate(-45 7 12)" fill="#4f46e5"/>
+                    <rect x="8" y="14" width="12" height="6" rx="3" fill="#10069f"/>
+                    <rect x="4" y="4" width="6" height="16" rx="3" fill="#86efac"/>
+                    <rect x="5.5" y="16" width="3" height="1.5" rx="0.75" fill="#10069f"/>
+                  </svg>
                 </div>
                 <div class="pmo-report-step-title">
                   <h2>Add templates</h2>
@@ -253,7 +279,14 @@ import { PmConsoleFieldComponent } from './shared/pm-console-field.component';
             <header class="pmo-report-step-header">
               <div class="pmo-report-step-title-group">
                 <div class="pmo-report-step-icon step3-icon">
-                  <span pmConsoleIcon="briefcase" aria-hidden="true"></span>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 7V5C9 4.44772 9.44772 4 10 4H14C14.5523 4 15 4.44772 15 5V7" stroke="#10069f" stroke-width="2.5" stroke-linecap="round"/>
+                    <rect x="3" y="8" width="18" height="13" rx="4" fill="#86efac"/>
+                    <path d="M3 12C3 9.79086 4.79086 8 7 8H17C19.2091 8 21 9.79086 21 12V12.5L12 14.5L3 12.5V12Z" fill="#10069f"/>
+                    <path d="M3 12.5L12 14.5L21 12.5" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect x="7.5" y="13.5" width="2" height="3" rx="1" fill="#ffffff"/>
+                    <rect x="14.5" y="13.5" width="2" height="3" rx="1" fill="#ffffff"/>
+                  </svg>
                 </div>
                 <div class="pmo-report-step-title">
                   <h2>Select reporting scope</h2>
@@ -369,7 +402,13 @@ import { PmConsoleFieldComponent } from './shared/pm-console-field.component';
             <header class="pmo-report-step-header">
               <div class="pmo-report-step-title-group">
                 <div class="pmo-report-step-icon step4-icon">
-                  <span pmConsoleIcon="calendar" aria-hidden="true"></span>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="4" y="6" width="16" height="15" rx="4" fill="#10069f"/>
+                    <path d="M4 10C4 7.79086 5.79086 6 8 6H16C18.2091 6 20 7.79086 20 10V11H4V10Z" fill="#86efac"/>
+                    <rect x="7" y="3" width="2" height="4" rx="1" fill="#86efac"/>
+                    <rect x="15" y="3" width="2" height="4" rx="1" fill="#86efac"/>
+                    <path d="M15.5 13.5V18.5M13 16H18" stroke="#86efac" stroke-width="2.5" stroke-linecap="round"/>
+                  </svg>
                 </div>
                 <div class="pmo-report-step-title">
                   <h2>Download or Schedule</h2>
@@ -462,6 +501,20 @@ import { PmConsoleFieldComponent } from './shared/pm-console-field.component';
           </section>
         }
       </div>
+
+      @if (showSuccessModal()) {
+        <div class="pmo-report-success-overlay">
+          <div class="pmo-report-success-modal">
+            <div class="success-icon-wrapper">
+              <span pmConsoleIcon="check" aria-hidden="true" class="success-icon"></span>
+            </div>
+            <h3>Report Successfully Scheduled</h3>
+            <p>{{ formattedRecurringMessage() }}</p>
+            <button class="success-done-btn" type="button" (click)="completeReportSave()">Done</button>
+            <div class="success-redirect-text">Redirecting in {{ countdown() }}s...</div>
+          </div>
+        </div>
+      }
     </main>
   `,
   styles: [
@@ -473,18 +526,18 @@ import { PmConsoleFieldComponent } from './shared/pm-console-field.component';
       .pmo-report-builder-canvas {
         background: #f1f5f9;
         display: grid;
-        grid-template-columns: 280px minmax(0, 1fr);
+        grid-template-columns: 300px minmax(0, 1fr);
         height: 100%;
         min-height: 0;
         min-width: 0;
         overflow: hidden;
         padding: 16px 24px 24px;
-        gap: 24px;
+        gap: 16px;
       }
 
       .pmo-report-builder-sidebar {
-        background: #ffffff;
-        border: 1px solid #e4e7ef;
+        background: #efeef9;
+        border: 4px solid #ffffff;
         border-radius: 16px;
         display: flex;
         flex-direction: column;
@@ -616,20 +669,20 @@ import { PmConsoleFieldComponent } from './shared/pm-console-field.component';
       }
 
       .pmo-report-builder-sidebar-bg {
+        position: absolute;
         bottom: 0;
         left: 0;
-        opacity: 0.5;
-        pointer-events: none;
-        position: absolute;
         right: 0;
+        top: 0;
+        pointer-events: none;
         z-index: 1;
+        overflow: hidden;
       }
       
-      .pmo-report-builder-sidebar-bg img {
-        width: 100%;
-        height: auto;
-        transform: translateY(20%) scale(1.5);
-        transform-origin: bottom left;
+      .sidebar-pattern {
+        position: absolute;
+        bottom: -20px;
+        left: -20px;
       }
 
       .pmo-report-builder-content {
@@ -760,7 +813,14 @@ import { PmConsoleFieldComponent } from './shared/pm-console-field.component';
         display: flex;
         flex-direction: column;
         gap: 24px;
-        max-width: 800px;
+        max-width: 100%;
+      }
+
+      .pmo-report-form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        align-items: start;
       }
 
       .pmo-report-form-group {
@@ -1490,6 +1550,87 @@ import { PmConsoleFieldComponent } from './shared/pm-console-field.component';
         border-radius: 8px;
         border: 1px dashed #d1d5db;
       }
+
+      .pmo-report-success-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        backdrop-filter: blur(2px);
+      }
+
+      .pmo-report-success-modal {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px 32px;
+        width: 100%;
+        max-width: 420px;
+        text-align: center;
+      }
+
+      .success-icon-wrapper {
+        background: #dcfce7;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 48px;
+        width: 48px;
+        margin-bottom: 24px;
+        border: 1px solid #bbf7d0;
+      }
+
+      .success-icon-wrapper .icon {
+        color: #22c55e;
+        height: 24px;
+        width: 24px;
+      }
+
+      .pmo-report-success-modal h3 {
+        color: #0b0b0b;
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 8px 0;
+      }
+
+      .pmo-report-success-modal p {
+        color: #6b7280;
+        font-size: 14px;
+        margin: 0 0 24px 0;
+      }
+
+      .success-done-btn {
+        background: #10069f;
+        border: none;
+        border-radius: 24px;
+        color: #ffffff;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        height: 44px;
+        width: 100%;
+        margin-bottom: 16px;
+        transition: background 0.2s ease;
+      }
+
+      .success-done-btn:hover {
+        background: #0d057a;
+      }
+
+      .success-redirect-text {
+        color: #9ca3af;
+        font-size: 13px;
+      }
     `
   ]
 })
@@ -1502,6 +1643,9 @@ export class PmoReportBuilderComponent {
   showRecurringDateError = signal(false);
 
   currentStep = signal(1);
+  showSuccessModal = signal(false);
+  countdown = signal(5);
+  private redirectInterval: any;
 
   readonly templates = signal<ReportTemplate[]>([
     { id: '1', name: 'Portfolio Summary Report', selected: true },
@@ -1740,7 +1884,7 @@ export class PmoReportBuilderComponent {
   toggleProgramSelection(portfolioId: string, programId: string) {
     this.scopeData.update(data => data.map(p => {
       if (p.id !== portfolioId) return p;
-      
+
       const newPrograms = p.programs.map(pr => {
         if (pr.id !== programId) return pr;
         const newSelected = !pr.selected;
@@ -1752,7 +1896,7 @@ export class PmoReportBuilderComponent {
       });
 
       const allProgramsSelected = newPrograms.length > 0 && newPrograms.every(pr => pr.selected);
-      
+
       return {
         ...p,
         selected: allProgramsSelected,
@@ -1793,9 +1937,40 @@ export class PmoReportBuilderComponent {
   }
 
   readonly frequencies = ['Once', 'Daily', 'Weekly', 'Bi-weekly', 'Monthly', 'Quarterly'];
-  
+
   selectedFrequency = signal<string>('Weekly');
   selectedRecurringDate = signal<string>('');
+
+  formattedRecurringMessage = computed(() => {
+    const freq = this.selectedFrequency();
+    const dateStr = this.selectedRecurringDate();
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+
+    // Format date as "D MMMM YYYY", e.g. "4 June 2026"
+    const formattedDate = date.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+
+    const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+
+    if (freq === 'Weekly') {
+      return `Sends every ${dayName} starting ${formattedDate}.`;
+    } else if (freq === 'Daily') {
+      return `Sends daily starting ${formattedDate}.`;
+    } else if (freq === 'Once') {
+      return `Sends once on ${formattedDate}.`;
+    } else if (freq === 'Bi-weekly') {
+      return `Sends every two weeks on ${dayName} starting ${formattedDate}.`;
+    } else if (freq === 'Monthly') {
+      return `Sends monthly starting ${formattedDate}.`;
+    } else if (freq === 'Quarterly') {
+      return `Sends quarterly starting ${formattedDate}.`;
+    }
+    return `Sends starting ${formattedDate}.`;
+  });
 
   setFrequency(freq: string) {
     this.selectedFrequency.set(freq);
@@ -1813,17 +1988,17 @@ export class PmoReportBuilderComponent {
 
   saveAndProceed() {
     let hasError = false;
-    
+
     if (!this.reportTitle().trim()) {
       this.showTitleError.set(true);
       hasError = true;
     }
-    
+
     if (!this.selectedRecurringDate().trim()) {
       this.showRecurringDateError.set(true);
       hasError = true;
     }
-    
+
     if (hasError) {
       if (!this.reportTitle().trim()) {
         this.currentStep.set(1);
@@ -1831,6 +2006,21 @@ export class PmoReportBuilderComponent {
       return;
     }
 
+    this.showSuccessModal.set(true);
+    this.countdown.set(5);
+    this.redirectInterval = setInterval(() => {
+      this.countdown.update(c => c - 1);
+      if (this.countdown() <= 0) {
+        this.completeReportSave();
+      }
+    }, 1000);
+  }
+
+  completeReportSave() {
+    if (this.redirectInterval) {
+      clearInterval(this.redirectInterval);
+    }
+    this.showSuccessModal.set(false);
     this.saveReport.emit({
       title: this.reportTitle(),
       recursOn: this.selectedRecurringDate()
