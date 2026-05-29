@@ -270,14 +270,17 @@ interface PortfolioTargetRow {
                   </header>
                   <div class="task-stack">
                     @for (item of column.items; track item.id) {
-                      <button
+                      <div
                         class="new-task-card"
+                        role="button"
+                        tabindex="0"
                         [class.is-selected]="activeBoardItem?.id === item.id"
                         [class.is-clickable]="item.kind === 'plan' || item.kind === 'governance'"
                         [class.is-disabled]="item.kind !== 'plan' && item.kind !== 'governance'"
-                        type="button"
                         [attr.aria-label]="actionItemAriaLabel(item)"
                         (click)="selectBoardItem(item)"
+                        (keydown.enter)="selectBoardItem(item)"
+                        (keydown.space)="$event.preventDefault(); selectBoardItem(item)"
                       >
                         <!-- Top: Type Pill -->
                         <div class="card-top-row">
@@ -316,7 +319,7 @@ interface PortfolioTargetRow {
                             <span pmConsoleIcon="chevron-right" class="card-cta-icon" aria-hidden="true"></span>
                           </div>
                         </div>
-                      </button>
+                      </div>
                     } @empty {
                       <div class="empty-column">No actions in this lane.</div>
                     }
@@ -1442,7 +1445,7 @@ interface PortfolioTargetRow {
       font: inherit !important;
       gap: 12px !important;
       overflow: hidden !important;
-      padding: 16px 16px 24px 16px !important;
+      padding: 16px 16px 12px 16px !important;
       position: relative !important;
       text-align: left !important;
       transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease !important;
@@ -1524,7 +1527,7 @@ interface PortfolioTargetRow {
       align-items: center;
       gap: 8px;
       color: #737b8c;
-      font-size: 12px;
+      font-size: 13px !important;
     }
 
     .card-due-icon {
@@ -1558,15 +1561,17 @@ interface PortfolioTargetRow {
 
     .card-project-name {
       color: #737b8c;
-      font-size: 13px;
+      font-size: 13px !important;
       font-weight: 400;
     }
 
     .card-divider {
-      height: 1px;
-      background-color: #eef1f6;
-      width: 100%;
-      margin: 4px 0;
+      height: 1px !important;
+      background-color: #e2e8f0 !important;
+      width: 100% !important;
+      margin: 8px 0 !important;
+      flex-shrink: 0 !important;
+      display: block !important;
     }
 
     .card-bottom-row {
@@ -1604,7 +1609,7 @@ interface PortfolioTargetRow {
       align-items: center;
       gap: 4px;
       color: #10069f;
-      font-size: 14px;
+      font-size: 13px !important;
       font-weight: 600;
     }
 
