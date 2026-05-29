@@ -1,8 +1,8 @@
-import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
+import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PmConsoleWorkCalendarComponent, PmConsoleCalendarCell, PmConsoleCalendarItem, PmConsoleCalendarFilter } from './shared/pm-console-work-calendar.component';
 import { PmConsoleIconService } from './pm-console-icon.service';
-import { iconName } from './pm-console-icon.utils';
+import { iconName } from './portfolio-manager-icon.utils';
 import { portfolioActionItems, portfolioBoardFilters, PortfolioActionItem, PortfolioBoardFilter, PortfolioBoardColumn } from './portfolio-manager-actions.data';
 import { PortfolioManagerActionDrawerService } from './portfolio-manager-action-drawer.service';
 import { portfolioProgramRows, standaloneProjects, type ProgramRow } from './portfolio-workspace/portfolio-workspace.data';
@@ -34,14 +34,14 @@ interface PortfolioWorkTargetGroup {
       <!-- Toolbar row -->
       <div class="workspace-control-row actions-control-row">
         <!-- Heading -->
-        <h2 class="workspace-action-title">Portfolio Name</h2>
+        <h2 class="workspace-action-title">{{ workspaceTitle }}</h2>
 
         <!-- Search input -->
         <label class="workspace-search">
           <span class="icon" aria-hidden="true"><i data-lucide="search"></i></span>
           <input
             type="search"
-            [placeholder]="'Search actions...'"
+            [placeholder]="searchPlaceholder"
             aria-label="Search actions"
             (input)="onSearchChange($event)"
           />
@@ -600,8 +600,17 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
   searchQuery = '';
   targetSearchQuery = '';
   
-  readonly boardFilters = portfolioBoardFilters;
-  readonly actionItems = portfolioActionItems;
+  @Input() boardFilters: readonly PortfolioBoardFilter[] = portfolioBoardFilters;
+  @Input() actionItems: readonly PortfolioActionItem[] = portfolioActionItems;
+  @Input() workspaceTitle: string = 'Portfolio Name';
+  @Input() searchPlaceholder: string = 'Search actions...';
+  @Input() showTargetPicker: boolean = true;
+  @Input() boardPresentation: 'compact' | 'full' = 'full';
+  @Input() openItemsInDrawer: boolean = false;
+  @Input() todayKey?: string;
+  @Input() showBoardDetailPanel: boolean = true;
+  
+  @Output() readonly actionSelected = new EventEmitter<PortfolioActionItem>();
   readonly allTargetOption: PortfolioWorkTargetOption = {
     id: 'all',
     label: 'All programs and projects',

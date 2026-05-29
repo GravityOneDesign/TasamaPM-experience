@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PmConsoleIconComponent } from '../shared/pm-console-icon.component';
 import { PmConsoleCreateMenuComponent, type PmConsoleCreateMenuOption } from '../shared/pm-console-create-menu.component';
 import { type PmConsoleFieldOption } from '../shared/pm-console-field.component';
-import { PmConsoleStatusTrendComponent, type PmConsoleStatusTrendInput } from '../shared/pm-console-status-trend.component';
+import { PmConsoleModeTabsComponent } from '../shared/pm-console-mode-tabs.component';
+import { PortfolioManagerStatusTrendComponent as PmConsoleStatusTrendComponent, type PortfolioManagerStatusTrendInput as PmConsoleStatusTrendInput } from '../portfolio-manager-status-trend.component';
 import {
   portfolioProgramRows,
   standaloneProjects,
@@ -32,13 +33,14 @@ type SubTab = 'projects' | 'benefits' | 'risks' | 'issues';
 interface RegisterSubTabItem {
   readonly id: SubTab;
   readonly label: string;
+  readonly icon: string;
 }
 
 const registerSubTabs: readonly RegisterSubTabItem[] = [
-  { id: 'projects', label: 'Program & Project Register' },
-  { id: 'benefits', label: 'Benefit' },
-  { id: 'risks', label: 'Risk' },
-  { id: 'issues', label: 'Issues' },
+  { id: 'projects', label: 'Program & Project Register', icon: 'folder' },
+  { id: 'benefits', label: 'Benefit', icon: 'trending-up' },
+  { id: 'risks', label: 'Risk', icon: 'alert-triangle' },
+  { id: 'issues', label: 'Issues', icon: 'alert-circle' },
 ];
 
 const createMenuOptions: readonly PmConsoleCreateMenuOption[] = [
@@ -58,6 +60,7 @@ const unassignedManager = 'Unassigned';
     PmConsoleIconComponent,
     PmConsoleCreateMenuComponent,
     PmConsoleStatusTrendComponent,
+    PmConsoleModeTabsComponent,
     PortfolioWorkspaceRiskRegisterComponent,
     PortfolioWorkspaceBenefitsRegisterComponent,
     PortfolioWorkspaceIssuesRegisterComponent,
@@ -131,6 +134,15 @@ const unassignedManager = 'Unassigned';
                   <span>Export</span>
                 </button>
 
+                @if (showRegisterTabs) {
+                  <app-pm-console-mode-tabs
+                    [tabs]="registerSubTabs"
+                    [activeId]="activeSubTab"
+                    (tabSelected)="activeSubTab = $any($event)"
+                    ariaLabel="Register selection"
+                  ></app-pm-console-mode-tabs>
+                }
+
                 <app-pm-console-create-menu
                   label="Add new"
                   ariaLabel="Add program or project"
@@ -194,7 +206,7 @@ const unassignedManager = 'Unassigned';
                         </div>
                       </td>
                       <td>
-                        <app-pm-console-status-trend [tones]="getThreePeriodTrend(prog.id)" [ariaLabel]="prog.name + ' report status trend'"></app-pm-console-status-trend>
+                        <app-portfolio-manager-status-trend [tones]="getThreePeriodTrend(prog.id)" [ariaLabel]="prog.name + ' report status trend'"></app-portfolio-manager-status-trend>
                       </td>
                       <td class="date-col">{{ formatDate(prog.startDate) }}</td>
                       <td class="date-col">{{ formatDate(prog.endDate) }}</td>
@@ -228,7 +240,7 @@ const unassignedManager = 'Unassigned';
                             </div>
                           </td>
                           <td>
-                            <app-pm-console-status-trend [tones]="getThreePeriodTrend(proj.id)" [ariaLabel]="proj.name + ' report status trend'"></app-pm-console-status-trend>
+                            <app-portfolio-manager-status-trend [tones]="getThreePeriodTrend(proj.id)" [ariaLabel]="proj.name + ' report status trend'"></app-portfolio-manager-status-trend>
                           </td>
                           <td class="date-col">{{ formatDate(proj.startDate) }}</td>
                           <td class="date-col">{{ formatDate(proj.endDate) }}</td>
@@ -263,7 +275,7 @@ const unassignedManager = 'Unassigned';
                         </div>
                       </td>
                       <td>
-                        <app-pm-console-status-trend [tones]="getThreePeriodTrend(sa.id)" [ariaLabel]="sa.name + ' report status trend'"></app-pm-console-status-trend>
+                        <app-portfolio-manager-status-trend [tones]="getThreePeriodTrend(sa.id)" [ariaLabel]="sa.name + ' report status trend'"></app-portfolio-manager-status-trend>
                       </td>
                       <td class="date-col">{{ formatDate(sa.startDate) }}</td>
                       <td class="date-col">{{ formatDate(sa.endDate) }}</td>
@@ -961,6 +973,7 @@ const unassignedManager = 'Unassigned';
   `]
 })
 export class PortfolioWorkspaceRegistersComponent {
+  @Input() showRegisterTabs = true;
   readonly registerSubTabs = registerSubTabs;
   readonly createMenuOptions = createMenuOptions;
   readonly portfolioOptions = portfolioOptions;

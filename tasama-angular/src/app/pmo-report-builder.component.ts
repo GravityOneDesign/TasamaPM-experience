@@ -34,7 +34,7 @@ import { PmConsoleFieldComponent } from './shared/pm-console-field.component';
 @Component({
   selector: 'app-pmo-report-builder',
   standalone: true,
-  imports: [PmConsoleIconComponent, PmConsoleFieldComponent],
+  imports: [PmConsoleIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="pmo-report-builder-canvas">

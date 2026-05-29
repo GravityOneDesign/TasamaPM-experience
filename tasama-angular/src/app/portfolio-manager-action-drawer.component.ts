@@ -8,7 +8,7 @@ import {
   type StageGateContext,
   type StageGateStatus,
   type StageProfile,
-} from './pm-console-stage-gate.data';
+} from './portfolio-manager-stage-gate.data';
 import {
   clonePortfolioActionBenefitProfile,
   clonePortfolioActionRiskProfile,
@@ -52,9 +52,9 @@ import {
   type RiskTreatmentRecord,
 } from './shared/pm-console-risk-profile.component';
 import {
-  PmConsoleStageGateDrawerComponent,
+  PortfolioManagerStageGateDrawerComponent as PmConsoleStageGateDrawerComponent,
   type StageGateAttachment,
-} from './shared/pm-console-stage-gate-drawer.component';
+} from './portfolio-manager-stage-gate-drawer.component';
 
 type ReportDetailMode = 'simple' | 'detailed';
 type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
@@ -153,7 +153,7 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
         }
         @case ('milestone') {
           @if (stageGateContextForAction(selected); as gate) {
-            <app-pm-console-stage-gate-drawer
+            <app-portfolio-manager-stage-gate-drawer
               [project]="gate.profile.project"
               [gate]="gate.stage.gate"
               [stageLabel]="gate.stage.label"
@@ -173,7 +173,7 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
               (checklistChange)="toggleStageGateChecklistItem(gate, $event.index, $event.checked)"
               (attachmentsSelected)="addStageGateFiles($event, gate)"
               (attachmentRemove)="removeStageGateAttachment(gate, $event)"
-            ></app-pm-console-stage-gate-drawer>
+            ></app-portfolio-manager-stage-gate-drawer>
           }
         }
         @default {

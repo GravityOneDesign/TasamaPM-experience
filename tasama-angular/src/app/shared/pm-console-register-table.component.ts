@@ -55,6 +55,8 @@ export interface PmConsoleRegisterTableCell {
   ariaLabel?: string;
   chipLabel?: string;
   chipTone?: 'portfolio' | 'program' | 'project';
+  clampLines?: number;
+  wrap?: boolean;
 }
 
 export interface PmConsoleRegisterTableRow {
