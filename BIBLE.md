@@ -948,6 +948,15 @@ When a user asks for UI from Figma:
 
 ## Memory Log
 
+2026-05-29:
+
+- Merged and isolated revised 'Calendar' tab of Portfolio Manager:
+  - Created `PmConsoleWorkCalendarPmComponent` (`pm-console-work-calendar-pm.component.ts`) with selector `app-pm-console-work-calendar-pm` to host the revised calendar changes.
+  - Copied and updated `PortfolioManagerActionsPmComponent` (`portfolio-manager-actions-pm.component.ts`) to use `PmConsoleWorkCalendarPmComponent` and `<app-pm-console-work-calendar-pm>` instead of the shared calendar.
+  - Integrated `PortfolioManagerActionsPmComponent` on the `manage-work` tab in `portfolio-manager-landing.component.ts`.
+  - Copied `portfolio-manager-actions.data.ts` and `portfolio-manager-actions.component.ts` changes to support the new calendar's event kinds and mock data.
+  - This guarantees that no other views or personas (e.g. Project Manager in `pm-console-content.component.ts` or PMO in `pmo-frontdoor.component.ts`) are affected by the revised calendar visual/functional enhancements.
+
 2026-05-28:
 
 - Completed changes to 'PMO console' 'My actions' tab styling colors:
