@@ -1,23 +1,25 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PmConsoleIconComponent } from '../shared/pm-console-icon.component';
 import { PmConsoleCreateMenuComponent, type PmConsoleCreateMenuOption } from '../shared/pm-console-create-menu.component';
 import { type PmConsoleFieldOption } from '../shared/pm-console-field.component';
 import { PortfolioManagerStatusTrendComponent, type PortfolioManagerStatusTrendInput } from '../portfolio-manager-status-trend.component';
-import { PmConsolePlanEmptyStateComponent } from '../pm-console-plan-empty-state.component';
 import {
   portfolioProgramRows,
   standaloneProjects,
   riskRegisterData,
   benefitsRegisterData,
+  issuesRegisterData,
   ProgramRow,
   ProjectRow,
   Risk,
-  Benefit
+  Benefit,
+  Issue
 } from './portfolio-workspace.data';
 import { PortfolioWorkspaceRiskRegisterComponent } from './portfolio-workspace-risk-register.component';
 import { PortfolioWorkspaceBenefitsRegisterComponent } from './portfolio-workspace-benefits-register.component';
+import { PortfolioWorkspaceIssuesRegisterComponent } from './portfolio-workspace-issues-register.component';
 import {
   PortfolioWorkspaceRegisterCreateDrawerComponent,
   type PortfolioProgramCreatePayload,
@@ -55,35 +57,33 @@ const unassignedManager = 'Unassigned';
     FormsModule,
     PmConsoleIconComponent,
     PmConsoleCreateMenuComponent,
-    PortfolioManagerStatusTrendComponent,
-    PmConsolePlanEmptyStateComponent,
+    PmConsoleStatusTrendComponent,
     PortfolioWorkspaceRiskRegisterComponent,
     PortfolioWorkspaceBenefitsRegisterComponent,
+    PortfolioWorkspaceIssuesRegisterComponent,
     PortfolioWorkspaceRegisterCreateDrawerComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="workspace-registers-tab">
-      <div class="portfolio-register-shell" [class.without-register-nav]="!showRegisterTabs">
-        @if (showRegisterTabs) {
-          <aside class="portfolio-register-nav" aria-label="Register sections">
-            <div class="portfolio-register-tab-scroll">
-              <div class="portfolio-register-tab-list" role="tablist" aria-label="Portfolio registers">
-                @for (tab of registerSubTabs; track tab.id) {
-                  <button
-                    [class.active]="activeSubTab === tab.id"
-                    type="button"
-                    role="tab"
-                    [attr.aria-selected]="activeSubTab === tab.id"
-                    (click)="setSubTab(tab.id)"
-                  >
-                    <span class="portfolio-register-tab-label">{{ tab.label }}</span>
-                  </button>
-                }
-              </div>
+      <div class="portfolio-register-shell">
+        <aside class="portfolio-register-nav" aria-label="Register sections">
+          <div class="portfolio-register-tab-scroll">
+            <div class="portfolio-register-tab-list" role="tablist" aria-label="Portfolio registers">
+              @for (tab of registerSubTabs; track tab.id) {
+                <button
+                  [class.active]="activeSubTab === tab.id"
+                  type="button"
+                  role="tab"
+                  [attr.aria-selected]="activeSubTab === tab.id"
+                  (click)="setSubTab(tab.id)"
+                >
+                  <span class="portfolio-register-tab-label">{{ tab.label }}</span>
+                </button>
+              }
             </div>
-          </aside>
-        }
+          </div>
+        </aside>
 
         <main class="portfolio-register-panel">
           @switch (activeSubTab) {
@@ -103,7 +103,7 @@ const unassignedManager = 'Unassigned';
                   <span class="pill-badge-circle">{{ standaloneList.length }}</span>
                 </div>
               </div>
-
+              
               <div class="toolbar-right">
                 <!-- Toggleable Search -->
                 <div class="search-toggle-container" [class.is-expanded]="showSearch">
@@ -194,7 +194,7 @@ const unassignedManager = 'Unassigned';
                         </div>
                       </td>
                       <td>
-                        <app-portfolio-manager-status-trend [tones]="getThreePeriodTrend(prog.id)" [ariaLabel]="prog.name + ' report status trend'"></app-portfolio-manager-status-trend>
+                        <app-pm-console-status-trend [tones]="getThreePeriodTrend(prog.id)" [ariaLabel]="prog.name + ' report status trend'"></app-pm-console-status-trend>
                       </td>
                       <td class="date-col">{{ formatDate(prog.startDate) }}</td>
                       <td class="date-col">{{ formatDate(prog.endDate) }}</td>
@@ -228,7 +228,7 @@ const unassignedManager = 'Unassigned';
                             </div>
                           </td>
                           <td>
-                            <app-portfolio-manager-status-trend [tones]="getThreePeriodTrend(proj.id)" [ariaLabel]="proj.name + ' report status trend'"></app-portfolio-manager-status-trend>
+                            <app-pm-console-status-trend [tones]="getThreePeriodTrend(proj.id)" [ariaLabel]="proj.name + ' report status trend'"></app-pm-console-status-trend>
                           </td>
                           <td class="date-col">{{ formatDate(proj.startDate) }}</td>
                           <td class="date-col">{{ formatDate(proj.endDate) }}</td>
@@ -263,7 +263,7 @@ const unassignedManager = 'Unassigned';
                         </div>
                       </td>
                       <td>
-                        <app-portfolio-manager-status-trend [tones]="getThreePeriodTrend(sa.id)" [ariaLabel]="sa.name + ' report status trend'"></app-portfolio-manager-status-trend>
+                        <app-pm-console-status-trend [tones]="getThreePeriodTrend(sa.id)" [ariaLabel]="sa.name + ' report status trend'"></app-pm-console-status-trend>
                       </td>
                       <td class="date-col">{{ formatDate(sa.startDate) }}</td>
                       <td class="date-col">{{ formatDate(sa.endDate) }}</td>
@@ -300,18 +300,12 @@ const unassignedManager = 'Unassigned';
 
             @case ('issues') {
               <div class="tab-content-container animation-slide">
-                <div class="portfolio-issues-empty">
-                  <app-pm-console-plan-empty-state
-                    title="Issues register"
-                    description="Track portfolio, program, and project issues that need active resolution."
-                    countLabel="0 issues"
-                    actionLabel="Add issue"
-                    actionAriaLabel="Add issue"
-                    iconName="issues"
-                    emptyTitle="No issues logged yet"
-                    emptyBody="Open blockers, dependency problems, and unresolved decisions will appear here once they are added to the portfolio workspace."
-                  />
-                </div>
+                <app-portfolio-workspace-issues-register
+                  [issues]="issues"
+                  [programs]="programs"
+                  [standaloneProjects]="standaloneList"
+                  (issueCreate)="addIssue($event)"
+                />
               </div>
             }
           }
@@ -943,7 +937,7 @@ const unassignedManager = 'Unassigned';
       color: #de350b;
       cursor: help;
     }
-
+    
     .review-needed-alert ::ng-deep .icon {
       width: 12px !important;
       height: 12px !important;
@@ -967,13 +961,11 @@ const unassignedManager = 'Unassigned';
   `]
 })
 export class PortfolioWorkspaceRegistersComponent {
-  @Input() showRegisterTabs = true;
-
   readonly registerSubTabs = registerSubTabs;
   readonly createMenuOptions = createMenuOptions;
   readonly portfolioOptions = portfolioOptions;
 
-  activeSubTab: SubTab = 'risks';
+  activeSubTab: SubTab = 'projects';
   expandedProgramIds = new Set<string>(); // default closed by default
   searchQuery = '';
   statusFilter: string | null = null;
@@ -987,6 +979,7 @@ export class PortfolioWorkspaceRegistersComponent {
   standaloneList: ProgramRow[] = standaloneProjects.map((project) => ({ ...project }));
   riskData: Risk[] = riskRegisterData;
   benefits: Benefit[] = benefitsRegisterData;
+  issues: Issue[] = issuesRegisterData;
 
   openCreateDrawer(option: PmConsoleCreateMenuOption): void {
     if (!this.isCreateKind(option.id)) return;
@@ -1031,6 +1024,10 @@ export class PortfolioWorkspaceRegistersComponent {
 
   deleteRisk(riskId: string): void {
     this.riskData = this.riskData.filter((risk) => risk.id !== riskId);
+  }
+
+  addIssue(issue: Issue): void {
+    this.issues = [...this.issues, issue];
   }
 
   getRowStatusLabel(id: string, defaultStatus: string): string {
@@ -1221,38 +1218,38 @@ export class PortfolioWorkspaceRegistersComponent {
     return id.toUpperCase();
   }
 
-  getThreePeriodTrend(id: string): readonly PortfolioManagerStatusTrendInput[] {
-    const trendMap: Record<string, readonly PortfolioManagerStatusTrendInput[]> = {
+  getThreePeriodTrend(id: string): readonly PmConsoleStatusTrendInput[] {
+    const trendMap: Record<string, readonly PmConsoleStatusTrendInput[]> = {
       'prog-1': ['check', 'bell', 'bell'],
       'proj-1-1': ['check', 'check', 'bell'],
       'proj-1-2': ['check', 'check', 'check'],
-
+      
       'prog-2': ['bell', 'cross', 'bell'],
       'proj-2-1': ['bell', 'cross', 'cross'],
       'proj-2-2': ['bell', 'bell', 'check'],
-
+      
       'prog-3': ['check', 'check', 'check'],
       'proj-3-1': ['check', 'check', 'check'],
       'proj-3-2': ['check', 'check', 'bell'],
-
+      
       'prog-4': ['bell', 'cross', 'check'],
       'proj-4-1': ['cross', 'cross', 'bell'],
       'proj-4-2': ['bell', 'cross', 'check'],
-
+      
       'prog-5': ['bell', 'cross', 'check'],
       'proj-5-1': ['bell', 'cross', 'check'],
-
+      
       'prog-6': ['check', 'check', 'bell'],
       'proj-6-1': ['check', 'check', 'check'],
       'proj-6-2': ['check', 'bell', 'bell'],
-
+      
       'prog-7': ['check', 'bell', 'cross'],
       'proj-7-1': ['check', 'bell', 'bell'],
-
+      
       'prog-8': ['check', 'check', 'check'],
       'proj-8-1': ['check', 'check', 'check'],
       'proj-8-2': ['check', 'check', 'bell'],
-
+      
       'sa-proj-1': ['check', 'check', 'check'],
       'sa-proj-2': ['bell', 'bell', 'check'],
       'sa-proj-3': ['check', 'check', 'check'],
