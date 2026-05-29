@@ -287,32 +287,28 @@ interface PortfolioTargetRow {
                           <span class="card-type-pill" [ngClass]="getCardTypePillClass(item.type)">{{ item.type }}</span>
                         </div>
 
-                        <!-- Middle 1: Due date with calendar icon -->
-                        <div class="card-due-row">
-                          <span pmConsoleIcon="calendar" class="card-due-icon" aria-hidden="true"></span>
-                          <span class="card-due-text">{{ item.meta }}</span>
-                        </div>
-
-                        <!-- Middle 2: Action name -->
+                        <!-- Middle 1: Action name -->
                         <div class="card-title-row">
                           <strong class="card-action-title">{{ item.label }}</strong>
                         </div>
 
-                        <!-- Middle 3: Project/Program name -->
+                        <!-- Middle 2: Project/Program name -->
                         <div class="card-project-row">
                           <span class="card-project-name">
-                            {{ (item.kind === 'governance' ? 'Program: ' : 'Project: ') + item.project }}
+                            {{ item.project }}
                           </span>
                         </div>
 
-                        <!-- Divider -->
-                        <div class="card-divider"></div>
+                        <!-- Middle 3: Due date with calendar icon -->
+                        <div class="card-due-row">
+                          <span pmConsoleIcon="calendar" class="card-due-icon" aria-hidden="true"></span>
+                          <span class="card-due-text">{{ formatMetaText(item.meta) }}</span>
+                        </div>
 
                         <!-- Bottom: Owner + Open CTA -->
                         <div class="card-bottom-row">
                           <div class="card-owner">
-                            <div class="card-owner-avatar" [ngStyle]="getAvatarStyle(item.owner)">{{ item.owner }}</div>
-                            <span class="card-owner-name">{{ item.ownerName || 'PMO' }}</span>
+                            <span class="avatar-sm avatar-{{ item.owner.toLowerCase() }}">{{ item.owner }}</span>
                           </div>
                           <div class="card-cta">
                             <span>{{ item.cta || 'Open' }}</span>
@@ -1436,22 +1432,22 @@ interface PortfolioTargetRow {
     .new-task-card {
       background: #ffffff !important;
       border: 1px solid #eef1f6 !important;
-      border-radius: 16px !important;
-      box-shadow: 0 1px 2px rgba(25, 33, 61, 0.04) !important;
+      border-radius: 8px !important;
+      box-shadow: 0 1px 2px rgba(25, 33, 61, 0.08) !important;
       color: #2f2f2f !important;
       cursor: default !important;
       display: flex !important;
       flex-direction: column !important;
       font: inherit !important;
-      gap: 12px !important;
+      gap: 8px !important;
       overflow: hidden !important;
-      padding: 16px 16px 12px 16px !important;
+      padding: 20px !important;
       position: relative !important;
       text-align: left !important;
       transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease !important;
       width: 100% !important;
       height: auto !important;
-      min-height: 180px !important;
+      min-height: 154px !important;
       box-sizing: border-box !important;
     }
 
@@ -1490,57 +1486,63 @@ interface PortfolioTargetRow {
       align-items: center;
       font-size: 11px;
       font-weight: 500;
-      padding: 4px 10px;
+      padding: 5px 10px;
       border-radius: 999px;
-      text-transform: none;
-      width: fit-content;
       line-height: 1;
+      border: 1px solid transparent;
     }
 
     .card-type-pill.plans {
-      background: rgba(49, 136, 181, 0.1);
-      color: #3188b5;
+      background: #f3f7ff;
+      border-color: #d7e3ff;
+      color: #2f5bea;
     }
     .card-type-pill.governance-committee {
-      background: rgba(52, 84, 196, 0.1);
-      color: #3454c4;
+      background: #f1fbf6;
+      border-color: #cfead9;
+      color: #087c47;
     }
     .card-type-pill.status-reports {
-      background: rgba(111, 32, 149, 0.1);
-      color: #6f2095;
+      background: #f4f7ff;
+      border-color: #dbe5ff;
+      color: #3454c4;
     }
     .card-type-pill.change-requests {
-      background: rgba(196, 152, 79, 0.1);
-      color: #c4984f;
+      background: #fff8e8;
+      border-color: #f3e2ba;
+      color: #9a6500;
     }
     .card-type-pill.benefits {
-      background: rgba(22, 108, 73, 0.1);
-      color: #166c49;
+      background: #fff8e8;
+      border-color: #f3e2ba;
+      color: #9a6500;
     }
     .card-type-pill.risk {
-      background: rgba(185, 28, 28, 0.1);
-      color: #b91c1c;
+      background: #fff4f4;
+      border-color: #f5d7d7;
+      color: #b83b3b;
     }
 
     .card-due-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #737b8c;
-      font-size: 13px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      color: #687182 !important;
+      font-size: 11.5px !important;
+      margin-top: 2px !important;
     }
 
     .card-due-icon {
       height: 14px;
       width: 14px;
-      color: #737b8c;
+      color: #687182;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
     .card-due-text {
-      line-height: 1;
+      line-height: 1.2;
     }
 
     .card-title-row {
@@ -1548,11 +1550,11 @@ interface PortfolioTargetRow {
     }
 
     .card-action-title {
-      color: #0b0b0b;
-      font-size: 15px;
-      font-weight: 600;
-      line-height: 1.3;
-      display: block;
+      color: #0b0b0b !important;
+      font-size: 14.5px !important;
+      font-weight: 600 !important;
+      line-height: 1.35 !important;
+      display: block !important;
     }
 
     .card-project-row {
@@ -1560,25 +1562,19 @@ interface PortfolioTargetRow {
     }
 
     .card-project-name {
-      color: #737b8c;
-      font-size: 13px !important;
-      font-weight: 400;
-    }
-
-    .card-divider {
-      height: 1px !important;
-      background-color: #e2e8f0 !important;
-      width: 100% !important;
-      margin: 8px 0 !important;
-      flex-shrink: 0 !important;
-      display: block !important;
+      color: #687182 !important;
+      font-size: 12px !important;
+      line-height: 1.35 !important;
+      font-weight: 400 !important;
     }
 
     .card-bottom-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      width: 100% !important;
+      margin-top: auto !important;
+      padding-top: 12px !important;
     }
 
     .card-owner {
@@ -1587,30 +1583,19 @@ interface PortfolioTargetRow {
       gap: 8px;
     }
 
-    .card-owner-avatar {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      font-size: 11px;
-      font-weight: 600;
-    }
-
-    .card-owner-name {
-      color: #737b8c;
-      font-size: 13px;
-      font-weight: 400;
-    }
-
     .card-cta {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      color: #10069f;
-      font-size: 13px !important;
-      font-weight: 600;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 4px !important;
+      color: #10069f !important;
+      font-size: 12px !important;
+      font-weight: 600 !important;
+      line-height: 1 !important;
+      transition: color 160ms ease !important;
+    }
+
+    .card-cta:hover {
+      color: #3126d4 !important;
     }
 
     .card-cta-icon {
@@ -2085,6 +2070,12 @@ export class PortfolioManagerActionsPmComponent implements AfterViewChecked, OnD
     if (normalized.includes('benefit')) return 'benefits';
     if (normalized.includes('risk')) return 'risk';
     return 'plans'; // default
+  }
+
+  formatMetaText(meta: string): string {
+    if (!meta) return '';
+    const match = meta.match(/\(([^)]+)\)/);
+    return match ? match[1] : meta;
   }
 
   getAvatarStyle(owner: string): { [key: string]: string } {
