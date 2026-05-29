@@ -1743,6 +1743,15 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
     return 'plan';
   }
 
+  getFilterIdForKind(kind: string): string {
+    if (kind === 'report') return 'report';
+    if (kind === 'benefit') return 'benefit';
+    if (kind === 'change') return 'change';
+    if (kind === 'risk') return 'risk';
+    if (kind === 'governance') return 'governance';
+    return 'plan';
+  }
+
   get filteredItems(): PortfolioActionItem[] {
     return this.actionItems.filter((item) => {
       if (!this.matchesSelectedTarget(item)) {

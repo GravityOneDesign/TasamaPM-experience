@@ -303,62 +303,6 @@ export const portfolioActionItems: PortfolioActionItem[] = [
     meta: 'Due soon',
     cta: 'Open report',
     column: 'Upcoming'
-  },
-  {
-    id: 'ACT-RISK-01',
-    date: '2026-05-13',
-    label: 'Assess Integration exposure',
-    project: 'NEOM Integration',
-    targetType: 'project',
-    type: 'Review Risk',
-    kind: 'risk',
-    tone: 'red',
-    owner: 'AH',
-    meta: 'High priority',
-    cta: 'Review',
-    column: 'This week'
-  },
-  {
-    id: 'ACT-RISK-02',
-    date: '2026-05-19',
-    label: 'Smart service adoption risk',
-    project: 'Smart City Alpha',
-    targetType: 'project',
-    type: 'Review Risk',
-    kind: 'risk',
-    tone: 'red',
-    owner: 'MH',
-    meta: 'Medium priority',
-    cta: 'Review',
-    column: 'Upcoming'
-  },
-  {
-    id: 'ACT-RISK-03',
-    date: '2026-05-20',
-    label: 'Funding allocation delay',
-    project: 'Vision 2030',
-    targetType: 'project',
-    type: 'Review Risk',
-    kind: 'risk',
-    tone: 'red',
-    owner: 'FA',
-    meta: 'High priority',
-    cta: 'Review',
-    column: 'Upcoming'
-  },
-  {
-    id: 'ACT-RISK-04',
-    date: '2026-05-27',
-    label: 'Evidence submission risk',
-    project: 'UAE Research Map',
-    targetType: 'project',
-    type: 'Review Risk',
-    kind: 'risk',
-    tone: 'red',
-    owner: 'MH',
-    meta: 'Medium priority',
-    cta: 'Review',
-    column: 'Upcoming'
   }
 ];
 

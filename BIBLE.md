@@ -950,12 +950,14 @@ When a user asks for UI from Figma:
 
 2026-05-29:
 
-- Merged and isolated revised 'Calendar' tab of Portfolio Manager:
-  - Created `PmConsoleWorkCalendarPmComponent` (`pm-console-work-calendar-pm.component.ts`) with selector `app-pm-console-work-calendar-pm` to host the revised calendar changes.
-  - Copied and updated `PortfolioManagerActionsPmComponent` (`portfolio-manager-actions-pm.component.ts`) to use `PmConsoleWorkCalendarPmComponent` and `<app-pm-console-work-calendar-pm>` instead of the shared calendar.
-  - Integrated `PortfolioManagerActionsPmComponent` on the `manage-work` tab in `portfolio-manager-landing.component.ts`.
-  - Copied `portfolio-manager-actions.data.ts` and `portfolio-manager-actions.component.ts` changes to support the new calendar's event kinds and mock data.
-  - This guarantees that no other views or personas (e.g. Project Manager in `pm-console-content.component.ts` or PMO in `pmo-frontdoor.component.ts`) are affected by the revised calendar visual/functional enhancements.
+- Completed changes to 'Portfolio manager' 'My calendar' view:
+  - Populated the calendar with more chips of types Benefits, Change Requests, Risk, Plans, Governance Committee, Status reports with exact hex colors: Benefits (`#166C49`), Change requests (`#C4984F`), Risk (`#B91C1C`), Plans (`#3188B5`), Governance committee (`#3454C4`), Status reports (`#6F2095`), retaining 10% soft background and 25% border color opacity.
+  - Added 6 new mock items on May 26, 2026 to populate the calendar with all requested types matching Figma Image 5.
+  - Updated the dropdown types filter to display exactly the six requested types plus 'All types'.
+  - Added `getFilterIdForKind(kind)` and `getItemSubtitle(item)` to ensure robust filtering and dynamic subtitle generation.
+  - Redesigned the single-item hover detail card (Figma Image 4) to show only the type pill, an arrow, bold label description, and subtitle, removing View buttons or metadata headers.
+  - Redesigned the multi-item day agenda hover popup (Figma Image 5) for tiles with more than two items to display a clean header with date and items count, followed by a list of cards matching the single-item layout.
+  - Successfully verified building type safety with a zero-warning, zero-error Angular CLI build.
 
 2026-05-28:
 
