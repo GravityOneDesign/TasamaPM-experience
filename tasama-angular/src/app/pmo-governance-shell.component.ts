@@ -117,13 +117,13 @@ import { PmConsoleTopBarComponent } from './shared/pm-console-top-bar.component'
       height: 100%;
       background: #F1F7FA;
       color: #202633;
-      padding: 16px 24px 24px 24px;
+      padding: 16px;
     }
     .project-plan-card-frame {
       background: #ffffff;
       border-radius: 12px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-      margin: 24px;
+      margin: 8px 0 0 0;
       display: flex;
       flex-direction: column;
       overflow: hidden;

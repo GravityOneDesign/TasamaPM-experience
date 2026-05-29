@@ -57,32 +57,148 @@ export interface TaxonomyCard {
     </header>
 
     <!-- Scrollable full-width tab content area -->
-    <main class="portfolio-workspace-body" style="grid-row: 2; overflow-y: auto; background: #ffffff; padding: 24px; display: flex; flex-direction: column; flex: 1; min-height: 0;">
+    <main class="portfolio-workspace-body" style="grid-row: 2; overflow-y: auto; background: #ffffff; padding: 16px; display: flex; flex-direction: column; flex: 1; min-height: 0;">
       
       @if (activeSectionId === 'org-structure') {
-        <div class="org-structure-container animation-fade" style="display: flex; flex-direction: column; width: 100%; height: 100%;">
+          <div class="org-structure-container animation-fade" style="display: flex; flex-direction: column; width: 100%; height: 100%; gap: 16px; margin-top: 0px;">
           
-          <!-- Top Header Section with Add Division Button -->
-          <div class="org-structure-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <div class="org-structure-intro">
-              <h2 style="font-size: 20px; font-weight: 600; color: #0b0b0b; margin: 0 0 6px 0;">Organisational Structure</h2>
-              <p style="font-size: 13.5px; color: #687182; margin: 0;">Configure divisions, brands, and sections to define the portfolio's hierarchical architecture.</p>
+          <!-- ========== HEADER ROW ========== -->
+          <div class="org-structure-header-row" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <!-- Back breadcrumb (only visible inside a group) -->
+              @if (selectedOrgGroupIndex !== null) {
+                <button
+                  type="button"
+                  (click)="backToGroupsView()"
+                  style="display: inline-flex; align-items: center; gap: 6px; background: transparent; border: none; cursor: pointer; color: #687182; font-size: 13px; font-weight: 500; padding: 0; font-family: Montserrat, -apple-system, sans-serif;"
+                  onmouseover="this.style.color='#10069f'"
+                  onmouseout="this.style.color='#687182'"
+                  aria-label="Back to groups"
+                >
+                  <span pmConsoleIcon="chevron-left" style="width: 14px; height: 14px;"></span>
+                  <span>Groups</span>
+                </button>
+                <span style="color: #CBD5E1; font-size: 14px;">/</span>
+                <span style="font-size: 13px; font-weight: 600; color: #0b0b0b;">
+                  {{ orgGroups[selectedOrgGroupIndex]?.name }}
+                </span>
+              } @else {
+                <div class="org-structure-intro">
+                  <h2 style="font-size: 20px; font-weight: 600; color: #0b0b0b; margin: 0 0 4px 0;">Organisational Structure</h2>
+                  <p style="font-size: 13.5px; color: #687182; margin: 0;">Configure groups, divisions, branches, and sections to define the organisation's hierarchical architecture.</p>
+                </div>
+              }
             </div>
+
+            <!-- Action buttons on the right -->
+            @if (selectedOrgGroupIndex === null) {
+              <button
+                type="button"
+                (click)="openAddOrgGroupDrawer()"
+                style="background: #10069f; color: #ffffff; border: none; padding: 10px 20px; border-radius: 100px; font-weight: 600; font-size: 13.5px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 6, 159, 0.15); font-family: Montserrat, -apple-system, sans-serif;"
+                onmouseover="this.style.background='#0d059a'"
+                onmouseout="this.style.background='#10069f'"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span>Add Group</span>
+              </button>
+            } @else {
+              <button
+                type="button"
+                class="division-add-btn pointer animation-fade"
+                (click)="openAddGroupDrawer()"
+                style="background: transparent; border: 0.75px solid #475569; padding: 8px 18px; border-radius: 100px; cursor: pointer; font-weight: 600; font-size: 13.5px; transition: all 0.2s ease; color: #475569; outline: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px;"
+                onmouseover="this.style.color='#10069f'; this.style.borderColor='#10069f'; this.style.background='#f4f6fc';"
+                onmouseout="this.style.color='#475569'; this.style.borderColor='#475569'; this.style.background='transparent';"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 2px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span>Add Division</span>
+              </button>
+            }
           </div>
+
+          <!-- ========== VIEW 1: GROUPS GRID ========== -->
+          @if (selectedOrgGroupIndex === null) {
+
+            @if (orgGroups.length === 0) {
+              <!-- Empty state -->
+              <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 24px; background: #ffffff; min-height: 400px; text-align: center; border-radius: 12px; font-family: Montserrat, -apple-system, sans-serif;">
+                <div style="width: 72px; height: 72px; border-radius: 50%; background: #EEF2FF; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;">
+                  <span pmConsoleIcon="layout" style="font-size: 32px; width: 32px; height: 32px; color: #10069f; display: inline-flex; align-items: center; justify-content: center;"></span>
+                </div>
+                <h3 style="font-size: 20px; font-weight: 700; color: #0b0b0b; margin: 0 0 12px 0;">No groups yet</h3>
+                <p style="font-size: 14px; color: #687182; margin: 0 0 28px 0; max-width: 480px; line-height: 1.5;">Start by creating your first Group. Each group holds its own set of Divisions, Branches, and Sections to reflect your organisation's structure.</p>
+                <button
+                  type="button"
+                  (click)="openAddOrgGroupDrawer()"
+                  style="background: #10069f; color: #ffffff; border: none; padding: 12px 28px; border-radius: 8px; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 6, 159, 0.15);"
+                >
+                  <span pmConsoleIcon="plus" style="width: 16px; height: 16px;"></span>
+                  <span>Add Group</span>
+                </button>
+              </div>
+            } @else {
+              <!-- Groups grid -->
+              <div style="display: flex; flex-wrap: wrap; gap: 20px; padding: 4px 0;">
+                @for (grp of orgGroups; track $index; let gIdx = $index) {
+                  <div
+                    class="animation-fade"
+                    style="background: #FAFBFF; border: 0.75px solid #CFDEFD; border-left: 4px solid #5D55DB; border-radius: 16px; width: 280px; min-width: 240px; padding: 20px; box-sizing: border-box; box-shadow: 0 4px 16px rgba(16, 6, 159, 0.04); display: flex; flex-direction: column; gap: 12px; position: relative; cursor: pointer; transition: all 0.2s ease;"
+                    (click)="selectOrgGroup(gIdx)"
+                    onmouseover="this.style.boxShadow='0 8px 24px rgba(16, 6, 159, 0.1)'; this.style.borderColor='#A5B4FC';"
+                    onmouseout="this.style.boxShadow='0 4px 16px rgba(16, 6, 159, 0.04)'; this.style.borderColor='#CFDEFD';"
+                  >
+                    <!-- Card top row: Group pill + edit button -->
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                      <span style="background: #DFDFEE; color: #10069f; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 100px; line-height: 1;">Group</span>
+                      <button
+                        type="button"
+                        (click)="$event.stopPropagation(); openEditOrgGroupDrawer(gIdx)"
+                        style="border: none; background: transparent; cursor: pointer; color: #64748b; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%;"
+                        title="Edit group"
+                        onmouseover="this.style.background='rgba(16, 6, 159, 0.08)'"
+                        onmouseout="this.style.background='transparent'"
+                      >
+                        <span pmConsoleIcon="more-vertical" style="width: 16px; height: 16px;"></span>
+                      </button>
+                    </div>
+
+                    <!-- Group name -->
+                    <div>
+                      <h3 style="font-size: 16px; font-weight: 600; color: #0b0b0b; margin: 0 0 4px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="grp.name">{{ grp.name }}</h3>
+                      @if (grp.owner) {
+                        <div style="font-size: 12px; color: #687182; display: inline-flex; align-items: center; gap: 5px;">
+                          <span pmConsoleIcon="user" style="width: 12px; height: 12px; color: #687182;"></span>
+                          <span>{{ grp.owner }}</span>
+                        </div>
+                      }
+                    </div>
+
+                    <!-- Division count + enter arrow -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #E8ECFD; padding-top: 12px; margin-top: 4px;">
+                      <span style="font-size: 12px; color: #687182; font-weight: 500;">{{ grp.groupObjects.length }} Division{{ grp.groupObjects.length !== 1 ? 's' : '' }}</span>
+                      <span pmConsoleIcon="arrow-right" style="width: 16px; height: 16px; color: #10069f;"></span>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+
+          } @else {
+
+          <!-- ========== VIEW 2: DIVISION TREE (inside a group) ========== -->
 
           @if (groupObjects.length === 0) {
             @if (!isAddingGroup) {
-              <!-- Empty state when no Divisions exist -->
-              <div class="org-empty-state-wrapper" style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 24px; background: #ffffff; min-height: 400px; text-align: center; border-radius: 12px; font-family: Montserrat, -apple-system, sans-serif;">
-                <div class="org-empty-circle" style="width: 72px; height: 72px; border-radius: 50%; background: #EEF2FF; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; color: #10069f;">
+              <!-- Empty state when no Divisions exist in this group -->
+              <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 24px; background: #ffffff; min-height: 400px; text-align: center; border-radius: 12px; font-family: Montserrat, -apple-system, sans-serif;">
+                <div style="width: 72px; height: 72px; border-radius: 50%; background: #EEF2FF; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;">
                   <span pmConsoleIcon="building" style="font-size: 32px; width: 32px; height: 32px; color: #10069f; display: inline-flex; align-items: center; justify-content: center;"></span>
                 </div>
-                <h3 style="font-size: 20px; font-weight: 700; color: #0b0b0b; margin: 0 0 12px 0;">Build your organisational structure</h3>
-                <p style="font-size: 14px; color: #687182; margin: 0 0 28px 0; max-width: 480px; line-height: 1.5;">Start by adding your first Division. From there, you can branch out to include specific branches and sections to accurately map your hierarchy.</p>
-                <button 
-                  id="org-empty-add-division-btn" 
-                  class="org-empty-btn" 
-                  type="button" 
+                <h3 style="font-size: 20px; font-weight: 700; color: #0b0b0b; margin: 0 0 12px 0;">No divisions yet</h3>
+                <p style="font-size: 14px; color: #687182; margin: 0 0 28px 0; max-width: 480px; line-height: 1.5;">Add your first Division to this group. From there, you can branch out to include specific branches and sections.</p>
+                <button
+                  type="button"
                   (click)="openAddGroupDrawer()"
                   style="background: #10069f; color: #ffffff; border: none; padding: 12px 28px; border-radius: 8px; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 6, 159, 0.15);"
                 >
@@ -93,160 +209,200 @@ export interface TaxonomyCard {
             }
           } @else {
             
-            <!-- Level of Flat Tabs (underlined, plain text, borderless) below heading and subheading -->
-            <div class="groups-tabs-row" style="display: flex; flex-direction: row; gap: 24px; padding: 0; margin-bottom: -1px; width: 100%; overflow-x: auto; scrollbar-width: none; font-family: Montserrat, -apple-system, sans-serif; align-items: center; position: relative; z-index: 10;">
-              @for (group of groupObjects; track $index; let gIdx = $index) {
-                <button 
-                  type="button"
-                  class="division-tab-btn pointer animation-fade" 
-                  [class.active]="selectedGroupIndex === gIdx"
-                  (click)="selectGroup(gIdx)"
-                  style="background: transparent; border: none; padding: 12px 4px; cursor: pointer; font-weight: 600; font-size: 15px; transition: all 0.2s ease; border-bottom: 3.5px solid transparent; color: #64748b; outline: none; margin-bottom: -1px; display: inline-flex; align-items: center;"
-                  [style.border-bottom-color]="selectedGroupIndex === gIdx ? '#10069f' : 'transparent'"
-                  [style.color]="selectedGroupIndex === gIdx ? '#10069f' : '#64748b'"
-                >
-                  <span>{{ group.name }}</span>
-                </button>
-              }
-              
-              <!-- Tab button to trigger drawer -->
-              <button 
-                type="button"
-                class="division-tab-btn pointer animation-fade" 
-                (click)="openAddGroupDrawer()"
-                style="background: transparent; border: none; padding: 12px 4px; cursor: pointer; font-weight: 600; font-size: 15px; transition: all 0.2s ease; color: #94a3b8; outline: none; margin-bottom: -1px; display: inline-flex; align-items: center;"
-                onmouseover="this.style.color='#10069f'"
-                onmouseout="this.style.color='#94a3b8'"
-              >
-                <span>+Add Division</span>
-              </button>
-            </div>
+            <!-- Division tab band (only show if multiple divisions) -->
+            @if (groupObjects.length >= 2) {
+              <div class="groups-tabs-row" style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%; margin-top: 0px; margin-bottom: 6px; font-family: Montserrat, -apple-system, sans-serif; position: relative; z-index: 10;">
+                <div class="division-pill-band" style="background: #F1F5F9; border: 1px solid #E2E8F0; border-radius: 12px; padding: 4px; display: inline-flex; align-items: center; gap: 4px; box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);">
+                  @for (group of groupObjects; track $index; let gIdx = $index) {
+                    <button
+                      type="button"
+                      class="division-tab-btn pointer animation-fade"
+                      [class.active]="selectedGroupIndex === gIdx"
+                      (click)="selectGroup(gIdx)"
+                      style="border: none; padding: 6px 20px; cursor: pointer; font-size: 14px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 8px; outline: none; display: inline-flex; align-items: center; justify-content: center;"
+                      [style.background]="selectedGroupIndex === gIdx ? '#ffffff' : 'transparent'"
+                      [style.color]="selectedGroupIndex === gIdx ? '#10069f' : '#64748b'"
+                      [style.font-weight]="'500'"
+                      [style.box-shadow]="selectedGroupIndex === gIdx ? '0 2px 6px rgba(16, 6, 159, 0.08)' : 'none'"
+                      onmouseover="if (this.style.background === 'transparent') { this.style.color='#0f172a'; this.style.background='rgba(0, 0, 0, 0.04)'; }"
+                      onmouseout="if (this.style.boxShadow === 'none') { this.style.color='#64748b'; this.style.background='transparent'; }"
+                    >
+                      <span>{{ group.name }}</span>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
 
             <!-- Active Division Hierarchy Area -->
-            @if (groupObjects[selectedGroupIndex]) {
-              <div class="active-group-details animation-fade" style="border: 1px solid rgba(16, 6, 159, 0.25); border-radius: 16px; padding: 24px; background: #ffffff; display: flex; flex-direction: column; width: 100%; box-sizing: border-box; margin-top: 0; font-family: Montserrat, -apple-system, sans-serif; gap: 12px; position: relative; box-shadow: 0 4px 12px rgba(25, 33, 61, 0.03);">
+            @if (groupObjects[selectedGroupIndex]; as activeGroup) {
+              <div class="active-group-details animation-fade" style="border: none; border-radius: 0; padding: 0px 0 0 0; background: transparent; display: flex; flex-direction: column; width: 100%; box-sizing: border-box; margin-top: 0; font-family: Montserrat, -apple-system, sans-serif; position: relative;">
                 
-                <!-- Title Row -->
-                <div style="display: flex; align-items: center; width: 100%;">
-                  <div 
-                    (click)="openEditGroupDrawer(selectedGroupIndex)"
-                    style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer;"
-                    title="Open Division Details"
-                    onmouseover="this.querySelector('h3').style.color='#10069f'; this.querySelector('.heading-arrow').style.color='#10069f';"
-                    onmouseout="this.querySelector('h3').style.color='#1d252d'; this.querySelector('.heading-arrow').style.color='#64748b';"
-                  >
-                    <h3 style="font-size: 18px; font-weight: 700; color: #1d252d; margin: 0; font-family: Montserrat, -apple-system, sans-serif; transition: color 0.2s ease;">
-                      {{ groupObjects[selectedGroupIndex].name }}
-                    </h3>
-                    <span class="heading-arrow" pmConsoleIcon="arrow-up-right" style="font-size: 16px; width: 16px; height: 16px; color: #64748b; transition: color 0.2s ease;"></span>
+                <!-- Center Aligned Division Card -->
+                <div class="division-card-row" style="display: flex; justify-content: center; width: 100%; margin-bottom: 48px; position: relative; z-index: 10;">
+                  <div class="division-unified-card animation-fade" style="background: #FAFBFF; border: 0.75px solid #CFDEFD; border-left: 3px solid #5D55DB; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; width: 290px; height: 112px; padding: 16px 20px; box-sizing: border-box; box-shadow: 0 4px 16px rgba(16, 6, 159, 0.04); position: relative;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                      <span class="pill-division" style="background: #DFDFEE; color: #10069f; font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 100px; line-height: 1;">Division</span>
+                      <button
+                        type="button"
+                        (click)="openEditGroupDrawer(selectedGroupIndex)"
+                        style="border: none; background: transparent; cursor: pointer; color: #64748b; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%;"
+                        title="Division Actions"
+                        onmouseover="this.style.background='rgba(16, 6, 159, 0.08)';"
+                        onmouseout="this.style.background='transparent';"
+                      >
+                        <span pmConsoleIcon="more-vertical" style="font-size: 18px; width: 18px; height: 18px;"></span>
+                      </button>
+                    </div>
+                    <h4 style="font-size: 16px; font-weight: 600; color: #0b0b0b; margin: 0; word-break: break-word; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="activeGroup.name">
+                      {{ activeGroup.name }}
+                    </h4>
                   </div>
                 </div>
 
-                <!-- Subtitle (Description) -->
-                @if (groupObjects[selectedGroupIndex].purpose) {
-                  <p style="font-size: 14px; color: #687182; margin: 0 0 16px 0; max-width: 800px; line-height: 1.5;">
-                    {{ groupObjects[selectedGroupIndex].purpose }}
-                  </p>
+                <!-- SVG Connector Lines -->
+                @if (activeGroup.divisions && activeGroup.divisions.length > 0) {
+                  @let branchCount = activeGroup.divisions.length;
+                  <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 170px; pointer-events: none; z-index: 1;">
+                    @for (div of activeGroup.divisions; track $index; let idx = $index) {
+                      <path [attr.d]="getElbowPath(idx, branchCount)" stroke="#DDDDDD" stroke-width="1.2" fill="none" />
+                    }
+                  </svg>
                 }
 
-                <!-- Wrap-around Branches Flex Row (4 per row max or wraps naturally) -->
-                <div class="branches-row-flex" style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 24px; align-items: flex-start; padding: 8px 4px 24px 4px; width: 100%;">
-                  
-                  @for (div of groupObjects[selectedGroupIndex].divisions; track $index; let dIdx = $index) {
-                    <!-- Unified Branch Card Layout (Figma Selected Node: Container) -->
-                    <div class="branch-unified-card animation-fade" style="background: linear-gradient(135deg, #FAFBFF 0%, #FFFFFF 100%); border: 1px solid #CFDEFD; border-radius: 16px; display: flex; flex-direction: column; width: 290px; min-width: 290px; height: 283px; box-shadow: 0 4px 16px 0 rgba(16, 6, 159, 0.05); position: relative; box-sizing: border-box; font-family: Montserrat, -apple-system, sans-serif; overflow: hidden;">
-                      
-                      <!-- Header portion with linear gradient from Figma (exactly 89px height) -->
-                      <div style="background: linear-gradient(132deg, #F4F5FF 36.64%, #D5E3FF 100%); padding: 12px 20px 10px 20px; display: flex; flex-direction: column; justify-content: space-between; height: 89px; box-sizing: border-box; border-bottom: 1px solid #CFDEFD; border-radius: 16px 16px 0 0;">
-                        <!-- Header Row: Pill & Actions -->
+                <!-- Branches and Sections Columns -->
+                <div class="branches-columns-flex" style="display: flex; flex-direction: row; gap: 40px; align-items: flex-start; justify-content: flex-start; padding: 0 4px 24px 4px; width: 100%; box-sizing: border-box; position: relative; z-index: 10;">
+                  @for (div of activeGroup.divisions; track $index; let dIdx = $index) {
+                    <div class="branch-column-vertical" style="display: flex; flex-direction: column; gap: 16px; width: 240px; min-width: 240px;">
+                      <div class="branch-unified-card animation-fade" style="background: #FAFBFF; border: 0.75px solid #CFDEFD; border-left: 3px solid #7C9FF1; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; width: 240px; height: 112px; padding: 16px 20px; box-sizing: border-box; box-shadow: 0 4px 16px rgba(16, 6, 159, 0.04); position: relative;">
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                          <span class="pill-branch" style="background: #ffffff; color: #10069f; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 100px; line-height: 1; border: 1px solid #CFDEFD;">Branch</span>
-                          
-                          <!-- arrow-up-right CTA / View Details trigger -->
-                          <button 
-                            type="button" 
+                          <span class="pill-branch" style="background: #E1E9FF; color: #10069f; font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 100px; line-height: 1; border: none;">Branch</span>
+                          <button
+                            type="button"
                             (click)="openViewBranchDrawer(selectedGroupIndex, dIdx)"
-                            style="border: none; background: transparent; cursor: pointer; color: #10069f; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%;"
-                            title="View Details"
+                            style="border: none; background: transparent; cursor: pointer; color: #64748b; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%;"
+                            title="Branch Actions"
                             onmouseover="this.style.background='rgba(16, 6, 159, 0.08)';"
                             onmouseout="this.style.background='transparent';"
                           >
-                            <span pmConsoleIcon="arrow-up-right" style="font-size: 16px; width: 16px; height: 16px;"></span>
+                            <span pmConsoleIcon="more-vertical" style="font-size: 18px; width: 18px; height: 18px;"></span>
                           </button>
                         </div>
-
-                        <!-- Branch Info (Name + Owner) -->
                         <div style="display: flex; flex-direction: column; gap: 4px;">
-                          <!-- Branch Name -->
-                          <h4 style="font-size: 15px; font-weight: 700; color: #000000; margin: 0; word-break: break-word; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="div.name">{{ div.name }}</h4>
-                          
-                          <!-- Owner (shown only if entered, user icon + name, no "Owner" label) -->
+                          <h4 style="font-size: 16px; font-weight: 600; color: #0b0b0b; margin: 0; word-break: break-word; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="div.name">
+                            {{ div.name }}
+                          </h4>
                           @if (div.owner) {
                             <div style="font-size: 11.5px; color: #475569; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px;">
-                              <span pmConsoleIcon="user" style="width: 13px; height: 13px; color: #475569; display: inline-flex; align-items: center; justify-content: center;"></span>
+                              <span style="width: 20px; height: 20px; border-radius: 50%; background: rgba(71, 85, 105, 0.1); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <span pmConsoleIcon="user" style="width: 11px; height: 11px; color: #475569; display: inline-flex; align-items: center; justify-content: center;"></span>
+                              </span>
                               <span>{{ div.owner }}</span>
                             </div>
                           }
                         </div>
                       </div>
 
-                      <!-- Body portion with transparent background (showing the card's gradient, exactly 194px height) -->
-                      <div style="padding: 16px 20px 18px 20px; display: flex; flex-direction: column; gap: 12px; height: 194px; box-sizing: border-box; background: transparent;">
-                        <!-- Nested Sections List -->
-                        @if (div.branches && div.branches.length > 0) {
-                          <div class="sections-scroll-list" style="display: flex; flex-direction: column; gap: 8px; width: 100%; overflow-y: auto; flex-grow: 1; padding-right: 4px;">
-                            @for (br of div.branches; track $index; let bIdx = $index) {
-                              <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                                <div 
-                                  class="section-clickable-row"
-                                  (click)="openViewSectionDrawer(dIdx, bIdx)"
-                                  title="View Section Details"
-                                >
-                                  <span class="icon icon-branch" aria-hidden="true">
-                                    <span pmConsoleIcon="git-branch" style="width: 14px; height: 14px;"></span>
-                                  </span>
-                                  <span class="section-name-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="br.name">{{ br.name }}</span>
-                                </div>
-                              </div>
-                            }
+                      @if (div.branches && div.branches.length > 0) {
+                        @for (br of div.branches; track $index; let bIdx = $index) {
+                          <div
+                            class="section-unified-card animation-fade"
+                            (click)="openViewSectionDrawer(dIdx, bIdx)"
+                            title="View Section Details"
+                            style="background: #ffffff; border: 0.75px solid #CFDEFD; border-left: 3px solid #EFB882; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start; gap: 6px; width: 240px; height: 68px; padding: 10px 16px; box-sizing: border-box; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02); cursor: pointer; transition: all 0.2s ease; position: relative;"
+                            onmouseover="this.style.borderColor='#10069f'; this.style.boxShadow='0 4px 12px rgba(16, 6, 159, 0.08)';"
+                            onmouseout="this.style.borderColor='#CFDEFD'; this.style.boxShadow='0 2px 8px rgba(0, 0, 0, 0.02)';"
+                          >
+                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                              <span class="pill-section" style="background: #FFF8EB; border: 1px solid #FFEECF; color: #92400e; font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 100px; line-height: 1;">Section</span>
+                              <span pmConsoleIcon="more-vertical" style="font-size: 16px; width: 16px; height: 16px; color: #94a3b8;"></span>
+                            </div>
+                            <h5 style="font-size: 16px; font-weight: 600; color: #0b0b0b; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="br.name">
+                              {{ br.name }}
+                            </h5>
                           </div>
                         }
+                      }
 
-                        <!-- Add Section Pill Button Centered at the Bottom -->
-                        <div style="display: flex; justify-content: center; width: 100%; margin-top: auto; padding-top: 8px;">
-                          <button 
-                            type="button" 
-                            (click)="openAddSectionDrawer(dIdx, dIdx)"
-                            style="background: transparent; border: 1px dashed #cbd5e1; border-radius: 100px; padding: 6px 16px; display: flex; align-items: center; justify-content: center; gap: 6px; color: #687182; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-sizing: border-box;"
-                            onmouseover="this.style.borderColor='#10069f'; this.style.background='#E6ECF8'; this.style.color='#10069f';"
-                            onmouseout="this.style.borderColor='#cbd5e1'; this.style.background='transparent'; this.style.color='#687182';"
-                          >
-                            <span pmConsoleIcon="plus" style="width: 12px; height: 12px;"></span>
-                            <span>Add Section</span>
-                          </button>
-                        </div>
-                      </div>
-
+                      <button
+                        type="button"
+                        (click)="openAddSectionDrawer(dIdx, dIdx)"
+                        style="background: transparent; border: 0.75px solid #CFDEFD; border-radius: 12px; padding: 0 16px; display: flex; align-items: center; justify-content: center; gap: 8px; color: #475569; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-sizing: border-box; width: 240px; height: 68px;"
+                        onmouseover="this.style.borderColor='#10069f'; this.style.background='#F4F5FF'; this.style.color='#10069f';"
+                        onmouseout="this.style.borderColor='#CFDEFD'; this.style.background='transparent'; this.style.color='#475569';"
+                      >
+                        <span style="width: 24px; height: 24px; border-radius: 50%; background: #FFF8EC; border: 1px solid #FFEED0; display: flex; align-items: center; justify-content: center;">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        </span>
+                        <span>Add Section</span>
+                      </button>
                     </div>
                   }
-                  
-                  <!-- Stroke Container to the right of Branch cards labeled 'Add Branch' (matches image 2 vertical rectangle when empty) -->
-                  <button 
-                    type="button" 
+
+                  <button
+                    type="button"
                     (click)="openAddBranchDrawer(selectedGroupIndex)"
-                    style="background: transparent; border: 1.5px dashed #cbd5e1; border-radius: 16px; min-width: 290px; width: 290px; height: 283px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 16px 20px; color: #10069f; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-sizing: border-box; font-family: Montserrat, -apple-system, sans-serif;"
-                    onmouseover="this.style.borderColor='#10069f'; this.style.color='#10069f'; this.style.background='#f4f6fc';"
-                    onmouseout="this.style.borderColor='#cbd5e1'; this.style.color='#10069f'; this.style.background='transparent';"
+                    style="background: transparent; border: 0.75px solid #CFDEFD; border-radius: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0 20px; color: #475569; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-sizing: border-box; width: 240px; height: 112px; font-family: Montserrat, -apple-system, sans-serif;"
+                    onmouseover="this.style.borderColor='#10069f'; this.style.background='#f4f6fc'; this.style.color='#10069f';"
+                    onmouseout="this.style.borderColor='#CFDEFD'; this.style.background='transparent'; this.style.color='#475569';"
                   >
-                    <span pmConsoleIcon="plus" style="font-size: 24px; width: 24px; height: 24px;"></span>
+                    <span style="width: 28px; height: 28px; border-radius: 50%; background: #CBD9FD; display: flex; align-items: center; justify-content: center;">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </span>
                     <span>Add Branch</span>
                   </button>
+                </div>
+              </div>
+            }
+          }
 
+          } <!-- end @else (selectedOrgGroupIndex !== null) -->
+
+          <!-- Drawer 0: Add / Edit Org Group ------------------------------- -->
+          @if (isAddingOrgGroup) {
+            <app-pm-console-plan-drawer
+              eyebrow="ORGANISATIONAL STRUCTURE"
+              [title]="editingOrgGroupIndex !== null ? 'Group Details' : 'Add New Group'"
+              description="Give this group a name. You can add Divisions inside it after saving."
+              [submitLabel]="editingOrgGroupIndex !== null ? 'Save' : 'Add Group'"
+              cancelLabel="Cancel"
+              [showDelete]="editingOrgGroupIndex !== null"
+              (close)="closeAddOrgGroupDrawer()"
+              (submitForm)="saveOrgGroup(); $event.preventDefault()"
+              (delete)="deleteOrgGroup()"
+            >
+              <div planDrawerBody class="ud-form" style="display: flex; flex-direction: column; gap: 20px; font-family: Montserrat, -apple-system, sans-serif;">
+
+                <!-- Group Name + Owner -->
+                <div class="ud-row ud-row-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                  <div class="ud-field">
+                    <label for="orgGroupNameInput" class="ud-label" style="font-size: 14px; font-weight: 600; color: #1d252d; margin-bottom: 6px; display: block;">Group Name <span style="color: #fb2c36;">*</span></label>
+                    <input
+                      id="orgGroupNameInput"
+                      type="text"
+                      class="ud-input"
+                      placeholder="Enter Group name"
+                      [(ngModel)]="newOrgGroupName"
+                      style="width: 100%; padding: 10px 12px; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 8px; font-size: 14px; box-sizing: border-box; height: 38px; outline: none; background: #ffffff;"
+                    />
+                  </div>
+                  <div class="ud-field">
+                    <label for="orgGroupOwnerInput" class="ud-label" style="font-size: 14px; font-weight: 600; color: #1d252d; margin-bottom: 6px; display: block;">Owner</label>
+                    <input
+                      id="orgGroupOwnerInput"
+                      type="text"
+                      class="ud-input"
+                      placeholder="Search for an Owner..."
+                      [(ngModel)]="newOrgGroupOwner"
+                      style="width: 100%; padding: 10px 12px; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 8px; font-size: 14px; box-sizing: border-box; height: 38px; outline: none; background: #ffffff;"
+                    />
+                  </div>
                 </div>
 
               </div>
+            </app-pm-console-plan-drawer>
           }
-        }
+          <!-- ---------------------------------------------------------------- -->
 
           <!-- Drawer 1: Repurposed Division Drawer (originally Group) -->
           @if (isAddingGroup) {
@@ -5902,6 +6058,44 @@ export class PmoGovernanceFrameworkComponent implements OnInit {
 
   activeSectionId = 'org-structure';
 
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    // Triggers change detection on resize for SVG connector paths
+    this.changeDetector.markForCheck();
+  }
+
+  getElbowPath(idx: number, branchCount: number): string {
+    const container = document.querySelector('.active-group-details');
+    const xDiv = container ? container.clientWidth / 2 : 400;
+    const xBranch = 120 + idx * 280;
+    const yStart = 112;
+    const yMid = 136;
+    const yEnd = 160;
+    const r = 12; // corner radius
+
+    if (xBranch === xDiv) {
+      return `M ${xDiv} ${yStart} L ${xDiv} ${yEnd}`;
+    }
+
+    if (xBranch < xDiv) {
+      // Left branch: curves to left, then curves down
+      return `M ${xDiv} ${yStart} ` +
+             `L ${xDiv} ${yMid - r} ` +
+             `A ${r} ${r} 0 0 1 ${xDiv - r} ${yMid} ` +
+             `L ${xBranch + r} ${yMid} ` +
+             `A ${r} ${r} 0 0 0 ${xBranch} ${yMid + r} ` +
+             `L ${xBranch} ${yEnd}`;
+    } else {
+      // Right branch: curves to right, then curves down
+      return `M ${xDiv} ${yStart} ` +
+             `L ${xDiv} ${yMid - r} ` +
+             `A ${r} ${r} 0 0 0 ${xDiv + r} ${yMid} ` +
+             `L ${xBranch - r} ${yMid} ` +
+             `A ${r} ${r} 0 0 1 ${xBranch} ${yMid + r} ` +
+             `L ${xBranch} ${yEnd}`;
+    }
+  }
+
   groupObjects: Array<{
     name: string;
     owner?: string;
@@ -6951,7 +7145,106 @@ export class PmoGovernanceFrameworkComponent implements OnInit {
   newGroupPurpose = '';
   newGroupEnvFactors = '';
 
-  // Drawer branch/section nested list builder
+  // ─── Org Group (top-level, wraps divisions) ───────────────────────────────
+  orgGroups: Array<{
+    name: string;
+    owner?: string;
+    purpose?: string;
+    groupObjects: Array<{
+      name: string;
+      owner?: string;
+      purpose?: string;
+      environmentFactors?: string;
+      divisions: Array<{
+        name: string;
+        owner?: string;
+        purpose?: string;
+        branches: Array<{
+          name: string;
+          owner?: string;
+          purpose?: string;
+          sections: Array<{ name: string }>;
+        }>;
+      }>;
+    }>;
+  }> = [];
+
+  selectedOrgGroupIndex: number | null = null;
+  isAddingOrgGroup = false;
+  editingOrgGroupIndex: number | null = null;
+  newOrgGroupName = '';
+  newOrgGroupOwner = '';
+
+  openAddOrgGroupDrawer(): void {
+    this.editingOrgGroupIndex = null;
+    this.newOrgGroupName = '';
+    this.newOrgGroupOwner = '';
+    this.isAddingOrgGroup = true;
+    this.changeDetector.markForCheck();
+  }
+
+  openEditOrgGroupDrawer(idx: number): void {
+    this.editingOrgGroupIndex = idx;
+    this.newOrgGroupName = this.orgGroups[idx].name;
+    this.newOrgGroupOwner = this.orgGroups[idx].owner || '';
+    this.isAddingOrgGroup = true;
+    this.changeDetector.markForCheck();
+  }
+
+  closeAddOrgGroupDrawer(): void {
+    this.isAddingOrgGroup = false;
+    this.editingOrgGroupIndex = null;
+    this.newOrgGroupName = '';
+    this.newOrgGroupOwner = '';
+    this.changeDetector.markForCheck();
+  }
+
+  saveOrgGroup(): void {
+    const name = this.newOrgGroupName.trim() || 'New Group';
+    if (this.editingOrgGroupIndex !== null) {
+      this.orgGroups[this.editingOrgGroupIndex].name = name;
+      this.orgGroups[this.editingOrgGroupIndex].owner = this.newOrgGroupOwner.trim() || undefined;
+      this.orgGroups = [...this.orgGroups];
+    } else {
+      this.orgGroups = [...this.orgGroups, { name, owner: this.newOrgGroupOwner.trim() || undefined, groupObjects: [] }];
+    }
+    this.closeAddOrgGroupDrawer();
+  }
+
+  deleteOrgGroup(): void {
+    const idx = this.editingOrgGroupIndex;
+    this.closeAddOrgGroupDrawer();
+    if (idx !== null) {
+      if (this.selectedOrgGroupIndex === idx) {
+        this.selectedOrgGroupIndex = null;
+        this.groupObjects = [];
+      }
+      this.orgGroups = this.orgGroups.filter((_, i) => i !== idx);
+      this.changeDetector.markForCheck();
+    }
+  }
+
+  selectOrgGroup(idx: number): void {
+    // Persist current groupObjects back before switching
+    if (this.selectedOrgGroupIndex !== null) {
+      this.orgGroups[this.selectedOrgGroupIndex].groupObjects = [...this.groupObjects];
+    }
+    this.selectedOrgGroupIndex = idx;
+    this.groupObjects = this.orgGroups[idx].groupObjects ?? [];
+    this.selectedGroupIndex = 0;
+    this.changeDetector.markForCheck();
+  }
+
+  backToGroupsView(): void {
+    if (this.selectedOrgGroupIndex !== null) {
+      this.orgGroups[this.selectedOrgGroupIndex].groupObjects = [...this.groupObjects];
+      this.orgGroups = [...this.orgGroups];
+    }
+    this.selectedOrgGroupIndex = null;
+    this.groupObjects = [];
+    this.changeDetector.markForCheck();
+  }
+  // ─────────────────────────────────────────────────────────────────────────
   drawerBranches: Array<{ name: string; sections: Array<{ name: string }> }> = [];
   drawerSections: Array<{ name: string }> = [];
 
