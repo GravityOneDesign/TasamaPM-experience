@@ -112,7 +112,7 @@ export const pmoFrontdoorActions: PmConsoleFrontdoorAction[] = [
   },
   {
     id: 'report-review',
-    title: 'Report & Review Progress',
+    title: 'Governance & Reporting',
     description: 'Create scheduled or adhoc reports to monitor overall progress and review status reports sent to you by managers.',
     icon: 'chart-column',
     decor: 'hex',

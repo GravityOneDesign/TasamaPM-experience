@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, OnDestroy, Output } from '@angular/core';
 import { PmConsolePlanDrawerComponent } from './pm-console-plan-drawer.component';
+import { PmConsolePlanReviewDrawerComponent } from './shared/pm-console-plan-review-drawer.component';
+import { PmConsoleGovernanceMeetingDrawerComponent } from './shared/pm-console-governance-meeting-drawer.component';
 import { PmConsoleReportDrawerComponent } from './pm-console-report-drawer.component';
 import {
   stageDefinitions,
@@ -65,6 +67,8 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
     PmConsoleBenefitProfileComponent,
     PmConsoleIconComponent,
     PmConsolePlanDrawerComponent,
+    PmConsolePlanReviewDrawerComponent,
+    PmConsoleGovernanceMeetingDrawerComponent,
     PmConsoleReportDrawerComponent,
     PmConsoleRiskProfileComponent,
     PortfolioManagerStageGateDrawerComponent,
@@ -75,7 +79,7 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
       @if (activeGroupItems.length) {
         <div class="portfolio-action-profile-drawer-shell" aria-live="polite">
           <button class="portfolio-action-profile-backdrop" type="button" (click)="close.emit()" [attr.aria-label]="'Close drawer'"></button>
-          <aside class="portfolio-action-group-drawer overdue-reports-drawer" role="dialog" aria-modal="true" [attr.aria-label]="selected.type + ' list'">
+          <aside class="portfolio-action-group-drawer overdue-reports-drawer" role="dialog" aria-modal="true" [attr.aria-label]="selected.type + ' list'" [attr.data-drawer-type]="selected.type">
             
             <!-- Header -->
             <header class="overdue-reports-header">
@@ -112,20 +116,19 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
 
             <!-- Scrollable List of Cards -->
             <section class="overdue-reports-list" [attr.aria-label]="selected.type">
-              @for (report of filteredGroupItems; track report.id) {
+              @for (report of filteredGroupItems; track report.id; let i = $index) {
                 <div class="overdue-report-card">
                   <div class="card-top-pill">
-                    <span class="action-type-pill" [attr.data-card-type]="getNormalizedCardType(report)">
-                      {{ getNormalizedCardType(report) }}
-                    </span>
+                    <span pmConsoleIcon="calendar" class="calendar-icon" aria-hidden="true"></span>
+                    <span>{{ getCardDate(i, report) }}</span>
                   </div>
-                  <h3 class="card-title">{{ report.label }}</h3>
-                  <p class="card-project">{{ report.project }}</p>
+                  <h3 class="card-title">{{ getCardTitle(i, report) }}</h3>
+                  <p class="card-project">{{ getCardProject(i, report) }}</p>
                   <div class="card-divider"></div>
                   <footer class="card-footer">
                     <div class="card-footer-left">
-                      <span pmConsoleIcon="calendar" class="calendar-icon" aria-hidden="true"></span>
-                      <span>{{ formatCardDate(report.date) }} ({{ getReportMeta(report, selected.column) }})</span>
+                      <span class="avatar-circle">{{ getAvatarInitials(getCardOwner(i, report)) }}</span>
+                      <span>{{ getCardOwner(i, report) }}</span>
                     </div>
                     <button class="open-link" type="button" (click)="handleDetailItemClick(report)">
                       <span>{{ report.cta || 'Open' }}</span>
@@ -240,6 +243,12 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
                 (attachmentRemove)="removeStageGateAttachment(gate, $event)"
               ></app-portfolio-manager-stage-gate-drawer>
             }
+          }
+          @case ('governance') {
+            <app-pm-console-governance-meeting-drawer (close)="close.emit()"></app-pm-console-governance-meeting-drawer>
+          }
+          @case ('plan') {
+            <app-pm-console-plan-review-drawer (close)="close.emit()"></app-pm-console-plan-review-drawer>
           }
           @default {
             <app-pm-console-plan-drawer
@@ -838,6 +847,34 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
         height: 20px;
       }
 
+      [data-drawer-type="Governance Committees"] .report-icon-bg {
+        background: rgba(52, 84, 196, 0.1) !important;
+        color: #3454c4 !important;
+      }
+
+      [data-drawer-type="Change requests"] .report-icon-bg,
+      [data-drawer-type="Change Requests"] .report-icon-bg {
+        background: rgba(196, 52, 114, 0.1) !important;
+        color: #c43472 !important;
+      }
+
+      [data-drawer-type="Status reports"] .report-icon-bg,
+      [data-drawer-type="Status Reports"] .report-icon-bg {
+        background: rgba(111, 32, 149, 0.1) !important;
+        color: #6f2095 !important;
+      }
+
+      [data-drawer-type="Plans"] .report-icon-bg,
+      [data-drawer-type="Project Plans"] .report-icon-bg {
+        background: rgba(121, 186, 221, 0.1) !important;
+        color: #79badd !important;
+      }
+
+      [data-drawer-type="Benefits"] .report-icon-bg {
+        background: rgba(22, 107, 73, 0.1) !important;
+        color: #166b49 !important;
+      }
+
       .overdue-reports-header h2 {
         color: #0b0b0b;
         font-size: 20px;
@@ -960,60 +997,17 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
       .overdue-report-card .card-top-pill {
         display: flex;
         justify-content: flex-start;
-      }
-
-      .overdue-report-card .action-type-pill {
-        display: inline-flex;
         align-items: center;
-        justify-content: center;
-        font-size: 11px;
-        font-weight: 600;
-        padding: 4px 8px;
-        border-radius: 6px;
-        line-height: 1;
-        border: 1px solid transparent;
+        gap: 8px;
+        color: #737b8c;
+        font-size: 13px;
+        margin-bottom: 2px;
       }
 
-      .overdue-report-card .action-type-pill[data-card-type="Plans"] {
-        border-color: rgba(121, 186, 221, 0.25);
-        background: rgba(121, 186, 221, 0.1);
-        color: #79badd;
-      }
-
-      .overdue-report-card .action-type-pill[data-card-type="Governance Committees"] {
-        border-color: rgba(52, 84, 196, 0.25);
-        background: rgba(52, 84, 196, 0.1);
-        color: #3454c4;
-      }
-
-      .overdue-report-card .action-type-pill[data-card-type="Status reports"] {
-        border-color: rgba(111, 32, 149, 0.25);
-        background: rgba(111, 32, 149, 0.1);
-        color: #6f2095;
-      }
-
-      .overdue-report-card .action-type-pill[data-card-type="Change requests"] {
-        border-color: rgba(196, 52, 114, 0.25);
-        background: rgba(196, 52, 114, 0.1);
-        color: #c43472;
-      }
-
-      .overdue-report-card .action-type-pill[data-card-type="Benefits"] {
-        border-color: rgba(22, 107, 73, 0.25);
-        background: rgba(22, 107, 73, 0.1);
-        color: #166b49;
-      }
-
-      .overdue-report-card .action-type-pill[data-card-type="Dependency"] {
-        border-color: rgba(121, 186, 221, 0.25);
-        background: rgba(121, 186, 221, 0.1);
-        color: #79badd;
-      }
-
-      .overdue-report-card .action-type-pill[data-card-type="Risk"] {
-        border-color: rgba(196, 52, 114, 0.25);
-        background: rgba(196, 52, 114, 0.1);
-        color: #c43472;
+      .overdue-report-card .card-top-pill .calendar-icon {
+        width: 14px;
+        height: 14px;
+        color: #737b8c;
       }
 
       .overdue-report-card .card-title {
@@ -1045,15 +1039,22 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
       .overdue-report-card .card-footer-left {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 12px;
         color: #737b8c;
-        font-size: 12.5px;
+        font-size: 13px;
       }
 
-      .overdue-report-card .card-footer-left .calendar-icon {
-        width: 14px;
-        height: 14px;
-        color: #737b8c;
+      .overdue-report-card .avatar-circle {
+        background: #eef4ff;
+        color: #1f4fb8;
+        border-radius: 999px;
+        width: 24px;
+        height: 24px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 700;
       }
 
       .overdue-report-card .open-link {
@@ -1094,6 +1095,136 @@ export class PortfolioManagerActionDrawerComponent implements OnChanges, OnDestr
       r.project.toLowerCase().includes(q) ||
       r.ownerName.toLowerCase().includes(q)
     );
+  }
+
+  getAvatarInitials(name: string): string {
+    if (!name) return '';
+    if (name === 'Multiple') return 'M';
+    const parts = name.split(' ');
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  }
+
+  private readonly hardcodedBenefits = [
+    { dateStr: 'May 12 (Overdue by 5 days)', title: 'Value Realization Hub', project: 'Project: Vision 2030', owner: 'Muna Hasan' },
+    { dateStr: 'May 15 (Overdue by 2 days)', title: 'Outcome Tracking System', project: 'Project: UAE Research Map', owner: 'Osman Khan' },
+    { dateStr: 'May 18 (Overdue by 3 days)', title: 'Success Metrics Hub', project: 'Project: Vision 2030', owner: 'Nadia Hossain' },
+    { dateStr: 'May 25 (Overdue by 4 days)', title: 'Vision 2030 April benefits', project: 'Project: UAE Research Map', owner: 'Jasmine Smith' },
+    { dateStr: 'May 20 (Overdue by 1 days)', title: 'Finalize project timeline for Saudi Initiative', project: 'Project: Vision 2030', owner: 'Derek Patel' },
+  ];
+
+  private readonly hardcodedStatusReports = [
+    { dateStr: 'May 12 (Overdue by 5 days)', title: 'UAE Research map', project: 'Project Status Report', owner: 'Muna Hasan' },
+    { dateStr: 'May 15 (Overdue by 2 days)', title: 'Tasama 2026 weekly report', project: 'Program Status Report', owner: 'Osman Khan' },
+    { dateStr: 'May 20 (Overdue by 1 days)', title: 'Benefits for Saudi Initiative', project: 'Adhoc Report', owner: 'Derek Patel' },
+    { dateStr: 'May 25 (Overdue by 4 days)', title: 'Annual Budget', project: 'Scheduled Report', owner: 'Jasmine Smith' },
+    { dateStr: 'May 18 (Overdue by 3 days)', title: 'Vision 2030 Monthly Report', project: 'Program Report', owner: 'Nadia Hossain' },
+  ];
+
+  private readonly hardcodedPlans = [
+    { dateStr: 'May 12 (Overdue by 5 days)', title: 'UAE Research map', project: 'Project Plan', owner: 'Muna Hasan' },
+    { dateStr: 'May 18 (Overdue by 3 days)', title: 'TASAMA', project: 'Portfolio Plan', owner: 'Nadia Hossain' },
+    { dateStr: 'May 15 (Overdue by 2 days)', title: 'Program Name', project: 'Program Plan', owner: 'Osman Khan' },
+    { dateStr: 'May 25 (Overdue by 4 days)', title: 'Project Name', project: 'Project Plan', owner: 'Jasmine Smith' },
+    { dateStr: 'May 20 (Overdue by 1 days)', title: 'NEOM', project: 'Project Plan', owner: 'Derek Patel' },
+  ];
+
+  private readonly hardcodedGovernance = [
+    { dateStr: 'May 12 (Overdue by 5 days)', title: 'Steering Board', project: 'Project: Vision 2030', owner: 'Muna Hasan' },
+    { dateStr: 'May 15 (Overdue by 2 days)', title: 'Portfolio Council', project: 'Project: UAE Research Map', owner: 'Osman Khan' },
+    { dateStr: 'May 18 (Overdue by 3 days)', title: 'Executive Review Panel', project: 'Project: Vision 2030', owner: 'Nadia Hossain' },
+    { dateStr: 'May 25 (Overdue by 4 days)', title: 'Program Oversight Group', project: 'Project: UAE Research Map', owner: 'Jasmine Smith' },
+    { dateStr: 'May 20 (Overdue by 1 days)', title: 'Strategic Governance Forum', project: 'Project: Vision 2030', owner: 'Derek Patel' },
+  ];
+
+  private readonly hardcodedChangeRequests = [
+    { dateStr: 'May 12 (Overdue by 5 days)', title: 'Scope Revision Log', project: 'Project: Vision 2030', owner: 'Muna Hasan' },
+    { dateStr: 'May 15 (Overdue by 2 days)', title: 'Enhancement Queue', project: 'Project: UAE Research Map', owner: 'Osman Khan' },
+    { dateStr: 'May 18 (Overdue by 3 days)', title: 'Change Intake Board', project: 'Project: Vision 2030', owner: 'Nadia Hossain' },
+    { dateStr: 'May 25 (Overdue by 4 days)', title: 'Modification Tracker', project: 'Project: UAE Research Map', owner: 'Jasmine Smith' },
+    { dateStr: 'May 20 (Overdue by 1 days)', title: 'Release Adjustment Notes', project: 'Project: Vision 2030', owner: 'Derek Patel' },
+  ];
+
+  getCardDate(index: number, report: PortfolioActionItem): string {
+    const type = (this.item && 'type' in this.item ? this.item.type : '')?.toLowerCase();
+    if (type === 'benefits') {
+      return this.hardcodedBenefits[index % this.hardcodedBenefits.length].dateStr;
+    }
+    if (type === 'status reports') {
+      return this.hardcodedStatusReports[index % this.hardcodedStatusReports.length].dateStr;
+    }
+    if (type === 'plans') {
+      return this.hardcodedPlans[index % this.hardcodedPlans.length].dateStr;
+    }
+    if (type === 'governance committees') {
+      return this.hardcodedGovernance[index % this.hardcodedGovernance.length].dateStr;
+    }
+    if (type === 'change requests') {
+      return this.hardcodedChangeRequests[index % this.hardcodedChangeRequests.length].dateStr;
+    }
+    return `${this.formatCardDate(report.date)} (${this.getReportMeta(report, this.item?.column || '')})`;
+  }
+
+  getCardTitle(index: number, report: PortfolioActionItem): string {
+    const type = (this.item && 'type' in this.item ? this.item.type : '')?.toLowerCase();
+    if (type === 'benefits') {
+      return this.hardcodedBenefits[index % this.hardcodedBenefits.length].title;
+    }
+    if (type === 'status reports') {
+      return this.hardcodedStatusReports[index % this.hardcodedStatusReports.length].title;
+    }
+    if (type === 'plans') {
+      return this.hardcodedPlans[index % this.hardcodedPlans.length].title;
+    }
+    if (type === 'governance committees') {
+      return this.hardcodedGovernance[index % this.hardcodedGovernance.length].title;
+    }
+    if (type === 'change requests') {
+      return this.hardcodedChangeRequests[index % this.hardcodedChangeRequests.length].title;
+    }
+    return report.label;
+  }
+
+  getCardProject(index: number, report: PortfolioActionItem): string {
+    const type = (this.item && 'type' in this.item ? this.item.type : '')?.toLowerCase();
+    if (type === 'benefits') {
+      return this.hardcodedBenefits[index % this.hardcodedBenefits.length].project;
+    }
+    if (type === 'status reports') {
+      return this.hardcodedStatusReports[index % this.hardcodedStatusReports.length].project;
+    }
+    if (type === 'plans') {
+      return this.hardcodedPlans[index % this.hardcodedPlans.length].project;
+    }
+    if (type === 'governance committees') {
+      return this.hardcodedGovernance[index % this.hardcodedGovernance.length].project;
+    }
+    if (type === 'change requests') {
+      return this.hardcodedChangeRequests[index % this.hardcodedChangeRequests.length].project;
+    }
+    return `Project: ${report.project}`;
+  }
+
+  getCardOwner(index: number, report: PortfolioActionItem): string {
+    const type = (this.item && 'type' in this.item ? this.item.type : '')?.toLowerCase();
+    if (type === 'benefits') {
+      return this.hardcodedBenefits[index % this.hardcodedBenefits.length].owner;
+    }
+    if (type === 'status reports') {
+      return this.hardcodedStatusReports[index % this.hardcodedStatusReports.length].owner;
+    }
+    if (type === 'plans') {
+      return this.hardcodedPlans[index % this.hardcodedPlans.length].owner;
+    }
+    if (type === 'governance committees') {
+      return this.hardcodedGovernance[index % this.hardcodedGovernance.length].owner;
+    }
+    if (type === 'change requests') {
+      return this.hardcodedChangeRequests[index % this.hardcodedChangeRequests.length].owner;
+    }
+    return report.owner;
   }
 
   get filteredGroupItems(): readonly PortfolioActionItem[] {
