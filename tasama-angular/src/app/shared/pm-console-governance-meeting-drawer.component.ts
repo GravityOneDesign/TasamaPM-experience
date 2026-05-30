@@ -1,6 +1,41 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PmConsoleIconComponent } from './pm-console-icon.component';
+
+interface Attendee {
+  name: string;
+  initials: string;
+  role: string;
+}
+
+interface WatchlistItem {
+  id: number;
+  title: string;
+  description: string;
+  linkText: string;
+}
+
+const ATTENDEE_POOL: Attendee[] = [
+  { name: 'Muna Hassan', initials: 'MH', role: 'Delivery Office' },
+  { name: 'Ahmed Hassan', initials: 'AH', role: 'Program Manager' },
+  { name: 'Sarah Al Saud', initials: 'SA', role: 'PMO Specialist' },
+  { name: 'Fatima Qahtani', initials: 'FQ', role: 'Project Manager' },
+  { name: 'Osman Khan', initials: 'OK', role: 'Portfolio Manager' },
+  { name: 'Nadia Hossain', initials: 'NH', role: 'Business Analyst' },
+  { name: 'Jasmine Smith', initials: 'JS', role: 'Technical Sponsor' },
+  { name: 'David Garcia', initials: 'DG', role: 'Operations Director' },
+];
+
+const WATCHLIST_POOL: WatchlistItem[] = [
+  { id: 1, title: 'Critical path dependency slip in Vision 2030', description: 'Review potential mitigations for NEOM integration and resource constraints.', linkText: 'View Project' },
+  { id: 2, title: 'Benefits realization tracking for Smart City Alpha', description: 'Track platform adoption rates and stakeholder readiness metrics.', linkText: 'View Program' },
+  { id: 3, title: 'Overdue budget baseline approval for UAE Research Map', description: 'Resolve CAPEX baseline allocation variances before the weekly review.', linkText: 'View Risk' },
+  { id: 4, title: 'Sponsor evidence pack submission status', description: 'Ensure sponsor decision notes are attached for the next stagegate milestone.', linkText: 'View Issue' },
+  { id: 5, title: 'Status report review for Standalone initiatives', description: 'Analyze monthly reporting completion rates across standalone projects.', linkText: 'View Project' },
+  { id: 6, title: 'Change request assessment for Vision 2030', description: 'Track scope extensions and baseline adjustments requested by the delivery head.', linkText: 'View Program' },
+  { id: 7, title: 'Total active initiatives across sectors', description: 'Agreement on current portfolio status and areas requiring intervention.', linkText: 'View Project' },
+  { id: 8, title: 'Stakeholder alignment on NEOM roadmap', description: 'Review milestone progress and cross-program dependencies with external partners.', linkText: 'View Program' }
+];
 
 @Component({
   selector: 'app-pm-console-governance-meeting-drawer',
@@ -82,7 +117,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
                       <p class="attendees-desc">List of meeting attendees</p>
                     </div>
                   </div>
-                  <span class="attendees-badge">5 attendees</span>
+                  <span class="attendees-badge">{{ attendees.length }} attendees</span>
                 </div>
                 <table class="attendees-table">
                   <thead>
@@ -92,42 +127,17 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>
-                        <div class="user-cell">
-                          <span class="avatar">MH</span>
-                          <span class="user-name">Muna Hassan</span>
-                        </div>
-                      </td>
-                      <td>Delivery Office</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="user-cell">
-                          <span class="avatar">MH</span>
-                          <span class="user-name">Muna Hassan</span>
-                        </div>
-                      </td>
-                      <td>Delivery Office</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="user-cell">
-                          <span class="avatar">MH</span>
-                          <span class="user-name">Muna Hassan</span>
-                        </div>
-                      </td>
-                      <td>Delivery Office</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="user-cell">
-                          <span class="avatar">MH</span>
-                          <span class="user-name">Muna Hassan</span>
-                        </div>
-                      </td>
-                      <td>Delivery Office</td>
-                    </tr>
+                    @for (att of attendees; track $index) {
+                      <tr>
+                        <td>
+                          <div class="user-cell">
+                            <span class="avatar">{{ att.initials }}</span>
+                            <span class="user-name">{{ att.name }}</span>
+                          </div>
+                        </td>
+                        <td>{{ att.role }}</td>
+                      </tr>
+                    }
                   </tbody>
                 </table>
               </div>
@@ -139,7 +149,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
               <div class="card-header">
                 <div class="card-title-group">
                   <span pmConsoleIcon="calendar-days" class="card-icon" aria-hidden="true"></span>
-                  <h3 class="card-title">Forum Agenda / Watchlist <span class="header-count">| 4 items</span></h3>
+                  <h3 class="card-title">Forum Agenda / Watchlist <span class="header-count">| {{ watchlistItems.length }} items</span></h3>
                 </div>
                 <button type="button" class="collapse-btn" aria-label="Toggle agenda" (click)="toggleSection('agenda')">
                   <span [pmConsoleIcon]="isSectionExpanded('agenda') ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></span>
@@ -148,42 +158,19 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
 
               @if (isSectionExpanded('agenda')) {
               <div class="agenda-grid">
-                <div class="agenda-card">
-                  <span class="agenda-eyebrow">AGENDA ITEM 1</span>
-                  <h4 class="agenda-title">Total active initiatives across sectors</h4>
-                  <p class="agenda-desc">Agreement on current portfolio status and areas requiring intervention.</p>
-                  <a href="#" class="agenda-link">View Project <span pmConsoleIcon="arrow-right" aria-hidden="true"></span></a>
-                </div>
-                <div class="agenda-card">
-                  <span class="agenda-eyebrow">AGENDA ITEM 2</span>
-                  <h4 class="agenda-title">Total active initiatives across sectors</h4>
-                  <p class="agenda-desc">Agreement on current portfolio status and areas requiring intervention.</p>
-                  <a href="#" class="agenda-link">View Program <span pmConsoleIcon="arrow-right" aria-hidden="true"></span></a>
-                </div>
-                <div class="agenda-card">
-                  <span class="agenda-eyebrow">AGENDA ITEM 3</span>
-                  <h4 class="agenda-title">Total active initiatives across sectors</h4>
-                  <p class="agenda-desc">Agreement on current portfolio status and areas requiring intervention.</p>
-                  <a href="#" class="agenda-link">View Risk <span pmConsoleIcon="arrow-right" aria-hidden="true"></span></a>
-                </div>
-                <div class="agenda-card">
-                  <span class="agenda-eyebrow">AGENDA ITEM 4</span>
-                  <h4 class="agenda-title">Total active initiatives across sectors</h4>
-                  <p class="agenda-desc">Agreement on current portfolio status and areas requiring intervention.</p>
-                  <a href="#" class="agenda-link">View Issue <span pmConsoleIcon="arrow-right" aria-hidden="true"></span></a>
-                </div>
+                @for (item of watchlistItems; track item.id) {
+                  <div class="agenda-card">
+                    <span class="agenda-eyebrow">AGENDA ITEM {{ item.id }}</span>
+                    <h4 class="agenda-title">{{ item.title }}</h4>
+                    <p class="agenda-desc">{{ item.description }}</p>
+                    <a href="#" class="agenda-link">{{ item.linkText }} <span pmConsoleIcon="arrow-right" aria-hidden="true"></span></a>
+                  </div>
+                }
               </div>
               }
             </div>
           </section>
         </div>
-        <footer class="drawer-footer">
-          <div class="footer-actions">
-            <button type="button" class="btn-cancel" (click)="close.emit()">Cancel</button>
-            <button type="button" class="btn-more">More actions <span pmConsoleIcon="chevron-down" aria-hidden="true"></span></button>
-            <button type="button" class="btn-approve">Approve</button>
-          </div>
-        </footer>
       </aside>
     </div>
   `,
@@ -191,6 +178,10 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
     `
       :host {
         display: contents;
+      }
+
+      :host ::ng-deep .icon {
+        color: #10069f !important;
       }
 
       .gov-meeting-drawer-shell {
@@ -269,7 +260,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
         background: #ffffff;
         border: 1px solid #e4e7ef;
         border-radius: 8px;
-        color: #596273;
+        color: #10069f;
         cursor: pointer;
         display: inline-flex;
         height: 32px;
@@ -301,11 +292,11 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
       }
 
       .committee-pill {
-        background: #eef2ff;
+        background: rgba(52, 84, 196, 0.1);
         border-radius: 12px;
-        color: #4338ca;
+        color: #3454c4;
         font-size: 11px;
-        font-weight: 600;
+        font-weight: 300;
         max-width: min(260px, 100%);
         overflow: hidden;
         padding: 4px 12px;
@@ -349,11 +340,11 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
       }
 
       .category-pill {
-        background: #f3e8ff;
+        background: #ebeaf7;
         border-radius: 999px;
-        color: #7e22ce;
+        color: #10069f;
         font-size: 12px;
-        font-weight: 600;
+        font-weight: 300;
         max-width: min(270px, 22vw);
         overflow: hidden;
         padding: 4px 12px;
@@ -394,7 +385,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
       }
 
       .card-icon {
-        color: #4338ca;
+        color: #10069f;
       }
 
       .card-title {
@@ -410,7 +401,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
       }
 
       .info-icon {
-        color: #9ca3af;
+        color: #10069f;
         cursor: pointer;
       }
 
@@ -418,7 +409,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
         background: none;
         border: 1px solid #e5e7eb;
         border-radius: 50%;
-        color: #4b5563;
+        color: #10069f;
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -450,7 +441,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
       .grid-value {
         color: #374151;
         font-size: 14px;
-        font-weight: 600;
+        font-weight: 300;
       }
 
       /* Attendees Card */
@@ -476,8 +467,8 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
       }
 
       .icon-square {
-        background: #eef2ff;
-        color: #4338ca;
+        background: #ebeaf7;
+        color: #10069f;
         border-radius: 8px;
         width: 40px;
         height: 40px;
@@ -541,8 +532,8 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
       }
 
       .avatar {
-        background: #eef2ff;
-        color: #4338ca;
+        background: #ebeaf7;
+        color: #10069f;
         font-size: 11px;
         font-weight: 600;
         width: 24px;
@@ -562,6 +553,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 16px;
+        margin-top: 24px;
       }
 
       .agenda-card {
@@ -600,7 +592,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
         display: inline-flex;
         align-items: center;
         gap: 4px;
-        color: #4338ca;
+        color: #10069f;
         font-size: 13px;
         font-weight: 600;
         text-decoration: none;
@@ -608,59 +600,6 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
 
       .agenda-link:hover {
         text-decoration: underline;
-      }
-
-      .drawer-footer {
-        background: #ffffff;
-        border-top: 1px solid #dddddd;
-        bottom: 0;
-        display: flex;
-        flex-shrink: 0;
-        justify-content: flex-end;
-        min-height: 73px;
-        padding: 16px 24px;
-        position: sticky;
-        z-index: 3;
-      }
-
-      .footer-actions {
-        align-items: center;
-        display: flex;
-        gap: 12px;
-      }
-
-      .btn-cancel,
-      .btn-more,
-      .btn-approve {
-        align-items: center;
-        border-radius: 999px;
-        cursor: pointer;
-        display: inline-flex;
-        font-size: 14px;
-        font-weight: 600;
-        height: 40px;
-        justify-content: center;
-        padding: 0 16px;
-      }
-
-      .btn-cancel {
-        background: transparent;
-        border: 0;
-        color: #404040;
-      }
-
-      .btn-more {
-        background: #ffffff;
-        border: 1px solid #d3d3d3;
-        color: #404040;
-        gap: 8px;
-      }
-
-      .btn-approve {
-        background: #10069f;
-        border: 1px solid #10069f;
-        color: #ffffff;
-        min-width: 96px;
       }
 
       @media (max-width: 1180px) {
@@ -699,12 +638,36 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
     `
   ]
 })
-export class PmConsoleGovernanceMeetingDrawerComponent {
+export class PmConsoleGovernanceMeetingDrawerComponent implements OnInit {
   @Input() eventTitle = 'Annual Performance Review';
   @Input() forumName = 'Audit Committee';
   @Input() statusLabel = 'Upcoming';
   @Output() close = new EventEmitter<void>();
-  private readonly expandedSections = new Set<string>(['meeting']);
+
+  private readonly expandedSections = new Set<string>(['meeting', 'agenda']);
+
+  attendees: Attendee[] = [];
+  watchlistItems: WatchlistItem[] = [];
+
+  ngOnInit(): void {
+    this.randomizeAttendees();
+    this.randomizeWatchlist();
+  }
+
+  randomizeAttendees(): void {
+    const shuffled = [...ATTENDEE_POOL].sort(() => Math.random() - 0.5);
+    const count = Math.floor(Math.random() * 3) + 4; // 4 to 6 attendees
+    this.attendees = shuffled.slice(0, count);
+  }
+
+  randomizeWatchlist(): void {
+    const shuffled = [...WATCHLIST_POOL].sort(() => Math.random() - 0.5);
+    const selected = shuffled.slice(0, 4);
+    this.watchlistItems = selected.map((item, index) => ({
+      ...item,
+      id: index + 1
+    }));
+  }
 
   isSectionExpanded(section: string): boolean {
     return this.expandedSections.has(section);

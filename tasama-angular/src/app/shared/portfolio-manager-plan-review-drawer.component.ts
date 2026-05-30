@@ -21,7 +21,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
               </div>
               <h2 class="plan-title">{{ projectName }}</h2>
               <p class="plan-desc">
-                {{ actionDescription }}
+                Track blockers, open decisions, and delivery problems so ownership and next action are visible without opening another tool.
               </p>
             </div>
             <div class="drawer-header-actions">
@@ -37,15 +37,15 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
           <section class="drawer-body">
             <!-- Project Profile Card -->
             <div class="info-card">
-              <div class="card-header">
+              <div class="card-header" (click)="toggleSection('profile')" style="cursor: pointer;">
                 <div class="card-title-group">
                   <div class="icon-square">
-                    <span pmConsoleIcon="file-text" aria-hidden="true"></span>
+                    <span pmConsoleIcon="rocket" aria-hidden="true"></span>
                   </div>
                   <h3 class="card-title">Project Profile</h3>
                   <span pmConsoleIcon="info" class="info-icon" aria-hidden="true"></span>
                 </div>
-                <button type="button" class="collapse-btn" aria-label="Toggle project profile" (click)="toggleSection('profile')">
+                <button type="button" class="collapse-btn" aria-label="Toggle project profile">
                   <span [pmConsoleIcon]="isSectionExpanded('profile') ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></span>
                 </button>
               </div>
@@ -81,15 +81,15 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
 
             <!-- Purpose and Outcome Card -->
             <div class="info-card">
-              <div class="card-header">
+              <div class="card-header" (click)="toggleSection('purpose')" style="cursor: pointer;">
                 <div class="card-title-group">
                   <div class="icon-square border-only">
-                    <span pmConsoleIcon="target" class="border-icon" aria-hidden="true"></span>
+                    <span pmConsoleIcon="info" class="border-icon" aria-hidden="true"></span>
                   </div>
                   <h3 class="card-title">Purpose and outcome</h3>
                   <span pmConsoleIcon="info" class="info-icon" aria-hidden="true"></span>
                 </div>
-                <button type="button" class="collapse-btn" aria-label="Toggle purpose and outcome" (click)="toggleSection('purpose')">
+                <button type="button" class="collapse-btn" aria-label="Toggle purpose and outcome">
                   <span [pmConsoleIcon]="isSectionExpanded('purpose') ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></span>
                 </button>
               </div>
@@ -147,7 +147,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
 
             <!-- Dates and scope Card -->
             <div class="info-card">
-              <div class="card-header">
+              <div class="card-header" (click)="toggleSection('dates')" style="cursor: pointer;">
                 <div class="card-title-group">
                   <div class="icon-square border-only">
                     <span pmConsoleIcon="calendar" class="border-icon" aria-hidden="true"></span>
@@ -155,7 +155,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
                   <h3 class="card-title">Dates and scope</h3>
                   <span pmConsoleIcon="info" class="info-icon" aria-hidden="true"></span>
                 </div>
-                <button type="button" class="collapse-btn" aria-label="Toggle dates and scope" (click)="toggleSection('dates')">
+                <button type="button" class="collapse-btn" aria-label="Toggle dates and scope">
                   <span [pmConsoleIcon]="isSectionExpanded('dates') ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></span>
                 </button>
               </div>
@@ -248,7 +248,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
 
             <!-- Budget baseline Card -->
             <div class="info-card">
-              <div class="card-header">
+              <div class="card-header" (click)="toggleSection('budget')" style="cursor: pointer;">
                 <div class="card-title-group">
                   <div class="icon-square border-only">
                     <span pmConsoleIcon="dollar-sign" class="border-icon" aria-hidden="true"></span>
@@ -256,7 +256,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
                   <h3 class="card-title">Budget baseline</h3>
                   <span pmConsoleIcon="info" class="info-icon" aria-hidden="true"></span>
                 </div>
-                <button type="button" class="collapse-btn" aria-label="Toggle budget baseline" (click)="toggleSection('budget')">
+                <button type="button" class="collapse-btn" aria-label="Toggle budget baseline">
                   <span [pmConsoleIcon]="isSectionExpanded('budget') ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></span>
                 </button>
               </div>
@@ -277,7 +277,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
 
             <!-- Risks Card -->
             <div class="info-card">
-              <div class="card-header">
+              <div class="card-header" (click)="toggleSection('risks')" style="cursor: pointer;">
                 <div class="card-title-group">
                   <div class="icon-square border-only">
                     <span pmConsoleIcon="triangle-alert" class="border-icon" aria-hidden="true"></span>
@@ -285,7 +285,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
                   <h3 class="card-title">Risks</h3>
                   <span pmConsoleIcon="info" class="info-icon" aria-hidden="true"></span>
                 </div>
-                <button type="button" class="collapse-btn" aria-label="Toggle risks" (click)="toggleSection('risks')">
+                <button type="button" class="collapse-btn" aria-label="Toggle risks">
                   <span [pmConsoleIcon]="isSectionExpanded('risks') ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></span>
                 </button>
               </div>
@@ -339,7 +339,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
               @if (isMoreActionsOpen) {
                 <div class="more-actions-backdrop" (click)="closeMoreActions()"></div>
                 <div class="more-actions-menu">
-                  <button type="button" class="menu-item" (click)="closeMoreActions()">Recommend Rivision</button>
+                  <button type="button" class="menu-item" (click)="closeMoreActions()">Recommend Revision</button>
                   <button type="button" class="menu-item" (click)="closeMoreActions()">Reassign</button>
                   <button type="button" class="menu-item" (click)="closeMoreActions()">Share</button>
                 </div>
@@ -355,6 +355,10 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
     `
       :host {
         display: contents;
+      }
+
+      :host ::ng-deep .icon {
+        color: #10069f !important;
       }
 
       .plan-drawer-shell {
@@ -432,7 +436,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
         background: #ffffff;
         border: 1px solid #e4e7ef;
         border-radius: 8px;
-        color: #687182;
+        color: #10069f;
         cursor: pointer;
         display: inline-flex;
         height: 32px;
@@ -462,10 +466,10 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
       }
 
       .plan-pill {
-        background: #eeeefc;
-        color: #10069f;
+        background: rgba(49, 136, 181, 0.1);
+        color: #3188b5;
         font-size: 12px;
-        font-weight: 500;
+        font-weight: 300;
         padding: 4px 12px;
         border-radius: 6px;
       }
@@ -555,7 +559,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
       }
 
       .info-icon {
-        color: #687182;
+        color: #10069f;
         cursor: pointer;
         height: 16px;
         width: 16px;
@@ -565,7 +569,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
         background: none;
         border: 1px solid #dfe4ee;
         border-radius: 50%;
-        color: #556072;
+        color: #10069f;
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -590,12 +594,12 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
 
       .grid-label {
         color: #687182;
-        font-size: 13px;
+        font-size: 11px;
       }
 
       .grid-value {
         color: #0b0b0b;
-        font-size: 14px;
+        font-size: 12.5px;
         font-weight: 500;
       }
       
@@ -623,13 +627,14 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
         display: flex;
         flex-direction: column;
         gap: 16px;
+        margin-top: 16px;
       }
 
       .section-title {
         margin: 0;
-        font-size: 14px;
-        font-weight: 500;
-        color: #0b0b0b;
+        font-size: 12px;
+        font-weight: 600;
+        color: #2f2f2f;
       }
 
       .statement-box {
@@ -648,10 +653,10 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
 
       /* Outcome Nested Card */
       .outcome-card {
-        border: 1px solid #dfe4ee;
-        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
         overflow: hidden;
-        margin-top: 8px;
+        margin-top: 12px;
       }
 
       .outcome-header {
@@ -681,7 +686,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
       }
 
       .outcome-title {
-        margin: 0 0 4px;
+        margin: 0 0 8px;
         font-size: 15px;
         font-weight: 600;
         color: #0b0b0b;
@@ -712,17 +717,17 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
         font-size: 12px;
         font-weight: 600;
         color: #687182;
-        padding: 16px 20px;
-        background: #f7f7fc;
-        border-bottom: 1px solid #dfe4ee;
-        border-top: 1px solid #dfe4ee;
+        padding: 12px 20px;
+        background: #f8fafc;
+        border-bottom: 1px solid #edf2f7;
+        border-top: 1px solid #edf2f7;
       }
 
       .outcome-table td {
-        padding: 16px 20px;
+        padding: 14px 20px;
         font-size: 13px;
         color: #303645;
-        border-bottom: 1px solid #dfe4ee;
+        border-bottom: 1px solid #edf2f7;
       }
       
       .outcome-table tbody tr:last-child td {
@@ -738,6 +743,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
         align-items: center;
         gap: 12px;
         margin-top: 8px;
+        justify-content: flex-start !important;
       }
 
       .ai-label {
@@ -802,7 +808,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
       .btn-more .icon {
         width: 16px;
         height: 16px;
-        color: #687182;
+        color: #10069f;
       }
 
       .more-actions-wrapper {
@@ -823,7 +829,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
         left: 50%;
         transform: translateX(-50%);
         background: #ffffff;
-        border: 1px solid #dfe4ee;
+        border: 1px solid #e2e8f0;
         border-radius: 12px;
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
         width: 220px;
@@ -836,10 +842,10 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
       .menu-item {
         background: transparent;
         border: none;
-        border-bottom: 1px solid #f4f7fb;
+        border-bottom: 1px solid #f1f5f9;
         text-align: left;
         padding: 16px 20px;
-        color: #303645;
+        color: #374151;
         font-size: 15px;
         font-weight: 500;
         cursor: pointer;
@@ -852,7 +858,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
       }
       
       .menu-item:hover {
-        background: #f7f7fc;
+        background: #f8fafc;
       }
 
       .btn-approve {
@@ -873,10 +879,10 @@ export class PortfolioManagerPlanReviewDrawerComponent {
   @Input() actionTitle = '';
   @Output() close = new EventEmitter<void>();
   isMoreActionsOpen = false;
-  private readonly expandedSections = new Set<string>(['profile']);
+  private readonly expandedSections = new Set<string>(['profile', 'purpose']);
 
   get actionDescription(): string {
-    return this.actionTitle || 'Track blockers, open decisions, and delivery problems so ownership and next action are visible without opening another tool.';
+    return 'Track blockers, open decisions, and delivery problems so ownership and next action are visible without opening another tool.';
   }
 
   isSectionExpanded(section: string): boolean {

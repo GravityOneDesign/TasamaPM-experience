@@ -1,12 +1,14 @@
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PmConsoleWorkCalendarPmComponent, PmConsoleCalendarCell, PmConsoleCalendarItem, PmConsoleCalendarFilter } from './shared/pm-console-work-calendar-pm.component';
+import { PmConsoleWorkCalendarComponent, PmConsoleCalendarCell, PmConsoleCalendarItem, PmConsoleCalendarFilter } from './shared/pm-console-work-calendar.component';
 import { PmConsoleIconService } from './pm-console-icon.service';
 import { iconName } from './portfolio-manager-icon.utils';
 import { portfolioActionItems, portfolioBoardFilters, PortfolioActionItem, PortfolioBoardFilter, PortfolioBoardColumn } from './portfolio-manager-actions.data';
+import { portfolioManagerActionItems } from './portfolio-manager-actions-pm.data';
 import { PortfolioManagerActionDrawerService } from './portfolio-manager-action-drawer.service';
 import { portfolioProgramRows, standaloneProjects, type ProgramRow } from './portfolio-workspace/portfolio-workspace.data';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
+import { PortfolioManagerActionCardComponent } from './portfolio-manager-action-card.component';
 
 type PortfolioWorkTargetType = 'all' | 'portfolio' | 'program' | 'project';
 type PortfolioActionsBoardPresentation = 'kanban' | 'compact';
@@ -38,7 +40,7 @@ interface PortfolioTargetRow {
 @Component({
   selector: 'app-portfolio-manager-actions-pm',
   standalone: true,
-  imports: [CommonModule, PmConsoleIconComponent, PmConsoleWorkCalendarPmComponent],
+  imports: [CommonModule, PmConsoleIconComponent, PmConsoleWorkCalendarComponent, PortfolioManagerActionCardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="actions-workspace">
@@ -269,29 +271,19 @@ interface PortfolioTargetRow {
                   </header>
                   <div class="task-stack">
                     @for (item of column.items; track item.id) {
-                      <button
-                        class="task-card {{ taskCardClass(item.type) }} {{ item.tone }}"
-                        [class.is-selected]="activeBoardItem?.id === item.id"
-                        [attr.data-card-kind]="item.kind"
-                        [attr.data-card-type]="item.type"
-                        type="button"
-                        [attr.aria-label]="actionItemAriaLabel(item)"
-                        (click)="selectBoardItem(item)"
+                      <app-portfolio-manager-action-card
+                        [eventType]="actionChipType(item.type)"
+                        [tag]="item.type"
+                        [title]="item.label"
+                        [subtitle]="item.project"
+                        [due]="formatMetaText(item.meta)"
+                        [ownerInitials]="item.owner"
+                        [ownerName]="item.ownerName || ''"
+                        [actionLabel]="item.cta || 'Open'"
+                        [clickable]="item.kind === 'plan' || item.kind === 'governance'"
+                        (cardClick)="selectBoardItem(item)"
                       >
-                        <span class="task-card-icon {{ item.tone }}">
-                          <span [pmConsoleIcon]="boardDetailIcon(item)" aria-hidden="true"></span>
-                        </span>
-                        
-                        <div class="task-card-title-container">
-                          <span class="task-card-title">{{ item.label }}</span>
-                          <span class="task-card-count">{{ actionItemTotal(item) }}</span>
-                        </div>
-
-                        <span class="task-card-action">
-                          <span>View All</span>
-                          <span pmConsoleIcon="chevron-right" class="arrow-icon" aria-hidden="true"></span>
-                        </span>
-                      </button>
+                      </app-portfolio-manager-action-card>
                     } @empty {
                       <div class="empty-column">No actions in this lane.</div>
                     }
@@ -344,7 +336,7 @@ interface PortfolioTargetRow {
 
         <!-- Calendar view -->
         <div class="calendar-view" [class.is-hidden]="activeView !== 'calendar'" data-work-view="calendar">
-          <app-pm-console-work-calendar-pm
+          <app-pm-console-work-calendar
             [monthLabel]="calendarMonthLabel"
             [monthItemCount]="visibleMonthItemCount"
             [cells]="calendarCells"
@@ -355,7 +347,7 @@ interface PortfolioTargetRow {
             (monthShift)="shiftMonth($event)"
             (filterChange)="setBoardFilter($event)"
             (itemOpen)="handleCalendarItemOpen($event)"
-          ></app-pm-console-work-calendar-pm>
+          ></app-pm-console-work-calendar>
         </div>
       </div>
 
@@ -379,29 +371,67 @@ interface PortfolioTargetRow {
       height: 100%;
     }
     .actions-control-row {
-      padding: 0 0 8px;
+      padding: 0 0 20px !important;
       overflow: visible;
       position: relative;
       z-index: 180;
     }
     .workspace-body {
-      display: flex;
-      flex-direction: column;
-      flex: 1 1 auto;
-      height: auto;
-      min-height: 0;
-      overflow: hidden;
-      padding: 0;
-      position: relative;
-      z-index: 0;
+      display: flex !important;
+      flex-direction: column !important;
+      flex: 1 1 auto !important;
+      height: 100% !important;
+      min-height: 0 !important;
+      overflow: hidden !important;
+      padding: 0 !important;
+      position: relative !important;
+      z-index: 0 !important;
     }
-    .calendar-view,
     .board-view {
       display: flex;
-      flex-direction: column;
-      flex: 1 1 auto;
-      height: auto;
-      min-height: 0;
+      flex-direction: column !important;
+      flex: 1 1 auto !important;
+      height: 100% !important;
+      min-height: 0 !important;
+      overflow: hidden !important;
+    }
+    .kanban-board {
+      display: grid !important;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      gap: 20px !important;
+      flex: 1 1 auto !important;
+      height: 100% !important;
+      min-height: 0 !important;
+      overflow: hidden !important;
+    }
+    .kanban-column {
+      display: flex !important;
+      flex-direction: column !important;
+      height: 100% !important;
+      min-height: 0 !important;
+      overflow: hidden !important;
+      background: #f7f8fb !important;
+      border: 1px solid #eef1f6 !important;
+      border-radius: 8px !important;
+    }
+    .task-stack {
+      display: flex !important;
+      flex: 1 1 auto !important;
+      flex-direction: column !important;
+      gap: 18px !important;
+      min-height: 0 !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      padding: 18px !important;
+      scrollbar-width: thin !important;
+    }
+    .calendar-view {
+      display: flex;
+      flex-direction: column !important;
+      flex: 1 1 auto !important;
+      height: 100% !important;
+      min-height: 0 !important;
+      overflow: hidden !important;
     }
 
     .board-view.has-detail-panel {
@@ -1040,7 +1070,7 @@ interface PortfolioTargetRow {
       height: 24px;
       width: 24px;
     }
-    app-pm-console-work-calendar-pm {
+    app-pm-console-work-calendar {
       height: 100%;
       display: flex;
       flex-direction: column;
@@ -1372,7 +1402,7 @@ export class PortfolioManagerActionsPmComponent implements AfterViewChecked, OnD
   @Input() searchPlaceholder = 'Search actions...';
   @Input() targetPickerAriaLabel = 'Portfolio work target selector';
   @Input() targetAllLabel = 'All programs & projects';
-  @Input() actionItems: readonly PortfolioActionItem[] = portfolioActionItems;
+  @Input() actionItems: readonly PortfolioActionItem[] = portfolioManagerActionItems;
   @Input() boardFilters: readonly PortfolioBoardFilter[] = portfolioBoardFilters;
   @Input() showTargetPicker = true;
   @Input() openItemsInDrawer = true;
@@ -1714,6 +1744,10 @@ export class PortfolioManagerActionsPmComponent implements AfterViewChecked, OnD
   }
 
   selectBoardItem(item: PortfolioActionItem): void {
+    // Disable clicks on all card types except 'Plans' and 'Governance & committee'
+    if (item.kind !== 'plan' && item.kind !== 'governance') {
+      return;
+    }
     if (!this.showBoardDetailPanel) {
       this.openActionDrawer(item);
       return;
@@ -1815,6 +1849,37 @@ export class PortfolioManagerActionsPmComponent implements AfterViewChecked, OnD
       .trim()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
+  }
+
+  actionChipType(type: string): string {
+    const normalized = type.toLowerCase().trim();
+    if (normalized.includes('plan')) return 'Plans';
+    if (normalized.includes('governance')) return 'Governance Committees';
+    if (normalized.includes('report')) return 'Status reports';
+    if (normalized.includes('change')) return 'Change requests';
+    if (normalized.includes('benefit')) return 'Benefits';
+    if (normalized.includes('risk')) return 'Risk';
+    return type;
+  }
+
+  formatMetaText(meta: string): string {
+    if (!meta) return '';
+    const match = meta.match(/\(([^)]+)\)/);
+    return match ? match[1] : meta;
+  }
+
+  getAvatarStyle(owner: string): { [key: string]: string } {
+    const colors: Record<string, { bg: string, color: string }> = {
+      'MH': { bg: '#eef4ff', color: '#3454c4' },
+      'AH': { bg: '#fff0f0', color: '#b91c1c' },
+      'FA': { bg: '#eefbf5', color: '#166c49' },
+      'SA': { bg: '#f2f4f8', color: '#536071' },
+    };
+    const match = colors[owner.toUpperCase()] || { bg: '#f2f4f8', color: '#536071' };
+    return {
+      'background-color': match.bg,
+      'color': match.color
+    };
   }
 
   shiftMonth(delta: number): void {

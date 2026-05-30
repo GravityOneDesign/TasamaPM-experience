@@ -21,6 +21,7 @@ export interface PortfolioActionItem {
   kind: 'plan' | 'report' | 'risk' | 'benefit' | 'change' | 'governance' | 'milestone' | 'task' | 'dependency'; // mapped for filters
   tone: 'green' | 'red' | 'blue' | 'neutral'; // tone color class
   owner: string;         // initials, e.g. 'FA'
+  ownerName?: string;    // full name, e.g. 'Muna Hasan'
   meta: string;          // due label, e.g. 'Overdue by 5 days'
   cta: string;           // action label, e.g. 'Submit'
   column: 'Overdue' | 'This week' | 'Upcoming';
@@ -794,4 +795,121 @@ export function portfolioActionGenericChecklist(item: PortfolioActionItem): Port
     { label: 'Confirm owner response', meta: `Assigned to ${item.owner}; ${item.meta}.`, complete: item.column !== 'Overdue' },
     { label: 'Record portfolio decision', meta: 'Capture the action outcome for the next digest.', complete: false },
   ];
+}
+
+// --- Governance Committee Review Drawer Data ---
+
+export interface GovernanceCommitteeAttendee {
+  readonly name: string;
+  readonly initials: string;
+  readonly role: string;
+}
+
+export interface GovernanceCommitteeAgendaItem {
+  readonly id: number;
+  readonly title: string;
+  readonly description: string;
+  readonly ctaLabel: string;
+}
+
+export interface GovernanceCommitteeDrawerData {
+  readonly forumName: string;
+  readonly category: string;
+  readonly meetingTime: string;
+  readonly meetingDate: string;
+  readonly meetingType: string;
+  readonly location: string;
+  readonly attendees: readonly GovernanceCommitteeAttendee[];
+  readonly agendaItems: readonly GovernanceCommitteeAgendaItem[];
+}
+
+export function portfolioActionGovernanceData(_item: PortfolioActionItem): GovernanceCommitteeDrawerData {
+  return {
+    forumName: 'Audit Committee',
+    category: 'Business Excellence',
+    meetingTime: '2:00 PM',
+    meetingDate: '01/06/2026',
+    meetingType: 'In-person',
+    location: 'Conference Room 1',
+    attendees: [
+      { name: 'Muna Hassan', initials: 'MH', role: 'Delivery Office' },
+      { name: 'Muna Hassan', initials: 'MH', role: 'Delivery Office' },
+      { name: 'Muna Hassan', initials: 'MH', role: 'Delivery Office' },
+      { name: 'Muna Hassan', initials: 'MH', role: 'Delivery Office' },
+      { name: 'Muna Hassan', initials: 'MH', role: 'Delivery Office' },
+    ],
+    agendaItems: [
+      { id: 1, title: 'Total active initiatives across sectors', description: 'Agreement on current portfolio status and areas requiring intervention.', ctaLabel: 'View Project' },
+      { id: 2, title: 'Total active initiatives across sectors', description: 'Agreement on current portfolio status and areas requiring intervention.', ctaLabel: 'View Program' },
+      { id: 3, title: 'Total active initiatives across sectors', description: 'Agreement on current portfolio status and areas requiring intervention.', ctaLabel: 'View Risk' },
+      { id: 4, title: 'Total active initiatives across sectors', description: 'Agreement on current portfolio status and areas requiring intervention.', ctaLabel: 'View Issue' },
+    ],
+  };
+}
+
+// --- Plan Review Drawer Data ---
+
+export interface PlanReviewOutcomeRow {
+  readonly outcome: string;
+  readonly measure: string;
+}
+
+export interface PlanReviewDeliverableRow {
+  readonly name: string;
+  readonly owner: string;
+}
+
+export interface PlanReviewRiskRow {
+  readonly risk: string;
+  readonly owner: string;
+}
+
+export interface PlanReviewDrawerData {
+  readonly projectName: string;
+  readonly category: string;
+  readonly businessUnit: string;
+  readonly pmoContact: string;
+  readonly projectManager: string;
+  readonly projectManagerInitials: string;
+  readonly problemStatement: string;
+  readonly outcomes: readonly PlanReviewOutcomeRow[];
+  readonly aiComponent: string;
+  readonly baselineStartDate: string;
+  readonly baselineEndDate: string;
+  readonly inScope: string;
+  readonly endProducts: readonly PlanReviewDeliverableRow[];
+  readonly managementProducts: readonly PlanReviewDeliverableRow[];
+  readonly capexBaseline: string;
+  readonly opexBaseline: string;
+  readonly risks: readonly PlanReviewRiskRow[];
+}
+
+export function portfolioActionPlanReviewData(item: PortfolioActionItem): PlanReviewDrawerData {
+  return {
+    projectName: item.project || 'UAE Research Map',
+    category: 'Research & Development',
+    businessUnit: 'Research Office',
+    pmoContact: 'PMO Desk',
+    projectManager: 'Muna Hassan',
+    projectManagerInitials: 'MH',
+    problemStatement: 'Track blockers, open decisions, and delivery problems so ownership and next action are visible without opening another tool. Track blockers, open decisions, and delivery problems so ownership and next action are visible without opening another tool. Track blockers, open decisions, and delivery problems so ownership and next action are visible without opening another tool.',
+    outcomes: [
+      { outcome: 'Reduce fragmentation in research efforts', measure: 'Discovery coverage' },
+    ],
+    aiComponent: 'No',
+    baselineStartDate: '31/05/2026',
+    baselineEndDate: '09/06/2026',
+    inScope: 'Track blockers, open decisions, and delivery problems so ownership and next action are visible without opening another tool. Track blockers, open decisions, and delivery problems so ownership and next action are visible without opening another tool. Track blockers, open decisions, and delivery problems so ownership and next action are visible without opening another tool.',
+    endProducts: [
+      { name: 'Research capability map', owner: 'Delivery Office' },
+    ],
+    managementProducts: [
+      { name: 'Project initiation documentation', owner: 'PMO' },
+    ],
+    capexBaseline: '300,000 SAR',
+    opexBaseline: '300,000 SAR',
+    risks: [
+      { risk: 'Stakeholder data quality', owner: 'PMO' },
+    ],
+  };
 }

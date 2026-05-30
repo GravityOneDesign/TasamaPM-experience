@@ -124,7 +124,7 @@ interface CalendarPopoverPosition {
                     (click)="openAgendaItem(cell.items[0], $event)"
                   >
                     <span class="calendar-event-dot"></span>
-                    <span class="calendar-event-title">{{ calendarChipLabel(cell.items[0]) }}</span>
+                    <span class="calendar-event-title">{{ getCalendarChipLabel(cell.items[0]) }}</span>
                   </button>
 
                   <div class="calendar-event-with-more">
@@ -141,7 +141,7 @@ interface CalendarPopoverPosition {
                       (click)="openAgendaItem(cell.items[1], $event)"
                     >
                       <span class="calendar-event-dot"></span>
-                      <span class="calendar-event-title">{{ calendarChipLabel(cell.items[1]) }}</span>
+                      <span class="calendar-event-title">{{ getCalendarChipLabel(cell.items[1]) }}</span>
                     </button>
                     <button
                       class="calendar-more-badge"
@@ -169,7 +169,7 @@ interface CalendarPopoverPosition {
                       (click)="openAgendaItem(item, $event)"
                     >
                       <span class="calendar-event-dot"></span>
-                      <span class="calendar-event-title">{{ calendarChipLabel(item) }}</span>
+                      <span class="calendar-event-title">{{ getCalendarChipLabel(item) }}</span>
                     </button>
                   }
                 }
@@ -193,14 +193,16 @@ interface CalendarPopoverPosition {
         (mouseleave)="hidePreviewSoon()"
         (focusin)="keepPreview()"
         (focusout)="hidePreviewSoon()"
-        (click)="$event.stopPropagation()"
+        (click)="openAgendaItem(previewItem, $event)"
       >
-        <div class="calendar-popover-tag-row">
-          <span class="calendar-popover-kind" [attr.data-event-type]="getCalendarChipType(previewItem)">{{ calendarChipLabel(previewItem) }}</span>
-          <span class="calendar-popover-arrow" pmConsoleIcon="arrow-right" aria-hidden="true"></span>
+        <div class="calendar-popover-card-content">
+          <div class="calendar-popover-card-header">
+            <span class="calendar-popover-kind" [attr.data-event-type]="getCalendarChipType(previewItem)">{{ getCalendarChipType(previewItem) }}</span>
+            <span pmConsoleIcon="arrow-right" class="calendar-popover-arrow" aria-hidden="true"></span>
+          </div>
+          <strong class="calendar-popover-title">{{ getItemDisplayTitle(previewItem) }}</strong>
+          <span class="calendar-popover-subtitle">{{ getItemSubtitle(previewItem) }}</span>
         </div>
-        <strong>{{ previewTitle(previewItem) }}</strong>
-        <p>{{ previewSubtitle(previewItem) }}</p>
       </aside>
     }
 
@@ -219,19 +221,23 @@ interface CalendarPopoverPosition {
         (focusout)="hidePreviewSoon()"
         (click)="$event.stopPropagation()"
       >
-        <div class="calendar-hover-header">
-          <span class="hover-date">{{ dateLabel(previewCell.key) }}</span>
-          <span class="hover-count">{{ previewCell.items.length }} item{{ previewCell.items.length === 1 ? '' : 's' }}</span>
+        <div class="calendar-popover-multi-header">
+          <span class="calendar-popover-multi-date">{{ dateLabel(previewCell.key) }}</span>
+          <span class="calendar-popover-multi-count">{{ previewCell.items.length }} items</span>
         </div>
-        <div class="calendar-day-agenda-list preview-agenda-list">
-          @for (item of previewCell.items; track item.date + item.label + item.project; let last = $last) {
-            <button class="calendar-agenda-row" [class.is-last]="last" type="button" (click)="openAgendaItem(item, $event)">
-              <div class="agenda-row-header">
+        <div class="calendar-popover-multi-list">
+          @for (item of previewCell.items; track item.date + item.label + item.project) {
+            <button
+              class="calendar-popover-multi-item"
+              type="button"
+              (click)="openAgendaItem(item, $event)"
+            >
+              <div class="calendar-popover-card-header">
                 <span class="calendar-popover-kind" [attr.data-event-type]="getCalendarChipType(item)">{{ getCalendarChipType(item) }}</span>
-                <span class="arrow-icon" pmConsoleIcon="arrow-right" aria-hidden="true"></span>
+                <span pmConsoleIcon="arrow-right" class="calendar-popover-arrow" aria-hidden="true"></span>
               </div>
-              <span class="agenda-row-title">{{ item.label }}</span>
-              <span class="agenda-row-subtitle">Project : {{ item.project }}</span>
+              <strong class="calendar-popover-title">{{ getItemDisplayTitle(item) }}</strong>
+              <span class="calendar-popover-subtitle">{{ getItemSubtitle(item) }}</span>
             </button>
           }
         </div>
@@ -284,31 +290,25 @@ interface CalendarPopoverPosition {
       }
 
       .calendar-event {
-        align-items: center;
-        border: 0;
-        border-radius: 6px;
-        box-sizing: border-box;
-        cursor: pointer;
         display: inline-flex;
-        font-size: 10px;
-        font-weight: 500;
-        height: 18px;
-        justify-content: center;
-        letter-spacing: 0.24px;
-        line-height: 16px;
-        margin-top: 0;
+        align-items: center;
+        width: fit-content;
         max-width: calc(100% - 2px);
+        box-sizing: border-box;
+        cursor: default;
+        font-size: 10.25px;
+        height: 22px;
+        margin-top: 0;
         min-width: 0;
         overflow: hidden;
-        padding: 1px 5px;
+        padding: 0 6px;
         position: relative;
-        text-transform: none;
-        width: fit-content;
         z-index: 70;
       }
 
-      .calendar-event-dot {
-        display: none;
+      .calendar-event[data-event-type="Plans"],
+      .calendar-event[data-event-type="Governance committee"] {
+        cursor: pointer;
       }
 
       .calendar-event-title {
@@ -317,6 +317,7 @@ interface CalendarPopoverPosition {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        flex: 1 1 auto;
       }
 
       .calendar-action-summary {
@@ -358,14 +359,12 @@ interface CalendarPopoverPosition {
         align-items: center;
         display: flex;
         gap: 4px;
-        justify-content: flex-start;
         max-width: 100%;
         width: 100%;
       }
 
       .calendar-event-with-more .calendar-event {
-        flex: 0 1 auto;
-        max-width: calc(100% - 32px);
+        flex: 1 1 auto;
         min-width: 0;
       }
 
@@ -568,14 +567,8 @@ interface CalendarPopoverPosition {
       }
 
       .calendar-item-hover-card {
-        border: 0;
-        border-bottom: 1px solid #eeeeee;
-        border-radius: 0;
-        box-shadow: 0 10px 24px rgba(25, 33, 61, 0.12);
-        gap: 4px;
-        max-width: 324px;
-        min-width: 324px;
-        padding: 10px 16px;
+        gap: 16px;
+        padding: 16px;
       }
 
       .calendar-hover-card.above {
@@ -607,10 +600,6 @@ interface CalendarPopoverPosition {
         top: -6px;
       }
 
-      .calendar-item-hover-card::after {
-        display: none;
-      }
-
       .calendar-popover-action .icon,
       .calendar-agenda-row .icon {
         height: 14px;
@@ -621,39 +610,37 @@ interface CalendarPopoverPosition {
         align-items: center;
         display: flex;
         flex-wrap: wrap;
-        gap: 8px;
-        justify-content: space-between;
+        gap: 6px;
         min-width: 0;
-        width: 100%;
       }
 
       .calendar-popover-kind {
         align-items: center;
-        border-radius: 6px;
+        border-radius: 999px;
         display: inline-flex;
-        font-size: 11px;
-        font-weight: 500;
+        font-size: 10px;
+        font-weight: 600;
         justify-self: start;
-        letter-spacing: 0.24px;
-        line-height: 16px;
-        padding: 2px 6px;
-        text-transform: none;
-        white-space: nowrap;
+        letter-spacing: 0;
+        line-height: 1;
+        padding: 6px 8px;
+        text-transform: uppercase;
       }
 
-      .calendar-popover-arrow {
+      .calendar-popover-context-tag {
         align-items: center;
-        color: #10069f;
+        background: #fbfcff;
+        border: 1px solid #dfe4ee;
+        border-radius: 999px;
+        color: #3f4654;
         display: inline-flex;
-        flex: 0 0 auto;
-        height: 16px;
-        justify-content: center;
-        width: 16px;
-      }
-
-      .calendar-popover-arrow .icon {
-        height: 16px;
-        width: 16px;
+        font-size: 10.5px;
+        font-weight: 600;
+        justify-self: start;
+        line-height: 1.2;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        padding: 5px 8px;
       }
 
       .calendar-popover-kind.green {
@@ -677,25 +664,19 @@ interface CalendarPopoverPosition {
       }
 
       .calendar-hover-card strong {
-        color: #0b0b0b;
+        color: #252a34;
         display: block;
         font-size: 13px;
         font-weight: 600;
-        line-height: 20px;
+        line-height: 1.25;
         margin: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        width: 100%;
       }
 
       .calendar-hover-card p {
-        color: #777777;
-        font-size: 12px;
-        font-weight: 400;
-        line-height: 16px;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.35;
         margin: 0;
-        text-transform: capitalize;
       }
 
       .calendar-popover-meta {
@@ -720,16 +701,16 @@ interface CalendarPopoverPosition {
         align-items: center;
         background: #ffffff;
         border: 1px solid #dfe4ee;
-        border-radius: 999px;
+        border-radius: 8px;
         color: #303645;
         display: inline-flex;
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 600;
         gap: 8px;
-        height: 36px;
+        height: 32px;
         justify-content: center;
         justify-self: start;
-        padding: 0 16px;
+        padding: 0 12px;
       }
 
       .calendar-popover-action:hover,
@@ -740,94 +721,100 @@ interface CalendarPopoverPosition {
         outline: 0;
       }
 
-      .calendar-day-hover-card {
-        padding: 0;
-        gap: 0;
-        border-radius: 12px;
-        overflow: hidden;
-      }
-
-      .calendar-hover-header {
-        background: #f4f4f5;
-        padding: 16px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid #dfe4ee;
-      }
-
-      .calendar-hover-header .hover-date {
-        font-weight: 500;
-        color: #111827;
-        font-size: 13px;
-      }
-
-      .calendar-hover-header .hover-count {
-        color: #4b5563;
-        font-size: 12px;
-      }
-
       .calendar-day-agenda-list {
-        display: flex;
-        flex-direction: column;
-        background: #ffffff;
-        max-height: 400px;
-        overflow-y: auto;
+        display: grid;
+        gap: 6px;
+        padding-right: 2px;
+      }
+
+      .preview-agenda-list {
+        margin-top: 8px;
       }
 
       .calendar-agenda-row {
+        align-items: center;
         background: #ffffff;
-        border: none;
-        border-bottom: 1px solid #edf0f6;
-        border-radius: 0;
+        border: 1px solid #edf0f6;
+        border-radius: 8px;
         color: #303645;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        padding: 16px;
+        display: grid;
+        gap: 12px;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        min-height: 48px;
+        padding: 10px 14px;
         text-align: left;
-        transition: background 120ms ease;
-        width: 100%;
-        cursor: pointer;
+        transition: background 120ms ease, border-color 120ms ease;
       }
 
-      .calendar-agenda-row.is-last {
-        border-bottom: none;
+      .calendar-agenda-row.blue {
+        background: #ffffff;
+        border-color: #e3ebfc;
+      }
+
+      .calendar-agenda-row.red {
+        background: #ffffff;
+        border-color: #fcdbd9;
+      }
+
+      .calendar-agenda-row.green {
+        background: #ffffff;
+        border-color: #d1f2e1;
       }
 
       .calendar-agenda-row:hover,
       .calendar-agenda-row:focus-visible {
         background: #f7f9fc;
+        border-color: #cbd5e1;
         outline: 0;
       }
 
-      .agenda-row-header {
+      .calendar-agenda-row.blue:hover,
+      .calendar-agenda-row.blue:focus-visible {
+        background: #f5f8ff;
+        border-color: #b8caff;
+      }
+
+      .calendar-agenda-row.red:hover,
+      .calendar-agenda-row.red:focus-visible {
+        background: #fff5f4;
+        border-color: #ffa8a1;
+      }
+
+      .calendar-agenda-row.green:hover,
+      .calendar-agenda-row.green:focus-visible {
+        background: #f2fcf7;
+        border-color: #a3e2c3;
+      }
+
+      .calendar-agenda-info {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
+        flex-direction: column;
+        min-width: 0;
       }
 
-      .agenda-row-header .arrow-icon {
-        color: #1f4fb8;
-        height: 16px;
-        width: 16px;
-      }
-
-      .agenda-row-title {
+      .calendar-agenda-title {
         color: #0b0b0b;
         display: block;
-        font-size: 13px;
+        font-size: 12.5px;
         font-weight: 600;
         line-height: 1.4;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
-      .agenda-row-subtitle {
-        color: #8290a4;
+      .calendar-agenda-subtitle {
+        color: #536071;
         display: block;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 400;
         line-height: 1.4;
+        margin-top: 2px;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .calendar-agenda-cta {
@@ -923,26 +910,26 @@ interface CalendarPopoverPosition {
 
       /* Custom Event Type styles for Calendar Chips/Pills & Popovers */
       .calendar-event[data-event-type="Plans"] {
-        background: rgba(49, 136, 181, 0.09) !important;
-        border-color: rgba(141, 200, 232, 0.225) !important;
+        background: rgba(49, 136, 181, 0.1) !important;
+        border-color: rgba(49, 136, 181, 0.25) !important;
         color: #3188b5 !important;
       }
       .calendar-event[data-event-type="Plans"] .calendar-event-dot {
         background: #3188b5 !important;
       }
 
-      .calendar-event[data-event-type="Governance Committees"] {
-        background: rgba(52, 84, 196, 0.09) !important;
-        border-color: rgba(52, 84, 196, 0.225) !important;
+      .calendar-event[data-event-type="Governance committee"] {
+        background: rgba(52, 84, 196, 0.1) !important;
+        border-color: rgba(52, 84, 196, 0.25) !important;
         color: #3454c4 !important;
       }
-      .calendar-event[data-event-type="Governance Committees"] .calendar-event-dot {
+      .calendar-event[data-event-type="Governance committee"] .calendar-event-dot {
         background: #3454c4 !important;
       }
 
       .calendar-event[data-event-type="Status reports"] {
-        background: rgba(111, 32, 149, 0.09) !important;
-        border-color: rgba(111, 32, 149, 0.225) !important;
+        background: rgba(111, 32, 149, 0.1) !important;
+        border-color: rgba(111, 32, 149, 0.25) !important;
         color: #6f2095 !important;
       }
       .calendar-event[data-event-type="Status reports"] .calendar-event-dot {
@@ -950,104 +937,177 @@ interface CalendarPopoverPosition {
       }
 
       .calendar-event[data-event-type="Change requests"] {
-        background: rgba(229, 144, 47, 0.09) !important;
-        border-color: rgba(229, 144, 47, 0.225) !important;
-        color: #e5902f !important;
+        background: rgba(196, 152, 79, 0.1) !important;
+        border-color: rgba(196, 152, 79, 0.25) !important;
+        color: #c4984f !important;
       }
       .calendar-event[data-event-type="Change requests"] .calendar-event-dot {
-        background: #e5902f !important;
+        background: #c4984f !important;
       }
 
       .calendar-event[data-event-type="Benefits"] {
-        background: rgba(22, 107, 73, 0.09) !important;
-        border-color: rgba(22, 107, 73, 0.225) !important;
-        color: #166b49 !important;
+        background: rgba(22, 108, 73, 0.1) !important;
+        border-color: rgba(22, 108, 73, 0.25) !important;
+        color: #166c49 !important;
       }
       .calendar-event[data-event-type="Benefits"] .calendar-event-dot {
-        background: #166b49 !important;
+        background: #166c49 !important;
       }
 
-      /* Popover kinds */
-      .calendar-popover-kind[data-event-type="Plans"] {
-        background: rgba(49, 136, 181, 0.1) !important;
-        color: #3188b5 !important;
+      .calendar-event[data-event-type="Risk"] {
+        background: rgba(185, 28, 28, 0.1) !important;
+        border-color: rgba(185, 28, 28, 0.25) !important;
+        color: #b91c1c !important;
       }
-      .calendar-popover-kind[data-event-type="Governance Committees"] {
-        background: rgba(52, 84, 196, 0.1) !important;
+      .calendar-event[data-event-type="Risk"] .calendar-event-dot {
+        background: #b91c1c !important;
+      }
+
+      /* Hover Popover Box Enhancements */
+      .calendar-hover-card {
+        padding: 0 !important;
+        border-radius: 12px !important;
+        width: 330px !important;
+        min-width: 330px !important;
+        max-width: 330px !important;
+        overflow: hidden;
+        background: #ffffff;
+        border: 1px solid #dfe4ee;
+        box-shadow: 0 12px 32px rgba(25, 33, 61, 0.12);
+      }
+
+      .calendar-popover-card-content {
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .calendar-popover-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .calendar-popover-arrow {
+        color: #3454c4;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .calendar-popover-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #0b0b0b;
+        margin-top: 4px;
+        margin-bottom: 8px;
+        line-height: 1.35;
+        display: block;
+      }
+
+      .calendar-popover-subtitle {
+        font-size: 12.5px;
+        color: #737b8c;
+        font-weight: 400;
+        display: block;
+      }
+
+      /* Popover kinds dynamic coloring */
+      .calendar-popover-kind {
+        font-size: 10.5px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 999px;
+        text-transform: none;
+        display: inline-flex;
+        align-items: center;
+      }
+
+      .calendar-popover-kind[data-event-type="Plans"] {
+        background: rgba(49, 136, 181, 0.08) !important;
+        color: #3188b5 !important;
+        border: 1px solid rgba(49, 136, 181, 0.2) !important;
+      }
+      .calendar-popover-kind[data-event-type="Governance committee"] {
+        background: rgba(52, 84, 196, 0.08) !important;
         color: #3454c4 !important;
+        border: 1px solid rgba(52, 84, 196, 0.2) !important;
       }
       .calendar-popover-kind[data-event-type="Status reports"] {
-        background: rgba(111, 32, 149, 0.1) !important;
+        background: rgba(111, 32, 149, 0.08) !important;
         color: #6f2095 !important;
+        border: 1px solid rgba(111, 32, 149, 0.2) !important;
       }
       .calendar-popover-kind[data-event-type="Change requests"] {
-        background: rgba(229, 144, 47, 0.1) !important;
-        color: #e5902f !important;
+        background: rgba(196, 152, 79, 0.08) !important;
+        color: #c4984f !important;
+        border: 1px solid rgba(196, 152, 79, 0.2) !important;
       }
       .calendar-popover-kind[data-event-type="Benefits"] {
-        background: rgba(22, 107, 73, 0.1) !important;
-        color: #166b49 !important;
+        background: rgba(22, 108, 73, 0.08) !important;
+        color: #166c49 !important;
+        border: 1px solid rgba(22, 108, 73, 0.2) !important;
+      }
+      .calendar-popover-kind[data-event-type="Risk"] {
+        background: rgba(185, 28, 28, 0.08) !important;
+        color: #b91c1c !important;
+        border: 1px solid rgba(185, 28, 28, 0.2) !important;
       }
 
-      /* Agenda rows */
-      .calendar-agenda-row[data-event-type="Plans"] {
-        background: #ffffff !important;
-        border-color: rgba(141, 200, 232, 0.25) !important;
-      }
-      .calendar-agenda-row[data-event-type="Plans"] .calendar-event-dot {
-        background: #8dc8e8 !important;
-      }
-      .calendar-agenda-row[data-event-type="Plans"]:hover {
-        background: rgba(141, 200, 232, 0.05) !important;
-        border-color: rgba(141, 200, 232, 0.4) !important;
+      /* Multi-item Hover Popup Elements */
+      .calendar-popover-multi-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        background: #f8fafc;
+        border-bottom: 1px solid #edf0f5;
       }
 
-      .calendar-agenda-row[data-event-type="Governance Committees"] {
-        background: #ffffff !important;
-        border-color: rgba(52, 84, 196, 0.25) !important;
-      }
-      .calendar-agenda-row[data-event-type="Governance Committees"] .calendar-event-dot {
-        background: #3454c4 !important;
-      }
-      .calendar-agenda-row[data-event-type="Governance Committees"]:hover {
-        background: rgba(52, 84, 196, 0.05) !important;
-        border-color: rgba(52, 84, 196, 0.4) !important;
+      .calendar-popover-multi-date {
+        font-size: 13px;
+        font-weight: 600;
+        color: #0b0b0b;
       }
 
-      .calendar-agenda-row[data-event-type="Status reports"] {
-        background: #ffffff !important;
-        border-color: rgba(111, 32, 149, 0.25) !important;
-      }
-      .calendar-agenda-row[data-event-type="Status reports"] .calendar-event-dot {
-        background: #6f2095 !important;
-      }
-      .calendar-agenda-row[data-event-type="Status reports"]:hover {
-        background: rgba(111, 32, 149, 0.05) !important;
-        border-color: rgba(111, 32, 149, 0.4) !important;
+      .calendar-popover-multi-count {
+        font-size: 12px;
+        color: #64748b;
+        font-weight: 500;
       }
 
-      .calendar-agenda-row[data-event-type="Change requests"] {
-        background: #ffffff !important;
-        border-color: rgba(196, 52, 114, 0.25) !important;
-      }
-      .calendar-agenda-row[data-event-type="Change requests"] .calendar-event-dot {
-        background: #c43472 !important;
-      }
-      .calendar-agenda-row[data-event-type="Change requests"]:hover {
-        background: rgba(196, 52, 114, 0.05) !important;
-        border-color: rgba(196, 52, 114, 0.4) !important;
+      .calendar-popover-multi-list {
+        display: flex;
+        flex-direction: column;
       }
 
-      .calendar-agenda-row[data-event-type="Benefits"] {
-        background: #ffffff !important;
-        border-color: rgba(22, 107, 73, 0.25) !important;
+      .calendar-popover-multi-item {
+        background: transparent;
+        border: 0;
+        border-bottom: 1px solid #edf0f5;
+        padding: 16px;
+        text-align: left;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        transition: background 150ms ease;
       }
-      .calendar-agenda-row[data-event-type="Benefits"] .calendar-event-dot {
-        background: #166b49 !important;
+
+      .calendar-popover-multi-item:hover {
+        background: #f8fafc;
       }
-      .calendar-agenda-row[data-event-type="Benefits"]:hover {
-        background: rgba(22, 107, 73, 0.05) !important;
-        border-color: rgba(22, 107, 73, 0.4) !important;
+
+      .calendar-popover-multi-item:last-child {
+        border-bottom: 0;
+      }
+
+      .calendar-cell.today::after {
+        display: none !important;
       }
     `,
   ],
@@ -1138,7 +1198,7 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
   private showItemPreviewFromAnchor(item: PmConsoleCalendarItem, anchor: HTMLElement): void {
     this.previewPinned = false;
     this.keepPreview();
-    const position = this.positionFor(anchor, 370, 156);
+    const position = this.positionFor(anchor, 280, 156);
     this.previewItem = item;
     this.previewCell = null;
     this.previewTop = position.top;
@@ -1161,7 +1221,7 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
   private showDayPreviewFromAnchor(cell: PmConsoleCalendarCell, anchor: HTMLElement): void {
     this.previewPinned = false;
     this.keepPreview();
-    const position = this.positionFor(anchor, 370, this.dayPopoverHeight(cell));
+    const position = this.positionFor(anchor, 320, this.dayPopoverHeight(cell));
     this.previewItem = null;
     this.previewCell = cell;
     this.previewTop = position.top;
@@ -1172,7 +1232,7 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
   }
 
   queueCellPreview(cell: PmConsoleCalendarCell, event: MouseEvent): void {
-    if (cell.items.length < 2) return;
+    if (cell.items.length <= 2) return;
     this.queueDayPreview(cell, event);
   }
 
@@ -1208,6 +1268,10 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
 
   openAgendaItem(item: PmConsoleCalendarItem, event: MouseEvent): void {
     event.stopPropagation();
+    const type = this.getCalendarChipType(item);
+    if (type !== 'Plans' && type !== 'Governance committee') {
+      return; // click ignored/disabled!
+    }
     this.hidePreview();
     this.itemOpen.emit(item);
   }
@@ -1241,31 +1305,37 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
     if (kind === 'report') return 'Status reports';
     if (kind === 'benefit') return 'Benefits';
     if (kind === 'change') return 'Change requests';
-    if (kind === 'governance' || kind === 'risk') return 'Governance Committees';
+    if (kind === 'risk') return 'Risk';
+    if (kind === 'governance') return 'Governance committee';
     return 'Plans';
   }
 
-  calendarChipLabel(item: PmConsoleCalendarItem): string {
+  getItemSubtitle(item: PmConsoleCalendarItem): string {
     const kind = item.kind || 'task';
-    if (kind === 'report') return 'Status report';
-    if (kind === 'benefit') return 'Benefit';
-    if (kind === 'change') return 'Change request';
-    if (kind === 'governance' || kind === 'risk') return 'Governance committee';
-    return 'Project Plan';
+    if (kind === 'benefit') return `Project : ${item.project}`;
+    if (kind === 'change') return `Project : ${item.project}`;
+    if (kind === 'risk') return `Project : ${item.project}`;
+    if (kind === 'governance') return item.project;
+    if (kind === 'report') return `Program : ${item.project}`;
+    return `Project Plan | ${item.project}`;
   }
 
-  previewTitle(item: PmConsoleCalendarItem): string {
-    const kind = item.kind || 'task';
-    if (kind === 'report' || kind === 'plan') return item.project;
+  getCalendarChipLabel(item: PmConsoleCalendarItem): string {
+    const type = this.getCalendarChipType(item);
+    if (type.length <= 16) return type;
+    return `${type.substring(0, 15)}...`;
+  }
+
+  getItemDisplayTitle(item: PmConsoleCalendarItem): string {
+    const type = this.getCalendarChipType(item);
+    if (type === 'Governance committee') {
+      const label = item.label;
+      if (label.toLowerCase().includes('meeting') || label.toLowerCase().includes('upcoming')) {
+        return label;
+      }
+      return `${label} (Upcoming Meeting)`;
+    }
     return item.label;
-  }
-
-  previewSubtitle(item: PmConsoleCalendarItem): string {
-    const kind = item.kind || 'task';
-    if (kind === 'report') return 'Portfolio Status Report';
-    if (kind === 'governance' || kind === 'risk') return 'Forum Name';
-    if (kind === 'plan') return 'Project Plan';
-    return `Project : ${item.project}`;
   }
 
   itemKindLabel(item: PmConsoleCalendarItem): string {
@@ -1321,7 +1391,7 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
   }
 
   private dayPopoverHeight(cell: PmConsoleCalendarCell): number {
-    return Math.min(460, 56 + cell.items.length * 138);
+    return 118 + cell.items.length * 68;
   }
 
   private clearPreviewHideTimer(): void {
@@ -1350,24 +1420,15 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
 
   private positionFor(anchor: HTMLElement, width: number, estimatedHeight: number): CalendarPopoverPosition {
     const rect = anchor.getBoundingClientRect();
-    const calendarRect = this.elementRef.nativeElement.getBoundingClientRect();
     const containingBlockOffset = this.fixedContainingBlockOffset();
     const margin = 12;
     const gap = 8;
     const arrowSize = 10;
-    const minTop = calendarRect.top + margin;
-    const maxTop = calendarRect.bottom - margin;
-    
-    const placement: CalendarPopoverPlacement = rect.top - estimatedHeight - gap > minTop ? 'above' : 'below';
+    const placement: CalendarPopoverPlacement = rect.top - estimatedHeight - gap > margin ? 'above' : 'below';
     const rawTop = placement === 'above' ? rect.top - gap : rect.bottom + gap;
     const rawLeft = rect.left + rect.width / 2 - width / 2;
-    
-    const viewportTop = placement === 'above' ? Math.max(minTop, rawTop) : Math.max(minTop, Math.min(rawTop, maxTop - estimatedHeight));
-    
-    const minLeft = calendarRect.left + margin;
-    const maxLeft = calendarRect.right - margin;
-    const viewportLeft = Math.max(minLeft, Math.min(rawLeft, maxLeft - width));
-    
+    const viewportTop = placement === 'above' ? Math.max(margin, rawTop) : Math.max(margin, Math.min(rawTop, window.innerHeight - estimatedHeight - margin));
+    const viewportLeft = Math.max(margin, Math.min(rawLeft, window.innerWidth - width - margin));
     const anchorCenter = rect.left + rect.width / 2;
     const arrowLeft = Math.max(16, Math.min(anchorCenter - viewportLeft - arrowSize / 2, width - 26));
     const top = viewportTop - containingBlockOffset.top;
