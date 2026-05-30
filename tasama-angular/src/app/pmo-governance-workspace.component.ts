@@ -5,8 +5,10 @@ import { PmoGovernanceRecordDrawerComponent } from './pmo-governance-record-draw
 import { PmoGovernanceReportDrawerComponent } from './pmo-governance-report-drawer.component';
 import { PmoGovernanceSourceDrawerComponent } from './pmo-governance-source-drawer.component';
 import { PortfolioWorkspaceRegistersComponent } from './portfolio-workspace/portfolio-workspace-registers.component';
+import { portfolioProgramRows, riskRegisterData, standaloneProjects } from './portfolio-workspace/portfolio-workspace.data';
 import { PmConsoleExpandableSearchComponent } from './shared/pm-console-expandable-search.component';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
+import { PmoGovernanceRiskRegisterComponent } from './pmo-governance-risk-register.component';
 import {
   PmConsoleRegisterTableComponent,
   type PmConsoleRegisterTableActionEvent,
@@ -69,6 +71,7 @@ type PmoGovernanceRecordDrawerContext = 'workspace' | 'forum';
     PmoGovernanceSourceDrawerComponent,
     PmConsoleRegisterTableComponent,
     PortfolioWorkspaceRegistersComponent,
+    PmoGovernanceRiskRegisterComponent,
     PmConsoleRowActionMenuComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -801,6 +804,14 @@ type PmoGovernanceRecordDrawerContext = 'workspace' | 'forum';
                   </div>
                 </section>
               }
+            } @else if (activePrimaryTab === 'risk-register') {
+              <section class="pmo-program-register-view" aria-label="Risk register">
+                <app-pmo-governance-risk-register
+                  [risks]="riskData"
+                  [programs]="programs"
+                  [standaloneProjects]="standaloneProjects"
+                />
+              </section>
             } @else {
               <section class="pmo-register-placeholder" [attr.aria-label]="activePrimaryTabLabel + ' coming soon'">
                 <strong>{{ activePrimaryTabLabel }}</strong>
@@ -2304,6 +2315,10 @@ export class PmoGovernanceWorkspaceComponent implements OnChanges {
   @Input() initialTarget: PmoGovernanceWorkspaceTarget = pmoGovernanceDefaultWorkspaceTarget;
   @Output() readonly backSelected = new EventEmitter<void>();
   @Output() readonly forumDetailSelected = new EventEmitter<PmoGovernanceForumRow>();
+
+  riskData = riskRegisterData;
+  programs = portfolioProgramRows;
+  standaloneProjects = standaloneProjects;
 
   readonly primaryTabs = pmoGovernancePrimaryTabs;
   readonly sectionTabs = pmoGovernanceSectionTabs;
