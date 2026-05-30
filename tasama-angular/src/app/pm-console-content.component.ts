@@ -81,6 +81,9 @@ import { PmActionCardComponent } from './pm-action-card.component';
 // PM "My Calendar" is sourced from the same dataset the PMO calendar uses, so the two
 // calendars render identical pills / "+N" overflow / hover popovers within a session.
 import { pmoFrontdoorWorkItems } from './pmo-frontdoor.data';
+// PM-local right-panel drawer (copied from PMO) opened when a calendar pill is clicked.
+import { PmMyActionsDrawerService } from './pm-my-actions-drawer.service';
+import type { PortfolioActionItem } from './portfolio-manager-actions.data';
 
 type ConsolePage = 'workspace' | 'workspaces' | 'wbs' | 'project-plan' | 'playground';
 type WorkspaceView = 'calendar' | 'board' | 'pm101' | 'stages' | 'quicklinks';
@@ -11164,6 +11167,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
     private readonly iconsService: PmConsoleIconService,
     private readonly changeDetector: ChangeDetectorRef,
     private readonly elementRef: ElementRef<HTMLElement>,
+    private readonly myActionsDrawer: PmMyActionsDrawerService,
   ) {
     this.clearStoredProjectCovers();
   }
@@ -17895,14 +17899,36 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
 
   handleCalendarItemOpen(item: PmConsoleCalendarItem): void {
     const kind = this.timelineItemKind(item);
-    if (kind === 'report') {
-      this.openReport(item.project);
+    // Plans pills keep their original behavior: navigate to the project plan page.
+    // (Only Status reports / Benefits / Governance open the PM-local right-panel drawer.)
+    const opensInDrawer = kind === 'report' || kind === 'benefit' || kind === 'governance' || kind === 'risk';
+    if (!opensInDrawer) {
+      this.openProject(item.project, this.currentProjectPlanReturnState());
+      this.projectPlanActiveSection = this.projectPlanSectionForCalendarItem(kind);
+      this.iconsHydrated = false;
       return;
     }
-
-    this.openProject(item.project, this.currentProjectPlanReturnState());
-    this.projectPlanActiveSection = this.projectPlanSectionForCalendarItem(kind);
+    // Open the PM-local right-panel drawer (copied from PMO) for the clicked pill.
+    // The drawer renders the correct panel per kind (governance / benefit / report).
+    // We resolve the full action item from the source dataset by id.
+    const action = this.findCalendarActionItem(item);
+    if (!action) return;
+    this.myActionsDrawer.open(action);
     this.iconsHydrated = false;
+    this.changeDetector.markForCheck();
+  }
+
+  private findCalendarActionItem(item: PmConsoleCalendarItem): PortfolioActionItem | undefined {
+    return (
+      pmoFrontdoorWorkItems.find((candidate) => candidate.id === item.id) ||
+      pmoFrontdoorWorkItems.find(
+        (candidate) =>
+          candidate.date === item.date &&
+          candidate.label === item.label &&
+          candidate.project === item.project &&
+          candidate.kind === item.kind,
+      )
+    );
   }
 
   private projectPlanSectionForCalendarItem(kind: string): string {

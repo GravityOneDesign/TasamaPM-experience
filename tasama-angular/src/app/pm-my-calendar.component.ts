@@ -209,19 +209,19 @@ export type {
         (focusout)="hidePreviewSoon()"
         (click)="$event.stopPropagation()"
       >
-        <div class="calendar-day-card-header">
-          <span class="calendar-popover-kind neutral">{{ dateLabel(previewCell.key) }}</span>
-          <strong>{{ previewCell.items.length }} item{{ previewCell.items.length === 1 ? '' : 's' }} scheduled</strong>
+        <div class="calendar-hover-header">
+          <span class="hover-date">{{ dateLabel(previewCell.key) }}</span>
+          <span class="hover-count">{{ previewCell.items.length }} item{{ previewCell.items.length === 1 ? '' : 's' }}</span>
         </div>
-        <div class="calendar-day-agenda-list">
-          @for (item of previewCell.items; track item.date + item.label + item.project) {
-            <button class="calendar-agenda-card" [class.is-static]="!isChipClickable(item)" [attr.data-event-type]="getCalendarChipType(item)" type="button" (click)="openAgendaItem(item, $event)">
-              <span class="calendar-card-top">
+        <div class="calendar-day-agenda-list preview-agenda-list">
+          @for (item of previewCell.items; track item.date + item.label + item.project; let last = $last) {
+            <button class="calendar-agenda-row" [class.is-last]="last" [class.is-static]="!isChipClickable(item)" type="button" (click)="openAgendaItem(item, $event)">
+              <div class="agenda-row-header">
                 <span class="calendar-popover-kind" [attr.data-event-type]="getCalendarChipType(item)">{{ getCalendarChipType(item) }}</span>
-                <span class="calendar-card-arrow" pmConsoleIcon="arrow-right" aria-hidden="true"></span>
-              </span>
-              <span class="calendar-card-title">{{ item.label }}</span>
-              <span class="calendar-card-subtitle">{{ itemTargetLabel(item) }}</span>
+                <span class="arrow-icon" pmConsoleIcon="arrow-right" aria-hidden="true"></span>
+              </div>
+              <span class="agenda-row-title">{{ item.label }}</span>
+              <span class="agenda-row-subtitle">Project : {{ item.project }}</span>
             </button>
           }
         </div>
@@ -343,7 +343,7 @@ export type {
        */
       .calendar-event.is-static,
       .calendar-item-hover-card.is-static,
-      .calendar-agenda-card.is-static {
+      .calendar-agenda-row.is-static {
         cursor: default;
       }
 
@@ -810,55 +810,154 @@ export type {
         outline: 0;
       }
 
-      /* Day hover card: header + stacked Figma cards, full-bleed dividers */
+      /*
+       * Day "+N" hover card — matches the shared PMO calendar exactly
+       * (pm-console-work-calendar.component.ts). Rules are scoped under
+       * .calendar-day-hover-card so they override the local single-item card
+       * styles without affecting it. The single-item hover card is unchanged.
+       */
       .calendar-day-hover-card {
-        display: block;
+        border-radius: 12px;
         gap: 0;
         overflow: hidden;
         padding: 0;
       }
 
-      .calendar-day-card-header {
+      .calendar-hover-header {
         align-items: center;
-        border-bottom: 1px solid #eee;
+        background: #f4f4f5;
+        border-bottom: 1px solid #dfe4ee;
         display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        padding: 12px 16px;
+        justify-content: space-between;
+        padding: 16px;
       }
 
-      .calendar-day-card-header strong {
+      .calendar-hover-header .hover-date {
+        color: #111827;
         font-size: 13px;
+        font-weight: 500;
       }
 
-      .calendar-day-agenda-list {
-        display: block;
-        max-height: 340px;
-        overflow-y: auto;
+      .calendar-hover-header .hover-count {
+        color: #4b5563;
+        font-size: 12px;
       }
 
-      .calendar-agenda-card {
+      .calendar-day-hover-card .calendar-day-agenda-list {
         background: #ffffff;
-        border: 0;
-        border-bottom: 1px solid #eee;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        margin-top: 0;
+        max-height: 400px;
+        overflow-y: auto;
+        padding-right: 0;
+      }
+
+      .calendar-day-hover-card .calendar-agenda-row {
+        align-items: flex-start;
+        background: #ffffff;
+        border: none;
+        border-bottom: 1px solid #edf0f6;
+        border-radius: 0;
+        color: #303645;
         cursor: pointer;
         display: flex;
         flex-direction: column;
-        gap: 4px;
-        padding: 10px 16px;
+        gap: 8px;
+        grid-template-columns: none;
+        min-height: 0;
+        padding: 16px;
         text-align: left;
         transition: background 120ms ease;
         width: 100%;
       }
 
-      .calendar-agenda-card:last-child {
-        border-bottom: 0;
+      .calendar-day-hover-card .calendar-agenda-row.is-last {
+        border-bottom: none;
       }
 
-      .calendar-agenda-card:hover,
-      .calendar-agenda-card:focus-visible {
+      .calendar-day-hover-card .calendar-agenda-row:hover,
+      .calendar-day-hover-card .calendar-agenda-row:focus-visible {
         background: #f7f9fc;
+        border-color: #edf0f6;
         outline: 0;
+      }
+
+      .calendar-day-hover-card .calendar-agenda-row.is-static {
+        cursor: default;
+      }
+
+      .agenda-row-header {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      .agenda-row-header .arrow-icon {
+        align-items: center;
+        color: #1f4fb8;
+        display: inline-flex;
+        flex: 0 0 auto;
+        height: 16px;
+        justify-content: center;
+        width: 16px;
+      }
+
+      .agenda-row-header .arrow-icon .icon {
+        height: 16px;
+        width: 16px;
+      }
+
+      .agenda-row-title {
+        color: #0b0b0b;
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.4;
+        width: 100%;
+      }
+
+      .agenda-row-subtitle {
+        color: #8290a4;
+        display: block;
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 1.4;
+        width: 100%;
+      }
+
+      /* Day-card tag — PMO pill metrics + palette (scoped; item card keeps its own). */
+      .calendar-day-hover-card .calendar-popover-kind {
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.24px;
+        line-height: 16px;
+        padding: 2px 6px;
+        text-transform: none;
+      }
+
+      .calendar-day-hover-card .calendar-popover-kind[data-event-type='Plans'] {
+        background: rgba(49, 136, 181, 0.1) !important;
+        color: #3188b5 !important;
+      }
+      .calendar-day-hover-card .calendar-popover-kind[data-event-type='Status reports'] {
+        background: rgba(111, 32, 149, 0.1) !important;
+        color: #6f2095 !important;
+      }
+      .calendar-day-hover-card .calendar-popover-kind[data-event-type='Change requests'] {
+        background: rgba(229, 144, 47, 0.1) !important;
+        color: #e5902f !important;
+      }
+      .calendar-day-hover-card .calendar-popover-kind[data-event-type='Benefits'] {
+        background: rgba(22, 107, 73, 0.1) !important;
+        color: #166b49 !important;
+      }
+      .calendar-day-hover-card .calendar-popover-kind[data-event-type='Governance Committees'] {
+        background: rgba(52, 84, 196, 0.1) !important;
+        color: #3454c4 !important;
       }
 
       .calendar-agenda-row {
@@ -1178,7 +1277,13 @@ export class PmMyCalendarComponent extends PmConsoleWorkCalendarComponent {
    */
   isChipClickable(item: PmConsoleCalendarItem): boolean {
     const type = this.getCalendarChipType(item);
-    return type === 'Plans' || type === 'Status reports';
+    // All four PM calendar pill types open the right-panel drawer.
+    return (
+      type === 'Plans' ||
+      type === 'Status reports' ||
+      type === 'Benefits' ||
+      type === 'Governance Committees'
+    );
   }
 
   override openAgendaItem(item: PmConsoleCalendarItem, event: MouseEvent): void {

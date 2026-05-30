@@ -1,8 +1,10 @@
-import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, inject } from '@angular/core';
 import { PmConsoleContentComponent } from './pm-console-content.component';
 import { PmConsoleIconService } from './pm-console-icon.service';
 import { PmConsoleMountOptions, ProjectOption } from './pm-console.types';
 import { PmConsoleNotificationsComponent } from './pm-console-notifications.component';
+import { PmMyActionsDrawerComponent } from './pm-my-actions-drawer.component';
+import { PmMyActionsDrawerService } from './pm-my-actions-drawer.service';
 import { PmConsoleAgentDockComponent } from './shared/pm-console-agent-dock.component';
 import { PmConsoleSideNavComponent, type PmConsoleSideNavItem } from './shared/pm-console-side-nav.component';
 import { PmConsoleTopBarComponent } from './shared/pm-console-top-bar.component';
@@ -21,7 +23,7 @@ const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
 @Component({
   selector: 'app-pm-console-shell',
   standalone: true,
-  imports: [PmConsoleAgentDockComponent, PmConsoleContentComponent, PmConsoleNotificationsComponent, PmConsoleSideNavComponent, PmConsoleTopBarComponent],
+  imports: [PmConsoleAgentDockComponent, PmConsoleContentComponent, PmConsoleNotificationsComponent, PmMyActionsDrawerComponent, PmConsoleSideNavComponent, PmConsoleTopBarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="modern-shell" [class.side-nav-expanded]="sideNavExpanded" [class.playground-mode]="selectedPage === 'playground'" [class.wbs-mode]="selectedPage === 'wbs'" [class.project-plan-mode]="selectedPage === 'project-plan'" [class.unassigned-mode]="frontDoorMode === 'unassigned'">
@@ -57,12 +59,19 @@ const ONBOARDING_ASSIGNED_PROJECT_ID = 'UAE Research Map';
         [onboardingProjectSetup]="onboardingProjectSetup"
         (consoleStateChange)="applyContentState($event)"
       />
+      <app-pm-my-actions-drawer
+        [item]="activeMyActionItem()"
+        (close)="closeMyActionDrawer()"
+      ></app-pm-my-actions-drawer>
       <app-pm-console-notifications [open]="notificationPanelOpen" (closePanel)="closeNotifications()" />
       <app-pm-console-agent-dock />
     </div>
   `,
 })
 export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
+  private readonly myActionsDrawer = inject(PmMyActionsDrawerService);
+  readonly activeMyActionItem = this.myActionsDrawer.activeItem;
+
   @Input() initialState: PmConsoleMountOptions = {};
 
   readonly projects: ProjectOption[] = [
@@ -228,6 +237,10 @@ export class PmConsoleShellComponent implements OnInit, AfterViewChecked {
     if (!this.notificationPanelOpen) return;
     this.notificationPanelOpen = false;
     this.markShellChanged();
+  }
+
+  closeMyActionDrawer(): void {
+    this.myActionsDrawer.close();
   }
 
   setWorkspaceView(view: WorkspaceView): void {
