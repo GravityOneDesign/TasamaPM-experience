@@ -948,6 +948,41 @@ When a user asks for UI from Figma:
 
 ## Memory Log
 
+2026-05-30:
+
+- Isolated and updated the Portfolio Manager's "My Actions" board view card design:
+  - Created a new, isolated `PortfolioManagerActionCardComponent` in `portfolio-manager-action-card.component.ts` to ensure the Portfolio Manager's card layout is decoupled from the Project Manager or other personas, allowing for targeted feedback without cross-persona impacts.
+  - Added support in the new component's style blocks for both plural `Governance Committees` and singular `Governance committee` type tag colors.
+  - Modified `portfolio-manager-actions-pm.component.ts` to import `PortfolioManagerActionCardComponent` and register it in its standalone imports.
+  - Replaced the old `.new-task-card` HTML template markup with `<app-portfolio-manager-action-card>` and removed all its corresponding CSS selectors, properties, and helper methods like `getCardTypePillClass` to keep the component clean.
+  - Introduced `actionChipType()` mapping method to correctly associate action item types with Figma type-tag color categories.
+
+- Refined the shared governance meeting drawer component (`pm-console-governance-meeting-drawer.component.ts`):
+  - Initialized both 'meeting details' and 'forum agenda / watchlist' accordions to be expanded by default (`meeting` and `agenda`).
+  - Implemented background and text color styling for the header pills: "Governance & committee" has a 10% opacity blue background (`rgba(52, 84, 196, 0.1)`) and light font weight, and "Business excellence" has a 100% opacity `#ebeaf7` background and `#10069f` text color at a light font weight.
+  - Replaced hardcoded lists with dynamic randomization logic for Attendees (randomly selecting 4 to 6 attendees from a pool) and Watchlist items (randomly selecting 4 high-fidelity PM agenda topics from a pool) rendered through standard `@for` loops.
+  - Shifted the watchlist cards down by introducing a `margin-top: 24px` spacing class to `.agenda-grid`.
+  - Completely removed the `<footer class="drawer-footer">` layout and cancel/approve action buttons.
+  - Forced all Lucide and SVG icons to `#10069f` via component-scoped overrides.
+  - Set meeting detail values to a light font weight of `300`.
+
+- Upgraded the Plans type card side drawers (`pm-console-plan-review-drawer.component.ts` and `portfolio-manager-plan-review-drawer.component.ts`):
+  - Stylized the "Project Plan" pill with `#3188B5` at 10% opacity background (`rgba(49, 136, 181, 0.1)`) and `#3188b5` (100% opacity) text color.
+  - Set the header subheading to hardcode: `"Track blockers, open decisions, and delivery problems so ownership and next action are visible without opening another tool."` across all flows.
+  - Forced all Lucide and SVG icons in the drawers to `#10069f` via component-scoped CSS rules.
+  - Updated the Project Profile header icon from `file-text` to `rocket`.
+  - Scaled down font sizes in Project Profile body content (`.grid-label` to `11px` and `.grid-value` to `12.5px`).
+  - Configured all 5 sections (`profile`, `purpose`, `dates`, `budget`, `risks`) so clicking anywhere on the header container toggles collapse/expansion, using `cursor: pointer` and removing dual-action click handlers from chevrons.
+  - Configured both the `Project Profile` (`profile`) and `Purpose and Outcome` (`purpose`) sections to be expanded by default on side drawer load.
+  - Corrected the spelling of the "Recommend Rivision" button to "Recommend Revision" in the "More actions" dropdown menu across both drawers.
+  - Standardized inner card details and layouts within the Purpose and Outcome sections:
+    - Changed the Purpose and Outcome section header icon from `target` to `info` to match design specifications.
+    - Increased the vertical gap between card headings and subheadings by increasing the `margin-bottom` of `.outcome-title` to `8px`.
+    - Aligned the blue `No` badge immediately adjacent to the `AI component:` label in the Purpose and Outcome section by setting `.ai-component-row` to `justify-content: flex-start !important` to override global spacing.
+    - Compacted the outcome table styling to align with Image 2/3 designs: set th padding to `12px 20px` (was `16px 20px`), td padding to `14px 20px` (was `16px 20px`), updated cell border lines to a crisp `#edf2f7`, th background to `#f8fafc`, and updated the main `.outcome-card` border to a subtle `#e2e8f0` with `border-radius: 10px` and `margin-top: 12px`.
+    - Increased vertical spacing between the main section header ("Purpose and Outcome") and its subheading ("Opportunity or Problem Statement") by setting `margin-top: 16px` on `.card-content`, ensuring consistent gaps when cards expand.
+    - Updated both the "Opportunity or Problem Statement" and "In Scope" section subheadings (`.section-title`) to color `#2f2f2f` (reduced from high-emphasis `#0b0b0b`) and scaled down font size to `12px` with a crisp semi-bold `600` weight to match typographic specifications.
+
 2026-05-29:
 
 - Refined the Portfolio Manager "My Actions" Kanban cards and lane scroll behaviors in `portfolio-manager-actions-pm.component.ts`:

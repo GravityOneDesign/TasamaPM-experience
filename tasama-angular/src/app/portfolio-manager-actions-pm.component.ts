@@ -8,6 +8,7 @@ import { portfolioManagerActionItems } from './portfolio-manager-actions-pm.data
 import { PortfolioManagerActionDrawerService } from './portfolio-manager-action-drawer.service';
 import { portfolioProgramRows, standaloneProjects, type ProgramRow } from './portfolio-workspace/portfolio-workspace.data';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
+import { PortfolioManagerActionCardComponent } from './portfolio-manager-action-card.component';
 
 type PortfolioWorkTargetType = 'all' | 'portfolio' | 'program' | 'project';
 type PortfolioActionsBoardPresentation = 'kanban' | 'compact';
@@ -39,7 +40,7 @@ interface PortfolioTargetRow {
 @Component({
   selector: 'app-portfolio-manager-actions-pm',
   standalone: true,
-  imports: [CommonModule, PmConsoleIconComponent, PmConsoleWorkCalendarComponent],
+  imports: [CommonModule, PmConsoleIconComponent, PmConsoleWorkCalendarComponent, PortfolioManagerActionCardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="actions-workspace">
@@ -270,52 +271,19 @@ interface PortfolioTargetRow {
                   </header>
                   <div class="task-stack">
                     @for (item of column.items; track item.id) {
-                      <div
-                        class="new-task-card"
-                        role="button"
-                        tabindex="0"
-                        [class.is-selected]="activeBoardItem?.id === item.id"
-                        [class.is-clickable]="item.kind === 'plan' || item.kind === 'governance'"
-                        [class.is-disabled]="item.kind !== 'plan' && item.kind !== 'governance'"
-                        [attr.aria-label]="actionItemAriaLabel(item)"
-                        (click)="selectBoardItem(item)"
-                        (keydown.enter)="selectBoardItem(item)"
-                        (keydown.space)="$event.preventDefault(); selectBoardItem(item)"
+                      <app-portfolio-manager-action-card
+                        [eventType]="actionChipType(item.type)"
+                        [tag]="item.type"
+                        [title]="item.label"
+                        [subtitle]="item.project"
+                        [due]="formatMetaText(item.meta)"
+                        [ownerInitials]="item.owner"
+                        [ownerName]="item.ownerName || ''"
+                        [actionLabel]="item.cta || 'Open'"
+                        [clickable]="item.kind === 'plan' || item.kind === 'governance'"
+                        (cardClick)="selectBoardItem(item)"
                       >
-                        <!-- Top: Type Pill -->
-                        <div class="card-top-row">
-                          <span class="card-type-pill" [ngClass]="getCardTypePillClass(item.type)">{{ item.type }}</span>
-                        </div>
-
-                        <!-- Middle 1: Action name -->
-                        <div class="card-title-row">
-                          <strong class="card-action-title">{{ item.label }}</strong>
-                        </div>
-
-                        <!-- Middle 2: Project/Program name -->
-                        <div class="card-project-row">
-                          <span class="card-project-name">
-                            {{ item.project }}
-                          </span>
-                        </div>
-
-                        <!-- Middle 3: Due date with calendar icon -->
-                        <div class="card-due-row">
-                          <span pmConsoleIcon="calendar" class="card-due-icon" aria-hidden="true"></span>
-                          <span class="card-due-text">{{ formatMetaText(item.meta) }}</span>
-                        </div>
-
-                        <!-- Bottom: Owner + Open CTA -->
-                        <div class="card-bottom-row">
-                          <div class="card-owner">
-                            <span class="avatar-sm avatar-{{ item.owner.toLowerCase() }}">{{ item.owner }}</span>
-                          </div>
-                          <div class="card-cta">
-                            <span>{{ item.cta || 'Open' }}</span>
-                            <span pmConsoleIcon="chevron-right" class="card-cta-icon" aria-hidden="true"></span>
-                          </div>
-                        </div>
-                      </div>
+                      </app-portfolio-manager-action-card>
                     } @empty {
                       <div class="empty-column">No actions in this lane.</div>
                     }
@@ -1427,184 +1395,6 @@ interface PortfolioTargetRow {
       background: rgba(22, 107, 73, 0.1) !important;
       color: #166b49 !important;
     }
-
-    /* REDESIGNED TASK CARD STYLES FOR PORTFOLIO MANAGER ACTIONS */
-    .new-task-card {
-      background: #ffffff !important;
-      border: 1px solid #eef1f6 !important;
-      border-radius: 8px !important;
-      box-shadow: 0 1px 2px rgba(25, 33, 61, 0.08) !important;
-      color: #2f2f2f !important;
-      cursor: default !important;
-      display: flex !important;
-      flex-direction: column !important;
-      font: inherit !important;
-      gap: 8px !important;
-      overflow: hidden !important;
-      padding: 20px !important;
-      position: relative !important;
-      text-align: left !important;
-      transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease !important;
-      width: 100% !important;
-      height: auto !important;
-      min-height: 154px !important;
-      box-sizing: border-box !important;
-    }
-
-    .new-task-card.is-clickable {
-      cursor: pointer !important;
-    }
-
-    .new-task-card.is-clickable:hover {
-      border-color: rgba(16, 6, 159, 0.22) !important;
-      box-shadow: 0 6px 14px rgba(25, 33, 61, 0.08) !important;
-      transform: translateY(-1px) !important;
-    }
-
-    .new-task-card.is-clickable.is-selected {
-      border-color: rgba(16, 6, 159, 0.46) !important;
-      box-shadow: 0 8px 20px rgba(25, 33, 61, 0.1) !important;
-    }
-
-    .new-task-card:focus-visible {
-      border-color: rgba(16, 6, 159, 0.42) !important;
-      box-shadow: 0 0 0 3px rgba(16, 6, 159, 0.12) !important;
-      outline: 0 !important;
-    }
-
-    .new-task-card.is-disabled .card-cta {
-      color: #737b8c !important;
-    }
-
-    .card-top-row {
-      display: flex;
-      align-items: center;
-    }
-
-    .card-type-pill {
-      display: inline-flex;
-      align-items: center;
-      font-size: 11px;
-      font-weight: 500;
-      padding: 5px 10px;
-      border-radius: 999px;
-      line-height: 1;
-      border: 1px solid transparent;
-    }
-
-    .card-type-pill.plans {
-      background: #f3f7ff;
-      border-color: #d7e3ff;
-      color: #2f5bea;
-    }
-    .card-type-pill.governance-committee {
-      background: #f1fbf6;
-      border-color: #cfead9;
-      color: #087c47;
-    }
-    .card-type-pill.status-reports {
-      background: #f4f7ff;
-      border-color: #dbe5ff;
-      color: #3454c4;
-    }
-    .card-type-pill.change-requests {
-      background: #fff8e8;
-      border-color: #f3e2ba;
-      color: #9a6500;
-    }
-    .card-type-pill.benefits {
-      background: #fff8e8;
-      border-color: #f3e2ba;
-      color: #9a6500;
-    }
-    .card-type-pill.risk {
-      background: #fff4f4;
-      border-color: #f5d7d7;
-      color: #b83b3b;
-    }
-
-    .card-due-row {
-      display: flex !important;
-      align-items: center !important;
-      gap: 6px !important;
-      color: #687182 !important;
-      font-size: 11.5px !important;
-      margin-top: 2px !important;
-    }
-
-    .card-due-icon {
-      height: 14px;
-      width: 14px;
-      color: #687182;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .card-due-text {
-      line-height: 1.2;
-    }
-
-    .card-title-row {
-      margin-top: 2px;
-    }
-
-    .card-action-title {
-      color: #0b0b0b !important;
-      font-size: 14.5px !important;
-      font-weight: 600 !important;
-      line-height: 1.35 !important;
-      display: block !important;
-    }
-
-    .card-project-row {
-      margin-top: -4px;
-    }
-
-    .card-project-name {
-      color: #687182 !important;
-      font-size: 12px !important;
-      line-height: 1.35 !important;
-      font-weight: 400 !important;
-    }
-
-    .card-bottom-row {
-      display: flex !important;
-      align-items: center !important;
-      justify-content: space-between !important;
-      width: 100% !important;
-      margin-top: auto !important;
-      padding-top: 12px !important;
-    }
-
-    .card-owner {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .card-cta {
-      display: inline-flex !important;
-      align-items: center !important;
-      gap: 4px !important;
-      color: #10069f !important;
-      font-size: 12px !important;
-      font-weight: 600 !important;
-      line-height: 1 !important;
-      transition: color 160ms ease !important;
-    }
-
-    .card-cta:hover {
-      color: #3126d4 !important;
-    }
-
-    .card-cta-icon {
-      height: 14px;
-      width: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
   `],
 })
 export class PortfolioManagerActionsPmComponent implements AfterViewChecked, OnDestroy {
@@ -2061,15 +1851,15 @@ export class PortfolioManagerActionsPmComponent implements AfterViewChecked, OnD
       .replace(/(^-|-$)/g, '');
   }
 
-  getCardTypePillClass(type: string): string {
+  actionChipType(type: string): string {
     const normalized = type.toLowerCase().trim();
-    if (normalized.includes('plan')) return 'plans';
-    if (normalized.includes('governance')) return 'governance-committee';
-    if (normalized.includes('report')) return 'status-reports';
-    if (normalized.includes('change')) return 'change-requests';
-    if (normalized.includes('benefit')) return 'benefits';
-    if (normalized.includes('risk')) return 'risk';
-    return 'plans'; // default
+    if (normalized.includes('plan')) return 'Plans';
+    if (normalized.includes('governance')) return 'Governance Committees';
+    if (normalized.includes('report')) return 'Status reports';
+    if (normalized.includes('change')) return 'Change requests';
+    if (normalized.includes('benefit')) return 'Benefits';
+    if (normalized.includes('risk')) return 'Risk';
+    return type;
   }
 
   formatMetaText(meta: string): string {
