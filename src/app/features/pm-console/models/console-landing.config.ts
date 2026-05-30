@@ -195,14 +195,14 @@ export const pmoOverviewActions: readonly PmConsoleFrontdoorAction[] = [
   },
   {
     id: 'create-manage',
-    title: 'Create & manage',
+    title: 'Portfolio Workspaces',
     description: 'Add new programs / projects to your portfolios, and manage risks, issues, and benefits.',
     icon: 'list',
     decor: 'loops',
   },
   {
     id: 'report-review',
-    title: 'Report & Review Progress',
+    title: 'Governance & Reporting',
     description: 'Create scheduled or adhoc reports to monitor overall progress and review status reports.',
     icon: 'chart-column',
     decor: 'hex',

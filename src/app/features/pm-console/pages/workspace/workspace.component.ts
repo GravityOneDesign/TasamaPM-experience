@@ -4060,6 +4060,28 @@ const roleLandingDashboardRequests: Record<string, RoleLandingDashboardRequest> 
     dashboardName: 'Framework Configurations',
     isGrouped: true,
   },
+  'portfolio-insights': {
+    frontDoorName: 'P3M Workspaces',
+    dashboardName: 'Insights & Decision Intelligence',
+    isGrouped: true,
+  },
+  'create-manage': {
+    frontDoorName: 'P3M Workspaces',
+    dashboardName: 'Manage Portfolio Workspaces',
+    isGrouped: true,
+  },
+  'report-review': {
+    frontDoorName: 'P3M Workspaces',
+    dashboardName: 'Governance & Reporting',
+    isGrouped: true,
+  },
+};
+const portfolioManagerRoleLandingDashboardRequests: Record<string, RoleLandingDashboardRequest> = {
+  framework: {
+    frontDoorName: 'Framework Configurations',
+    dashboardName: 'Static PM Dashboard',
+    isGrouped: true,
+  },
 };
 const normalFrontDoorInsidePagePaths: Record<string, string> = {
   'project-plan': '',
@@ -15242,11 +15264,6 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       return;
     }
 
-    if (actionId === 'report-review') {
-      this.openPortfolioImplementationRoute('portfolioreporting', 'Report & Review Progress');
-      return;
-    }
-
     if (actionId === 'insights') {
       this.openImpactStudioExploreInsights('pmo');
       return;
@@ -15347,7 +15364,9 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
   }
 
   private openRoleLandingDashboard(actionId: string): boolean {
-    const request = roleLandingDashboardRequests[actionId];
+    const request =
+      (this.isPortfolioManagerFrontDoor && portfolioManagerRoleLandingDashboardRequests[actionId]) ||
+      roleLandingDashboardRequests[actionId];
     if (!request) return false;
 
     if (this.roleLandingNavigationInFlight) {
