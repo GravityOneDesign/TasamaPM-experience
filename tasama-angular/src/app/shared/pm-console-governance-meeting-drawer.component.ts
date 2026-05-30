@@ -13,16 +13,26 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
       <aside class="gov-meeting-drawer" role="dialog" aria-modal="true" aria-label="Governance Meeting Details">
         <div class="drawer-inner">
           <header class="gov-meeting-header">
-            <div class="header-top-row">
-              <span class="eyebrow-text">UPCOMING EVENT</span>
-              <span class="committee-pill">Governance Committee</span>
+            <div class="gov-header-copy">
+              <div class="header-top-row">
+                <span class="eyebrow-text">UPCOMING EVENT</span>
+                <span class="committee-pill">Governance Committee</span>
+              </div>
+              <h2 class="meeting-title">{{ eventTitle }}</h2>
+              <div class="meta-row">
+                <span class="meta-label">Forum Name:</span>
+                <strong class="meta-value">{{ forumName }}</strong>
+                <span class="meta-label">Category:</span>
+                <span class="category-pill">Business Excellence</span>
+              </div>
             </div>
-            <h2 class="meeting-title">Annual Performance Review</h2>
-            <div class="meta-row">
-              <span class="meta-label">Forum Name:</span>
-              <strong class="meta-value">Audit Committee</strong>
-              <span class="meta-label">Category:</span>
-              <span class="category-pill">Business Excellence</span>
+            <div class="drawer-header-actions">
+              <button type="button" class="drawer-icon-btn" aria-label="Expand governance drawer">
+                <span pmConsoleIcon="maximize-2" aria-hidden="true"></span>
+              </button>
+              <button type="button" class="drawer-icon-btn" aria-label="Close governance drawer" (click)="close.emit()">
+                <span pmConsoleIcon="x" aria-hidden="true"></span>
+              </button>
             </div>
           </header>
 
@@ -35,11 +45,12 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
                   <h3 class="card-title">Meeting Details</h3>
                   <span pmConsoleIcon="info" class="info-icon" aria-hidden="true"></span>
                 </div>
-                <button type="button" class="collapse-btn" aria-label="Collapse meeting details">
-                  <span pmConsoleIcon="chevron-up" aria-hidden="true"></span>
+                <button type="button" class="collapse-btn" aria-label="Toggle meeting details" (click)="toggleSection('meeting')">
+                  <span [pmConsoleIcon]="isSectionExpanded('meeting') ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></span>
                 </button>
               </div>
 
+              @if (isSectionExpanded('meeting')) {
               <div class="meeting-grid">
                 <div class="grid-item">
                   <span class="grid-label">Meeting Time</span>
@@ -120,6 +131,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
                   </tbody>
                 </table>
               </div>
+              }
             </div>
 
             <!-- Forum Agenda / Watchlist -->
@@ -129,11 +141,12 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
                   <span pmConsoleIcon="calendar-days" class="card-icon" aria-hidden="true"></span>
                   <h3 class="card-title">Forum Agenda / Watchlist <span class="header-count">| 4 items</span></h3>
                 </div>
-                <button type="button" class="collapse-btn" aria-label="Collapse agenda">
-                  <span pmConsoleIcon="chevron-up" aria-hidden="true"></span>
+                <button type="button" class="collapse-btn" aria-label="Toggle agenda" (click)="toggleSection('agenda')">
+                  <span [pmConsoleIcon]="isSectionExpanded('agenda') ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></span>
                 </button>
               </div>
 
+              @if (isSectionExpanded('agenda')) {
               <div class="agenda-grid">
                 <div class="agenda-card">
                   <span class="agenda-eyebrow">AGENDA ITEM 1</span>
@@ -160,9 +173,17 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
                   <a href="#" class="agenda-link">View Issue <span pmConsoleIcon="arrow-right" aria-hidden="true"></span></a>
                 </div>
               </div>
+              }
             </div>
           </section>
         </div>
+        <footer class="drawer-footer">
+          <div class="footer-actions">
+            <button type="button" class="btn-cancel" (click)="close.emit()">Cancel</button>
+            <button type="button" class="btn-more">More actions <span pmConsoleIcon="chevron-down" aria-hidden="true"></span></button>
+            <button type="button" class="btn-approve">Approve</button>
+          </div>
+        </footer>
       </aside>
     </div>
   `,
@@ -197,7 +218,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
 
       .gov-meeting-drawer {
         background: var(--surface-default, #ffffff);
-        box-shadow: -4px 0 24px rgba(0, 0, 0, 0.1);
+        box-shadow: -22px 0 50px rgba(25, 33, 61, 0.18);
         display: flex;
         flex-direction: column;
         height: 100%;
@@ -205,87 +226,148 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
         position: absolute;
         right: 0;
         top: 0;
-        width: 800px;
-        max-width: 100%;
+        width: clamp(560px, 50vw, 720px);
+        max-width: calc(100vw - 72px);
       }
 
       .drawer-inner {
         display: flex;
         flex-direction: column;
-        height: 100%;
+        flex: 1 1 auto;
+        min-height: 0;
         overflow-y: auto;
-        background-color: #f7f9fc;
+        background-color: #f7f7fc;
       }
 
       /* Header */
       .gov-meeting-header {
-        padding: 32px 40px;
-        background-color: #f7f9fc;
-        border-bottom: 1px solid #e2e8f0;
+        align-items: flex-start;
+        background-color: #f7f7fc;
+        border-bottom: 1px solid #dddddd;
+        display: flex;
+        gap: clamp(16px, 2vw, 24px);
+        justify-content: space-between;
+        padding: clamp(20px, 2vw, 24px);
+      }
+
+      .gov-header-copy {
+        display: grid;
+        flex: 1 1 auto;
+        gap: clamp(8px, 1vw, 10px);
+        min-width: 0;
+      }
+
+      .drawer-header-actions {
+        align-items: center;
+        display: flex;
+        flex: 0 0 auto;
+        gap: 12px;
+      }
+
+      .drawer-icon-btn {
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid #e4e7ef;
+        border-radius: 8px;
+        color: #596273;
+        cursor: pointer;
+        display: inline-flex;
+        height: 32px;
+        justify-content: center;
+        padding: 0;
+        width: 32px;
+      }
+
+      .drawer-icon-btn .icon {
+        height: 18px;
+        width: 18px;
       }
 
       .header-top-row {
-        display: flex;
         align-items: center;
+        display: flex;
+        flex-wrap: wrap;
         gap: 12px;
-        margin-bottom: 16px;
+        margin-bottom: 0;
+        min-width: 0;
       }
 
       .eyebrow-text {
-        color: #4b5563;
-        font-size: 11px;
+        color: #10069f;
+        font-size: 10px;
         font-weight: 700;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
       }
 
       .committee-pill {
         background: #eef2ff;
+        border-radius: 12px;
         color: #4338ca;
         font-size: 11px;
         font-weight: 600;
+        max-width: min(260px, 100%);
+        overflow: hidden;
         padding: 4px 12px;
-        border-radius: 999px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .meeting-title {
-        color: #111827;
-        font-size: 24px;
+        color: #202633;
+        font-size: clamp(18px, 1.45vw, 20px);
         font-weight: 600;
-        margin: 0 0 16px;
+        line-height: 1.16;
+        margin: 0;
+        max-width: 100%;
+        overflow-wrap: break-word;
       }
 
       .meta-row {
-        display: flex;
         align-items: center;
+        display: grid;
+        grid-template-columns: max-content minmax(0, 1fr) max-content max-content;
         gap: 8px;
-        font-size: 13px;
+        font-size: clamp(11px, 1vw, 13px);
+        max-width: 100%;
+        min-width: 0;
       }
 
       .meta-label {
         color: #6b7280;
+        white-space: nowrap;
       }
 
       .meta-value {
         color: #374151;
         font-weight: 600;
-        margin-right: 16px;
+        margin-right: clamp(8px, 1.2vw, 16px);
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .category-pill {
         background: #f3e8ff;
+        border-radius: 999px;
         color: #7e22ce;
         font-size: 12px;
         font-weight: 600;
+        max-width: min(270px, 22vw);
+        overflow: hidden;
         padding: 4px 12px;
-        border-radius: 999px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       /* Body */
       .drawer-body {
-        padding: 32px 40px;
+        background: #f7f7fc;
+        padding: 16px 24px 24px;
         display: flex;
         flex-direction: column;
-        gap: 24px;
+        gap: 10px;
       }
 
       /* Cards */
@@ -293,16 +375,16 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
       .agenda-section {
         background: #ffffff;
         border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 2px 2px rgba(1, 10, 15, 0.08);
         border: 1px solid #f1f5f9;
-        padding: 24px;
+        padding: 16px;
       }
 
       .card-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 24px;
+        margin-bottom: 0;
       }
 
       .card-title-group {
@@ -350,6 +432,7 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 16px;
+        margin-top: 16px;
         margin-bottom: 24px;
       }
 
@@ -526,9 +609,112 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
       .agenda-link:hover {
         text-decoration: underline;
       }
+
+      .drawer-footer {
+        background: #ffffff;
+        border-top: 1px solid #dddddd;
+        bottom: 0;
+        display: flex;
+        flex-shrink: 0;
+        justify-content: flex-end;
+        min-height: 73px;
+        padding: 16px 24px;
+        position: sticky;
+        z-index: 3;
+      }
+
+      .footer-actions {
+        align-items: center;
+        display: flex;
+        gap: 12px;
+      }
+
+      .btn-cancel,
+      .btn-more,
+      .btn-approve {
+        align-items: center;
+        border-radius: 999px;
+        cursor: pointer;
+        display: inline-flex;
+        font-size: 14px;
+        font-weight: 600;
+        height: 40px;
+        justify-content: center;
+        padding: 0 16px;
+      }
+
+      .btn-cancel {
+        background: transparent;
+        border: 0;
+        color: #404040;
+      }
+
+      .btn-more {
+        background: #ffffff;
+        border: 1px solid #d3d3d3;
+        color: #404040;
+        gap: 8px;
+      }
+
+      .btn-approve {
+        background: #10069f;
+        border: 1px solid #10069f;
+        color: #ffffff;
+        min-width: 96px;
+      }
+
+      @media (max-width: 1180px) {
+        .gov-meeting-drawer {
+          width: min(720px, calc(100vw - 48px));
+          max-width: calc(100vw - 48px);
+        }
+
+        .category-pill {
+          max-width: min(240px, 28vw);
+        }
+      }
+
+      @media (max-width: 760px) {
+        .gov-meeting-drawer {
+          width: 100vw;
+          max-width: 100vw;
+        }
+
+        .gov-meeting-header {
+          padding: 18px;
+        }
+
+        .meta-row {
+          grid-template-columns: max-content minmax(0, 1fr);
+        }
+
+        .category-pill {
+          max-width: 100%;
+        }
+
+        .drawer-body {
+          padding: 14px 18px 20px;
+        }
+      }
     `
   ]
 })
 export class PmConsoleGovernanceMeetingDrawerComponent {
+  @Input() eventTitle = 'Annual Performance Review';
+  @Input() forumName = 'Audit Committee';
+  @Input() statusLabel = 'Upcoming';
   @Output() close = new EventEmitter<void>();
+  private readonly expandedSections = new Set<string>(['meeting']);
+
+  isSectionExpanded(section: string): boolean {
+    return this.expandedSections.has(section);
+  }
+
+  toggleSection(section: string): void {
+    if (this.expandedSections.has(section)) {
+      this.expandedSections.delete(section);
+    } else {
+      this.expandedSections.add(section);
+    }
+  }
 }

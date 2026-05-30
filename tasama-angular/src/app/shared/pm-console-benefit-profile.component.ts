@@ -126,14 +126,20 @@ interface MeasureDraft {
       <article class="risk-profile-shell benefit-profile-shell" aria-label="Benefit profile">
         <header class="risk-profile-header benefit-profile-header">
           <div class="risk-profile-title benefit-profile-title">
-            <button class="risk-profile-back" type="button" (click)="closeProfile.emit()" aria-label="Back to benefits register">
-              <span pmConsoleIcon="chevron-left" aria-hidden="true"></span>
-            </button>
             <div>
               <span class="risk-profile-eyebrow">{{ record.id }} · {{ record.stage || 'Benefit profile' }}</span>
               <h3>{{ record.benefitName }}</h3>
               <small>{{ record.project }} · Owner {{ record.owner || 'Owner to confirm' }}</small>
             </div>
+          </div>
+          <div class="benefit-profile-header-actions">
+            <span [pmConsoleStatusPill]="record.overallStatus || 'To Commence'" baseClass="dependency-register-pill" [tone]="benefitStatusTone(record.overallStatus)"></span>
+            <button class="benefit-profile-icon-button" type="button" aria-label="Expand benefit drawer">
+              <span pmConsoleIcon="maximize-2" aria-hidden="true"></span>
+            </button>
+            <button class="benefit-profile-icon-button" type="button" (click)="closeProfile.emit()" aria-label="Close benefit profile">
+              <span pmConsoleIcon="x" aria-hidden="true"></span>
+            </button>
           </div>
         </header>
 
@@ -383,7 +389,6 @@ interface MeasureDraft {
 
         <footer class="risk-profile-footer benefit-profile-footer">
           <div class="risk-profile-actions benefit-profile-actions">
-            <span [pmConsoleStatusPill]="record.overallStatus || 'To Commence'" baseClass="dependency-register-pill" [tone]="benefitStatusTone(record.overallStatus)"></span>
             <button class="risk-profile-secondary" type="button">View activity</button>
             <button class="risk-profile-secondary" type="button">More actions</button>
             <button class="risk-profile-primary benefit-profile-complete" type="button" (click)="completeProfile.emit(record.id)">Mark realized</button>
@@ -499,6 +504,7 @@ interface MeasureDraft {
         grid-template-rows: auto auto minmax(0, 1fr) auto;
         height: 100%;
         min-height: 0;
+        overflow: hidden;
       }
 
       .benefit-profile-focus-frame .benefit-profile-layout {
@@ -516,7 +522,37 @@ interface MeasureDraft {
       .benefit-profile-header {
         border-color: #e4e9f2;
         display: grid;
-        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+        grid-template-columns: minmax(0, 1fr) auto;
+      }
+
+      .benefit-profile-header-actions {
+        align-items: center;
+        display: flex;
+        gap: 12px;
+      }
+
+      .benefit-profile-header-actions .dependency-register-pill {
+        margin-right: 2px;
+      }
+
+      .benefit-profile-icon-button {
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid #e4e7ef;
+        border-radius: 8px;
+        color: #596273;
+        cursor: pointer;
+        display: inline-flex;
+        height: 32px;
+        justify-content: center;
+        padding: 0;
+        width: 32px;
+      }
+
+      .benefit-profile-icon-button .icon {
+        height: 18px;
+        width: 18px;
       }
 
       .benefit-profile-title h3 {
@@ -532,6 +568,15 @@ interface MeasureDraft {
       .benefit-profile-actions {
         align-items: center;
         justify-content: flex-end;
+      }
+
+      .benefit-profile-footer {
+        background: #ffffff;
+        border-top: 1px solid #dfe7f2;
+        bottom: 0;
+        flex: 0 0 auto;
+        position: sticky;
+        z-index: 5;
       }
 
       .benefit-profile-shell .risk-profile-eyebrow,

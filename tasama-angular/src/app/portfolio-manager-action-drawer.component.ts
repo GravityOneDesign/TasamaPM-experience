@@ -245,10 +245,19 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
             }
           }
           @case ('governance') {
-            <app-pm-console-governance-meeting-drawer (close)="close.emit()"></app-pm-console-governance-meeting-drawer>
+            <app-pm-console-governance-meeting-drawer
+              [eventTitle]="selected.label"
+              [forumName]="selected.project"
+              [statusLabel]="selected.column"
+              (close)="close.emit()"
+            ></app-pm-console-governance-meeting-drawer>
           }
           @case ('plan') {
-            <app-pm-console-plan-review-drawer (close)="close.emit()"></app-pm-console-plan-review-drawer>
+            <app-pm-console-plan-review-drawer
+              [projectName]="selected.project"
+              [actionTitle]="selected.label"
+              (close)="close.emit()"
+            ></app-pm-console-plan-review-drawer>
           }
           @default {
             <app-pm-console-plan-drawer
@@ -806,6 +815,8 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
         display: flex;
         align-items: center;
         gap: 12px;
+        flex: 1 1 auto;
+        min-width: 0;
       }
 
       .overdue-reports-header .report-icon-bg {
@@ -877,14 +888,20 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
 
       .overdue-reports-header h2 {
         color: #0b0b0b;
+        flex: 0 1 auto;
         font-size: 20px;
         font-weight: 600;
+        line-height: 1.15;
         margin: 0;
+        min-width: 0;
       }
 
       .overdue-reports-header .overdue-pill {
+        align-self: flex-start;
+        flex: 0 0 auto;
         font-size: 11px;
         font-weight: 600;
+        margin-left: auto;
         padding: 4px 8px;
         border-radius: 6px;
         line-height: 1;

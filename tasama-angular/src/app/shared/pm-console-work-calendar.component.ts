@@ -124,7 +124,7 @@ interface CalendarPopoverPosition {
                     (click)="openAgendaItem(cell.items[0], $event)"
                   >
                     <span class="calendar-event-dot"></span>
-                    <span class="calendar-event-title">{{ getCalendarChipType(cell.items[0]) }}</span>
+                    <span class="calendar-event-title">{{ calendarChipLabel(cell.items[0]) }}</span>
                   </button>
 
                   <div class="calendar-event-with-more">
@@ -141,7 +141,7 @@ interface CalendarPopoverPosition {
                       (click)="openAgendaItem(cell.items[1], $event)"
                     >
                       <span class="calendar-event-dot"></span>
-                      <span class="calendar-event-title">{{ getCalendarChipType(cell.items[1]) }}</span>
+                      <span class="calendar-event-title">{{ calendarChipLabel(cell.items[1]) }}</span>
                     </button>
                     <button
                       class="calendar-more-badge"
@@ -169,7 +169,7 @@ interface CalendarPopoverPosition {
                       (click)="openAgendaItem(item, $event)"
                     >
                       <span class="calendar-event-dot"></span>
-                      <span class="calendar-event-title">{{ getCalendarChipType(item) }}</span>
+                      <span class="calendar-event-title">{{ calendarChipLabel(item) }}</span>
                     </button>
                   }
                 }
@@ -196,14 +196,11 @@ interface CalendarPopoverPosition {
         (click)="$event.stopPropagation()"
       >
         <div class="calendar-popover-tag-row">
-          <span class="calendar-popover-kind" [attr.data-event-type]="getCalendarChipType(previewItem)">{{ getCalendarChipType(previewItem) }}</span>
-          <span class="calendar-popover-context-tag">Project: {{ previewItem.project }}</span>
+          <span class="calendar-popover-kind" [attr.data-event-type]="getCalendarChipType(previewItem)">{{ calendarChipLabel(previewItem) }}</span>
+          <span class="calendar-popover-arrow" pmConsoleIcon="arrow-right" aria-hidden="true"></span>
         </div>
-        <strong>{{ previewItem.label }}</strong>
-        <button class="calendar-popover-action" type="button" (click)="openAgendaItem(previewItem, $event)">
-          <span>View</span>
-          <span pmConsoleIcon="arrow-right" aria-hidden="true"></span>
-        </button>
+        <strong>{{ previewTitle(previewItem) }}</strong>
+        <p>{{ previewSubtitle(previewItem) }}</p>
       </aside>
     }
 
@@ -287,17 +284,31 @@ interface CalendarPopoverPosition {
       }
 
       .calendar-event {
+        align-items: center;
+        border: 0;
+        border-radius: 6px;
         box-sizing: border-box;
         cursor: pointer;
-        font-size: 10.25px;
-        height: 22px;
+        display: inline-flex;
+        font-size: 10px;
+        font-weight: 500;
+        height: 18px;
+        justify-content: center;
+        letter-spacing: 0.24px;
+        line-height: 16px;
         margin-top: 0;
         max-width: calc(100% - 2px);
         min-width: 0;
         overflow: hidden;
-        padding: 0 8px;
+        padding: 1px 5px;
         position: relative;
+        text-transform: none;
+        width: fit-content;
         z-index: 70;
+      }
+
+      .calendar-event-dot {
+        display: none;
       }
 
       .calendar-event-title {
@@ -347,12 +358,14 @@ interface CalendarPopoverPosition {
         align-items: center;
         display: flex;
         gap: 4px;
+        justify-content: flex-start;
         max-width: 100%;
         width: 100%;
       }
 
       .calendar-event-with-more .calendar-event {
-        flex: 1 1 auto;
+        flex: 0 1 auto;
+        max-width: calc(100% - 32px);
         min-width: 0;
       }
 
@@ -555,9 +568,14 @@ interface CalendarPopoverPosition {
       }
 
       .calendar-item-hover-card {
-        padding: 24px;
-        gap: 16px;
-        border-radius: 16px;
+        border: 0;
+        border-bottom: 1px solid #eeeeee;
+        border-radius: 0;
+        box-shadow: 0 10px 24px rgba(25, 33, 61, 0.12);
+        gap: 4px;
+        max-width: 324px;
+        min-width: 324px;
+        padding: 10px 16px;
       }
 
       .calendar-hover-card.above {
@@ -589,6 +607,10 @@ interface CalendarPopoverPosition {
         top: -6px;
       }
 
+      .calendar-item-hover-card::after {
+        display: none;
+      }
+
       .calendar-popover-action .icon,
       .calendar-agenda-row .icon {
         height: 14px;
@@ -599,37 +621,39 @@ interface CalendarPopoverPosition {
         align-items: center;
         display: flex;
         flex-wrap: wrap;
-        gap: 6px;
+        gap: 8px;
+        justify-content: space-between;
         min-width: 0;
+        width: 100%;
       }
 
       .calendar-popover-kind {
         align-items: center;
-        border-radius: 999px;
+        border-radius: 6px;
         display: inline-flex;
         font-size: 11px;
-        font-weight: 600;
+        font-weight: 500;
         justify-self: start;
-        letter-spacing: 0;
-        line-height: 1;
-        padding: 6px 8px;
-        text-transform: uppercase;
+        letter-spacing: 0.24px;
+        line-height: 16px;
+        padding: 2px 6px;
+        text-transform: none;
+        white-space: nowrap;
       }
 
-      .calendar-popover-context-tag {
+      .calendar-popover-arrow {
         align-items: center;
-        background: #fbfcff;
-        border: 1px solid #dfe4ee;
-        border-radius: 999px;
-        color: #3f4654;
+        color: #10069f;
         display: inline-flex;
-        font-size: 12px;
-        font-weight: 600;
-        justify-self: start;
-        line-height: 1.2;
-        max-width: 100%;
-        overflow-wrap: anywhere;
-        padding: 5px 8px;
+        flex: 0 0 auto;
+        height: 16px;
+        justify-content: center;
+        width: 16px;
+      }
+
+      .calendar-popover-arrow .icon {
+        height: 16px;
+        width: 16px;
       }
 
       .calendar-popover-kind.green {
@@ -653,19 +677,25 @@ interface CalendarPopoverPosition {
       }
 
       .calendar-hover-card strong {
-        color: #252a34;
+        color: #0b0b0b;
         display: block;
         font-size: 13px;
         font-weight: 600;
-        line-height: 1.35;
+        line-height: 20px;
         margin: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 100%;
       }
 
       .calendar-hover-card p {
-        color: var(--muted);
+        color: #777777;
         font-size: 12px;
-        line-height: 1.35;
+        font-weight: 400;
+        line-height: 16px;
         margin: 0;
+        text-transform: capitalize;
       }
 
       .calendar-popover-meta {
@@ -893,17 +923,17 @@ interface CalendarPopoverPosition {
 
       /* Custom Event Type styles for Calendar Chips/Pills & Popovers */
       .calendar-event[data-event-type="Plans"] {
-        background: rgba(141, 200, 232, 0.1) !important;
-        border-color: rgba(141, 200, 232, 0.25) !important;
-        color: #8dc8e8 !important;
+        background: rgba(49, 136, 181, 0.09) !important;
+        border-color: rgba(141, 200, 232, 0.225) !important;
+        color: #3188b5 !important;
       }
       .calendar-event[data-event-type="Plans"] .calendar-event-dot {
-        background: #8dc8e8 !important;
+        background: #3188b5 !important;
       }
 
       .calendar-event[data-event-type="Governance Committees"] {
-        background: rgba(52, 84, 196, 0.1) !important;
-        border-color: rgba(52, 84, 196, 0.25) !important;
+        background: rgba(52, 84, 196, 0.09) !important;
+        border-color: rgba(52, 84, 196, 0.225) !important;
         color: #3454c4 !important;
       }
       .calendar-event[data-event-type="Governance Committees"] .calendar-event-dot {
@@ -911,8 +941,8 @@ interface CalendarPopoverPosition {
       }
 
       .calendar-event[data-event-type="Status reports"] {
-        background: rgba(111, 32, 149, 0.1) !important;
-        border-color: rgba(111, 32, 149, 0.25) !important;
+        background: rgba(111, 32, 149, 0.09) !important;
+        border-color: rgba(111, 32, 149, 0.225) !important;
         color: #6f2095 !important;
       }
       .calendar-event[data-event-type="Status reports"] .calendar-event-dot {
@@ -920,17 +950,17 @@ interface CalendarPopoverPosition {
       }
 
       .calendar-event[data-event-type="Change requests"] {
-        background: rgba(196, 52, 114, 0.1) !important;
-        border-color: rgba(196, 52, 114, 0.25) !important;
-        color: #c43472 !important;
+        background: rgba(229, 144, 47, 0.09) !important;
+        border-color: rgba(229, 144, 47, 0.225) !important;
+        color: #e5902f !important;
       }
       .calendar-event[data-event-type="Change requests"] .calendar-event-dot {
-        background: #c43472 !important;
+        background: #e5902f !important;
       }
 
       .calendar-event[data-event-type="Benefits"] {
-        background: rgba(22, 107, 73, 0.1) !important;
-        border-color: rgba(22, 107, 73, 0.25) !important;
+        background: rgba(22, 107, 73, 0.09) !important;
+        border-color: rgba(22, 107, 73, 0.225) !important;
         color: #166b49 !important;
       }
       .calendar-event[data-event-type="Benefits"] .calendar-event-dot {
@@ -939,8 +969,8 @@ interface CalendarPopoverPosition {
 
       /* Popover kinds */
       .calendar-popover-kind[data-event-type="Plans"] {
-        background: rgba(141, 200, 232, 0.1) !important;
-        color: #8dc8e8 !important;
+        background: rgba(49, 136, 181, 0.1) !important;
+        color: #3188b5 !important;
       }
       .calendar-popover-kind[data-event-type="Governance Committees"] {
         background: rgba(52, 84, 196, 0.1) !important;
@@ -951,8 +981,8 @@ interface CalendarPopoverPosition {
         color: #6f2095 !important;
       }
       .calendar-popover-kind[data-event-type="Change requests"] {
-        background: rgba(196, 52, 114, 0.1) !important;
-        color: #c43472 !important;
+        background: rgba(229, 144, 47, 0.1) !important;
+        color: #e5902f !important;
       }
       .calendar-popover-kind[data-event-type="Benefits"] {
         background: rgba(22, 107, 73, 0.1) !important;
@@ -1213,6 +1243,29 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
     if (kind === 'change') return 'Change requests';
     if (kind === 'governance' || kind === 'risk') return 'Governance Committees';
     return 'Plans';
+  }
+
+  calendarChipLabel(item: PmConsoleCalendarItem): string {
+    const kind = item.kind || 'task';
+    if (kind === 'report') return 'Status report';
+    if (kind === 'benefit') return 'Benefit';
+    if (kind === 'change') return 'Change request';
+    if (kind === 'governance' || kind === 'risk') return 'Governance committee';
+    return 'Project Plan';
+  }
+
+  previewTitle(item: PmConsoleCalendarItem): string {
+    const kind = item.kind || 'task';
+    if (kind === 'report' || kind === 'plan') return item.project;
+    return item.label;
+  }
+
+  previewSubtitle(item: PmConsoleCalendarItem): string {
+    const kind = item.kind || 'task';
+    if (kind === 'report') return 'Portfolio Status Report';
+    if (kind === 'governance' || kind === 'risk') return 'Forum Name';
+    if (kind === 'plan') return 'Project Plan';
+    return `Project : ${item.project}`;
   }
 
   itemKindLabel(item: PmConsoleCalendarItem): string {
