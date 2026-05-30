@@ -124,7 +124,7 @@ interface CalendarPopoverPosition {
                     (click)="openAgendaItem(cell.items[0], $event)"
                   >
                     <span class="calendar-event-dot"></span>
-                    <span class="calendar-event-title">{{ getCalendarChipType(cell.items[0]) }}</span>
+                    <span class="calendar-event-title">{{ calendarChipLabel(cell.items[0]) }}</span>
                   </button>
 
                   <div class="calendar-event-with-more">
@@ -141,7 +141,7 @@ interface CalendarPopoverPosition {
                       (click)="openAgendaItem(cell.items[1], $event)"
                     >
                       <span class="calendar-event-dot"></span>
-                      <span class="calendar-event-title">{{ getCalendarChipType(cell.items[1]) }}</span>
+                      <span class="calendar-event-title">{{ calendarChipLabel(cell.items[1]) }}</span>
                     </button>
                     <button
                       class="calendar-more-badge"
@@ -169,7 +169,7 @@ interface CalendarPopoverPosition {
                       (click)="openAgendaItem(item, $event)"
                     >
                       <span class="calendar-event-dot"></span>
-                      <span class="calendar-event-title">{{ getCalendarChipType(item) }}</span>
+                      <span class="calendar-event-title">{{ calendarChipLabel(item) }}</span>
                     </button>
                   }
                 }
@@ -196,14 +196,11 @@ interface CalendarPopoverPosition {
         (click)="$event.stopPropagation()"
       >
         <div class="calendar-popover-tag-row">
-          <span class="calendar-popover-kind" [attr.data-event-type]="getCalendarChipType(previewItem)">{{ getCalendarChipType(previewItem) }}</span>
-          <span class="calendar-popover-context-tag">{{ itemTargetLabel(previewItem) }}</span>
+          <span class="calendar-popover-kind" [attr.data-event-type]="getCalendarChipType(previewItem)">{{ calendarChipLabel(previewItem) }}</span>
+          <span class="calendar-popover-arrow" pmConsoleIcon="arrow-right" aria-hidden="true"></span>
         </div>
-        <strong>{{ previewItem.label }}</strong>
-        <button class="calendar-popover-action" type="button" (click)="openAgendaItem(previewItem, $event)">
-          <span>View</span>
-          <span pmConsoleIcon="arrow-right" aria-hidden="true"></span>
-        </button>
+        <strong>{{ previewTitle(previewItem) }}</strong>
+        <p>{{ previewSubtitle(previewItem) }}</p>
       </aside>
     }
 
@@ -222,23 +219,19 @@ interface CalendarPopoverPosition {
         (focusout)="hidePreviewSoon()"
         (click)="$event.stopPropagation()"
       >
-        <span class="calendar-popover-kind neutral">{{ dateLabel(previewCell.key) }}</span>
-        <strong>{{ previewCell.items.length }} item{{ previewCell.items.length === 1 ? '' : 's' }} scheduled</strong>
+        <div class="calendar-hover-header">
+          <span class="hover-date">{{ dateLabel(previewCell.key) }}</span>
+          <span class="hover-count">{{ previewCell.items.length }} item{{ previewCell.items.length === 1 ? '' : 's' }}</span>
+        </div>
         <div class="calendar-day-agenda-list preview-agenda-list">
-          @for (item of previewCell.items; track item.date + item.label + item.project) {
-            <button class="calendar-agenda-row" [attr.data-event-type]="getCalendarChipType(item)" type="button" (click)="openAgendaItem(item, $event)" style="grid-template-columns: auto minmax(0, 1fr) auto; padding: 12px 14px; min-height: 58px;">
-              <span class="calendar-event-dot"></span>
-              <span class="calendar-agenda-info">
-                <span class="calendar-popover-tag-row" style="margin-bottom: 4px; gap: 4px; display: flex; flex-wrap: wrap;">
-                  <span class="calendar-popover-kind" [attr.data-event-type]="getCalendarChipType(item)" style="font-size: 8.5px; font-weight: 600; line-height: 1; padding: 3px 6px; text-transform: uppercase;">{{ getCalendarChipType(item) }}</span>
-                  <span class="calendar-popover-context-tag" style="font-size: 9px; font-weight: 600; line-height: 1.2; padding: 2.5px 6px; background: #fbfcff; border: 1px solid #dfe4ee; border-radius: 999px; color: #3f4654;">{{ item.project }}</span>
-                </span>
-                <span class="calendar-agenda-title" style="white-space: normal; overflow: visible; text-overflow: unset; font-size: 12px; line-height: 1.3; margin-top: 1px;">{{ item.label }}</span>
-              </span>
-              <span class="calendar-agenda-cta">
-                <span>{{ actionLabel(item) }}</span>
-                <span pmConsoleIcon="arrow-right" aria-hidden="true"></span>
-              </span>
+          @for (item of previewCell.items; track item.date + item.label + item.project; let last = $last) {
+            <button class="calendar-agenda-row" [class.is-last]="last" type="button" (click)="openAgendaItem(item, $event)">
+              <div class="agenda-row-header">
+                <span class="calendar-popover-kind" [attr.data-event-type]="getCalendarChipType(item)">{{ getCalendarChipType(item) }}</span>
+                <span class="arrow-icon" pmConsoleIcon="arrow-right" aria-hidden="true"></span>
+              </div>
+              <span class="agenda-row-title">{{ item.label }}</span>
+              <span class="agenda-row-subtitle">Project : {{ item.project }}</span>
             </button>
           }
         </div>
@@ -291,17 +284,31 @@ interface CalendarPopoverPosition {
       }
 
       .calendar-event {
+        align-items: center;
+        border: 0;
+        border-radius: 6px;
         box-sizing: border-box;
         cursor: pointer;
-        font-size: 10.25px;
-        height: 22px;
+        display: inline-flex;
+        font-size: 10px;
+        font-weight: 500;
+        height: 18px;
+        justify-content: center;
+        letter-spacing: 0.24px;
+        line-height: 16px;
         margin-top: 0;
         max-width: calc(100% - 2px);
         min-width: 0;
         overflow: hidden;
-        padding: 0 8px;
+        padding: 1px 5px;
         position: relative;
+        text-transform: none;
+        width: fit-content;
         z-index: 70;
+      }
+
+      .calendar-event-dot {
+        display: none;
       }
 
       .calendar-event-title {
@@ -351,12 +358,14 @@ interface CalendarPopoverPosition {
         align-items: center;
         display: flex;
         gap: 4px;
+        justify-content: flex-start;
         max-width: 100%;
         width: 100%;
       }
 
       .calendar-event-with-more .calendar-event {
-        flex: 1 1 auto;
+        flex: 0 1 auto;
+        max-width: calc(100% - 32px);
         min-width: 0;
       }
 
@@ -559,8 +568,14 @@ interface CalendarPopoverPosition {
       }
 
       .calendar-item-hover-card {
-        gap: 16px;
-        padding: 16px;
+        border: 0;
+        border-bottom: 1px solid #eeeeee;
+        border-radius: 0;
+        box-shadow: 0 10px 24px rgba(25, 33, 61, 0.12);
+        gap: 4px;
+        max-width: 324px;
+        min-width: 324px;
+        padding: 10px 16px;
       }
 
       .calendar-hover-card.above {
@@ -592,6 +607,10 @@ interface CalendarPopoverPosition {
         top: -6px;
       }
 
+      .calendar-item-hover-card::after {
+        display: none;
+      }
+
       .calendar-popover-action .icon,
       .calendar-agenda-row .icon {
         height: 14px;
@@ -602,37 +621,39 @@ interface CalendarPopoverPosition {
         align-items: center;
         display: flex;
         flex-wrap: wrap;
-        gap: 6px;
+        gap: 8px;
+        justify-content: space-between;
         min-width: 0;
+        width: 100%;
       }
 
       .calendar-popover-kind {
         align-items: center;
-        border-radius: 999px;
+        border-radius: 6px;
         display: inline-flex;
-        font-size: 10px;
-        font-weight: 600;
+        font-size: 11px;
+        font-weight: 500;
         justify-self: start;
-        letter-spacing: 0;
-        line-height: 1;
-        padding: 6px 8px;
-        text-transform: uppercase;
+        letter-spacing: 0.24px;
+        line-height: 16px;
+        padding: 2px 6px;
+        text-transform: none;
+        white-space: nowrap;
       }
 
-      .calendar-popover-context-tag {
+      .calendar-popover-arrow {
         align-items: center;
-        background: #fbfcff;
-        border: 1px solid #dfe4ee;
-        border-radius: 999px;
-        color: #3f4654;
+        color: #10069f;
         display: inline-flex;
-        font-size: 10.5px;
-        font-weight: 600;
-        justify-self: start;
-        line-height: 1.2;
-        max-width: 100%;
-        overflow-wrap: anywhere;
-        padding: 5px 8px;
+        flex: 0 0 auto;
+        height: 16px;
+        justify-content: center;
+        width: 16px;
+      }
+
+      .calendar-popover-arrow .icon {
+        height: 16px;
+        width: 16px;
       }
 
       .calendar-popover-kind.green {
@@ -656,19 +677,25 @@ interface CalendarPopoverPosition {
       }
 
       .calendar-hover-card strong {
-        color: #252a34;
+        color: #0b0b0b;
         display: block;
         font-size: 13px;
         font-weight: 600;
-        line-height: 1.25;
+        line-height: 20px;
         margin: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 100%;
       }
 
       .calendar-hover-card p {
-        color: var(--muted);
-        font-size: 11px;
-        line-height: 1.35;
+        color: #777777;
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 16px;
         margin: 0;
+        text-transform: capitalize;
       }
 
       .calendar-popover-meta {
@@ -693,16 +720,16 @@ interface CalendarPopoverPosition {
         align-items: center;
         background: #ffffff;
         border: 1px solid #dfe4ee;
-        border-radius: 8px;
+        border-radius: 999px;
         color: #303645;
         display: inline-flex;
-        font-size: 12px;
+        font-size: 13px;
         font-weight: 600;
         gap: 8px;
-        height: 32px;
+        height: 36px;
         justify-content: center;
         justify-self: start;
-        padding: 0 12px;
+        padding: 0 16px;
       }
 
       .calendar-popover-action:hover,
@@ -713,100 +740,94 @@ interface CalendarPopoverPosition {
         outline: 0;
       }
 
-      .calendar-day-agenda-list {
-        display: grid;
-        gap: 6px;
-        padding-right: 2px;
+      .calendar-day-hover-card {
+        padding: 0;
+        gap: 0;
+        border-radius: 12px;
+        overflow: hidden;
       }
 
-      .preview-agenda-list {
-        margin-top: 8px;
+      .calendar-hover-header {
+        background: #f4f4f5;
+        padding: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #dfe4ee;
+      }
+
+      .calendar-hover-header .hover-date {
+        font-weight: 500;
+        color: #111827;
+        font-size: 13px;
+      }
+
+      .calendar-hover-header .hover-count {
+        color: #4b5563;
+        font-size: 12px;
+      }
+
+      .calendar-day-agenda-list {
+        display: flex;
+        flex-direction: column;
+        background: #ffffff;
+        max-height: 400px;
+        overflow-y: auto;
       }
 
       .calendar-agenda-row {
-        align-items: center;
         background: #ffffff;
-        border: 1px solid #edf0f6;
-        border-radius: 8px;
+        border: none;
+        border-bottom: 1px solid #edf0f6;
+        border-radius: 0;
         color: #303645;
-        display: grid;
-        gap: 12px;
-        grid-template-columns: auto minmax(0, 1fr) auto;
-        min-height: 48px;
-        padding: 10px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 16px;
         text-align: left;
-        transition: background 120ms ease, border-color 120ms ease;
+        transition: background 120ms ease;
+        width: 100%;
+        cursor: pointer;
       }
 
-      .calendar-agenda-row.blue {
-        background: #ffffff;
-        border-color: #e3ebfc;
-      }
-
-      .calendar-agenda-row.red {
-        background: #ffffff;
-        border-color: #fcdbd9;
-      }
-
-      .calendar-agenda-row.green {
-        background: #ffffff;
-        border-color: #d1f2e1;
+      .calendar-agenda-row.is-last {
+        border-bottom: none;
       }
 
       .calendar-agenda-row:hover,
       .calendar-agenda-row:focus-visible {
         background: #f7f9fc;
-        border-color: #cbd5e1;
         outline: 0;
       }
 
-      .calendar-agenda-row.blue:hover,
-      .calendar-agenda-row.blue:focus-visible {
-        background: #f5f8ff;
-        border-color: #b8caff;
-      }
-
-      .calendar-agenda-row.red:hover,
-      .calendar-agenda-row.red:focus-visible {
-        background: #fff5f4;
-        border-color: #ffa8a1;
-      }
-
-      .calendar-agenda-row.green:hover,
-      .calendar-agenda-row.green:focus-visible {
-        background: #f2fcf7;
-        border-color: #a3e2c3;
-      }
-
-      .calendar-agenda-info {
+      .agenda-row-header {
         display: flex;
-        flex-direction: column;
-        min-width: 0;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
       }
 
-      .calendar-agenda-title {
+      .agenda-row-header .arrow-icon {
+        color: #1f4fb8;
+        height: 16px;
+        width: 16px;
+      }
+
+      .agenda-row-title {
         color: #0b0b0b;
         display: block;
-        font-size: 12.5px;
+        font-size: 13px;
         font-weight: 600;
         line-height: 1.4;
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
       }
 
-      .calendar-agenda-subtitle {
-        color: #536071;
+      .agenda-row-subtitle {
+        color: #8290a4;
         display: block;
-        font-size: 11px;
+        font-size: 12px;
         font-weight: 400;
         line-height: 1.4;
-        margin-top: 2px;
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
       }
 
       .calendar-agenda-cta {
@@ -902,17 +923,17 @@ interface CalendarPopoverPosition {
 
       /* Custom Event Type styles for Calendar Chips/Pills & Popovers */
       .calendar-event[data-event-type="Plans"] {
-        background: rgba(141, 200, 232, 0.1) !important;
-        border-color: rgba(141, 200, 232, 0.25) !important;
-        color: #8dc8e8 !important;
+        background: rgba(49, 136, 181, 0.09) !important;
+        border-color: rgba(141, 200, 232, 0.225) !important;
+        color: #3188b5 !important;
       }
       .calendar-event[data-event-type="Plans"] .calendar-event-dot {
-        background: #8dc8e8 !important;
+        background: #3188b5 !important;
       }
 
       .calendar-event[data-event-type="Governance Committees"] {
-        background: rgba(52, 84, 196, 0.1) !important;
-        border-color: rgba(52, 84, 196, 0.25) !important;
+        background: rgba(52, 84, 196, 0.09) !important;
+        border-color: rgba(52, 84, 196, 0.225) !important;
         color: #3454c4 !important;
       }
       .calendar-event[data-event-type="Governance Committees"] .calendar-event-dot {
@@ -920,8 +941,8 @@ interface CalendarPopoverPosition {
       }
 
       .calendar-event[data-event-type="Status reports"] {
-        background: rgba(111, 32, 149, 0.1) !important;
-        border-color: rgba(111, 32, 149, 0.25) !important;
+        background: rgba(111, 32, 149, 0.09) !important;
+        border-color: rgba(111, 32, 149, 0.225) !important;
         color: #6f2095 !important;
       }
       .calendar-event[data-event-type="Status reports"] .calendar-event-dot {
@@ -929,17 +950,17 @@ interface CalendarPopoverPosition {
       }
 
       .calendar-event[data-event-type="Change requests"] {
-        background: rgba(196, 52, 114, 0.1) !important;
-        border-color: rgba(196, 52, 114, 0.25) !important;
-        color: #c43472 !important;
+        background: rgba(229, 144, 47, 0.09) !important;
+        border-color: rgba(229, 144, 47, 0.225) !important;
+        color: #e5902f !important;
       }
       .calendar-event[data-event-type="Change requests"] .calendar-event-dot {
-        background: #c43472 !important;
+        background: #e5902f !important;
       }
 
       .calendar-event[data-event-type="Benefits"] {
-        background: rgba(22, 107, 73, 0.1) !important;
-        border-color: rgba(22, 107, 73, 0.25) !important;
+        background: rgba(22, 107, 73, 0.09) !important;
+        border-color: rgba(22, 107, 73, 0.225) !important;
         color: #166b49 !important;
       }
       .calendar-event[data-event-type="Benefits"] .calendar-event-dot {
@@ -948,8 +969,8 @@ interface CalendarPopoverPosition {
 
       /* Popover kinds */
       .calendar-popover-kind[data-event-type="Plans"] {
-        background: rgba(141, 200, 232, 0.1) !important;
-        color: #8dc8e8 !important;
+        background: rgba(49, 136, 181, 0.1) !important;
+        color: #3188b5 !important;
       }
       .calendar-popover-kind[data-event-type="Governance Committees"] {
         background: rgba(52, 84, 196, 0.1) !important;
@@ -960,8 +981,8 @@ interface CalendarPopoverPosition {
         color: #6f2095 !important;
       }
       .calendar-popover-kind[data-event-type="Change requests"] {
-        background: rgba(196, 52, 114, 0.1) !important;
-        color: #c43472 !important;
+        background: rgba(229, 144, 47, 0.1) !important;
+        color: #e5902f !important;
       }
       .calendar-popover-kind[data-event-type="Benefits"] {
         background: rgba(22, 107, 73, 0.1) !important;
@@ -1117,7 +1138,7 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
   private showItemPreviewFromAnchor(item: PmConsoleCalendarItem, anchor: HTMLElement): void {
     this.previewPinned = false;
     this.keepPreview();
-    const position = this.positionFor(anchor, 280, 156);
+    const position = this.positionFor(anchor, 370, 156);
     this.previewItem = item;
     this.previewCell = null;
     this.previewTop = position.top;
@@ -1140,7 +1161,7 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
   private showDayPreviewFromAnchor(cell: PmConsoleCalendarCell, anchor: HTMLElement): void {
     this.previewPinned = false;
     this.keepPreview();
-    const position = this.positionFor(anchor, 320, this.dayPopoverHeight(cell));
+    const position = this.positionFor(anchor, 370, this.dayPopoverHeight(cell));
     this.previewItem = null;
     this.previewCell = cell;
     this.previewTop = position.top;
@@ -1224,6 +1245,29 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
     return 'Plans';
   }
 
+  calendarChipLabel(item: PmConsoleCalendarItem): string {
+    const kind = item.kind || 'task';
+    if (kind === 'report') return 'Status report';
+    if (kind === 'benefit') return 'Benefit';
+    if (kind === 'change') return 'Change request';
+    if (kind === 'governance' || kind === 'risk') return 'Governance committee';
+    return 'Project Plan';
+  }
+
+  previewTitle(item: PmConsoleCalendarItem): string {
+    const kind = item.kind || 'task';
+    if (kind === 'report' || kind === 'plan') return item.project;
+    return item.label;
+  }
+
+  previewSubtitle(item: PmConsoleCalendarItem): string {
+    const kind = item.kind || 'task';
+    if (kind === 'report') return 'Portfolio Status Report';
+    if (kind === 'governance' || kind === 'risk') return 'Forum Name';
+    if (kind === 'plan') return 'Project Plan';
+    return `Project : ${item.project}`;
+  }
+
   itemKindLabel(item: PmConsoleCalendarItem): string {
     const kind = item.kind || 'task';
     return kind
@@ -1277,7 +1321,7 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
   }
 
   private dayPopoverHeight(cell: PmConsoleCalendarCell): number {
-    return 118 + cell.items.length * 68;
+    return Math.min(460, 56 + cell.items.length * 138);
   }
 
   private clearPreviewHideTimer(): void {
@@ -1306,15 +1350,24 @@ export class PmConsoleWorkCalendarComponent implements OnDestroy {
 
   private positionFor(anchor: HTMLElement, width: number, estimatedHeight: number): CalendarPopoverPosition {
     const rect = anchor.getBoundingClientRect();
+    const calendarRect = this.elementRef.nativeElement.getBoundingClientRect();
     const containingBlockOffset = this.fixedContainingBlockOffset();
     const margin = 12;
     const gap = 8;
     const arrowSize = 10;
-    const placement: CalendarPopoverPlacement = rect.top - estimatedHeight - gap > margin ? 'above' : 'below';
+    const minTop = calendarRect.top + margin;
+    const maxTop = calendarRect.bottom - margin;
+    
+    const placement: CalendarPopoverPlacement = rect.top - estimatedHeight - gap > minTop ? 'above' : 'below';
     const rawTop = placement === 'above' ? rect.top - gap : rect.bottom + gap;
     const rawLeft = rect.left + rect.width / 2 - width / 2;
-    const viewportTop = placement === 'above' ? Math.max(margin, rawTop) : Math.max(margin, Math.min(rawTop, window.innerHeight - estimatedHeight - margin));
-    const viewportLeft = Math.max(margin, Math.min(rawLeft, window.innerWidth - width - margin));
+    
+    const viewportTop = placement === 'above' ? Math.max(minTop, rawTop) : Math.max(minTop, Math.min(rawTop, maxTop - estimatedHeight));
+    
+    const minLeft = calendarRect.left + margin;
+    const maxLeft = calendarRect.right - margin;
+    const viewportLeft = Math.max(minLeft, Math.min(rawLeft, maxLeft - width));
+    
     const anchorCenter = rect.left + rect.width / 2;
     const arrowLeft = Math.max(16, Math.min(anchorCenter - viewportLeft - arrowSize / 2, width - 26));
     const top = viewportTop - containingBlockOffset.top;

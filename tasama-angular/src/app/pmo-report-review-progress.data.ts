@@ -1,4 +1,4 @@
-export type PmoReportReviewTabId = 'standard' | 'custom';
+export type PmoReportReviewTabId = 'standard' | 'custom' | 'governance';
 
 export interface PmoReportReviewTab {
   readonly id: PmoReportReviewTabId;
@@ -110,6 +110,7 @@ const standardReportCards: readonly PmoReportReviewCard[] = [
 export const pmoReportReviewTabs: readonly PmoReportReviewTab[] = [
   { id: 'standard', label: 'Standard Reports', icon: 'square-chart-gantt', widthPx: 201 },
   { id: 'custom', label: 'Custom Reports', icon: 'network', widthPx: 192 },
+  { id: 'governance', label: 'Governance Register', icon: 'layout-grid', widthPx: 215 },
 ];
 
 export const pmoReportReviewFilters: readonly PmoReportReviewFilter[] = [
@@ -234,7 +235,7 @@ export const pmoReportReviewDrawerTabs: readonly PmoReportReviewDrawerTab[] = [
 ];
 
 export function isPmoReportReviewTabId(tabId: string): tabId is PmoReportReviewTabId {
-  return tabId === 'standard' || tabId === 'custom';
+  return tabId === 'standard' || tabId === 'custom' || tabId === 'governance';
 }
 
 export function isPmoReportReviewDrawerTabId(tabId: string): tabId is PmoReportReviewDrawerTabId {

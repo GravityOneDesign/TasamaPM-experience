@@ -9189,19 +9189,7 @@ button.pm-project-table-stat:focus-visible {
 }
 
 .calendar-cell.today::after {
-  background: rgba(16, 6, 159, 0.08);
-  border: 1px solid rgba(16, 6, 159, 0.14);
-  border-radius: 999px;
-  color: var(--brand);
-  content: "Today";
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0;
-  line-height: 1;
-  padding: 5px 7px;
-  position: absolute;
-  right: 6px;
-  top: 6px;
+  display: none;
 }
 
 .calendar-cell.muted {
@@ -9223,11 +9211,8 @@ button.pm-project-table-stat:focus-visible {
 }
 
 .calendar-cell.today > span {
-  background: var(--brand);
-  border: 1px solid var(--brand);
-  color: white;
-  min-width: 22px;
-  padding-inline: 6px;
+  color: var(--brand);
+  font-weight: 600;
 }
 
 .calendar-event {

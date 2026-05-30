@@ -125,7 +125,8 @@ import { PmConsoleModeTabsComponent } from './shared/pm-console-mode-tabs.compon
                   </section>
                 } @else if (selectedTab === 'manage-work') {
                   <app-portfolio-manager-actions
-                    [workspaceTitle]="'PMO Console'"
+                    [workspaceTitle]="'My Calendar'"
+                    boardWorkspaceTitle="My Actions"
                     searchPlaceholder="Search PMO work..."
                     [actionItems]="workItems"
                     [boardFilters]="workFilters"

@@ -10,12 +10,13 @@ import {
   type PmoReportReviewTabId,
 } from './pmo-report-review-progress.data';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
+import { PmoGovernanceRegisterComponent } from './pmo-governance-register.component';
 import { PmConsoleDateFieldComponent } from './shared/pm-console-date-field.component';
 
 @Component({
   selector: 'app-pmo-report-review-progress',
   standalone: true,
-  imports: [PmConsoleIconComponent, PmConsoleDateFieldComponent],
+  imports: [PmConsoleIconComponent, PmConsoleDateFieldComponent, PmoGovernanceRegisterComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="app-canvas pmo-report-review-canvas">
@@ -26,7 +27,7 @@ import { PmConsoleDateFieldComponent } from './shared/pm-console-date-field.comp
               <button class="pmo-report-back-button" type="button" aria-label="Back to PMO home" (click)="backSelected.emit()">
                 <span pmConsoleIcon="arrow-left" aria-hidden="true"></span>
               </button>
-              <h1>Report & Review Progress</h1>
+              <h1>Governance & Reporting</h1>
             </div>
 
             <nav class="pmo-report-tabs" role="tablist" aria-label="Report review sections">
@@ -46,6 +47,9 @@ import { PmConsoleDateFieldComponent } from './shared/pm-console-date-field.comp
             </nav>
           </header>
 
+          @if (activeTabId === 'governance') {
+            <app-pmo-governance-register></app-pmo-governance-register>
+          } @else {
           <section class="pmo-report-review-body" aria-label="Reports">
             <div class="pmo-report-toolbar">
               <h2>{{ reportHeading }}</h2>
@@ -177,6 +181,7 @@ import { PmConsoleDateFieldComponent } from './shared/pm-console-date-field.comp
               }
             </div>
           </section>
+          }
         </section>
       </div>
     </main>
