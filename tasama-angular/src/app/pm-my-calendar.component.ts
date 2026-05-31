@@ -53,12 +53,11 @@ export class PmMyCalendarComponent {
   @Input() showFilterBar: boolean = false;
   @Input() selectedFilterId: string = '';
 
-  @Output() monthShift = new EventEmitter<'prev' | 'next'>();
+  @Output() monthShift = new EventEmitter<number>();
   @Output() filterChange = new EventEmitter<string>();
   @Output() itemOpen = new EventEmitter<PmConsoleCalendarItem>();
 
-  onPrevMonth() { this.monthShift.emit('prev'); }
-  onNextMonth() { this.monthShift.emit('next'); }
+  onPrevMonth() { this.monthShift.emit(-1); }
+  onNextMonth() { this.monthShift.emit(1); }
   onFilterChange(id: string) { this.filterChange.emit(id); }
   onItemOpen(item: PmConsoleCalendarItem | undefined) { if (item) this.itemOpen.emit(item); }
-}
