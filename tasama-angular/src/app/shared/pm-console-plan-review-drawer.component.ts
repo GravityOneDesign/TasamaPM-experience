@@ -454,31 +454,34 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
         display: flex;
         align-items: center;
         gap: 12px;
-        margin-bottom: 0;
+        margin-bottom: 4px;
       }
 
       .eyebrow-text {
+        background: rgba(16, 6, 159, 0.08);
+        border-radius: 4px;
         color: #10069f;
         font-size: 10px;
         font-weight: 700;
         letter-spacing: 0.8px;
+        padding: 4px 10px;
         text-transform: uppercase;
       }
 
       .plan-pill {
-        background: rgba(49, 136, 181, 0.1);
-        color: #3188b5;
+        background: rgba(16, 6, 159, 0.08);
+        color: #10069f;
         font-size: 12px;
-        font-weight: 300;
+        font-weight: 500;
         padding: 4px 12px;
         border-radius: 6px;
       }
 
       .plan-title {
-        color: #202633;
-        font-size: 20px;
-        font-weight: 600;
-        line-height: 23px;
+        color: #0b0b0b;
+        font-size: 22px;
+        font-weight: 700;
+        line-height: 26px;
         margin: 0;
         letter-spacing: 0;
       }
@@ -783,26 +786,27 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
 
       .btn-cancel {
         background: transparent;
-        border: none;
+        border: 1px solid #dfe4ee;
+        border-radius: 8px;
         color: #0b0b0b;
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 600;
         cursor: pointer;
-        padding: 10px 16px;
+        padding: 10px 24px;
       }
 
       .btn-more {
         background: #ffffff;
         border: 1px solid #dfe4ee;
-        border-radius: 999px;
+        border-radius: 8px;
         color: #303645;
-        font-size: 14px;
-        font-weight: 500;
+        font-size: 13px;
+        font-weight: 600;
         cursor: pointer;
         display: flex;
         align-items: center;
         gap: 8px;
-        padding: 8px 16px;
+        padding: 10px 16px;
       }
 
       .btn-more .icon {
@@ -863,10 +867,10 @@ import { PmConsoleIconComponent } from './pm-console-icon.component';
 
       .btn-approve {
         background: #10069f;
-        border: none;
-        border-radius: 999px;
+        border: 1px solid #10069f;
+        border-radius: 8px;
         color: #ffffff;
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 600;
         cursor: pointer;
         padding: 10px 24px;

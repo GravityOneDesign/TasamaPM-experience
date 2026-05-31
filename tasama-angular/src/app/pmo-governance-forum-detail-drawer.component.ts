@@ -416,19 +416,23 @@ interface PmoGovernanceForumDetailDrawerTab {
       }
 
       .pmo-forum-drawer-title span {
+        background: rgba(16, 6, 159, 0.08);
+        border-radius: 4px;
         color: #10069f;
         font-size: 10px;
-        font-weight: 600;
-        letter-spacing: 0;
+        font-weight: 700;
+        letter-spacing: 0.8px;
         line-height: 1;
+        padding: 4px 10px;
         text-transform: uppercase;
+        width: fit-content;
       }
 
       .pmo-forum-drawer-title h2 {
         color: #0b0b0b;
-        font-size: 20px;
-        font-weight: 600;
-        line-height: 24px;
+        font-size: 22px;
+        font-weight: 700;
+        line-height: 26px;
         margin: 0;
       }
 
