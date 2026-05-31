@@ -18,9 +18,10 @@ export interface PortfolioActionItem {
   project: string;       // target workspace/entity name, e.g. 'Vision 2030'
   targetType: 'portfolio' | 'program' | 'project';
   type: string;          // e.g. 'Review Plan', 'Review Risk', 'Review Benefit', 'Review Stagegate Assesment'
-  kind: 'report' | 'risk' | 'benefit' | 'milestone' | 'task' | 'dependency' | 'plan' | 'change' | 'governance'; // mapped for filters
+  kind: 'plan' | 'report' | 'risk' | 'benefit' | 'change' | 'governance' | 'milestone' | 'task' | 'dependency'; // mapped for filters
   tone: 'green' | 'red' | 'blue' | 'neutral'; // tone color class
   owner: string;         // initials, e.g. 'FA'
+  ownerName?: string;    // full name, e.g. 'Muna Hasan'
   meta: string;          // due label, e.g. 'Overdue by 5 days'
   cta: string;           // action label, e.g. 'Submit'
   column: 'Overdue' | 'This week' | 'Upcoming';
@@ -42,12 +43,12 @@ export interface PortfolioBoardFilter {
 
 export const portfolioBoardFilters: PortfolioBoardFilter[] = [
   { id: 'all', label: 'All types', icon: 'grid' },
-  { id: 'report', label: 'Reports', icon: 'plan' },
-  { id: 'risk', label: 'Risks', icon: 'risks' },
-  { id: 'dependency', label: 'Dependencies', icon: 'dependencies' },
-  { id: 'benefit', label: 'Benefit', icon: 'benefit' },
-  { id: 'milestone', label: 'Milestones', icon: 'milestone' },
-  { id: 'task', label: 'Tasks', icon: 'checklist' },
+  { id: 'benefit', label: 'Benefits', icon: 'benefit' },
+  { id: 'change', label: 'Change requests', icon: 'changeRequest' },
+  { id: 'risk', label: 'Risk', icon: 'risks' },
+  { id: 'plan', label: 'Plans', icon: 'plan' },
+  { id: 'governance', label: 'Governance committee', icon: 'building' },
+  { id: 'report', label: 'Status reports', icon: 'chart' },
 ];
 
 export const portfolioActionItems: PortfolioActionItem[] = [
@@ -72,7 +73,7 @@ export const portfolioActionItems: PortfolioActionItem[] = [
     project: 'NEOM Integration',
     targetType: 'project',
     type: 'Review Risk',
-    kind: 'risk',
+    kind: 'governance',
     tone: 'red',
     owner: 'AH',
     meta: 'High priority',
@@ -156,7 +157,7 @@ export const portfolioActionItems: PortfolioActionItem[] = [
     project: 'UAE Research Map',
     targetType: 'project',
     type: 'Review Risk',
-    kind: 'risk',
+    kind: 'governance',
     tone: 'red',
     owner: 'MH',
     meta: 'Due in 3 days',
@@ -198,7 +199,7 @@ export const portfolioActionItems: PortfolioActionItem[] = [
     project: 'NEOM Integration',
     targetType: 'project',
     type: 'Review Risk',
-    kind: 'risk',
+    kind: 'governance',
     tone: 'red',
     owner: 'AH',
     meta: 'Next week',
@@ -217,6 +218,147 @@ export const portfolioActionItems: PortfolioActionItem[] = [
     owner: 'MH',
     meta: 'In 2 weeks',
     cta: 'Resolve',
+    column: 'Upcoming'
+  },
+  // Adding the 6 items for May 26, 2026 (Figma Image 5)
+  {
+    id: 'ACT-13',
+    date: '2026-05-26',
+    label: 'Benefit Name',
+    project: 'Vision 2030',
+    targetType: 'project',
+    type: 'Review Benefit',
+    kind: 'benefit',
+    tone: 'green',
+    owner: 'MH',
+    meta: 'Due soon',
+    cta: 'Review',
+    column: 'Upcoming'
+  },
+  {
+    id: 'ACT-14',
+    date: '2026-05-26',
+    label: 'Change Request Title',
+    project: 'UAE Research Map',
+    targetType: 'project',
+    type: 'Assess Change',
+    kind: 'change',
+    tone: 'blue',
+    owner: 'FA',
+    meta: 'Due soon',
+    cta: 'Assess',
+    column: 'Upcoming'
+  },
+  {
+    id: 'ACT-15',
+    date: '2026-05-26',
+    label: 'Benefit Name',
+    project: 'Vision 2030',
+    targetType: 'project',
+    type: 'Review Risk',
+    kind: 'risk',
+    tone: 'red',
+    owner: 'AH',
+    meta: 'Due soon',
+    cta: 'Review',
+    column: 'Upcoming'
+  },
+  {
+    id: 'ACT-16',
+    date: '2026-05-26',
+    label: 'UAE Research map (Project name)',
+    project: 'UAE Research Map',
+    targetType: 'project',
+    type: 'Review Plan',
+    kind: 'plan',
+    tone: 'blue',
+    owner: 'MH',
+    meta: 'Due soon',
+    cta: 'Open',
+    column: 'Upcoming'
+  },
+  {
+    id: 'ACT-17',
+    date: '2026-05-26',
+    label: 'Annual Performance Review (Meeting name)',
+    project: 'Forum Name',
+    targetType: 'project',
+    type: 'Open Meeting',
+    kind: 'governance',
+    tone: 'blue',
+    owner: 'FA',
+    meta: 'Due soon',
+    cta: 'Open',
+    column: 'Upcoming'
+  },
+  {
+    id: 'ACT-18',
+    date: '2026-05-26',
+    label: 'UAE Research map (Project / Program / Portfolio name)',
+    project: 'UAE Research Map',
+    targetType: 'project',
+    type: 'Review Report',
+    kind: 'report',
+    tone: 'blue',
+    owner: 'SA',
+    meta: 'Due soon',
+    cta: 'Open report',
+    column: 'Upcoming'
+  },
+  {
+    id: 'ACT-RISK-01',
+    date: '2026-05-13',
+    label: 'Assess Integration exposure',
+    project: 'NEOM Integration',
+    targetType: 'project',
+    type: 'Review Risk',
+    kind: 'risk',
+    tone: 'red',
+    owner: 'AH',
+    meta: 'High priority',
+    cta: 'Review',
+    column: 'This week'
+  },
+  {
+    id: 'ACT-RISK-02',
+    date: '2026-05-19',
+    label: 'Smart service adoption risk',
+    project: 'Smart City Alpha',
+    targetType: 'project',
+    type: 'Review Risk',
+    kind: 'risk',
+    tone: 'red',
+    owner: 'MH',
+    meta: 'Medium priority',
+    cta: 'Review',
+    column: 'Upcoming'
+  },
+  {
+    id: 'ACT-RISK-03',
+    date: '2026-05-20',
+    label: 'Funding allocation delay',
+    project: 'Vision 2030',
+    targetType: 'project',
+    type: 'Review Risk',
+    kind: 'risk',
+    tone: 'red',
+    owner: 'FA',
+    meta: 'High priority',
+    cta: 'Review',
+    column: 'Upcoming'
+  },
+  {
+    id: 'ACT-RISK-04',
+    date: '2026-05-27',
+    label: 'Evidence submission risk',
+    project: 'UAE Research Map',
+    targetType: 'project',
+    type: 'Review Risk',
+    kind: 'risk',
+    tone: 'red',
+    owner: 'MH',
+    meta: 'Medium priority',
+    cta: 'Review',
     column: 'Upcoming'
   }
 ];
@@ -653,4 +795,121 @@ export function portfolioActionGenericChecklist(item: PortfolioActionItem): Port
     { label: 'Confirm owner response', meta: `Assigned to ${item.owner}; ${item.meta}.`, complete: item.column !== 'Overdue' },
     { label: 'Record portfolio decision', meta: 'Capture the action outcome for the next digest.', complete: false },
   ];
+}
+
+// --- Governance Committee Review Drawer Data ---
+
+export interface GovernanceCommitteeAttendee {
+  readonly name: string;
+  readonly initials: string;
+  readonly role: string;
+}
+
+export interface GovernanceCommitteeAgendaItem {
+  readonly id: number;
+  readonly title: string;
+  readonly description: string;
+  readonly ctaLabel: string;
+}
+
+export interface GovernanceCommitteeDrawerData {
+  readonly forumName: string;
+  readonly category: string;
+  readonly meetingTime: string;
+  readonly meetingDate: string;
+  readonly meetingType: string;
+  readonly location: string;
+  readonly attendees: readonly GovernanceCommitteeAttendee[];
+  readonly agendaItems: readonly GovernanceCommitteeAgendaItem[];
+}
+
+export function portfolioActionGovernanceData(_item: PortfolioActionItem): GovernanceCommitteeDrawerData {
+  return {
+    forumName: 'Audit Committee',
+    category: 'Business Excellence',
+    meetingTime: '2:00 PM',
+    meetingDate: '01/06/2026',
+    meetingType: 'In-person',
+    location: 'Conference Room 1',
+    attendees: [
+      { name: 'Muna Hassan', initials: 'MH', role: 'Delivery Office' },
+      { name: 'Muna Hassan', initials: 'MH', role: 'Delivery Office' },
+      { name: 'Muna Hassan', initials: 'MH', role: 'Delivery Office' },
+      { name: 'Muna Hassan', initials: 'MH', role: 'Delivery Office' },
+      { name: 'Muna Hassan', initials: 'MH', role: 'Delivery Office' },
+    ],
+    agendaItems: [
+      { id: 1, title: 'Total active initiatives across sectors', description: 'Agreement on current portfolio status and areas requiring intervention.', ctaLabel: 'View Project' },
+      { id: 2, title: 'Total active initiatives across sectors', description: 'Agreement on current portfolio status and areas requiring intervention.', ctaLabel: 'View Program' },
+      { id: 3, title: 'Total active initiatives across sectors', description: 'Agreement on current portfolio status and areas requiring intervention.', ctaLabel: 'View Risk' },
+      { id: 4, title: 'Total active initiatives across sectors', description: 'Agreement on current portfolio status and areas requiring intervention.', ctaLabel: 'View Issue' },
+    ],
+  };
+}
+
+// --- Plan Review Drawer Data ---
+
+export interface PlanReviewOutcomeRow {
+  readonly outcome: string;
+  readonly measure: string;
+}
+
+export interface PlanReviewDeliverableRow {
+  readonly name: string;
+  readonly owner: string;
+}
+
+export interface PlanReviewRiskRow {
+  readonly risk: string;
+  readonly owner: string;
+}
+
+export interface PlanReviewDrawerData {
+  readonly projectName: string;
+  readonly category: string;
+  readonly businessUnit: string;
+  readonly pmoContact: string;
+  readonly projectManager: string;
+  readonly projectManagerInitials: string;
+  readonly problemStatement: string;
+  readonly outcomes: readonly PlanReviewOutcomeRow[];
+  readonly aiComponent: string;
+  readonly baselineStartDate: string;
+  readonly baselineEndDate: string;
+  readonly inScope: string;
+  readonly endProducts: readonly PlanReviewDeliverableRow[];
+  readonly managementProducts: readonly PlanReviewDeliverableRow[];
+  readonly capexBaseline: string;
+  readonly opexBaseline: string;
+  readonly risks: readonly PlanReviewRiskRow[];
+}
+
+export function portfolioActionPlanReviewData(item: PortfolioActionItem): PlanReviewDrawerData {
+  return {
+    projectName: item.project || 'UAE Research Map',
+    category: 'Research & Development',
+    businessUnit: 'Research Office',
+    pmoContact: 'PMO Desk',
+    projectManager: 'Muna Hassan',
+    projectManagerInitials: 'MH',
+    problemStatement: 'Track blockers, open decisions, and delivery problems so ownership and next action are visible without opening another tool. Track blockers, open decisions, and delivery problems so ownership and next action are visible without opening another tool. Track blockers, open decisions, and delivery problems so ownership and next action are visible without opening another tool.',
+    outcomes: [
+      { outcome: 'Reduce fragmentation in research efforts', measure: 'Discovery coverage' },
+    ],
+    aiComponent: 'No',
+    baselineStartDate: '31/05/2026',
+    baselineEndDate: '09/06/2026',
+    inScope: 'Track blockers, open decisions, and delivery problems so ownership and next action are visible without opening another tool. Track blockers, open decisions, and delivery problems so ownership and next action are visible without opening another tool. Track blockers, open decisions, and delivery problems so ownership and next action are visible without opening another tool.',
+    endProducts: [
+      { name: 'Research capability map', owner: 'Delivery Office' },
+    ],
+    managementProducts: [
+      { name: 'Project initiation documentation', owner: 'PMO' },
+    ],
+    capexBaseline: '300,000 SAR',
+    opexBaseline: '300,000 SAR',
+    risks: [
+      { risk: 'Stakeholder data quality', owner: 'PMO' },
+    ],
+  };
 }

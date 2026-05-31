@@ -39,7 +39,7 @@ interface CalendarPopoverPosition {
 }
 
 @Component({
-  selector: 'app-pm-console-work-calendar',
+  selector: 'app-pm-console-work-calendar-pm',
   standalone: true,
   imports: [CommonModule, PmConsoleIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -1112,7 +1112,7 @@ interface CalendarPopoverPosition {
     `,
   ],
 })
-export class PmConsoleWorkCalendarComponent implements OnDestroy {
+export class PmConsoleWorkCalendarPmComponent implements OnDestroy {
   @Input() monthLabel = '';
   @Input() monthItemCount = 0;
   @Input() cells: PmConsoleCalendarCell[] = [];

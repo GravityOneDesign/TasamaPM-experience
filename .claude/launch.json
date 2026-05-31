@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "tasama",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["start", "--prefix", "tasama-angular", "--", "--port", "4202"],
+      "port": 4202
+    }
+  ]
+}

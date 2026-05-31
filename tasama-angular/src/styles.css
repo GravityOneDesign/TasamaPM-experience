@@ -6419,7 +6419,7 @@ button.pm-project-table-stat:focus-visible {
 }
 
 .actions-control-row .workspace-search,
-.pm-project-table-toolbar .pm-register-search-field {
+.pm-project-table-toolbar label.pm-register-search-field {
   flex: 0 1 var(--action-control-height, var(--pm-toolbar-control-height, 40px));
   border-radius: var(--action-control-radius, 8px);
   border-color: #e4e7ef;
@@ -6442,8 +6442,8 @@ button.pm-project-table-stat:focus-visible {
 
 .actions-control-row .workspace-search:hover,
 .actions-control-row .workspace-search:focus-within,
-.pm-project-table-toolbar .pm-register-search-field:hover,
-.pm-project-table-toolbar .pm-register-search-field:focus-within {
+.pm-project-table-toolbar label.pm-register-search-field:hover,
+.pm-project-table-toolbar label.pm-register-search-field:focus-within {
   border-color: #d6d8df;
   box-shadow: 0 1px 2px rgba(25, 33, 61, 0.05);
   flex-basis: var(--action-search-expanded-width, 320px);
@@ -6454,7 +6454,7 @@ button.pm-project-table-stat:focus-visible {
 }
 
 .actions-control-row .workspace-search input,
-.pm-project-table-toolbar .pm-register-search-field input {
+.pm-project-table-toolbar label.pm-register-search-field input {
   opacity: 0;
   pointer-events: none;
   transition:
@@ -6465,8 +6465,8 @@ button.pm-project-table-stat:focus-visible {
 
 .actions-control-row .workspace-search:hover input,
 .actions-control-row .workspace-search:focus-within input,
-.pm-project-table-toolbar .pm-register-search-field:hover input,
-.pm-project-table-toolbar .pm-register-search-field:focus-within input {
+.pm-project-table-toolbar label.pm-register-search-field:hover input,
+.pm-project-table-toolbar label.pm-register-search-field:focus-within input {
   opacity: 1;
   pointer-events: auto;
   width: 100%;
@@ -9189,19 +9189,7 @@ button.pm-project-table-stat:focus-visible {
 }
 
 .calendar-cell.today::after {
-  background: rgba(16, 6, 159, 0.08);
-  border: 1px solid rgba(16, 6, 159, 0.14);
-  border-radius: 999px;
-  color: var(--brand);
-  content: "Today";
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0;
-  line-height: 1;
-  padding: 5px 7px;
-  position: absolute;
-  right: 6px;
-  top: 6px;
+  display: none;
 }
 
 .calendar-cell.muted {
@@ -9223,11 +9211,8 @@ button.pm-project-table-stat:focus-visible {
 }
 
 .calendar-cell.today > span {
-  background: var(--brand);
-  border: 1px solid var(--brand);
-  color: white;
-  min-width: 22px;
-  padding-inline: 6px;
+  color: var(--brand);
+  font-weight: 600;
 }
 
 .calendar-event {
@@ -13181,12 +13166,29 @@ button.pm-project-table-stat:focus-visible {
   background: #22a06b;
 }
 
+.report-table-icon-badge.low {
+  background: #3fa049;
+}
+
 .report-table-icon-badge.amber {
   background: #e87722;
 }
 
+.report-table-icon-badge.medium {
+  background: #ffc928;
+  color: #202633;
+}
+
+.report-table-icon-badge.high {
+  background: #ff4e1d;
+}
+
 .report-table-icon-badge.red {
   background: #b91c1c;
+}
+
+.report-table-icon-badge.extreme {
+  background: #fb171b;
 }
 
 .report-table-icon-badge.neutral {

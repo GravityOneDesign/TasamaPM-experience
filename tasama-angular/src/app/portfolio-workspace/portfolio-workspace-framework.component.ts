@@ -58,10 +58,10 @@ export interface TaxonomyCard {
 
     <!-- Scrollable full-width tab content area -->
     <main class="portfolio-workspace-body" style="grid-row: 2; overflow-y: auto; background: #ffffff; padding: 12px 24px 24px 24px; display: flex; flex-direction: column;">
-
+      
       @if (activeSectionId === 'org-structure') {
         <div class="org-structure-container animation-fade" style="display: flex; flex-direction: column; width: 100%; height: 100%; gap: 16px; margin-top: 0px;">
-
+          
           <!-- Tab Heading and Subheading Row -->
           <div class="org-structure-header-row" style="margin-bottom: 8px;">
             <div class="org-structure-intro">
@@ -78,10 +78,10 @@ export interface TaxonomyCard {
                 </div>
                 <h3 style="font-size: 20px; font-weight: 700; color: #0b0b0b; margin: 0 0 12px 0;">Build your organisational structure</h3>
                 <p style="font-size: 14px; color: #687182; margin: 0 0 28px 0; max-width: 480px; line-height: 1.5;">Start by adding your first Division. From there, you can branch out to include specific branches and sections to accurately map your hierarchy.</p>
-                <button
-                  id="org-empty-add-division-btn"
-                  class="org-empty-btn"
-                  type="button"
+                <button 
+                  id="org-empty-add-division-btn" 
+                  class="org-empty-btn" 
+                  type="button" 
                   (click)="openAddGroupDrawer()"
                   style="background: #10069f; color: #ffffff; border: none; padding: 12px 28px; border-radius: 8px; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 6, 159, 0.15);"
                 >
@@ -91,17 +91,17 @@ export interface TaxonomyCard {
               </div>
             }
           } @else {
-
+            
             <!-- Level of Tabs below heading and subheading (Image 2 band container format) -->
             <div class="groups-tabs-row" style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%; margin-top: 0px; margin-bottom: 6px; font-family: Montserrat, -apple-system, sans-serif; position: relative; z-index: 10;">
-
+              
               <!-- Tab band: only appears if there are 2 or more divisions (Rectangle with rounded corners) -->
               @if (groupObjects.length >= 2) {
                 <div class="division-pill-band" style="background: #F1F5F9; border: 1px solid #E2E8F0; border-radius: 12px; padding: 4px; display: inline-flex; align-items: center; gap: 4px; box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);">
                   @for (group of groupObjects; track $index; let gIdx = $index) {
-                    <button
+                    <button 
                       type="button"
-                      class="division-tab-btn pointer animation-fade"
+                      class="division-tab-btn pointer animation-fade" 
                       [class.active]="selectedGroupIndex === gIdx"
                       (click)="selectGroup(gIdx)"
                       style="border: none; padding: 6px 20px; cursor: pointer; font-size: 14px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 8px; outline: none; display: inline-flex; align-items: center; justify-content: center;"
@@ -120,11 +120,11 @@ export interface TaxonomyCard {
                 <!-- Empty spacer block to maintain flex structure when no tabs are present -->
                 <div></div>
               }
-
+              
               <!-- Tab button to trigger drawer (always positioned at the top right) -->
-              <button
+              <button 
                 type="button"
-                class="division-add-btn pointer animation-fade"
+                class="division-add-btn pointer animation-fade" 
                 (click)="openAddGroupDrawer()"
                 style="background: transparent; border: 0.75px solid #475569; padding: 8px 18px; border-radius: 100px; cursor: pointer; font-weight: 600; font-size: 13.5px; transition: all 0.2s ease; color: #475569; outline: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px;"
                 onmouseover="this.style.color='#10069f'; this.style.borderColor='#10069f'; this.style.background='#f4f6fc';"
@@ -138,17 +138,17 @@ export interface TaxonomyCard {
             <!-- Active Division Hierarchy Area -->
             @if (groupObjects[selectedGroupIndex]; as activeGroup) {
               <div class="active-group-details animation-fade" style="border: none; border-radius: 0; padding: 0px 0 0 0; background: transparent; display: flex; flex-direction: column; width: 100%; box-sizing: border-box; margin-top: 0; font-family: Montserrat, -apple-system, sans-serif; position: relative;">
-
+                
                 <!-- Center Aligned Division Card (Image 2 - Rounded rectangle with left side highlight border) -->
                 <div class="division-card-row" style="display: flex; justify-content: center; width: 100%; margin-bottom: 48px; position: relative; z-index: 10;">
                   <div class="division-unified-card animation-fade" style="background: #FAFBFF; border: 0.75px solid #CFDEFD; border-left: 3px solid #5D55DB; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; width: 290px; height: 112px; padding: 16px 20px; box-sizing: border-box; box-shadow: 0 4px 16px rgba(16, 6, 159, 0.04); position: relative;">
                     <!-- Top Row: Pill and Actions menu -->
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                       <span class="pill-division" style="background: #DFDFEE; color: #10069f; font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 100px; line-height: 1;">Division</span>
-
+                      
                       <!-- Three-dot menu button -->
-                      <button
-                        type="button"
+                      <button 
+                        type="button" 
                         (click)="openEditGroupDrawer(selectedGroupIndex)"
                         style="border: none; background: transparent; cursor: pointer; color: #64748b; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%;"
                         title="Division Actions"
@@ -171,11 +171,11 @@ export interface TaxonomyCard {
                   @let branchCount = activeGroup.divisions.length;
                   <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 170px; pointer-events: none; z-index: 1;">
                     @for (div of activeGroup.divisions; track $index; let idx = $index) {
-                      <path
-                        [attr.d]="getElbowPath(idx, branchCount)"
-                        stroke="#DDDDDD"
-                        stroke-width="1.2"
-                        fill="none"
+                      <path 
+                        [attr.d]="getElbowPath(idx, branchCount)" 
+                        stroke="#DDDDDD" 
+                        stroke-width="1.2" 
+                        fill="none" 
                       />
                     }
                   </svg>
@@ -183,20 +183,20 @@ export interface TaxonomyCard {
 
                 <!-- Branches and Sections Columns Flex Row -->
                 <div class="branches-columns-flex" style="display: flex; flex-direction: row; gap: 40px; align-items: flex-start; justify-content: flex-start; padding: 0 4px 24px 4px; width: 100%; box-sizing: border-box; position: relative; z-index: 10;">
-
+                  
                   @for (div of activeGroup.divisions; track $index; let dIdx = $index) {
                     <!-- Branch Column -->
                     <div class="branch-column-vertical" style="display: flex; flex-direction: column; gap: 16px; width: 240px; min-width: 240px;">
-
+                      
                       <!-- Branch Unified Card Layout (Image 3 - Left side indigo highlight border) -->
                       <div class="branch-unified-card animation-fade" style="background: #FAFBFF; border: 0.75px solid #CFDEFD; border-left: 3px solid #7C9FF1; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; width: 240px; height: 112px; padding: 16px 20px; box-sizing: border-box; box-shadow: 0 4px 16px rgba(16, 6, 159, 0.04); position: relative;">
                         <!-- Top Row: Pill and Actions menu -->
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                           <span class="pill-branch" style="background: #E1E9FF; color: #10069f; font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 100px; line-height: 1; border: none;">Branch</span>
-
+                          
                           <!-- Three-dot menu button -->
-                          <button
-                            type="button"
+                          <button 
+                            type="button" 
                             (click)="openViewBranchDrawer(selectedGroupIndex, dIdx)"
                             style="border: none; background: transparent; cursor: pointer; color: #64748b; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%;"
                             title="Branch Actions"
@@ -213,7 +213,7 @@ export interface TaxonomyCard {
                           <h4 style="font-size: 16px; font-weight: 600; color: #000000; margin: 0; word-break: break-word; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="div.name">
                             {{ div.name }}
                           </h4>
-
+                          
                           <!-- Owner (user icon + name) -->
                           @if (div.owner) {
                             <div style="font-size: 11.5px; color: #475569; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px;">
@@ -230,8 +230,8 @@ export interface TaxonomyCard {
                       @if (div.branches && div.branches.length > 0) {
                         @for (br of div.branches; track $index; let bIdx = $index) {
                           <!-- Section Unified Card Layout (Image 4 - Left side amber highlight border) -->
-                          <div
-                            class="section-unified-card animation-fade"
+                          <div 
+                            class="section-unified-card animation-fade" 
                             (click)="openViewSectionDrawer(dIdx, bIdx)"
                             title="View Section Details"
                             style="background: #ffffff; border: 0.75px solid #CFDEFD; border-left: 3px solid #EFB882; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start; gap: 6px; width: 240px; height: 68px; padding: 10px 16px; box-sizing: border-box; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02); cursor: pointer; transition: all 0.2s ease; position: relative;"
@@ -241,7 +241,7 @@ export interface TaxonomyCard {
                             <!-- Top Row: Pill and Actions menu -->
                             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                               <span class="pill-section" style="background: #FFF8EB; border: 1px solid #FFEECF; color: #92400e; font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 100px; line-height: 1;">Section</span>
-
+                              
                               <!-- Actions menu indicator ⋮ -->
                               <span pmConsoleIcon="more-vertical" style="font-size: 16px; width: 16px; height: 16px; color: #94a3b8;"></span>
                             </div>
@@ -255,8 +255,8 @@ export interface TaxonomyCard {
                       }
 
                       <!-- Add Section Slot Card (Image 4 bottom) -->
-                      <button
-                        type="button"
+                      <button 
+                        type="button" 
                         (click)="openAddSectionDrawer(dIdx, dIdx)"
                         style="background: transparent; border: 0.75px solid #CFDEFD; border-radius: 12px; padding: 0 16px; display: flex; align-items: center; justify-content: center; gap: 8px; color: #475569; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-sizing: border-box; width: 240px; height: 68px;"
                         onmouseover="this.style.borderColor='#10069f'; this.style.background='#F4F5FF'; this.style.color='#10069f';"
@@ -272,8 +272,8 @@ export interface TaxonomyCard {
                   }
 
                   <!-- Add Branch Slot Card (Image 4 rightmost) -->
-                  <button
-                    type="button"
+                  <button 
+                    type="button" 
                     (click)="openAddBranchDrawer(selectedGroupIndex)"
                     style="background: transparent; border: 0.75px solid #CFDEFD; border-radius: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0 20px; color: #475569; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-sizing: border-box; width: 240px; height: 112px; font-family: Montserrat, -apple-system, sans-serif;"
                     onmouseover="this.style.borderColor='#10069f'; this.style.background='#f4f6fc'; this.style.color='#10069f';"
@@ -305,39 +305,39 @@ export interface TaxonomyCard {
               (delete)="deleteGroupFromEdit()"
             >
               <div planDrawerBody class="ud-form" style="display: flex; flex-direction: column; gap: 20px; font-family: Montserrat, -apple-system, sans-serif;">
-
+                
                 <!-- Division Name + Owner typeahead autocomplete -->
                 <div class="ud-row ud-row-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                   <div class="ud-field">
                     <label for="divNameInput" class="ud-label" style="font-size: 14px; font-weight: 600; color: #1d252d; margin-bottom: 6px; display: block;">Division Name <span class="ud-required" style="color: #fb2c36;">*</span></label>
-                    <input
-                      id="divNameInput"
-                      type="text"
-                      class="ud-input"
-                      placeholder="Enter Division name"
-                      [(ngModel)]="newGroupName"
+                    <input 
+                      id="divNameInput" 
+                      type="text" 
+                      class="ud-input" 
+                      placeholder="Enter Division name" 
+                      [(ngModel)]="newGroupName" 
                       style="width: 100%; padding: 10px 12px; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 8px; font-size: 14px; box-sizing: border-box; height: 38px; outline: none; background: #ffffff;"
                     />
                   </div>
-
+                  
                   <div class="ud-field" style="position: relative;">
                     <label for="divOwnerInput" class="ud-label" style="font-size: 14px; font-weight: 600; color: #1d252d; margin-bottom: 6px; display: block;">Owner</label>
-                    <input
-                      id="divOwnerInput"
-                      type="text"
-                      class="ud-input"
-                      placeholder="Search for an Owner..."
+                    <input 
+                      id="divOwnerInput" 
+                      type="text" 
+                      class="ud-input" 
+                      placeholder="Search for an Owner..." 
                       [(ngModel)]="newGroupOwner"
                       (focus)="showOwnerSuggestions = true"
                       (input)="filterOwnerSuggestions()"
                       style="width: 100%; padding: 10px 12px; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 8px; font-size: 14px; box-sizing: border-box; height: 38px; outline: none; background: #ffffff;"
                     />
-
+                    
                     @if (showOwnerSuggestions && filteredOwnerUsers.length > 0) {
                       <div class="autocomplete-dropdown shadow-lg border" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 999; background: white; border: 1px solid #e2e8f0; border-radius: 8px; max-height: 180px; overflow-y: auto; margin-top: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                         @for (u of filteredOwnerUsers; track u.username) {
-                          <div
-                            class="autocomplete-item"
+                          <div 
+                            class="autocomplete-item" 
                             style="padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #334155; font-weight: 500;"
                             onmouseover="this.style.background='#f8fafc';"
                             onmouseout="this.style.background='white';"
@@ -363,9 +363,9 @@ export interface TaxonomyCard {
                         <span pmConsoleIcon="list" style="width: 16px; height: 16px;"></span>
                       </button>
                     </div>
-                    <textarea
-                      class="rich-editor-textarea"
-                      placeholder="Enter purpose details..."
+                    <textarea 
+                      class="rich-editor-textarea" 
+                      placeholder="Enter purpose details..." 
                       [(ngModel)]="newGroupPurpose"
                       style="width: 100%; border: none; padding: 12px; font-size: 14px; outline: none; min-height: 60px; height: 72px; box-sizing: border-box; line-height: 1.5; color: #1d252d; font-family: Montserrat, -apple-system, sans-serif; resize: vertical;"
                     ></textarea>
@@ -377,25 +377,25 @@ export interface TaxonomyCard {
                 <!-- Branches & Sections builder -->
                 <div class="ud-field">
                   <h3 style="font-size: 16px; font-weight: 700; color: #1d252d; margin: 0 0 16px 0; font-family: Montserrat, -apple-system, sans-serif;">Branches & Sections</h3>
-
+                  
                   @if (drawerBranches.length > 0) {
                     <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px;">
                       @for (b of drawerBranches; track $index; let bIdx = $index) {
                         <div style="background: #f8fafc; border: 1.5px solid #E0E4EC; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
-
+                          
                           <!-- Branch input -->
                           <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
                             <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1;">
                               <span style="font-size: 11px; font-weight: 700; color: #10069f; text-transform: uppercase; background: #EEF2FF; padding: 2px 8px; border-radius: 100px; font-family: Montserrat, -apple-system, sans-serif; line-height: 1;">Branch</span>
-                              <input
-                                type="text"
-                                placeholder="Enter Branch name"
-                                [(ngModel)]="b.name"
+                              <input 
+                                type="text" 
+                                placeholder="Enter Branch name" 
+                                [(ngModel)]="b.name" 
                                 style="flex-grow: 1; padding: 8px 12px; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 8px; font-size: 13.5px; box-sizing: border-box; outline: none; background: #ffffff;"
                               />
                             </div>
-                            <button
-                              type="button"
+                            <button 
+                              type="button" 
                               (click)="removeBranchFromDrawer(bIdx)"
                               style="border: none; background: transparent; color: #ef4444; cursor: pointer; display: flex; align-items: center; padding: 4px;"
                               title="Remove Branch"
@@ -409,14 +409,14 @@ export interface TaxonomyCard {
                             @for (s of b.sections; track $index; let sIdx = $index) {
                               <div style="display: flex; align-items: center; gap: 8px;">
                                 <span style="font-size: 10px; font-weight: 700; color: #92400e; text-transform: uppercase; background: #FFF8EB; border: 1px solid #FFEECF; padding: 2px 6px; border-radius: 100px; font-family: Montserrat, -apple-system, sans-serif; line-height: 1;">Section</span>
-                                <input
-                                  type="text"
-                                  placeholder="Enter Section name"
-                                  [(ngModel)]="s.name"
+                                <input 
+                                  type="text" 
+                                  placeholder="Enter Section name" 
+                                  [(ngModel)]="s.name" 
                                   style="flex-grow: 1; padding: 6px 10px; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 8px; font-size: 13px; box-sizing: border-box; outline: none; background: #ffffff;"
                                 />
-                                <button
-                                  type="button"
+                                <button 
+                                  type="button" 
                                   (click)="removeSectionFromDrawerBranch(bIdx, sIdx)"
                                   style="border: none; background: transparent; color: #94a3b8; cursor: pointer; padding: 4px;"
                                   title="Remove Section"
@@ -425,9 +425,9 @@ export interface TaxonomyCard {
                                 </button>
                               </div>
                             }
-
-                            <button
-                              type="button"
+                            
+                            <button 
+                              type="button" 
                               (click)="addSectionToDrawerBranch(bIdx)"
                               style="background: transparent; border: none; color: #10069f; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 4px; width: fit-content; font-family: Montserrat, -apple-system, sans-serif;"
                             >
@@ -441,8 +441,8 @@ export interface TaxonomyCard {
                     </div>
                   }
 
-                  <button
-                    type="button"
+                  <button 
+                    type="button" 
                     (click)="addBranchToDrawer()"
                     style="background: #ffffff; border: 1.5px solid #10069f; color: #10069f; font-size: 13.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px 18px; border-radius: 100px; width: fit-content; transition: all 0.2s ease; font-family: Montserrat, -apple-system, sans-serif;"
                     onmouseover="this.style.background='#f4f6fc';"
@@ -475,9 +475,9 @@ export interface TaxonomyCard {
                   <div class="ud-field" style="margin-bottom: 20px; font-family: Montserrat, -apple-system, sans-serif;">
                     <label for="branchDivisionSelect" class="ud-label" style="font-size: 14px; font-weight: 600; color: #1d252d; margin-bottom: 6px; display: block;">Division <span class="ud-required" style="color: #fb2c36;">*</span></label>
                     <div class="ud-select-wrap" style="position: relative; display: flex; align-items: center; width: 100%;">
-                      <select
-                        id="branchDivisionSelect"
-                        class="ud-select"
+                      <select 
+                        id="branchDivisionSelect" 
+                        class="ud-select" 
                         [(ngModel)]="targetDivisionIndex"
                         style="width: 100%; padding: 0 36px 0 12px; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 8px; font-size: 14px; box-sizing: border-box; height: 38px; outline: none; background: #ffffff; font-family: Montserrat, -apple-system, sans-serif; box-shadow: none; appearance: none; -webkit-appearance: none; -moz-appearance: none;"
                       >
@@ -488,39 +488,39 @@ export interface TaxonomyCard {
                       <span pmConsoleIcon="chevrons-up-down" class="ud-select-chevron" style="position: absolute; right: 12px; pointer-events: none; color: #717182; font-size: 14px; display: inline-flex; opacity: 0.8; height: 16px; width: 16px; align-items: center; justify-content: center;"></span>
                     </div>
                   </div>
-
+ 
                  <!-- Branch Name + Owner input fields -->
                  <div class="ud-row ud-row-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                    <div class="ud-field">
                      <label for="branchNameInput" class="ud-label" style="font-size: 14px; font-weight: 600; color: #1d252d; margin-bottom: 6px; display: block;">Branch Name <span class="ud-required" style="color: #fb2c36;">*</span></label>
-                     <input
-                       id="branchNameInput"
-                       type="text"
-                       class="ud-input"
-                       placeholder="Enter Branch name"
-                       [(ngModel)]="newBranchName"
+                     <input 
+                       id="branchNameInput" 
+                       type="text" 
+                       class="ud-input" 
+                       placeholder="Enter Branch name" 
+                       [(ngModel)]="newBranchName" 
                        style="width: 100%; padding: 10px 12px; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 8px; font-size: 14px; box-sizing: border-box; height: 38px; outline: none; background: #ffffff;"
                      />
                    </div>
-
+ 
                    <div class="ud-field" style="position: relative;">
                      <label for="branchOwnerInput" class="ud-label" style="font-size: 14px; font-weight: 600; color: #1d252d; margin-bottom: 6px; display: block;">Owner</label>
-                     <input
-                       id="branchOwnerInput"
-                       type="text"
-                       class="ud-input"
-                       placeholder="Search for an Owner..."
+                     <input 
+                       id="branchOwnerInput" 
+                       type="text" 
+                       class="ud-input" 
+                       placeholder="Search for an Owner..." 
                        [(ngModel)]="newBranchOwner"
                        (focus)="showBranchOwnerSuggestions = true"
                        (input)="filterBranchOwnerSuggestions()"
                        style="width: 100%; padding: 10px 12px; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 8px; font-size: 14px; box-sizing: border-box; height: 38px; outline: none; background: #ffffff;"
                      />
-
+                     
                      @if (showBranchOwnerSuggestions && filteredBranchOwnerUsers.length > 0) {
                        <div class="autocomplete-dropdown shadow-lg border" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 999; background: white; border: 1px solid #e2e8f0; border-radius: 8px; max-height: 180px; overflow-y: auto; margin-top: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                          @for (u of filteredBranchOwnerUsers; track u.username) {
-                           <div
-                             class="autocomplete-item"
+                           <div 
+                             class="autocomplete-item" 
                              style="padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #334155; font-weight: 500;"
                              onmouseover="this.style.background='#f8fafc';"
                              onmouseout="this.style.background='white';"
@@ -533,7 +533,7 @@ export interface TaxonomyCard {
                      }
                    </div>
                  </div>
-
+ 
                  <!-- Description Rich Editor -->
                  <div class="ud-field">
                    <label class="ud-label" style="font-size: 14px; font-weight: 600; color: #1d252d; margin-bottom: 6px; display: block;">Description</label>
@@ -546,35 +546,35 @@ export interface TaxonomyCard {
                          <span pmConsoleIcon="list" style="width: 16px; height: 16px;"></span>
                        </button>
                      </div>
-                     <textarea
-                       class="rich-editor-textarea"
-                       placeholder="Enter branch description details..."
+                     <textarea 
+                       class="rich-editor-textarea" 
+                       placeholder="Enter branch description details..." 
                        [(ngModel)]="newBranchPurpose"
                        style="width: 100%; border: none; padding: 12px; font-size: 14px; outline: none; min-height: 60px; height: 72px; box-sizing: border-box; line-height: 1.5; color: #1d252d; font-family: Montserrat, -apple-system, sans-serif; resize: vertical;"
                      ></textarea>
                    </div>
                  </div>
-
+ 
                  <hr style="border: 0; border-top: 1px solid #e4e7ef; margin: 12px 0;" />
-
+ 
                  <!-- Child Sections Checklist / Builder -->
                  <div class="ud-field">
                    <label class="ud-label" style="font-size: 14px; font-weight: 600; color: #1d252d; margin-bottom: 6px; display: block;">Sections</label>
                    <p style="font-size: 12.5px; color: #687182; margin: 0 0 12px 0;">Configure child sections for this branch.</p>
-
+                   
                    @if (drawerSections.length > 0) {
                      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px;">
                        @for (s of drawerSections; track $index; let sIdx = $index) {
                          <div style="display: flex; align-items: center; gap: 8px;">
                            <span style="font-size: 10px; font-weight: 700; color: #92400e; text-transform: uppercase; background: #FFF8EB; border: 1px solid #FFEECF; padding: 4.5px 10px; border-radius: 100px; font-family: Montserrat, -apple-system, sans-serif; line-height: 1;">Section</span>
-                           <input
-                             type="text"
-                             placeholder="Enter Section name"
-                             [(ngModel)]="s.name"
+                           <input 
+                             type="text" 
+                             placeholder="Enter Section name" 
+                             [(ngModel)]="s.name" 
                              style="flex-grow: 1; padding: 10px 12px; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 8px; font-size: 14px; box-sizing: border-box; height: 38px; outline: none; background: #ffffff; font-family: Montserrat, -apple-system, sans-serif;"
                            />
-                           <button
-                             type="button"
+                           <button 
+                             type="button" 
                              (click)="removeSectionFromBranchDrawer(sIdx)"
                              style="border: none; background: transparent; color: #ef4444; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%;"
                              title="Remove Section"
@@ -587,9 +587,9 @@ export interface TaxonomyCard {
                        }
                      </div>
                    }
-
-                   <button
-                     type="button"
+ 
+                   <button 
+                     type="button" 
                      (click)="addSectionToBranchDrawer()"
                      style="background: #ffffff; border: 1.5px solid #10069f; color: #10069f; font-size: 13.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px 18px; border-radius: 8px; width: fit-content; transition: all 0.2s ease; font-family: Montserrat, -apple-system, sans-serif;"
                      onmouseover="this.style.background='#f4f6fc';"
@@ -615,8 +615,8 @@ export interface TaxonomyCard {
             >
               <!-- Header Actions: Edit -->
               <div planDrawerHeaderActions>
-                <button
-                  type="button"
+                <button 
+                  type="button" 
                   (click)="switchToEditBranch()"
                   style="border: none; background: transparent; color: #10069f; font-size: 13.5px; font-weight: 700; cursor: pointer; padding: 4px 8px; font-family: Montserrat, -apple-system, sans-serif;"
                   onmouseover="this.style.textDecoration='underline'"
@@ -627,7 +627,7 @@ export interface TaxonomyCard {
               </div>
 
               <div planDrawerBody class="ud-form" style="display: flex; flex-direction: column; gap: 20px; font-family: Montserrat, -apple-system, sans-serif;">
-
+                
                 <!-- Division Banner -->
                 <div style="display: flex; justify-content: space-between; align-items: center; background: #fafafa; border-top: 1px solid #e4e7ef; border-bottom: 1px solid #e4e7ef; padding: 12px 20px; margin: -18px -20px 20px -20px;">
                   <span style="font-size: 14px; font-weight: 700; color: #1d252d;">Division</span>
@@ -676,8 +676,8 @@ export interface TaxonomyCard {
             >
               <!-- Header Actions: Edit -->
               <div planDrawerHeaderActions>
-                <button
-                  type="button"
+                <button 
+                  type="button" 
                   (click)="switchToEditSection()"
                   style="border: none; background: transparent; color: #10069f; font-size: 13.5px; font-weight: 700; cursor: pointer; padding: 4px 8px; font-family: Montserrat, -apple-system, sans-serif;"
                   onmouseover="this.style.textDecoration='underline'"
@@ -688,7 +688,7 @@ export interface TaxonomyCard {
               </div>
 
               <div planDrawerBody class="ud-form" style="display: flex; flex-direction: column; gap: 20px; font-family: Montserrat, -apple-system, sans-serif;">
-
+                
                 <!-- Division & Branch Banners -->
                 <div style="background: #fafafa; border-top: 1px solid #e4e7ef; border-bottom: 1px solid #e4e7ef; margin: -18px -20px 20px -20px;">
                   <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-bottom: 1px solid #e4e7ef;">
@@ -745,7 +745,7 @@ export interface TaxonomyCard {
               (delete)="deleteSectionFromEdit()"
             >
               <div planDrawerBody class="ud-form" style="display: flex; flex-direction: column; gap: 20px; font-family: Montserrat, -apple-system, sans-serif;">
-
+                
                 <!-- Division & Branch Banners -->
                 <div style="background: #ffffff; border-top: 1px solid #e4e7ef; border-bottom: 1px solid #e4e7ef; margin: -18px -20px 20px -20px;">
                   <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-bottom: 1px solid #e4e7ef;">
@@ -761,34 +761,34 @@ export interface TaxonomyCard {
                 <div class="ud-row ud-row-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                   <div class="ud-field">
                     <label for="sectionNameInput" class="ud-label" style="font-size: 14px; font-weight: 600; color: #1d252d; margin-bottom: 6px; display: block;">Section Name <span class="ud-required" style="color: #fb2c36;">*</span></label>
-                    <input
-                      id="sectionNameInput"
-                      type="text"
-                      class="ud-input"
-                      placeholder="Enter Section name"
-                      [(ngModel)]="newSectionName"
+                    <input 
+                      id="sectionNameInput" 
+                      type="text" 
+                      class="ud-input" 
+                      placeholder="Enter Section name" 
+                      [(ngModel)]="newSectionName" 
                       style="width: 100%; padding: 10px 12px; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 8px; font-size: 14px; box-sizing: border-box; height: 38px; outline: none; background: #ffffff;"
                     />
                   </div>
 
                   <div class="ud-field" style="position: relative;">
                     <label for="sectionOwnerInput" class="ud-label" style="font-size: 14px; font-weight: 600; color: #1d252d; margin-bottom: 6px; display: block;">Owner</label>
-                    <input
-                      id="sectionOwnerInput"
-                      type="text"
-                      class="ud-input"
-                      placeholder="Search for an Owner..."
+                    <input 
+                      id="sectionOwnerInput" 
+                      type="text" 
+                      class="ud-input" 
+                      placeholder="Search for an Owner..." 
                       [(ngModel)]="newSectionOwner"
                       (focus)="showSectionOwnerSuggestions = true"
                       (input)="filterSectionOwnerSuggestions()"
                       style="width: 100%; padding: 10px 12px; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 8px; font-size: 14px; box-sizing: border-box; height: 38px; outline: none; background: #ffffff;"
                     />
-
+                    
                     @if (showSectionOwnerSuggestions && filteredSectionOwnerUsers.length > 0) {
                       <div class="autocomplete-dropdown shadow-lg border" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 999; background: white; border: 1px solid #e2e8f0; border-radius: 8px; max-height: 180px; overflow-y: auto; margin-top: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                         @for (u of filteredSectionOwnerUsers; track u.username) {
-                          <div
-                            class="autocomplete-item"
+                          <div 
+                            class="autocomplete-item" 
                             style="padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #334155; font-weight: 500;"
                             onmouseover="this.style.background='#f8fafc';"
                             onmouseout="this.style.background='white';"
@@ -813,9 +813,9 @@ export interface TaxonomyCard {
                         <span pmConsoleIcon="list" style="width: 16px; height: 16px;"></span>
                       </button>
                     </div>
-                    <textarea
-                      class="rich-editor-textarea"
-                      placeholder="Enter section targets or purpose details..."
+                    <textarea 
+                      class="rich-editor-textarea" 
+                      placeholder="Enter section targets or purpose details..." 
                       [(ngModel)]="newSectionPurpose"
                       style="width: 100%; border: none; padding: 12px; font-size: 14px; outline: none; min-height: 60px; height: 72px; box-sizing: border-box; line-height: 1.5; color: #1d252d; font-family: Montserrat, -apple-system, sans-serif; resize: vertical;"
                     ></textarea>
@@ -1517,14 +1517,14 @@ export interface TaxonomyCard {
           <!-- Right Panel: table for the selected glossary tab -->
           <div class="standards-cards-panel" style="padding-top: 48px; padding-left: 8px;">
             <div class="tab-content-container animation-slide" style="gap: 16px; display: flex; flex-direction: column;">
-
+              
               <!-- Glossary Header Block & Search (No Add Button) -->
               <div class="glossary-top-bar" style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 12px; width: 100%;">
                 <div class="glossary-header-block" style="text-align: left;">
                   <h2 style="font-size: 20px; font-weight: 600; color: #1e293b; margin: 0 0 6px 0; font-family: inherit;">{{ glossaryHeaderTitle }}</h2>
                   <p style="font-size: 13.5px; color: #64748b; margin: 0; line-height: 1.5;">{{ glossaryHeaderDescription }}</p>
                 </div>
-
+                
                 <!-- Search bar -->
                 <div class="search-toggle-container is-expanded" style="display: flex; align-items: center; gap: 8px;">
                   <div style="position: relative; display: flex; align-items: center;">
@@ -1558,9 +1558,9 @@ export interface TaxonomyCard {
                         <!-- System Label -->
                         <td style="font-weight: 600; color: #252a34; font-size: 13.5px; padding: 14px 14px; border-bottom: 1px solid #eceef3; vertical-align: middle;">
                           @if (editingGlossaryId === item.id) {
-                            <input
-                              type="text"
-                              class="form-control"
+                            <input 
+                              type="text" 
+                              class="form-control" 
                               [(ngModel)]="editingSystemLabel"
                               style="height: 32px; font-size: 13px; padding: 6px 10px; border: 1px solid #d0d5dd; border-radius: 8px; width: 100%; box-sizing: border-box;"
                             />
@@ -1568,13 +1568,13 @@ export interface TaxonomyCard {
                             {{ item.systemLabel }}
                           }
                         </td>
-
+                        
                         <!-- Custom Label -->
                         <td style="font-size: 13.5px; color: #252a34; padding: 14px 14px; border-bottom: 1px solid #eceef3; vertical-align: middle;">
                           @if (editingGlossaryId === item.id) {
-                            <input
-                              type="text"
-                              class="form-control"
+                            <input 
+                              type="text" 
+                              class="form-control" 
                               [(ngModel)]="editingCustomLabel"
                               style="height: 32px; font-size: 13px; padding: 6px 10px; border: 1px solid #d0d5dd; border-radius: 8px; width: 100%; box-sizing: border-box;"
                             />
@@ -1586,12 +1586,12 @@ export interface TaxonomyCard {
                             }
                           }
                         </td>
-
+                        
                         <!-- Contextual Help -->
                         <td style="font-size: 13.5px; color: #555555; line-height: 1.45; padding: 14px 14px; border-bottom: 1px solid #eceef3; vertical-align: middle;">
                           @if (editingGlossaryId === item.id) {
-                            <textarea
-                              class="form-control"
+                            <textarea 
+                              class="form-control" 
                               [(ngModel)]="editingContextualHelp"
                               rows="2"
                               style="font-size: 13px; padding: 6px 10px; border: 1px solid #d0d5dd; border-radius: 8px; width: 100%; box-sizing: border-box; resize: vertical;"
@@ -1600,24 +1600,24 @@ export interface TaxonomyCard {
                             {{ item.contextualHelp }}
                           }
                         </td>
-
+                        
                         <!-- Action -->
                         <td style="text-align: center; overflow: visible; position: relative; padding: 14px 14px; border-bottom: 1px solid #eceef3; vertical-align: middle;">
                           <div style="display: flex; gap: 8px; justify-content: center; align-items: center; overflow: visible;">
                             @if (editingGlossaryId === item.id) {
-                              <button
-                                type="button"
-                                class="priority-action-btn"
-                                (click)="saveEditGlossary(item.id)"
+                              <button 
+                                type="button" 
+                                class="priority-action-btn" 
+                                (click)="saveEditGlossary(item.id)" 
                                 title="Save"
                                 style="color: #059669; background: transparent; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 6px; transition: all 0.2s ease;"
                               >
                                 <span pmConsoleIcon="check"></span>
                               </button>
-                              <button
-                                type="button"
-                                class="priority-action-btn delete"
-                                (click)="cancelEditGlossary()"
+                              <button 
+                                type="button" 
+                                class="priority-action-btn delete" 
+                                (click)="cancelEditGlossary()" 
                                 title="Cancel"
                                 style="color: #ef4444; background: transparent; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 6px; transition: all 0.2s ease;"
                               >
@@ -1626,31 +1626,31 @@ export interface TaxonomyCard {
                             } @else {
                               <!-- Actions vertical three-dot menu dropdown enclosed in a bordered square matching Image 2 exactly -->
                               <div style="position: relative; display: inline-block; overflow: visible;">
-                                <button
-                                  type="button"
-                                  class="glossary-action-btn"
+                                <button 
+                                  type="button" 
+                                  class="glossary-action-btn" 
                                   (click)="toggleGlossaryActionMenu($event, item.id)"
                                   title="Actions"
                                   style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; color: #475569; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; transition: all 0.2s ease;"
                                 >
                                   <span pmConsoleIcon="more-vertical" style="font-size: 16px;"></span>
                                 </button>
-
+                                
                                 @if (activeGlossaryActionId === item.id) {
                                   <div class="priority-dropdown-menu animation-fade" style="position: absolute; right: 0; top: 36px; background: #ffffff; border: 1px solid #dfe4ee; border-radius: 8px; box-shadow: 0 4px 12px rgba(25, 33, 61, 0.08); z-index: 100; min-width: 100px; padding: 4px 0;">
-                                    <button
-                                      type="button"
-                                      class="dropdown-item"
-                                      (click)="triggerEditGlossary(item)"
+                                    <button 
+                                      type="button" 
+                                      class="dropdown-item" 
+                                      (click)="triggerEditGlossary(item)" 
                                       style="display: flex; align-items: center; gap: 8px; width: 100%; border: none; background: transparent; padding: 8px 12px; font-size: 12.5px; color: #334155; text-align: left; cursor: pointer;"
                                     >
                                       <span pmConsoleIcon="edit-2" style="font-size: 12px; color: #64748b;"></span>
                                       <span>Edit</span>
                                     </button>
-                                    <button
-                                      type="button"
-                                      class="dropdown-item delete"
-                                      (click)="triggerDeleteGlossary(item.id)"
+                                    <button 
+                                      type="button" 
+                                      class="dropdown-item delete" 
+                                      (click)="triggerDeleteGlossary(item.id)" 
                                       style="display: flex; align-items: center; gap: 8px; width: 100%; border: none; background: transparent; padding: 8px 12px; font-size: 12.5px; color: #ef4444; text-align: left; cursor: pointer;"
                                     >
                                       <span pmConsoleIcon="trash-2" style="font-size: 12px; color: #ef4444;"></span>
@@ -1678,17 +1678,17 @@ export interface TaxonomyCard {
               <!-- Pagination Footer -->
               <div class="glossary-pagination-container" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: #ffffff; border: 1px solid #e3e5e9; border-radius: 0 0 16px 16px; font-family: inherit; margin-top: -16px;">
                 <div style="font-size: 13px; color: #64748b;">
-                  Showing
-                  <strong>{{ getFilteredGlossaryList().length === 0 ? 0 : (glossaryCurrentPage - 1) * glossaryPageSize + 1 }}</strong>
-                  to
-                  <strong>{{ Math.min(glossaryCurrentPage * glossaryPageSize, getFilteredGlossaryList().length) }}</strong>
-                  of
-                  <strong>{{ getFilteredGlossaryList().length }}</strong>
+                  Showing 
+                  <strong>{{ getFilteredGlossaryList().length === 0 ? 0 : (glossaryCurrentPage - 1) * glossaryPageSize + 1 }}</strong> 
+                  to 
+                  <strong>{{ Math.min(glossaryCurrentPage * glossaryPageSize, getFilteredGlossaryList().length) }}</strong> 
+                  of 
+                  <strong>{{ getFilteredGlossaryList().length }}</strong> 
                   results
                 </div>
-
+                
                 <div style="display: flex; gap: 8px; align-items: center;">
-                  <button
+                  <button 
                     type="button"
                     class="tb-btn"
                     [disabled]="glossaryCurrentPage === 1"
@@ -1698,7 +1698,7 @@ export interface TaxonomyCard {
                     <span pmConsoleIcon="chevron-left" style="font-size: 14px; display: inline-flex; align-items: center; justify-content: center;"></span>
                     <span>Previous</span>
                   </button>
-
+                  
                   <!-- Page numbers -->
                   @for (page of glossaryPages; track page) {
                     <button
@@ -1711,8 +1711,8 @@ export interface TaxonomyCard {
                       {{ page }}
                     </button>
                   }
-
-                  <button
+                  
+                  <button 
                     type="button"
                     class="tb-btn"
                     [disabled]="glossaryCurrentPage === glossaryTotalPages || glossaryTotalPages === 0"
@@ -1733,10 +1733,10 @@ export interface TaxonomyCard {
         <div class="framework-content animation-fade">
           <div class="empty-state-card">
             <app-pm-console-reporting-empty-illustration class="illustration-elem"></app-pm-console-reporting-empty-illustration>
-
+            
             <h4 class="empty-heading">{{ getActiveSectionLabel() }}</h4>
             <p class="empty-subtext">This configuration panel is coming soon to the Safe Security portfolio workspace.</p>
-
+            
             <div class="meta-tag-wrapper">
               <span class="meta-tag">
                 <span [pmConsoleIcon]="'lock'" class="tag-icon"></span>
@@ -1752,226 +1752,147 @@ export interface TaxonomyCard {
     @if (selectedCard) {
       <app-pm-console-plan-drawer
         [eyebrow]="selectedCard.id === 'priority' ? 'Portfolio Setup' : selectedCardGroup"
-        [title]="selectedCard.id === 'priority' ? 'Manage Priorities' : 'Add ' + selectedCard.title.toLowerCase()"
+        [title]="'Manage ' + selectedCard.title"
         [description]="'Manage and configure the active guidelines and options for ' + selectedCard.title.toLowerCase() + '.' "
         submitLabel="Add item"
         cancelLabel="Cancel"
-        [hideFooter]="selectedCard.id === 'priority'"
-        [panelClass]="selectedCard.id === 'priority' ? 'priority-drawer-view' : ''"
+        [hideFooter]="true"
+        [panelClass]="'priority-drawer-view'"
         (close)="closeDrawer()"
         (submitForm)="saveDrawer($event)"
       >
         <div planDrawerBody class="standards-drawer-body">
-          @if (selectedCard.id === 'priority') {
-            <div class="priority-drawer-table-wrapper" style="margin-top: 10px;">
-              <!-- Add new item and search row aligned to the top-right of the table -->
-              <div class="priority-add-row" style="display: flex; gap: 12px; justify-content: flex-end; align-items: center; margin-bottom: 16px;">
-                <!-- Expandable Search Box -->
-                <div class="priority-expandable-search" title="Search priorities">
-                  <span pmConsoleIcon="search" class="search-icon"></span>
-                  <input
-                    type="text"
-                    class="search-input"
-                    placeholder="Search priorities..."
-                    [(ngModel)]="searchQuery"
-                  />
-                </div>
-
-                <button
-                  type="button"
-                  class="add-workflow-btn"
-                  (click)="addPriorityItem()"
-                  style="height: 32px; padding: 0 14px; border-radius: 8px; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px;"
-                >
-                  <span pmConsoleIcon="plus" style="font-size: 12px;"></span>
-                  <span>Add item</span>
-                </button>
+          <div class="priority-drawer-table-wrapper" style="margin-top: 10px;">
+            
+            <!-- Top bar: Count and Search aligned to the top matching Image 2 -->
+            <div class="priority-top-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; width: 100%;">
+              <div class="priority-count-label" style="font-size: 14px; font-weight: 500; color: #475569;">
+                Showing all {{ getFilteredItems().length }} {{ selectedCard.id === 'priority' ? 'priorities' : selectedCard.title.toLowerCase() }}
               </div>
-
-              <!-- Sleek platform table matching Image 2 and User table style -->
-              <div class="user-table-wrapper" style="border-radius: 8px;">
-                <table class="user-table" style="margin: 0; width: 100%;">
-                  <thead>
-                    <tr>
-                      <th style="width: 75%; padding: 10px 16px; font-size: 11px;">Name</th>
-                      <th style="width: 25%; padding: 10px 16px; font-size: 11px; text-align: center;">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (item of getFilteredPriorities(); track item) {
-                      <tr>
-                        <td style="padding: 10px 16px; font-size: 13px;">
-                          @if (editingPriorityIndex === selectedCard.items.indexOf(item)) {
-                            <input
-                              type="text"
-                              class="form-control"
-                              [(ngModel)]="editingPriorityValue"
-                              (keydown.enter)="saveEditPriority(selectedCard.items.indexOf(item))"
-                              (keydown.escape)="cancelEditPriority()"
-                              style="height: 28px; padding: 4px 8px; font-size: 12.5px; width: 100%; box-sizing: border-box;"
-                              autofocus
-                            />
-                          } @else {
-                            <span style="font-weight: 500; color: #1e293b;">{{ item }}</span>
-                          }
-                        </td>
-                        <td style="padding: 10px 16px; text-align: center; overflow: visible;">
-                          <div style="display: flex; gap: 8px; justify-content: center; align-items: center; overflow: visible; position: relative;">
-                            @if (editingPriorityIndex === selectedCard.items.indexOf(item)) {
-                              <button
-                                type="button"
-                                class="priority-action-btn"
-                                (click)="saveEditPriority(selectedCard.items.indexOf(item))"
-                                title="Save"
-                                style="color: #059669;"
-                              >
-                                <span pmConsoleIcon="check"></span>
-                              </button>
-                              <button
-                                type="button"
-                                class="priority-action-btn delete"
-                                (click)="cancelEditPriority()"
-                                title="Cancel"
-                              >
-                                <span pmConsoleIcon="x"></span>
-                              </button>
-                            } @else {
-                              <!-- Actions Container three dot menu with popup dropdown -->
-                              <div style="position: relative; display: inline-block; overflow: visible;">
-                                <button
-                                  type="button"
-                                  class="priority-action-btn"
-                                  (click)="toggleActionMenu($event, selectedCard.items.indexOf(item))"
-                                  title="Actions"
-                                >
-                                  <span pmConsoleIcon="more-horizontal"></span>
-                                </button>
-
-                                @if (activeActionMenuIndex === selectedCard.items.indexOf(item)) {
-                                  <div class="priority-dropdown-menu animation-fade" style="position: absolute; right: 0; top: 32px; background: #ffffff; border: 1px solid #dfe4ee; border-radius: 8px; box-shadow: 0 4px 12px rgba(25, 33, 61, 0.08); z-index: 100; min-width: 100px; padding: 4px 0;">
-                                    <button
-                                      type="button"
-                                      class="dropdown-item"
-                                      (click)="triggerEditRow(selectedCard.items.indexOf(item), item)"
-                                      style="display: flex; align-items: center; gap: 8px; width: 100%; border: none; background: transparent; padding: 8px 12px; font-size: 12.5px; color: #334155; text-align: left; cursor: pointer;"
-                                    >
-                                      <span pmConsoleIcon="edit-2" style="font-size: 12px; color: #64748b;"></span>
-                                      <span>Edit</span>
-                                    </button>
-                                    <button
-                                      type="button"
-                                      class="dropdown-item delete"
-                                      (click)="triggerDeleteRow(item)"
-                                      style="display: flex; align-items: center; gap: 8px; width: 100%; border: none; background: transparent; padding: 8px 12px; font-size: 12.5px; color: #ef4444; text-align: left; cursor: pointer;"
-                                    >
-                                      <span pmConsoleIcon="trash-2" style="font-size: 12px; color: #ef4444;"></span>
-                                      <span>Delete</span>
-                                    </button>
-                                  </div>
-                                }
-                              </div>
-                            }
-                          </div>
-                        </td>
-                      </tr>
-                    }
-                    @if (getFilteredPriorities().length === 0) {
-                      <tr>
-                        <td colspan="2" style="padding: 24px; text-align: center; color: #94a3b8; font-style: italic;">
-                          No priority items match search.
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-
-                <!-- Image 2 styled footer replacing pagination footer entirely -->
-                <div class="priority-footer" style="padding: 10px 16px; background: #f8fafc; border-top: 1px solid #dfe4ee; font-size: 12px; color: #64748b; font-weight: 500; text-align: right;">
-                  {{ getFilteredPriorities().length }} {{ getFilteredPriorities().length === 1 ? 'item' : 'items' }}
-                </div>
-              </div>
-            </div>
-          } @else {
-            <!-- Current Items List tags -->
-            <div class="drawer-section compact" style="margin-bottom: 24px;">
-              <span class="drawer-section-title">Current {{ selectedCard.title }} Options</span>
-              <div class="standards-tags-list">
-                @for (item of selectedCard.items; track item; let i = $index) {
-                  <span class="standards-tag">
-                    <span class="tag-text">{{ item }}</span>
-                    <button type="button" class="tag-delete-btn" (click)="removeDrawerItem(i)" aria-label="Delete item">
-                      <span pmConsoleIcon="x"></span>
-                    </button>
-                  </span>
-                }
-                @if (selectedCard.items.length === 0) {
-                  <p class="empty-items-text">No active categories defined.</p>
-                }
+              
+              <!-- Expandable Search Box -->
+              <div class="priority-expandable-search" [attr.title]="'Search ' + (selectedCard.id === 'priority' ? 'priorities' : selectedCard.title.toLowerCase())">
+                <span pmConsoleIcon="search" class="search-icon"></span>
+                <input 
+                  type="text" 
+                  class="search-input" 
+                  [placeholder]="'Search ' + (selectedCard.id === 'priority' ? 'priorities' : selectedCard.title.toLowerCase()) + '...'" 
+                  [(ngModel)]="searchQuery"
+                />
               </div>
             </div>
 
-            <!-- outcome styled text area from Image 2 -->
-            <div class="drawer-section">
-              <label class="form-label" for="newItemName">
-                {{ selectedCard.title }} *
-              </label>
-              <textarea
-                id="newItemName"
-                class="form-control text-area-outcome"
-                placeholder="Describe the {{ selectedCard.title.toLowerCase() }} users should see"
-                [(ngModel)]="newDrawerItem"
-                name="newDrawerItem"
-                rows="3"
-                required
-              ></textarea>
-            </div>
-
-            <!-- measure styled input from Image 2 -->
-            <div class="drawer-section" style="margin-top: 20px;">
-              <label class="form-label" for="newMeasure">
-                Measure
-              </label>
-              <input
-                id="newMeasure"
-                type="text"
-                class="form-control"
-                placeholder="How will this be measured?"
-                [(ngModel)]="drawerMeasure"
-                name="drawerMeasure"
+            <!-- Input Row: Enter new item and Add button matching Image 2 -->
+            <div class="priority-add-input-row" style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px; width: 100%;">
+              <input 
+                type="text" 
+                class="form-control" 
+                [placeholder]="'Enter new ' + (selectedCard.id === 'priority' ? 'priority' : selectedCard.title.toLowerCase()) + '...'" 
+                [(ngModel)]="newPriorityName"
+                (keydown.enter)="addItem()"
+                style="height: 38px; font-size: 13px; flex: 1; border: 1px solid #d0d5dd; border-radius: 8px; padding: 8px 12px;"
               />
+              <button 
+                type="button" 
+                class="priority-add-btn" 
+                (click)="addItem()"
+                style="height: 38px; padding: 0 18px; border-radius: 8px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; background-color: #10069f; color: #ffffff; border: none; cursor: pointer; transition: all 0.2s;"
+              >
+                <span pmConsoleIcon="plus" style="font-size: 12px;"></span>
+                <span>Add</span>
+              </button>
             </div>
 
-            <!-- owner and status side by side select from Image 2 -->
-            <div class="form-row-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px;">
-              <div class="drawer-section">
-                <label class="form-label" for="drawerOwner">Owner</label>
-                <div class="select-wrapper">
-                  <select id="drawerOwner" [(ngModel)]="drawerOwner" name="drawerOwner" class="form-control select-control">
-                    <option value="Fatima Qahtani">Fatima Qahtani</option>
-                    <option value="Muna Hassan">Muna Hassan</option>
-                    <option value="PMO Desk">PMO Desk</option>
-                  </select>
-                  <span pmConsoleIcon="chevron-down" class="select-chevron"></span>
-                </div>
-              </div>
-
-              <div class="drawer-section">
-                <label class="form-label" for="drawerStatus">Status</label>
-                <div class="select-wrapper">
-                  <select id="drawerStatus" [(ngModel)]="drawerStatus" name="drawerStatus" class="form-control select-control">
-                    <option value="Active">Active</option>
-                    <option value="Draft">Draft</option>
-                    <option value="Archived">Archived</option>
-                  </select>
-                  <span pmConsoleIcon="chevron-down" class="select-chevron"></span>
-                </div>
-              </div>
+            <!-- Sleek platform table matching Image 2 -->
+            <div class="priority-table-wrapper">
+              <table class="priority-table" style="margin: 0; width: 100%;">
+                <thead>
+                  <tr>
+                    <th style="width: 15%; text-align: left;">S.No</th>
+                    <th style="width: 60%; text-align: left;">{{ selectedCard.title }}</th>
+                    <th style="width: 25%; text-align: center;">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of getFilteredItems(); track item; let i = $index) {
+                    <tr>
+                      <td style="font-size: 13px; color: #475569; font-weight: 500;">
+                        {{ i + 1 }}
+                      </td>
+                      <td style="font-size: 13px;">
+                        @if (editingPriorityIndex === selectedCard.items.indexOf(item)) {
+                          <input 
+                            type="text" 
+                            class="form-control" 
+                            [(ngModel)]="editingPriorityValue"
+                            (keydown.enter)="saveEditItem(selectedCard.items.indexOf(item))"
+                            (keydown.escape)="cancelEditItem()"
+                            style="height: 28px; padding: 4px 8px; font-size: 12.5px; width: 100%; box-sizing: border-box;"
+                            autofocus
+                          />
+                        } @else {
+                          <span style="font-weight: 500; color: #1e293b;">{{ item }}</span>
+                        }
+                      </td>
+                      <td style="text-align: center; vertical-align: middle;">
+                        <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+                          @if (editingPriorityIndex === selectedCard.items.indexOf(item)) {
+                            <button 
+                              type="button" 
+                              class="priority-action-btn" 
+                              (click)="saveEditItem(selectedCard.items.indexOf(item))" 
+                              title="Save"
+                              style="color: #059669; background: transparent; border: none; display: inline-flex; align-items: center; justify-content: center;"
+                            >
+                              <span pmConsoleIcon="check" style="font-size: 16px;"></span>
+                            </button>
+                            <button 
+                              type="button" 
+                              class="priority-action-btn delete" 
+                              (click)="cancelEditItem()" 
+                              title="Cancel"
+                              style="color: #ef4444; background: transparent; border: none; display: inline-flex; align-items: center; justify-content: center;"
+                            >
+                              <span pmConsoleIcon="x" style="font-size: 16px;"></span>
+                            </button>
+                          } @else {
+                            <!-- Actions Container: Edit & Delete available on first click matching Image 2 -->
+                            <button 
+                              type="button" 
+                              class="priority-row-action-btn edit-btn" 
+                              (click)="startEditItem(selectedCard.items.indexOf(item), item)" 
+                              title="Edit"
+                            >
+                              <span pmConsoleIcon="edit-2" style="font-size: 14px;"></span>
+                            </button>
+                            <button 
+                              type="button" 
+                              class="priority-row-action-btn delete-btn" 
+                              (click)="deleteItem(selectedCard.items.indexOf(item))" 
+                              title="Delete"
+                            >
+                              <span pmConsoleIcon="trash-2" style="font-size: 14px;"></span>
+                            </button>
+                          }
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                  @if (getFilteredItems().length === 0) {
+                    <tr>
+                      <td colspan="3" style="padding: 24px; text-align: center; color: #94a3b8; font-style: italic;">
+                        No items match search.
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
             </div>
-          }
+          </div>
         </div>
       </app-pm-console-plan-drawer>
     }
-
+    
     @if (isCreatingWorkflow) {
       <app-pm-console-plan-drawer
         eyebrow="Workflow Designer"
@@ -2086,7 +2007,7 @@ export interface TaxonomyCard {
                               <span class="mandatory-badge" style="background: rgba(225, 29, 72, 0.08); color: #e11d48; border: 1px solid rgba(225, 29, 72, 0.15); font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 500;">Mandatory</span>
                             }
                           </div>
-
+                          
                           <div style="display: flex; align-items: center; gap: 8px;" (click)="$event.stopPropagation()">
                             <button type="button" class="priority-action-btn" (click)="editWorkflowStep(idx, $event)" title="Edit step" style="color: #64748b; background: transparent; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px;">
                               <span pmConsoleIcon="edit-2"></span>
@@ -2105,7 +2026,7 @@ export interface TaxonomyCard {
                               <div><strong>Reject Action:</strong> <span style="text-transform: capitalize;">{{ step.rejectAction }}</span></div>
                               <div><strong>AI Component:</strong> <span style="text-transform: capitalize;">{{ step.aiComponent?.replace('_', ' ') }}</span></div>
                             </div>
-
+                            
                             @if (step.configuredActions && step.configuredActions.length > 0) {
                               <div>
                                 <strong style="display: block; margin-bottom: 8px;">Configured Actions:</strong>
@@ -2160,7 +2081,7 @@ export interface TaxonomyCard {
 
               @if (isAddingWorkflowStep) {
                 <div class="step-form-container" style="margin-top: 16px; border: 1px solid #cbd5e1; border-radius: 12px; background: #ffffff; padding: 24px; display: flex; flex-direction: column; gap: 24px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);">
-
+                  
                   <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: -4px;">
                     <h4 style="font-size: 15px; font-weight: 600; color: #10069f; margin: 0;">
                       {{ editingStepIndex !== null ? 'Edit Step Details' : 'New Step Details' }}
@@ -2172,13 +2093,13 @@ export interface TaxonomyCard {
                     <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; border-left: 3px solid #10069f; padding-left: 8px;">
                       Basic Details
                     </div>
-
+                    
                     <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; align-items: flex-end;">
                       <div class="workflow-field-group">
                         <label class="workflow-field-label">Step Name <span class="required-star">*</span></label>
                         <input type="text" class="workflow-field-input" placeholder="Enter step name" [(ngModel)]="newStepName" />
                       </div>
-
+                      
                       <div style="height: 40px; display: flex; align-items: center;">
                         <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 500; color: #334155; cursor: pointer;">
                           <input type="checkbox" [(ngModel)]="newStepMandatory" style="width: 18px; height: 18px; accent-color: #10069f; cursor: pointer;" />
@@ -2194,7 +2115,7 @@ export interface TaxonomyCard {
                       <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; border-left: 3px solid #10069f; padding-left: 8px;">
                         Configure Actions
                       </div>
-
+                      
                     </div>
 
                     <!-- Configured Actions Table -->
@@ -2372,7 +2293,7 @@ export interface TaxonomyCard {
                     <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; border-left: 3px solid #10069f; padding-left: 8px;">
                       If the step is rejected, then
                     </div>
-
+                    
                     <div class="ud-radio-group" style="margin-top: 4px;">
                       <label class="ud-radio-label">
                         <input type="radio" name="newStepRejectAction" value="restart" [(ngModel)]="newStepRejectAction" class="ud-radio" />
@@ -2390,7 +2311,7 @@ export interface TaxonomyCard {
                     <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; border-left: 3px solid #10069f; padding-left: 8px;">
                       AI component
                     </div>
-
+                    
                     <div class="ud-radio-group" style="margin-top: 4px;">
                       <label class="ud-radio-label">
                         <input type="radio" name="newStepAiComponent" value="yes" [(ngModel)]="newStepAiComponent" class="ud-radio" />
@@ -2415,7 +2336,7 @@ export interface TaxonomyCard {
                           <span style="font-size: 13.5px; font-weight: 600; color: #334155;">When step is submitted</span>
                           <span [pmConsoleIcon]="emailAccordionOpen === 'submitted' ? 'chevron-up' : 'chevron-down'" style="font-size: 16px; color: #64748b;"></span>
                         </div>
-
+                        
                         @if (emailAccordionOpen === 'submitted') {
                           <div class="accordion-content" style="padding: 16px; border-top: 1px solid #cbd5e1; display: flex; flex-direction: column; gap: 14px; overflow: visible; position: relative; z-index: 60;">
                             <div class="workflow-field-group">
@@ -2450,12 +2371,12 @@ export interface TaxonomyCard {
                         <span style="font-size: 13.5px; font-weight: 600; color: #334155;">When step is approved</span>
                         <span [pmConsoleIcon]="emailAccordionOpen === 'approved' ? 'chevron-up' : 'chevron-down'" style="font-size: 16px; color: #64748b;"></span>
                       </div>
-
+                      
                       @if (emailAccordionOpen === 'approved') {
                         <div class="accordion-content" style="padding: 16px; border-top: 1px solid #cbd5e1; display: flex; flex-direction: column; gap: 14px; overflow: visible; position: relative; z-index: 50;">
                           <div class="workflow-field-group" style="overflow: visible; position: relative;">
                             <label class="workflow-field-label">Recipient Roles</label>
-
+                            
                             <!-- Custom dropdown triggering approved roles multi-select -->
                             <div class="multiselect-dropdown-container" style="position: relative; overflow: visible;">
                               <div class="multiselect-trigger" (click)="isApprovedDropdownOpen = !isApprovedDropdownOpen; isRejectedDropdownOpen = false; isSubmittedDropdownOpen = false; $event.stopPropagation()" style="min-height: 38px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 36px 6px 12px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; background: #ffffff; cursor: pointer; position: relative;">
@@ -2516,12 +2437,12 @@ export interface TaxonomyCard {
                         <span style="font-size: 13.5px; font-weight: 600; color: #334155;">When step is rejected</span>
                         <span [pmConsoleIcon]="emailAccordionOpen === 'rejected' ? 'chevron-up' : 'chevron-down'" style="font-size: 16px; color: #64748b;"></span>
                       </div>
-
+                      
                       @if (emailAccordionOpen === 'rejected') {
                         <div class="accordion-content" style="padding: 16px; border-top: 1px solid #cbd5e1; display: flex; flex-direction: column; gap: 14px; overflow: visible; position: relative; z-index: 40;">
                           <div class="workflow-field-group" style="overflow: visible; position: relative;">
                             <label class="workflow-field-label">Recipient Roles</label>
-
+                            
                             <!-- Custom dropdown triggering rejected roles multi-select -->
                             <div class="multiselect-dropdown-container" style="position: relative; overflow: visible;">
                               <div class="multiselect-trigger" (click)="isRejectedDropdownOpen = !isRejectedDropdownOpen; isApprovedDropdownOpen = false; isSubmittedDropdownOpen = false; $event.stopPropagation()" style="min-height: 38px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 36px 6px 12px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; background: #ffffff; cursor: pointer; position: relative;">
@@ -5337,6 +5258,73 @@ export interface TaxonomyCard {
       color: #ef4444;
     }
 
+    /* Custom Priority Table styles to avoid inheritance issues from User Management */
+    .priority-table-wrapper {
+      background: #ffffff;
+      border: 1px solid #e3e5e9;
+      border-radius: 12px;
+      overflow: hidden;
+      width: 100%;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    }
+    .priority-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      text-align: left;
+    }
+    .priority-table th {
+      background: #f8fafc;
+      border-bottom: 1px solid #eceef3;
+      color: #475569;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px 16px;
+    }
+    .priority-table td {
+      border-bottom: 1px solid #eceef3;
+      color: #1e293b;
+      font-size: 13px;
+      padding: 10px 16px;
+      vertical-align: middle;
+    }
+    .priority-table tr:last-child td {
+      border-bottom: none;
+    }
+    .priority-table tr:hover td {
+      background: #f8fafc;
+    }
+
+    /* Direct Edit & Delete Buttons */
+    .priority-row-action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      padding: 0;
+    }
+    .priority-row-action-btn.edit-btn {
+      border: 1px solid #cbd5e1;
+      color: #10069f;
+    }
+    .priority-row-action-btn.edit-btn:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+    .priority-row-action-btn.delete-btn {
+      border: 1px solid #fecaca;
+      color: #ef4444;
+    }
+    .priority-row-action-btn.delete-btn:hover {
+      background: #fee2e2;
+      border-color: #fca5a5;
+    }
+
     .priority-expandable-search {
       position: relative;
       display: flex;
@@ -5537,11 +5525,11 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     const yMid = 136;
     const yEnd = 160;
     const r = 12; // corner radius
-
+    
     if (xBranch === xDiv) {
       return `M ${xDiv} ${yStart} L ${xDiv} ${yEnd}`;
     }
-
+    
     if (xBranch < xDiv) {
       // Left branch: curves to left, then curves down
       return `M ${xDiv} ${yStart} ` +
@@ -6230,7 +6218,20 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
   drawerOwner = 'Fatima Qahtani';
   drawerStatus = 'Active';
 
+  private readonly disabledDrawerGroups = new Set([
+    'Change Request Management',
+    'Stage Gate Management',
+    'Monitoring & Reporting',
+    'Portfolio & Investment Prioritization',
+    'Risk Management',
+    'Funding Sources',
+    'Financial Cycle'
+  ]);
+
   openCardDrawer(card: TaxonomyCard, group: string): void {
+    if (this.disabledDrawerGroups.has(group)) {
+      return;
+    }
     if (group === 'Workflow Designer') {
       this.isCreatingWorkflow = true;
       this.editingWorkflowId = card.id;
@@ -6401,7 +6402,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
   searchQuery = '';
   activeActionMenuIndex: number | null = null;
 
-  getFilteredPriorities(): string[] {
+  getFilteredItems(): string[] {
     if (!this.selectedCard) return [];
     const q = this.searchQuery.trim().toLowerCase();
     if (!q) return this.selectedCard.items;
@@ -6416,7 +6417,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
 
   triggerEditRow(index: number, item: string): void {
     this.activeActionMenuIndex = null;
-    this.startEditPriority(index, item);
+    this.startEditItem(index, item);
   }
 
   triggerDeleteRow(item: string): void {
@@ -6424,65 +6425,73 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
     if (this.selectedCard) {
       const idx = this.selectedCard.items.indexOf(item);
       if (idx !== -1) {
-        this.deletePriorityItem(idx);
+        this.deleteItem(idx);
       }
     }
   }
 
-  addPriorityItem(): void {
+  addItem(): void {
     const val = this.newPriorityName.trim();
     if (val && this.selectedCard) {
       this.selectedCard.items = [...this.selectedCard.items, val];
       this.newPriorityName = '';
-
-      // Update parent list
-      const idx = this.projectSetupCards.findIndex(c => c.id === 'priority');
-      if (idx !== -1) {
-        this.projectSetupCards[idx].items = [...this.selectedCard.items];
-      }
-      this.changeDetector.markForCheck();
+      this.syncSelectedCardBack();
     }
   }
 
-  deletePriorityItem(index: number): void {
+  deleteItem(index: number): void {
     if (this.selectedCard) {
       this.selectedCard.items = this.selectedCard.items.filter((_, i) => i !== index);
-
-      // Update parent list
-      const idx = this.projectSetupCards.findIndex(c => c.id === 'priority');
-      if (idx !== -1) {
-        this.projectSetupCards[idx].items = [...this.selectedCard.items];
-      }
-      this.changeDetector.markForCheck();
+      this.syncSelectedCardBack();
     }
   }
 
-  startEditPriority(index: number, val: string): void {
+  startEditItem(index: number, val: string): void {
     this.editingPriorityIndex = index;
     this.editingPriorityValue = val;
     this.changeDetector.markForCheck();
   }
 
-  saveEditPriority(index: number): void {
+  saveEditItem(index: number): void {
     const val = this.editingPriorityValue.trim();
     if (val && this.selectedCard) {
       this.selectedCard.items[index] = val;
       this.selectedCard.items = [...this.selectedCard.items];
       this.editingPriorityIndex = null;
       this.editingPriorityValue = '';
-
-      // Update parent list
-      const idx = this.projectSetupCards.findIndex(c => c.id === 'priority');
-      if (idx !== -1) {
-        this.projectSetupCards[idx].items = [...this.selectedCard.items];
-      }
-      this.changeDetector.markForCheck();
+      this.syncSelectedCardBack();
     }
   }
 
-  cancelEditPriority(): void {
+  cancelEditItem(): void {
     this.editingPriorityIndex = null;
     this.editingPriorityValue = '';
+    this.changeDetector.markForCheck();
+  }
+
+  private syncSelectedCardBack(): void {
+    if (!this.selectedCard) return;
+    const cardId = this.selectedCard.id;
+    const items = [...this.selectedCard.items];
+    const group = this.selectedCardGroup;
+
+    let arr: TaxonomyCard[] | null = null;
+    if (group === 'Project Setup') {
+      arr = this.projectSetupCards;
+    } else if (group === 'Project Planning') {
+      arr = this.projectPlanningCards;
+    } else if (group === 'Project Closure') {
+      arr = this.projectClosureCards;
+    } else if (group === 'Benefits and Config') {
+      arr = this.benefitsConfigCards;
+    }
+
+    if (arr) {
+      const idx = arr.findIndex(c => c.id === cardId);
+      if (idx !== -1) {
+        arr[idx].items = items;
+      }
+    }
     this.changeDetector.markForCheck();
   }
 
@@ -6712,7 +6721,7 @@ export class PortfolioWorkspaceFrameworkComponent implements OnInit {
       });
       this.selectedGroupIndex = this.groupObjects.length - 1;
     }
-
+    
     this.syncLegacyArrays();
     this.isAddingGroup = false;
     this.editingGroupIndex = null;

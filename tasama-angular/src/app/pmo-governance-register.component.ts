@@ -1,14 +1,11 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, HostListener, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-
-
-
-
-
-import { PortfolioWorkspaceRegistersComponent } from './portfolio-workspace/portfolio-workspace-registers.component';
-import { portfolioProgramRows, riskRegisterData, standaloneProjects } from './portfolio-workspace/portfolio-workspace.data';
+import { PmoGovernanceForumDrawerComponent } from './pmo-governance-forum-drawer.component';
+import { PmoGovernanceRecordDetailDrawerComponent } from './pmo-governance-record-detail-drawer.component';
+import { PmoGovernanceRecordDrawerComponent } from './pmo-governance-record-drawer.component';
+import { PmoGovernanceReportDrawerComponent } from './pmo-governance-report-drawer.component';
+import { PmoGovernanceSourceDrawerComponent } from './pmo-governance-source-drawer.component';
 import { PmConsoleExpandableSearchComponent } from './shared/pm-console-expandable-search.component';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
-import { PmoGovernanceRiskRegisterComponent } from './pmo-governance-risk-register.component';
 import {
   PmConsoleRegisterTableComponent,
   type PmConsoleRegisterTableActionEvent,
@@ -59,55 +56,22 @@ type PmoGovernanceSourceDrawerContext = 'workspace' | 'forum';
 type PmoGovernanceRecordDrawerContext = 'workspace' | 'forum';
 
 @Component({
-  selector: 'app-pmo-governance-workspace',
+  selector: 'app-pmo-governance-register',
   standalone: true,
   imports: [
     PmConsoleExpandableSearchComponent,
     PmConsoleIconComponent,
-                        PmConsoleRegisterTableComponent,
-    PortfolioWorkspaceRegistersComponent,
-    PmoGovernanceRiskRegisterComponent,
+    PmoGovernanceForumDrawerComponent,
+    PmoGovernanceRecordDetailDrawerComponent,
+    PmoGovernanceRecordDrawerComponent,
+    PmoGovernanceReportDrawerComponent,
+    PmoGovernanceSourceDrawerComponent,
+    PmConsoleRegisterTableComponent,
     PmConsoleRowActionMenuComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="app-canvas pmo-governance-canvas">
-      <div class="page-motion-host">
-        <section class="pmo-governance-page" aria-label="My Workspace">
-          <header class="pmo-page-header">
-            <div class="pmo-title-group">
-              <button class="pmo-back-button" type="button" aria-label="Back to PMO home" (click)="backSelected.emit()">
-                <span pmConsoleIcon="arrow-left" aria-hidden="true"></span>
-              </button>
-              <div>
-                <h1>My Workspace</h1>
-                <p>Portfolio registers and governance work</p>
-              </div>
-            </div>
-
-          </header>
-
-          <article class="pmo-content-surface">
-            <nav class="pmo-tab-strip pmo-primary-tabs" role="tablist" aria-label="My workspace sections">
-              @for (tab of primaryTabs; track tab.id) {
-                <button
-                  [class.active]="activePrimaryTab === tab.id"
-                  type="button"
-                  role="tab"
-                  [attr.aria-selected]="activePrimaryTab === tab.id"
-                  (click)="setPrimaryTab(tab.id)"
-                >
-                  <span [pmConsoleIcon]="tab.icon || 'layout-grid'" aria-hidden="true"></span>
-                  {{ tab.label }}
-                </button>
-              }
-            </nav>
-
-            @if (activePrimaryTab === 'portfolio-register') {
-              <section class="pmo-program-register-view" aria-label="Portfolio register">
-                <app-portfolio-workspace-registers [showRegisterTabs]="false"></app-portfolio-workspace-registers>
-              </section>
-            } @else if (activePrimaryTab === 'governance') {
+    <div class="pmo-governance-register-container">
               @if (selectedForum; as forum) {
                 <section hidden class="pmo-forum-detail-view" [attr.aria-label]="forum.forumName + ' forum meetings'">
                   <header class="pmo-forum-detail-header">
@@ -799,27 +763,27 @@ type PmoGovernanceRecordDrawerContext = 'workspace' | 'forum';
                   </div>
                 </section>
               }
-            } @else if (activePrimaryTab === 'risk-register') {
-              <section class="pmo-program-register-view" aria-label="Risk register">
-                <app-pmo-governance-risk-register
-                  [risks]="riskData"
-                  [programs]="programs"
-                  [standaloneProjects]="standaloneProjects"
-                />
-              </section>
-            } @else {
-              <section class="pmo-register-placeholder" [attr.aria-label]="activePrimaryTabLabel + ' coming soon'">
-                <strong>{{ activePrimaryTabLabel }}</strong>
-                <span>This workspace tab is ready for the next set of register content.</span>
-              </section>
-            }
+            </div>
 
-          </article>
-        </section>
-      </div>
+      @if (selectedRecordDetail; as recordDetail) {
+        <app-pmo-governance-record-detail-drawer [detail]="recordDetail" (closeSelected)="closeRecordDetail()" />
+      }
 
-      
-    </main>
+      @if (forumDrawerOpen) {
+        <app-pmo-governance-forum-drawer (close)="closeForumDrawer()" (save)="saveForumDraft($event)" />
+      }
+
+      @if (sourceDrawerOpen) {
+        <app-pmo-governance-source-drawer (close)="closeSourceDrawer()" (save)="saveSourceDraft($event)" />
+      }
+
+      @if (recordDrawerOpen) {
+        <app-pmo-governance-record-drawer (close)="closeRecordDrawer()" (save)="saveRecordDraft($event)" />
+      }
+
+      @if (reportDrawerOpen) {
+        <app-pmo-governance-report-drawer (close)="closeReportDrawer()" (save)="saveReportDraft($event)" />
+      }
   `,
   styles: [
     `
@@ -2287,17 +2251,13 @@ type PmoGovernanceRecordDrawerContext = 'workspace' | 'forum';
     `,
   ],
 })
-export class PmoGovernanceWorkspaceComponent implements OnChanges {
+export class PmoGovernanceRegisterComponent implements OnChanges {
   @Input() forums: readonly PmoGovernanceForumRow[] = pmoGovernanceForumRows;
   @Input() initialTarget: PmoGovernanceWorkspaceTarget = pmoGovernanceDefaultWorkspaceTarget;
   @Output() readonly backSelected = new EventEmitter<void>();
   @Output() readonly forumDetailSelected = new EventEmitter<PmoGovernanceForumRow>();
 
-  riskData = riskRegisterData;
-  programs = portfolioProgramRows;
-  standaloneProjects = standaloneProjects;
-
-  readonly primaryTabs = pmoGovernancePrimaryTabs;
+  
   readonly sectionTabs = pmoGovernanceSectionTabs;
   readonly baseReportTemplates = pmoGovernanceReportTemplateRows;
   readonly sources = pmoGovernanceSourceRows;
@@ -2482,9 +2442,7 @@ export class PmoGovernanceWorkspaceComponent implements OnChanges {
     return this.forumDetailTabs.find((tab) => tab.id === this.activeForumDetailTab)?.label ?? 'Forum Section';
   }
 
-  get activePrimaryTabLabel(): string {
-    return this.primaryTabs.find((tab) => tab.id === this.activePrimaryTab)?.label ?? 'Workspace';
-  }
+  
 
   get visibleForumSources(): readonly PmoGovernanceSourceRow[] {
     const query = this.normalizedForumSourceSearchQuery;

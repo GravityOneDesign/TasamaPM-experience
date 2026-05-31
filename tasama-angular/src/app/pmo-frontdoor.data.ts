@@ -3,6 +3,7 @@ import type { PmConsoleFrontdoorAction } from './shared/pm-console-frontdoor-act
 import type { PmConsoleModeTabItem } from './shared/pm-console-mode-tabs.component';
 import type { PmoGovernanceWorkspaceTarget } from './pmo-governance-workspace.data';
 import type { PortfolioActionItem, PortfolioBoardFilter } from './portfolio-manager-actions.data';
+import { portfolioProgramRows } from './portfolio-workspace/portfolio-workspace.data';
 
 export type PmoFrontdoorTab = 'overview' | 'manage-work' | 'quicklinks';
 
@@ -112,7 +113,7 @@ export const pmoFrontdoorActions: PmConsoleFrontdoorAction[] = [
   },
   {
     id: 'report-review',
-    title: 'Report & Review Progress',
+    title: 'Governance & Reporting',
     description: 'Create scheduled or adhoc reports to monitor overall progress and review status reports sent to you by managers.',
     icon: 'chart-column',
     decor: 'hex',
@@ -145,7 +146,7 @@ export const pmoFrontdoorWorkFilters: readonly PortfolioBoardFilter[] = [
 
 // Generate randomized calendar work items for PMO calendar view
 function generatePmoCalendarWorkItems(): readonly PmoFrontdoorWorkItem[] {
-  const projects = ['Vision 2030', 'NEOM Integration', 'Smart City Alpha', 'UAE Research Map'];
+  const projects = portfolioProgramRows.flatMap((program) => (program.projects || []).map((project) => project.name));
   const tasks = [
     { label: 'Status reports', kind: 'report' as const, tone: 'blue' as const },
     { label: 'Plans', kind: 'plan' as const, tone: 'blue' as const },
@@ -155,75 +156,78 @@ function generatePmoCalendarWorkItems(): readonly PmoFrontdoorWorkItem[] {
   ];
 
   const calendarItems: PmoFrontdoorWorkItem[] = [];
-  const today = new Date(2026, 4, 26); // May 26, 2026
-  const daysInMonth = new Date(2026, 5, 0).getDate(); // May has 31 days
+  const months = [
+    { monthIndex: 3, monthNumber: '04' },
+    { monthIndex: 4, monthNumber: '05' },
+    { monthIndex: 5, monthNumber: '06' },
+  ];
 
-  // Generate tasks for each day of May, with varied distribution
-  for (let day = 1; day <= daysInMonth; day++) {
-    // Weighted randomization: 40% no tasks, 35% 1-2 tasks, 25% 3-5 tasks
-    // Force dates 25 & 26 to have 3+ tasks so they display consolidated summary
-    let numTasks = 0;
-    
-    if (day === 25 || day === 26) {
-      numTasks = Math.floor(Math.random() * 2) + 3; // 3-4 tasks for dates 25 & 26
-    } else if (day >= 28) {
-      numTasks = Math.floor(Math.random() * 2) + 2; // 2-3 tasks for upcoming days to ensure they populate
-    } else {
-      const rand = Math.random();
-      if (rand < 0.4) {
-        numTasks = 0; // 40% no tasks
-      } else if (rand < 0.75) {
-        numTasks = Math.random() < 0.5 ? 1 : 2; // 35% have 1-2 tasks
-      } else {
-        numTasks = Math.floor(Math.random() * 3) + 3; // 25% have 3-5 tasks
-      }
-    }
+  for (const month of months) {
+    const daysInMonth = new Date(2026, month.monthIndex + 1, 0).getDate();
 
-    for (let i = 0; i < numTasks; i++) {
-      const randomTask = tasks[Math.floor(Math.random() * tasks.length)];
-      const project = projects[Math.floor(Math.random() * projects.length)];
-      const dateStr = `2026-05-${String(day).padStart(2, '0')}`;
-      
-      // Determine column based on date relative to today (May 26, 2026)
-      let column: 'Overdue' | 'This week' | 'Upcoming';
-      if (day < 22) {
-        column = 'Overdue';
-      } else if (day <= 27) {
-        column = 'This week';
+    for (let day = 1; day <= daysInMonth; day++) {
+      let numTasks = 0;
+
+      if (month.monthIndex === 4 && (day === 25 || day === 26)) {
+        numTasks = Math.floor(Math.random() * 2) + 3;
+      } else if (month.monthIndex === 4 && day >= 28) {
+        numTasks = Math.floor(Math.random() * 2) + 2;
       } else {
-        column = 'Upcoming';
+        const rand = Math.random();
+        if (rand < 0.4) {
+          numTasks = 0;
+        } else if (rand < 0.75) {
+          numTasks = Math.random() < 0.5 ? 1 : 2;
+        } else {
+          numTasks = Math.floor(Math.random() * 3) + 3;
+        }
       }
 
-      // Generate a realistic, distinct task name that is not the same as Type
-      let taskName = '';
-      if (randomTask.kind === 'report') {
-        taskName = `Review ${project} weekly report`;
-      } else if (randomTask.kind === 'plan') {
-        taskName = `Review ${project} baseline plan`;
-      } else if (randomTask.kind === 'change') {
-        taskName = `Approve ${project} change request`;
-      } else if (randomTask.kind === 'benefit') {
-        taskName = `Verify ${project} benefit evidence`;
-      } else {
-        taskName = `Convene ${project} governance committee`;
+      for (let i = 0; i < numTasks; i++) {
+        const randomTask = tasks[Math.floor(Math.random() * tasks.length)];
+        const project = projects[Math.floor(Math.random() * projects.length)];
+        const dateStr = `2026-${month.monthNumber}-${String(day).padStart(2, '0')}`;
+        const itemDate = new Date(2026, month.monthIndex, day);
+
+        let column: 'Overdue' | 'This week' | 'Upcoming';
+        if (itemDate < new Date(2026, 4, 22)) {
+          column = 'Overdue';
+        } else if (itemDate <= new Date(2026, 4, 27)) {
+          column = 'This week';
+        } else {
+          column = 'Upcoming';
+        }
+
+        let taskName = '';
+        if (randomTask.kind === 'report') {
+          taskName = `Review ${project} weekly report`;
+        } else if (randomTask.kind === 'plan') {
+          taskName = `Review ${project} baseline plan`;
+        } else if (randomTask.kind === 'change') {
+          taskName = `Approve ${project} change request`;
+        } else if (randomTask.kind === 'benefit') {
+          taskName = `Verify ${project} benefit evidence`;
+        } else {
+          taskName = `Convene ${project} governance committee`;
+        }
+
+        calendarItems.push({
+          id: `pmo-cal-${dateStr}-${i}`,
+          date: dateStr,
+          label: taskName,
+          project: project,
+          targetType: 'project',
+          type: randomTask.label,
+          kind: randomTask.kind,
+          tone: randomTask.tone,
+          owner: 'PMO',
+          meta: 'Pending',
+          cta: 'Review',
+          column: column,
+          detailItems: [],
+          detailSummary: `Review ${randomTask.label}`,
+        });
       }
-      
-      calendarItems.push({
-        id: `pmo-cal-${dateStr}-${i}`,
-        date: dateStr,
-        label: taskName,
-        project: project,
-        targetType: 'project',
-        type: randomTask.label,
-        kind: randomTask.kind,
-        tone: randomTask.tone,
-        owner: 'PMO',
-        meta: 'Pending',
-        cta: 'Review',
-        column: column,
-        detailItems: [],
-        detailSummary: `Review ${randomTask.label}`,
-      });
     }
   }
 
@@ -277,7 +281,7 @@ export const pmoFrontdoorQuickLinks: readonly PmoFrontdoorQuickLink[] = [
   },
   {
     id: 'upcoming-forums',
-    title: 'Governance Register',
+    title: 'Governance',
     description: 'Review stage readiness, evidence, and approval status.',
     icon: 'calendar-days',
     target: { primaryTab: 'governance', sectionTab: 'forums' },
@@ -357,4 +361,3 @@ export const pmoStatusReports: readonly PmoStatusReport[] = [
     ownerInitials: 'DG',
   },
 ];
-

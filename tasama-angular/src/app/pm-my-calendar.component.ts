@@ -1,45 +1,30 @@
+﻿/**
+ * Project Manager - "My Calendar" (Manage My Work) calendar.
+ *
+ * Project-Manager-specific variant of the shared `PmConsoleWorkCalendarComponent`.
+ * It exists ONLY so the PM calendar pills/chips can carry PM-specific styling
+ * without affecting the Portfolio Manager calendar (the other consumer of the
+ * shared component) or any other module.
+ *
+ * Behaviour, inputs, outputs and data structures are inherited verbatim from the
+ * shared base via `extends` - no business logic is duplicated or changed here.
+ * Only the template + scoped styles are owned locally so the visual treatment can
+ * diverge safely. Do NOT add behaviour here; behaviour belongs to the shared base.
+ */
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnDestroy, Output } from '@angular/core';
-import { PmConsoleIconComponent } from './pm-console-icon.component';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
+import { PmConsoleWorkCalendarComponent, type PmConsoleCalendarItem } from './shared/pm-console-work-calendar.component';
 
-export type PmConsoleCalendarTargetType = 'portfolio' | 'program' | 'project';
-
-export interface PmConsoleCalendarItem {
-  id?: string;
-  date: string;
-  label: string;
-  tone: string;
-  project: string;
-  targetType?: PmConsoleCalendarTargetType;
-  kind?: string;
-}
-
-export interface PmConsoleCalendarCell {
-  key: string;
-  day: number;
-  current: boolean;
-  today: boolean;
-  items: PmConsoleCalendarItem[];
-}
-
-export interface PmConsoleCalendarFilter {
-  id: string;
-  label: string;
-  icon: string;
-  count: number;
-}
-
-type CalendarPopoverPlacement = 'above' | 'below';
-
-interface CalendarPopoverPosition {
-  top: number;
-  left: number;
-  arrowLeft: number;
-  placement: CalendarPopoverPlacement;
-}
+export type {
+  PmConsoleCalendarTargetType,
+  PmConsoleCalendarItem,
+  PmConsoleCalendarCell,
+  PmConsoleCalendarFilter,
+} from './shared/pm-console-work-calendar.component';
 
 @Component({
-  selector: 'app-pm-console-work-calendar',
+  selector: 'app-pm-my-calendar',
   standalone: true,
   imports: [CommonModule, PmConsoleIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -113,6 +98,7 @@ interface CalendarPopoverPosition {
                 @if (isCollapsedCell(cell)) {
                   <button
                     class="calendar-event"
+                    [class.is-static]="!isChipClickable(cell.items[0])"
                     [attr.data-event-type]="getCalendarChipType(cell.items[0])"
                     type="button"
                     [attr.aria-label]="calendarEventLabel(cell.items[0])"
@@ -124,12 +110,13 @@ interface CalendarPopoverPosition {
                     (click)="openAgendaItem(cell.items[0], $event)"
                   >
                     <span class="calendar-event-dot"></span>
-                    <span class="calendar-event-title">{{ getCalendarChipLabel(cell.items[0]) }}</span>
+                    <span class="calendar-event-title">{{ getCalendarChipType(cell.items[0]) }}</span>
                   </button>
 
                   <div class="calendar-event-with-more">
                     <button
                       class="calendar-event"
+                      [class.is-static]="!isChipClickable(cell.items[1])"
                       [attr.data-event-type]="getCalendarChipType(cell.items[1])"
                       type="button"
                       [attr.aria-label]="calendarEventLabel(cell.items[1])"
@@ -141,7 +128,7 @@ interface CalendarPopoverPosition {
                       (click)="openAgendaItem(cell.items[1], $event)"
                     >
                       <span class="calendar-event-dot"></span>
-                      <span class="calendar-event-title">{{ getCalendarChipLabel(cell.items[1]) }}</span>
+                      <span class="calendar-event-title">{{ getCalendarChipType(cell.items[1]) }}</span>
                     </button>
                     <button
                       class="calendar-more-badge"
@@ -158,6 +145,7 @@ interface CalendarPopoverPosition {
                   @for (item of visibleCellItems(cell); track item.date + item.label + item.project) {
                     <button
                       class="calendar-event"
+                      [class.is-static]="!isChipClickable(item)"
                       [attr.data-event-type]="getCalendarChipType(item)"
                       type="button"
                       [attr.aria-label]="calendarEventLabel(item)"
@@ -169,7 +157,7 @@ interface CalendarPopoverPosition {
                       (click)="openAgendaItem(item, $event)"
                     >
                       <span class="calendar-event-dot"></span>
-                      <span class="calendar-event-title">{{ getCalendarChipLabel(item) }}</span>
+                      <span class="calendar-event-title">{{ getCalendarChipType(item) }}</span>
                     </button>
                   }
                 }
@@ -183,6 +171,7 @@ interface CalendarPopoverPosition {
     @if (previewItem) {
       <aside
         class="calendar-hover-card calendar-item-hover-card is-actionable {{ previewPlacement }}"
+        [class.is-static]="!isChipClickable(previewItem)"
         role="dialog"
         aria-modal="false"
         [attr.aria-label]="previewItem.label + ' details'"
@@ -195,14 +184,13 @@ interface CalendarPopoverPosition {
         (focusout)="hidePreviewSoon()"
         (click)="openAgendaItem(previewItem, $event)"
       >
-        <div class="calendar-popover-card-content">
-          <div class="calendar-popover-card-header">
-            <span class="calendar-popover-kind" [attr.data-event-type]="getCalendarChipType(previewItem)">{{ getCalendarChipType(previewItem) }}</span>
-            <span pmConsoleIcon="arrow-right" class="calendar-popover-arrow" aria-hidden="true"></span>
-          </div>
-          <strong class="calendar-popover-title">{{ getItemDisplayTitle(previewItem) }}</strong>
-          <span class="calendar-popover-subtitle">{{ getItemSubtitle(previewItem) }}</span>
-        </div>
+        <span class="calendar-card-top">
+          <span class="calendar-popover-kind" [attr.data-event-type]="getCalendarChipType(previewItem)">{{ getCalendarChipType(previewItem) }}</span>
+          <!-- Arrow shown on all cards for consistency; click is gated by isChipClickable. -->
+          <span class="calendar-card-arrow" pmConsoleIcon="arrow-right" aria-hidden="true"></span>
+        </span>
+        <span class="calendar-card-title">{{ previewItem.label }}</span>
+        <span class="calendar-card-subtitle">{{ itemTargetLabel(previewItem) }}</span>
       </aside>
     }
 
@@ -221,23 +209,19 @@ interface CalendarPopoverPosition {
         (focusout)="hidePreviewSoon()"
         (click)="$event.stopPropagation()"
       >
-        <div class="calendar-popover-multi-header">
-          <span class="calendar-popover-multi-date">{{ dateLabel(previewCell.key) }}</span>
-          <span class="calendar-popover-multi-count">{{ previewCell.items.length }} items</span>
+        <div class="calendar-hover-header">
+          <span class="hover-date">{{ dateLabel(previewCell.key) }}</span>
+          <span class="hover-count">{{ previewCell.items.length }} item{{ previewCell.items.length === 1 ? '' : 's' }}</span>
         </div>
-        <div class="calendar-popover-multi-list">
-          @for (item of previewCell.items; track item.date + item.label + item.project) {
-            <button
-              class="calendar-popover-multi-item"
-              type="button"
-              (click)="openAgendaItem(item, $event)"
-            >
-              <div class="calendar-popover-card-header">
+        <div class="calendar-day-agenda-list preview-agenda-list">
+          @for (item of previewCell.items; track item.date + item.label + item.project; let last = $last) {
+            <button class="calendar-agenda-row" [class.is-last]="last" [class.is-static]="!isChipClickable(item)" type="button" (click)="openAgendaItem(item, $event)">
+              <div class="agenda-row-header">
                 <span class="calendar-popover-kind" [attr.data-event-type]="getCalendarChipType(item)">{{ getCalendarChipType(item) }}</span>
-                <span pmConsoleIcon="arrow-right" class="calendar-popover-arrow" aria-hidden="true"></span>
+                <span class="arrow-icon" pmConsoleIcon="arrow-right" aria-hidden="true"></span>
               </div>
-              <strong class="calendar-popover-title">{{ getItemDisplayTitle(item) }}</strong>
-              <span class="calendar-popover-subtitle">{{ getItemSubtitle(item) }}</span>
+              <span class="agenda-row-title">{{ item.label }}</span>
+              <span class="agenda-row-subtitle">Project : {{ item.project }}</span>
             </button>
           }
         </div>
@@ -247,15 +231,23 @@ interface CalendarPopoverPosition {
   `,
   styles: [
     `
+      /*
+       * Host sizing kept self-contained for the PM variant.
+       * The shared component relied on a global styles.css rule that targets
+       * \`app-pm-console-work-calendar\`; that selector does not match this local
+       * element name, so the same flex/height/clipping is declared here to keep
+       * the PM "My Calendar" layout identical to before.
+       */
       :host {
         display: flex;
         flex: 1 1 auto;
         flex-direction: column;
         gap: 10px;
         height: 100%;
+        max-height: 100%;
         min-height: 0;
         min-width: 0;
-        overflow: visible;
+        overflow: hidden;
         position: relative;
       }
 
@@ -267,6 +259,17 @@ interface CalendarPopoverPosition {
 
       .calendar-cell {
         overflow: hidden;
+      }
+
+      /*
+       * PM "My Calendar" keeps the today DATE HIGHLIGHT (navy day-number badge +
+       * cell outline from global styles) but hides only the "Today" text label
+       * badge (the global .calendar-cell.today::after pill). Scoped to this
+       * component, so PMO / Portfolio calendars are unaffected.
+       */
+      .calendar-cell.today::after {
+        content: none;
+        display: none;
       }
 
       .calendar-cell.has-items {
@@ -289,26 +292,59 @@ interface CalendarPopoverPosition {
         width: 100%;
       }
 
+      /*
+       * PM "My Calendar" pill / chip base chrome.
+       * Locked locally (not inherited from global styles.css) so the PM pill spec
+       * is self-contained and isolated from the shared / Portfolio Manager calendar.
+       * Per-status fill, border and text colour are applied by the
+       * [data-event-type="..."] rules further down. Shape/typography are defined here.
+       */
       .calendar-event {
-        display: inline-flex;
         align-items: center;
-        width: fit-content;
-        max-width: calc(100% - 2px);
+        background: #ffffff;
+        border: 1px solid #edf0f6;
+        border-radius: 999px;
+        box-shadow: 0 4px 10px rgba(25, 33, 61, 0.035);
         box-sizing: border-box;
-        cursor: default;
+        cursor: pointer;
+        display: flex;
         font-size: 10.25px;
+        font-weight: 500;
+        gap: 6px;
         height: 22px;
+        letter-spacing: 0;
+        line-height: 1;
         margin-top: 0;
+        max-width: calc(100% - 2px);
         min-width: 0;
         overflow: hidden;
-        padding: 0 6px;
+        padding: 0 8px;
         position: relative;
-        z-index: 70;
+        white-space: nowrap;
+        /*
+         * Keep pills just above the cell background but BELOW overlay UI such as the
+         * board/calendar filter dropdown (its stacking context sits at z-index 50).
+         * The shared component uses z-index: 70 here, which causes pills to bleed
+         * through that dropdown; lowering it to 1 fixes the layering for the PM view.
+         */
+        z-index: 1;
       }
 
-      .calendar-event[data-event-type="Plans"],
-      .calendar-event[data-event-type="Governance committee"] {
-        cursor: pointer;
+      .calendar-event-dot {
+        border-radius: 999px;
+        flex: 0 0 6px;
+        height: 6px;
+        width: 6px;
+      }
+
+      /*
+       * Non-actionable pill types (everything except Plans / Status reports) keep
+       * their hover preview but are not clickable, so they use the default cursor.
+       */
+      .calendar-event.is-static,
+      .calendar-item-hover-card.is-static,
+      .calendar-agenda-row.is-static {
+        cursor: default;
       }
 
       .calendar-event-title {
@@ -317,7 +353,6 @@ interface CalendarPopoverPosition {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        flex: 1 1 auto;
       }
 
       .calendar-action-summary {
@@ -566,9 +601,61 @@ interface CalendarPopoverPosition {
         pointer-events: auto;
       }
 
+      /* Single-pill hover card (Figma "card" design) */
       .calendar-item-hover-card {
-        gap: 16px;
-        padding: 16px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 10px 16px;
+      }
+
+      /* Shared Figma card content (single-item card + day-agenda cards) */
+      .calendar-card-top {
+        align-items: center;
+        display: flex;
+        gap: 8px;
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      .calendar-card-arrow {
+        color: #0b0b0b;
+        flex: 0 0 auto;
+        height: 16px;
+        width: 16px;
+      }
+
+      .calendar-card-arrow .icon {
+        height: 16px;
+        width: 16px;
+      }
+
+      .calendar-card-title {
+        color: #0b0b0b;
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 20px;
+        margin: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 100%;
+      }
+
+      .calendar-card-subtitle {
+        color: #777777;
+        display: block;
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 16px;
+        margin: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-transform: capitalize;
+        white-space: nowrap;
+        width: 100%;
       }
 
       .calendar-hover-card.above {
@@ -616,15 +703,17 @@ interface CalendarPopoverPosition {
 
       .calendar-popover-kind {
         align-items: center;
-        border-radius: 999px;
+        border-radius: 6px;
         display: inline-flex;
-        font-size: 10px;
-        font-weight: 600;
+        font-size: 11px;
+        font-weight: 500;
+        justify-content: center;
         justify-self: start;
-        letter-spacing: 0;
-        line-height: 1;
-        padding: 6px 8px;
-        text-transform: uppercase;
+        letter-spacing: 0.24px;
+        line-height: 16px;
+        padding: 2px 6px;
+        text-transform: none;
+        white-space: nowrap;
       }
 
       .calendar-popover-context-tag {
@@ -721,14 +810,154 @@ interface CalendarPopoverPosition {
         outline: 0;
       }
 
-      .calendar-day-agenda-list {
-        display: grid;
-        gap: 6px;
-        padding-right: 2px;
+      /*
+       * Day "+N" hover card — matches the shared PMO calendar exactly
+       * (pm-console-work-calendar.component.ts). Rules are scoped under
+       * .calendar-day-hover-card so they override the local single-item card
+       * styles without affecting it. The single-item hover card is unchanged.
+       */
+      .calendar-day-hover-card {
+        border-radius: 12px;
+        gap: 0;
+        overflow: hidden;
+        padding: 0;
       }
 
-      .preview-agenda-list {
-        margin-top: 8px;
+      .calendar-hover-header {
+        align-items: center;
+        background: #f4f4f5;
+        border-bottom: 1px solid #dfe4ee;
+        display: flex;
+        justify-content: space-between;
+        padding: 16px;
+      }
+
+      .calendar-hover-header .hover-date {
+        color: #111827;
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      .calendar-hover-header .hover-count {
+        color: #4b5563;
+        font-size: 12px;
+      }
+
+      .calendar-day-hover-card .calendar-day-agenda-list {
+        background: #ffffff;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        margin-top: 0;
+        max-height: 400px;
+        overflow-y: auto;
+        padding-right: 0;
+      }
+
+      .calendar-day-hover-card .calendar-agenda-row {
+        align-items: flex-start;
+        background: #ffffff;
+        border: none;
+        border-bottom: 1px solid #edf0f6;
+        border-radius: 0;
+        color: #303645;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        grid-template-columns: none;
+        min-height: 0;
+        padding: 16px;
+        text-align: left;
+        transition: background 120ms ease;
+        width: 100%;
+      }
+
+      .calendar-day-hover-card .calendar-agenda-row.is-last {
+        border-bottom: none;
+      }
+
+      .calendar-day-hover-card .calendar-agenda-row:hover,
+      .calendar-day-hover-card .calendar-agenda-row:focus-visible {
+        background: #f7f9fc;
+        border-color: #edf0f6;
+        outline: 0;
+      }
+
+      .calendar-day-hover-card .calendar-agenda-row.is-static {
+        cursor: default;
+      }
+
+      .agenda-row-header {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      .agenda-row-header .arrow-icon {
+        align-items: center;
+        color: #1f4fb8;
+        display: inline-flex;
+        flex: 0 0 auto;
+        height: 16px;
+        justify-content: center;
+        width: 16px;
+      }
+
+      .agenda-row-header .arrow-icon .icon {
+        height: 16px;
+        width: 16px;
+      }
+
+      .agenda-row-title {
+        color: #0b0b0b;
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.4;
+        width: 100%;
+      }
+
+      .agenda-row-subtitle {
+        color: #8290a4;
+        display: block;
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 1.4;
+        width: 100%;
+      }
+
+      /* Day-card tag — PMO pill metrics + palette (scoped; item card keeps its own). */
+      .calendar-day-hover-card .calendar-popover-kind {
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.24px;
+        line-height: 16px;
+        padding: 2px 6px;
+        text-transform: none;
+      }
+
+      .calendar-day-hover-card .calendar-popover-kind[data-event-type='Plans'] {
+        background: rgba(49, 136, 181, 0.1) !important;
+        color: #3188b5 !important;
+      }
+      .calendar-day-hover-card .calendar-popover-kind[data-event-type='Status reports'] {
+        background: rgba(111, 32, 149, 0.1) !important;
+        color: #6f2095 !important;
+      }
+      .calendar-day-hover-card .calendar-popover-kind[data-event-type='Change requests'] {
+        background: rgba(229, 144, 47, 0.1) !important;
+        color: #e5902f !important;
+      }
+      .calendar-day-hover-card .calendar-popover-kind[data-event-type='Benefits'] {
+        background: rgba(22, 107, 73, 0.1) !important;
+        color: #166b49 !important;
+      }
+      .calendar-day-hover-card .calendar-popover-kind[data-event-type='Governance Committees'] {
+        background: rgba(52, 84, 196, 0.1) !important;
+        color: #3454c4 !important;
       }
 
       .calendar-agenda-row {
@@ -910,20 +1139,20 @@ interface CalendarPopoverPosition {
 
       /* Custom Event Type styles for Calendar Chips/Pills & Popovers */
       .calendar-event[data-event-type="Plans"] {
-        background: rgba(49, 136, 181, 0.1) !important;
-        border-color: rgba(49, 136, 181, 0.25) !important;
-        color: #3188b5 !important;
+        background: rgba(141, 200, 232, 0.1) !important;
+        border-color: rgba(141, 200, 232, 0.25) !important;
+        color: #8dc8e8 !important;
       }
       .calendar-event[data-event-type="Plans"] .calendar-event-dot {
-        background: #3188b5 !important;
+        background: #8dc8e8 !important;
       }
 
-      .calendar-event[data-event-type="Governance committee"] {
+      .calendar-event[data-event-type="Governance Committees"] {
         background: rgba(52, 84, 196, 0.1) !important;
         border-color: rgba(52, 84, 196, 0.25) !important;
         color: #3454c4 !important;
       }
-      .calendar-event[data-event-type="Governance committee"] .calendar-event-dot {
+      .calendar-event[data-event-type="Governance Committees"] .calendar-event-dot {
         background: #3454c4 !important;
       }
 
@@ -937,534 +1166,133 @@ interface CalendarPopoverPosition {
       }
 
       .calendar-event[data-event-type="Change requests"] {
-        background: rgba(196, 152, 79, 0.1) !important;
-        border-color: rgba(196, 152, 79, 0.25) !important;
-        color: #c4984f !important;
+        background: rgba(196, 52, 114, 0.1) !important;
+        border-color: rgba(196, 52, 114, 0.25) !important;
+        color: #c43472 !important;
       }
       .calendar-event[data-event-type="Change requests"] .calendar-event-dot {
-        background: #c4984f !important;
+        background: #c43472 !important;
       }
 
       .calendar-event[data-event-type="Benefits"] {
-        background: rgba(22, 108, 73, 0.1) !important;
-        border-color: rgba(22, 108, 73, 0.25) !important;
-        color: #166c49 !important;
+        background: rgba(22, 107, 73, 0.1) !important;
+        border-color: rgba(22, 107, 73, 0.25) !important;
+        color: #166b49 !important;
       }
       .calendar-event[data-event-type="Benefits"] .calendar-event-dot {
-        background: #166c49 !important;
+        background: #166b49 !important;
       }
 
-      .calendar-event[data-event-type="Risk"] {
-        background: rgba(185, 28, 28, 0.1) !important;
-        border-color: rgba(185, 28, 28, 0.25) !important;
-        color: #b91c1c !important;
-      }
-      .calendar-event[data-event-type="Risk"] .calendar-event-dot {
-        background: #b91c1c !important;
-      }
-
-      /* Hover Popover Box Enhancements */
-      .calendar-hover-card {
-        padding: 0 !important;
-        border-radius: 12px !important;
-        width: 330px !important;
-        min-width: 330px !important;
-        max-width: 330px !important;
-        overflow: hidden;
-        background: #ffffff;
-        border: 1px solid #dfe4ee;
-        box-shadow: 0 12px 32px rgba(25, 33, 61, 0.12);
-      }
-
-      .calendar-popover-card-content {
-        padding: 16px;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .calendar-popover-card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-        margin-bottom: 8px;
-      }
-
-      .calendar-popover-arrow {
-        color: #3454c4;
-        width: 16px;
-        height: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .calendar-popover-title {
-        font-size: 15px;
-        font-weight: 700;
-        color: #0b0b0b;
-        margin-top: 4px;
-        margin-bottom: 8px;
-        line-height: 1.35;
-        display: block;
-      }
-
-      .calendar-popover-subtitle {
-        font-size: 12.5px;
-        color: #737b8c;
-        font-weight: 400;
-        display: block;
-      }
-
-      /* Popover kinds dynamic coloring */
-      .calendar-popover-kind {
-        font-size: 10.5px;
-        font-weight: 600;
-        padding: 4px 10px;
-        border-radius: 999px;
-        text-transform: none;
-        display: inline-flex;
-        align-items: center;
-      }
-
+      /* Hover-card type tags — colors per the Figma card designs. Note: the Plans
+         card tag uses a deeper blue (#3188b5) than the inline pill (#8dc8e8). */
       .calendar-popover-kind[data-event-type="Plans"] {
-        background: rgba(49, 136, 181, 0.08) !important;
+        background: rgba(49, 136, 181, 0.1) !important;
         color: #3188b5 !important;
-        border: 1px solid rgba(49, 136, 181, 0.2) !important;
       }
-      .calendar-popover-kind[data-event-type="Governance committee"] {
-        background: rgba(52, 84, 196, 0.08) !important;
+      .calendar-popover-kind[data-event-type="Governance Committees"] {
+        background: rgba(52, 84, 196, 0.1) !important;
         color: #3454c4 !important;
-        border: 1px solid rgba(52, 84, 196, 0.2) !important;
       }
       .calendar-popover-kind[data-event-type="Status reports"] {
-        background: rgba(111, 32, 149, 0.08) !important;
+        background: rgba(111, 32, 149, 0.1) !important;
         color: #6f2095 !important;
-        border: 1px solid rgba(111, 32, 149, 0.2) !important;
       }
       .calendar-popover-kind[data-event-type="Change requests"] {
-        background: rgba(196, 152, 79, 0.08) !important;
-        color: #c4984f !important;
-        border: 1px solid rgba(196, 152, 79, 0.2) !important;
+        background: rgba(196, 52, 114, 0.1) !important;
+        color: #c43472 !important;
       }
       .calendar-popover-kind[data-event-type="Benefits"] {
-        background: rgba(22, 108, 73, 0.08) !important;
+        background: rgba(22, 108, 73, 0.1) !important;
         color: #166c49 !important;
-        border: 1px solid rgba(22, 108, 73, 0.2) !important;
-      }
-      .calendar-popover-kind[data-event-type="Risk"] {
-        background: rgba(185, 28, 28, 0.08) !important;
-        color: #b91c1c !important;
-        border: 1px solid rgba(185, 28, 28, 0.2) !important;
       }
 
-      /* Multi-item Hover Popup Elements */
-      .calendar-popover-multi-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 16px;
-        background: #f8fafc;
-        border-bottom: 1px solid #edf0f5;
+      /* Agenda rows */
+      .calendar-agenda-row[data-event-type="Plans"] {
+        background: #ffffff !important;
+        border-color: rgba(141, 200, 232, 0.25) !important;
+      }
+      .calendar-agenda-row[data-event-type="Plans"] .calendar-event-dot {
+        background: #8dc8e8 !important;
+      }
+      .calendar-agenda-row[data-event-type="Plans"]:hover {
+        background: rgba(141, 200, 232, 0.05) !important;
+        border-color: rgba(141, 200, 232, 0.4) !important;
       }
 
-      .calendar-popover-multi-date {
-        font-size: 13px;
-        font-weight: 600;
-        color: #0b0b0b;
+      .calendar-agenda-row[data-event-type="Governance Committees"] {
+        background: #ffffff !important;
+        border-color: rgba(52, 84, 196, 0.25) !important;
+      }
+      .calendar-agenda-row[data-event-type="Governance Committees"] .calendar-event-dot {
+        background: #3454c4 !important;
+      }
+      .calendar-agenda-row[data-event-type="Governance Committees"]:hover {
+        background: rgba(52, 84, 196, 0.05) !important;
+        border-color: rgba(52, 84, 196, 0.4) !important;
       }
 
-      .calendar-popover-multi-count {
-        font-size: 12px;
-        color: #64748b;
-        font-weight: 500;
+      .calendar-agenda-row[data-event-type="Status reports"] {
+        background: #ffffff !important;
+        border-color: rgba(111, 32, 149, 0.25) !important;
+      }
+      .calendar-agenda-row[data-event-type="Status reports"] .calendar-event-dot {
+        background: #6f2095 !important;
+      }
+      .calendar-agenda-row[data-event-type="Status reports"]:hover {
+        background: rgba(111, 32, 149, 0.05) !important;
+        border-color: rgba(111, 32, 149, 0.4) !important;
       }
 
-      .calendar-popover-multi-list {
-        display: flex;
-        flex-direction: column;
+      .calendar-agenda-row[data-event-type="Change requests"] {
+        background: #ffffff !important;
+        border-color: rgba(196, 52, 114, 0.25) !important;
+      }
+      .calendar-agenda-row[data-event-type="Change requests"] .calendar-event-dot {
+        background: #c43472 !important;
+      }
+      .calendar-agenda-row[data-event-type="Change requests"]:hover {
+        background: rgba(196, 52, 114, 0.05) !important;
+        border-color: rgba(196, 52, 114, 0.4) !important;
       }
 
-      .calendar-popover-multi-item {
-        background: transparent;
-        border: 0;
-        border-bottom: 1px solid #edf0f5;
-        padding: 16px;
-        text-align: left;
-        cursor: pointer;
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        transition: background 150ms ease;
+      .calendar-agenda-row[data-event-type="Benefits"] {
+        background: #ffffff !important;
+        border-color: rgba(22, 107, 73, 0.25) !important;
       }
-
-      .calendar-popover-multi-item:hover {
-        background: #f8fafc;
+      .calendar-agenda-row[data-event-type="Benefits"] .calendar-event-dot {
+        background: #166b49 !important;
       }
-
-      .calendar-popover-multi-item:last-child {
-        border-bottom: 0;
-      }
-
-      .calendar-cell.today::after {
-        display: none !important;
+      .calendar-agenda-row[data-event-type="Benefits"]:hover {
+        background: rgba(22, 107, 73, 0.05) !important;
+        border-color: rgba(22, 107, 73, 0.4) !important;
       }
     `,
   ],
 })
-export class PmConsoleWorkCalendarComponent implements OnDestroy {
-  @Input() monthLabel = '';
-  @Input() monthItemCount = 0;
-  @Input() cells: PmConsoleCalendarCell[] = [];
-  @Input() filters: PmConsoleCalendarFilter[] = [];
-  @Input() selectedFilterId = 'all';
-  @Input() showFilterBar = true;
-  @Input() truncateInlineLabels = false;
-
-  @Output() readonly monthShift = new EventEmitter<number>();
-  @Output() readonly filterChange = new EventEmitter<string>();
-  @Output() readonly itemOpen = new EventEmitter<PmConsoleCalendarItem>();
-
-  readonly maxInlineItems = 2;
-  readonly maxSummaryDots = 3;
-  readonly maxInlineLabelLength = 22;
-
-  previewItem: PmConsoleCalendarItem | null = null;
-  previewCell: PmConsoleCalendarCell | null = null;
-  previewTop = 0;
-  previewLeft = 0;
-  previewArrowLeft = 24;
-  previewPlacement: CalendarPopoverPlacement = 'above';
-
-  private previewHideTimer: number | null = null;
-  private previewShowTimer: number | null = null;
-  private previewPinned = false;
-
-  constructor(
-    private readonly changeDetectorRef: ChangeDetectorRef,
-    private readonly elementRef: ElementRef<HTMLElement>,
-  ) {}
-
-  ngOnDestroy(): void {
-    this.clearPreviewHideTimer();
-    this.clearPreviewShowTimer();
-  }
-
-  get selectedFilter(): PmConsoleCalendarFilter {
-    return this.filters.find((filter) => filter.id === this.selectedFilterId) || this.filters[0] || { id: 'all', label: 'All', icon: 'grid-2x2', count: 0 };
-  }
-
-  get selectedFilterLabel(): string {
-    return this.selectedFilter.label;
-  }
-
-  get selectedFilterIcon(): string {
-    return this.selectedFilter.icon;
-  }
-
-  get selectedFilterCount(): number {
-    return this.selectedFilter.count;
-  }
-
-  visibleCellItems(cell: PmConsoleCalendarCell): PmConsoleCalendarItem[] {
-    return this.isCollapsedCell(cell) ? [] : cell.items.slice(0, this.maxInlineItems);
-  }
-
-  isCollapsedCell(cell: PmConsoleCalendarCell): boolean {
-    return cell.items.length > this.maxInlineItems;
-  }
-
-  summaryToneItems(cell: PmConsoleCalendarCell): PmConsoleCalendarItem[] {
-    return cell.items.slice(0, this.maxSummaryDots);
-  }
-
-  selectFilter(filterId: string, event: MouseEvent): void {
-    event.stopPropagation();
-    this.hidePreview();
-    filterChangeDetails(event)?.removeAttribute('open');
-    this.filterChange.emit(filterId);
-  }
-
-  queueItemPreview(item: PmConsoleCalendarItem, event: MouseEvent): void {
-    this.queuePreview(event, (anchor) => this.showItemPreviewFromAnchor(item, anchor));
-  }
-
-  showItemPreview(item: PmConsoleCalendarItem, event: MouseEvent | FocusEvent): void {
-    const anchor = this.eventAnchor(event);
-    if (!anchor) return;
-    this.showItemPreviewFromAnchor(item, anchor);
-  }
-
-  private showItemPreviewFromAnchor(item: PmConsoleCalendarItem, anchor: HTMLElement): void {
-    this.previewPinned = false;
-    this.keepPreview();
-    const position = this.positionFor(anchor, 280, 156);
-    this.previewItem = item;
-    this.previewCell = null;
-    this.previewTop = position.top;
-    this.previewLeft = position.left;
-    this.previewArrowLeft = position.arrowLeft;
-    this.previewPlacement = position.placement;
-    this.changeDetectorRef.markForCheck();
-  }
-
-  queueDayPreview(cell: PmConsoleCalendarCell, event: MouseEvent): void {
-    this.queuePreview(event, (anchor) => this.showDayPreviewFromAnchor(cell, anchor));
-  }
-
-  showDayPreview(cell: PmConsoleCalendarCell, event: MouseEvent | FocusEvent): void {
-    const anchor = this.eventAnchor(event);
-    if (!anchor) return;
-    this.showDayPreviewFromAnchor(cell, anchor);
-  }
-
-  private showDayPreviewFromAnchor(cell: PmConsoleCalendarCell, anchor: HTMLElement): void {
-    this.previewPinned = false;
-    this.keepPreview();
-    const position = this.positionFor(anchor, 320, this.dayPopoverHeight(cell));
-    this.previewItem = null;
-    this.previewCell = cell;
-    this.previewTop = position.top;
-    this.previewLeft = position.left;
-    this.previewArrowLeft = position.arrowLeft;
-    this.previewPlacement = position.placement;
-    this.changeDetectorRef.markForCheck();
-  }
-
-  queueCellPreview(cell: PmConsoleCalendarCell, event: MouseEvent): void {
-    if (cell.items.length <= 2) return;
-    this.queueDayPreview(cell, event);
-  }
-
-  showDayPreviewFromClick(cell: PmConsoleCalendarCell, event: MouseEvent): void {
-    event.stopPropagation();
-    this.clearPreviewShowTimer();
-    this.showDayPreview(cell, event);
-    this.previewPinned = true;
-  }
-
-  keepPreview(): void {
-    this.clearPreviewShowTimer();
-    this.clearPreviewHideTimer();
-  }
-
-  hidePreviewSoon(): void {
-    this.clearPreviewShowTimer();
-    if (this.previewPinned) return;
-    this.clearPreviewHideTimer();
-    this.previewHideTimer = window.setTimeout(() => {
-      this.hidePreview();
-    }, 140);
-  }
-
-  hidePreview(): void {
-    this.clearPreviewShowTimer();
-    this.clearPreviewHideTimer();
-    this.previewPinned = false;
-    this.previewItem = null;
-    this.previewCell = null;
-    this.changeDetectorRef.markForCheck();
-  }
-
-  openAgendaItem(item: PmConsoleCalendarItem, event: MouseEvent): void {
-    event.stopPropagation();
+export class PmMyCalendarComponent extends PmConsoleWorkCalendarComponent {
+  /**
+   * In the PM "My Calendar" only Plans and Status reports are actionable; clicking
+   * any other pill type (Benefits, Governance Committees, …) does nothing. Hover
+   * previews remain available for every type.
+   */
+  isChipClickable(item: PmConsoleCalendarItem): boolean {
     const type = this.getCalendarChipType(item);
-    if (type !== 'Plans' && type !== 'Governance committee') {
-      return; // click ignored/disabled!
+    // All four PM calendar pill types open the right-panel drawer.
+    return (
+      type === 'Plans' ||
+      type === 'Status reports' ||
+      type === 'Benefits' ||
+      type === 'Governance Committees'
+    );
+  }
+
+  override openAgendaItem(item: PmConsoleCalendarItem, event: MouseEvent): void {
+    if (!this.isChipClickable(item)) {
+      // Swallow the click for non-actionable types so nothing opens.
+      event.stopPropagation();
+      return;
     }
-    this.hidePreview();
-    this.itemOpen.emit(item);
-  }
-
-  calendarEventLabel(item: PmConsoleCalendarItem): string {
-    return `${item.label}, ${this.itemTargetLabel(item)}, ${this.dateLabel(item.date)}. Open item.`;
-  }
-
-  calendarEventTitle(item: PmConsoleCalendarItem): string {
-    const label = item.label.trim();
-    if (label.length <= this.maxInlineLabelLength) return label;
-    return `${label.slice(0, this.maxInlineLabelLength).trimEnd()}...`;
-  }
-
-  calendarEventProjectTitle(item: PmConsoleCalendarItem): string {
-    const project = item.project.trim();
-    if (project.length <= this.maxInlineLabelLength) return project;
-    return `${project.slice(0, this.maxInlineLabelLength).trimEnd()}...`;
-  }
-
-  cellAgendaLabel(cell: PmConsoleCalendarCell): string {
-    return `${this.dateLabel(cell.key)} has ${cell.items.length} scheduled item${cell.items.length === 1 ? '' : 's'}`;
-  }
-
-  summaryItemsLabel(cell: PmConsoleCalendarCell): string {
-    return `Show ${cell.items.length} actions on ${this.dateLabel(cell.key)}`;
-  }
-
-  getCalendarChipType(item: PmConsoleCalendarItem): string {
-    const kind = item.kind || 'task';
-    if (kind === 'report') return 'Status reports';
-    if (kind === 'benefit') return 'Benefits';
-    if (kind === 'change') return 'Change requests';
-    if (kind === 'risk') return 'Risk';
-    if (kind === 'governance') return 'Governance committee';
-    return 'Plans';
-  }
-
-  getItemSubtitle(item: PmConsoleCalendarItem): string {
-    const kind = item.kind || 'task';
-    if (kind === 'benefit') return `Project : ${item.project}`;
-    if (kind === 'change') return `Project : ${item.project}`;
-    if (kind === 'risk') return `Project : ${item.project}`;
-    if (kind === 'governance') return item.project;
-    if (kind === 'report') return `Program : ${item.project}`;
-    return `Project Plan | ${item.project}`;
-  }
-
-  getCalendarChipLabel(item: PmConsoleCalendarItem): string {
-    const type = this.getCalendarChipType(item);
-    if (type.length <= 16) return type;
-    return `${type.substring(0, 15)}...`;
-  }
-
-  getItemDisplayTitle(item: PmConsoleCalendarItem): string {
-    const type = this.getCalendarChipType(item);
-    if (type === 'Governance committee') {
-      const label = item.label;
-      if (label.toLowerCase().includes('meeting') || label.toLowerCase().includes('upcoming')) {
-        return label;
-      }
-      return `${label} (Upcoming Meeting)`;
-    }
-    return item.label;
-  }
-
-  itemKindLabel(item: PmConsoleCalendarItem): string {
-    const kind = item.kind || 'task';
-    return kind
-      .split('-')
-      .filter(Boolean)
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(' ');
-  }
-
-  itemTargetLabel(item: PmConsoleCalendarItem): string {
-    return `${this.targetTypeLabel(item.targetType)}: ${item.project}`;
-  }
-
-  targetTypeLabel(targetType: PmConsoleCalendarTargetType = 'project'): string {
-    return targetType.charAt(0).toUpperCase() + targetType.slice(1);
-  }
-
-  actionLabel(item: PmConsoleCalendarItem): string {
-    const kind = item.kind || 'task';
-    if (kind === 'report') return 'Open report';
-    if (kind === 'risk') return 'Open risk';
-    if (kind === 'dependency') return 'Open dependency';
-    if (kind === 'benefit') return 'Open benefit';
-    if (kind === 'milestone' || kind === 'end-product' || kind === 'management-product') return 'Open schedule';
-    return 'Open work item';
-  }
-
-  dateLabel(date: string): string {
-    const parsed = new Date(`${date}T00:00:00`);
-    if (Number.isNaN(parsed.getTime())) return date;
-    return parsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  }
-
-  @HostListener('window:resize')
-  handleWindowResize(): void {
-    this.hidePreview();
-  }
-
-  @HostListener('window:keydown.escape')
-  handleEscapeKey(): void {
-    this.hidePreview();
-  }
-
-  @HostListener('document:click')
-  handleDocumentClick(): void {
-    this.hidePreview();
-  }
-
-  private eventAnchor(event: MouseEvent | FocusEvent): HTMLElement | null {
-    return event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
-  }
-
-  private dayPopoverHeight(cell: PmConsoleCalendarCell): number {
-    return 118 + cell.items.length * 68;
-  }
-
-  private clearPreviewHideTimer(): void {
-    if (this.previewHideTimer === null) return;
-    window.clearTimeout(this.previewHideTimer);
-    this.previewHideTimer = null;
-  }
-
-  private clearPreviewShowTimer(): void {
-    if (this.previewShowTimer === null) return;
-    window.clearTimeout(this.previewShowTimer);
-    this.previewShowTimer = null;
-  }
-
-  private queuePreview(event: MouseEvent, showPreview: (anchor: HTMLElement) => void): void {
-    this.previewPinned = false;
-    this.clearPreviewShowTimer();
-    this.clearPreviewHideTimer();
-    const anchor = this.eventAnchor(event);
-    if (!anchor) return;
-    this.previewShowTimer = window.setTimeout(() => {
-      this.previewShowTimer = null;
-      showPreview(anchor);
-    }, 80);
-  }
-
-  private positionFor(anchor: HTMLElement, width: number, estimatedHeight: number): CalendarPopoverPosition {
-    const rect = anchor.getBoundingClientRect();
-    const containingBlockOffset = this.fixedContainingBlockOffset();
-    const margin = 12;
-    const gap = 8;
-    const arrowSize = 10;
-    const placement: CalendarPopoverPlacement = rect.top - estimatedHeight - gap > margin ? 'above' : 'below';
-    const rawTop = placement === 'above' ? rect.top - gap : rect.bottom + gap;
-    const rawLeft = rect.left + rect.width / 2 - width / 2;
-    const viewportTop = placement === 'above' ? Math.max(margin, rawTop) : Math.max(margin, Math.min(rawTop, window.innerHeight - estimatedHeight - margin));
-    const viewportLeft = Math.max(margin, Math.min(rawLeft, window.innerWidth - width - margin));
-    const anchorCenter = rect.left + rect.width / 2;
-    const arrowLeft = Math.max(16, Math.min(anchorCenter - viewportLeft - arrowSize / 2, width - 26));
-    const top = viewportTop - containingBlockOffset.top;
-    const left = viewportLeft - containingBlockOffset.left;
-    return { top, left, arrowLeft, placement };
-  }
-
-  private fixedContainingBlockOffset(): { left: number; top: number } {
-    let element = this.elementRef.nativeElement.parentElement;
-    while (element && element !== document.documentElement) {
-      const style = window.getComputedStyle(element);
-      const willChange = style.willChange.split(',').map((property) => property.trim());
-      const createsFixedContainingBlock =
-        style.transform !== 'none' ||
-        style.filter !== 'none' ||
-        style.perspective !== 'none' ||
-        style.contain.includes('paint') ||
-        style.contain.includes('layout') ||
-        style.contain.includes('strict') ||
-        style.contain.includes('content') ||
-        willChange.includes('transform') ||
-        willChange.includes('filter') ||
-        willChange.includes('perspective');
-
-      if (createsFixedContainingBlock) {
-        const rect = element.getBoundingClientRect();
-        return { left: rect.left, top: rect.top };
-      }
-
-      element = element.parentElement;
-    }
-
-    return { left: 0, top: 0 };
+    super.openAgendaItem(item, event);
   }
 }
 
-function filterChangeDetails(event: MouseEvent): HTMLDetailsElement | null {
-  return event.currentTarget instanceof HTMLElement ? event.currentTarget.closest('details') : null;
-}

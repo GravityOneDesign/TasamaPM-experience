@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, OnDestroy, Output } from '@angular/core';
 import { PmConsolePlanDrawerComponent } from './pm-console-plan-drawer.component';
+import { PortfolioManagerPlanReviewDrawerComponent } from './shared/portfolio-manager-plan-review-drawer.component';
+import { PmConsoleGovernanceMeetingDrawerComponent } from './shared/pm-console-governance-meeting-drawer.component';
 import { PmConsoleReportDrawerComponent } from './pm-console-report-drawer.component';
 import {
   stageDefinitions,
@@ -25,10 +27,6 @@ import {
   portfolioActionRiskTreatmentDraftInitial,
   portfolioActionScopeProducts,
   portfolioActionStageChecklist,
-  portfolioActionGovernanceData,
-  portfolioActionPlanReviewData,
-  type GovernanceCommitteeDrawerData,
-  type PlanReviewDrawerData,
   type PortfolioActionChecklistItem,
   type PortfolioActionItem,
   type PortfolioActionReportCard,
@@ -62,13 +60,15 @@ type ReportDetailMode = 'simple' | 'detailed';
 type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
 
 @Component({
-  selector: 'app-portfolio-manager-action-drawer',
+  selector: 'app-portfolio-manager-action-drawer-pm',
   standalone: true,
   imports: [
     CommonModule,
     PmConsoleBenefitProfileComponent,
     PmConsoleIconComponent,
     PmConsolePlanDrawerComponent,
+    PortfolioManagerPlanReviewDrawerComponent,
+    PmConsoleGovernanceMeetingDrawerComponent,
     PmConsoleReportDrawerComponent,
     PmConsoleRiskProfileComponent,
     PortfolioManagerStageGateDrawerComponent,
@@ -79,7 +79,7 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
       @if (activeGroupItems.length) {
         <div class="portfolio-action-profile-drawer-shell" aria-live="polite">
           <button class="portfolio-action-profile-backdrop" type="button" (click)="close.emit()" [attr.aria-label]="'Close drawer'"></button>
-          <aside class="portfolio-action-group-drawer overdue-reports-drawer" role="dialog" aria-modal="true" [attr.aria-label]="selected.type + ' list'">
+          <aside class="portfolio-action-group-drawer overdue-reports-drawer" role="dialog" aria-modal="true" [attr.aria-label]="selected.type + ' list'" [attr.data-drawer-type]="selected.type">
             
             <!-- Header -->
             <header class="overdue-reports-header">
@@ -116,20 +116,19 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
 
             <!-- Scrollable List of Cards -->
             <section class="overdue-reports-list" [attr.aria-label]="selected.type">
-              @for (report of filteredGroupItems; track report.id) {
+              @for (report of filteredGroupItems; track report.id; let i = $index) {
                 <div class="overdue-report-card">
                   <div class="card-top-pill">
-                    <span class="action-type-pill" [attr.data-card-type]="getNormalizedCardType(report)">
-                      {{ getNormalizedCardType(report) }}
-                    </span>
+                    <span pmConsoleIcon="calendar" class="calendar-icon" aria-hidden="true"></span>
+                    <span>{{ getCardDate(i, report) }}</span>
                   </div>
-                  <h3 class="card-title">{{ report.label }}</h3>
-                  <p class="card-project">{{ report.project }}</p>
+                  <h3 class="card-title">{{ getCardTitle(i, report) }}</h3>
+                  <p class="card-project">{{ getCardProject(i, report) }}</p>
                   <div class="card-divider"></div>
                   <footer class="card-footer">
                     <div class="card-footer-left">
-                      <span pmConsoleIcon="calendar" class="calendar-icon" aria-hidden="true"></span>
-                      <span>{{ formatCardDate(report.date) }} ({{ getReportMeta(report, selected.column) }})</span>
+                      <span class="avatar-circle">{{ getAvatarInitials(getCardOwner(i, report)) }}</span>
+                      <span>{{ getCardOwner(i, report) }}</span>
                     </div>
                     <button class="open-link" type="button" (click)="handleDetailItemClick(report)">
                       <span>{{ report.cta || 'Open' }}</span>
@@ -246,275 +245,19 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
             }
           }
           @case ('governance') {
-            @if (activeGovernanceData; as gov) {
-              <div class="portfolio-action-profile-drawer-shell" aria-live="polite">
-                <button class="portfolio-action-profile-backdrop" type="button" (click)="close.emit()" aria-label="Close drawer"></button>
-                <aside class="review-action-drawer" role="dialog" aria-modal="true" [attr.aria-label]="'Review: ' + selected.label">
-                  <header class="ra-header">
-                    <div class="ra-header-copy">
-                      <span class="ra-eyebrow governance">UPCOMING EVENT</span>
-                      <h2>{{ selected.label }}</h2>
-                      <div class="ra-meta-row">
-                        <span class="ra-meta-label">Forum Name:</span>
-                        <span class="ra-meta-value">{{ gov.forumName }}</span>
-                        <span class="ra-meta-label">Category:</span>
-                        <span class="ra-category-pill">{{ gov.category }}</span>
-                      </div>
-                    </div>
-                    <div class="ra-header-actions">
-                      <button type="button" class="ra-icon-btn" aria-label="Expand"><span pmConsoleIcon="maximize-2" aria-hidden="true"></span></button>
-                      <button type="button" class="ra-icon-btn" (click)="close.emit()" aria-label="Close"><span pmConsoleIcon="x" aria-hidden="true"></span></button>
-                    </div>
-                  </header>
-                  <div class="ra-body">
-                    <section class="ra-section">
-                      <div class="ra-section-head" (click)="toggleReviewSection('meeting')">
-                        <span class="ra-node"><span pmConsoleIcon="calendar" aria-hidden="true"></span></span>
-                        <h3>Meeting Details</h3>
-                        <button type="button" class="ra-info-btn" aria-label="Info"><span pmConsoleIcon="info" aria-hidden="true"></span></button>
-                        <span class="ra-spacer"></span>
-                        <button type="button" class="ra-chevron-btn"><span [pmConsoleIcon]="collapsedReviewSections.has('meeting') ? 'chevron-down' : 'chevron-up'" aria-hidden="true"></span></button>
-                      </div>
-                      @if (!collapsedReviewSections.has('meeting')) {
-                        <div class="ra-section-body">
-                          <div class="ra-fields four">
-                            <div class="ra-field"><small>Meeting Time</small><span>{{ gov.meetingTime }}</span></div>
-                            <div class="ra-field"><small>Meeting Date</small><span>{{ gov.meetingDate }}</span></div>
-                            <div class="ra-field"><small>Type</small><span>{{ gov.meetingType }}</span></div>
-                            <div class="ra-field"><small>Location</small><span>{{ gov.location }}</span></div>
-                          </div>
-                          <div class="ra-card">
-                            <div class="ra-card-head">
-                              <span class="ra-card-icon"><span pmConsoleIcon="clipboard-list" aria-hidden="true"></span></span>
-                              <div class="ra-card-copy"><strong>Attendees</strong><small>List of meeting attendees</small></div>
-                              <span class="ra-count-pill">{{ gov.attendees.length }} attendees</span>
-                            </div>
-                            <table class="ra-table">
-                              <thead><tr><th>Name</th><th>Role</th></tr></thead>
-                              <tbody>
-                                @for (att of gov.attendees; track $index) {
-                                  <tr>
-                                    <td><span class="ra-avatar-cell"><span class="ra-avatar">{{ att.initials }}</span>{{ att.name }}</span></td>
-                                    <td>{{ att.role }}</td>
-                                  </tr>
-                                }
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      }
-                    </section>
-                    <section class="ra-section">
-                      <div class="ra-section-head" (click)="toggleReviewSection('agenda')">
-                        <span class="ra-node"><span pmConsoleIcon="calendar-range" aria-hidden="true"></span></span>
-                        <h3>Governance Committee Agenda / Watchlist</h3>
-                        <span class="ra-count-sep">|</span>
-                        <span class="ra-count-inline">{{ gov.agendaItems.length }} items</span>
-                        <span class="ra-spacer"></span>
-                        <button type="button" class="ra-chevron-btn"><span [pmConsoleIcon]="collapsedReviewSections.has('agenda') ? 'chevron-down' : 'chevron-up'" aria-hidden="true"></span></button>
-                      </div>
-                      @if (!collapsedReviewSections.has('agenda')) {
-                        <div class="ra-section-body">
-                          <div class="ra-agenda-grid">
-                            @for (a of gov.agendaItems; track a.id) {
-                              <div class="ra-agenda-card">
-                                <span class="ra-agenda-eyebrow">AGENDA ITEM {{ a.id }}</span>
-                                <strong>{{ a.title }}</strong>
-                                <p>{{ a.description }}</p>
-                                <button type="button" class="ra-agenda-cta">{{ a.ctaLabel }} <span pmConsoleIcon="arrow-right" aria-hidden="true"></span></button>
-                              </div>
-                            }
-                          </div>
-                        </div>
-                      }
-                    </section>
-                  </div>
-                </aside>
-              </div>
-            }
+            <app-pm-console-governance-meeting-drawer
+              [eventTitle]="selected.label"
+              [forumName]="selected.project"
+              [statusLabel]="selected.column"
+              (close)="close.emit()"
+            ></app-pm-console-governance-meeting-drawer>
           }
           @case ('plan') {
-            @if (activePlanReviewData; as plan) {
-              <div class="portfolio-action-profile-drawer-shell" aria-live="polite">
-                <button class="portfolio-action-profile-backdrop" type="button" (click)="close.emit()" aria-label="Close drawer"></button>
-                <aside class="review-action-drawer" role="dialog" aria-modal="true" [attr.aria-label]="'Review plan: ' + selected.label">
-                  <header class="ra-header">
-                    <div class="ra-header-copy">
-                      <span class="ra-eyebrow plan">REVIEW ACTION</span>
-                      <h2>{{ selected.label }}</h2>
-                      <p class="ra-description">Track blockers, open decisions, and delivery problems so ownership and next action are visible without opening another tool.</p>
-                    </div>
-                    <div class="ra-header-actions">
-                      <button type="button" class="ra-icon-btn" aria-label="Expand"><span pmConsoleIcon="maximize-2" aria-hidden="true"></span></button>
-                      <button type="button" class="ra-icon-btn" (click)="close.emit()" aria-label="Close"><span pmConsoleIcon="x" aria-hidden="true"></span></button>
-                    </div>
-                  </header>
-                  <div class="ra-body">
-                    <!-- Project Profile -->
-                    <section class="ra-section">
-                      <div class="ra-section-head" (click)="toggleReviewSection('profile')">
-                        <span class="ra-node"><span pmConsoleIcon="pen-tool" aria-hidden="true"></span></span>
-                        <h3>Project Profile</h3>
-                        <button type="button" class="ra-info-btn" aria-label="Info"><span pmConsoleIcon="info" aria-hidden="true"></span></button>
-                        <span class="ra-spacer"></span>
-                        <button type="button" class="ra-chevron-btn"><span [pmConsoleIcon]="collapsedReviewSections.has('profile') ? 'chevron-down' : 'chevron-up'" aria-hidden="true"></span></button>
-                      </div>
-                      @if (!collapsedReviewSections.has('profile')) {
-                        <div class="ra-section-body">
-                          <div class="ra-fields three">
-                            <div class="ra-field"><small>Project name</small><span>{{ plan.projectName }}</span></div>
-                            <div class="ra-field"><small>Category</small><span>{{ plan.category }}</span></div>
-                            <div class="ra-field"><small>Business Unit</small><span>{{ plan.businessUnit }}</span></div>
-                          </div>
-                          <div class="ra-fields two">
-                            <div class="ra-field"><small>PMO Contact</small><span>{{ plan.pmoContact }}</span></div>
-                            <div class="ra-field"><small>Project Manager</small><span class="ra-avatar-cell"><span class="ra-avatar">{{ plan.projectManagerInitials }}</span>{{ plan.projectManager }}</span></div>
-                          </div>
-                        </div>
-                      }
-                    </section>
-                    <!-- Purpose and outcome -->
-                    <section class="ra-section">
-                      <div class="ra-section-head" (click)="toggleReviewSection('purpose')">
-                        <span class="ra-node"><span pmConsoleIcon="target" aria-hidden="true"></span></span>
-                        <h3>Purpose and outcome</h3>
-                        <button type="button" class="ra-info-btn" aria-label="Info"><span pmConsoleIcon="info" aria-hidden="true"></span></button>
-                        <span class="ra-spacer"></span>
-                        <button type="button" class="ra-chevron-btn"><span [pmConsoleIcon]="collapsedReviewSections.has('purpose') ? 'chevron-down' : 'chevron-up'" aria-hidden="true"></span></button>
-                      </div>
-                      @if (!collapsedReviewSections.has('purpose')) {
-                        <div class="ra-section-body">
-                          <div class="ra-text-block">
-                            <small>Opportunity or Problem Statement</small>
-                            <div class="ra-text-content">{{ plan.problemStatement }}</div>
-                          </div>
-                          <div class="ra-card">
-                            <div class="ra-card-head">
-                              <span class="ra-card-icon"><span pmConsoleIcon="box" aria-hidden="true"></span></span>
-                              <div class="ra-card-copy"><strong>Outcome</strong><small>Measurable outcomes expected from the project.</small></div>
-                              <span class="ra-count-pill">{{ plan.outcomes.length }} records</span>
-                            </div>
-                            <table class="ra-table">
-                              <thead><tr><th>Outcome</th><th>Measure</th></tr></thead>
-                              <tbody>
-                                @for (row of plan.outcomes; track row.outcome) {
-                                  <tr><td>{{ row.outcome }}</td><td>{{ row.measure }}</td></tr>
-                                }
-                              </tbody>
-                            </table>
-                          </div>
-                          <div class="ra-pill-row"><small>AI component</small><span class="ra-pill-tag">{{ plan.aiComponent }}</span></div>
-                        </div>
-                      }
-                    </section>
-                    <!-- Dates and scope -->
-                    <section class="ra-section">
-                      <div class="ra-section-head" (click)="toggleReviewSection('dates')">
-                        <span class="ra-node"><span pmConsoleIcon="calendar" aria-hidden="true"></span></span>
-                        <h3>Dates and scope</h3>
-                        <button type="button" class="ra-info-btn" aria-label="Info"><span pmConsoleIcon="info" aria-hidden="true"></span></button>
-                        <span class="ra-spacer"></span>
-                        <button type="button" class="ra-chevron-btn"><span [pmConsoleIcon]="collapsedReviewSections.has('dates') ? 'chevron-down' : 'chevron-up'" aria-hidden="true"></span></button>
-                      </div>
-                      @if (!collapsedReviewSections.has('dates')) {
-                        <div class="ra-section-body">
-                          <div class="ra-fields two">
-                            <div class="ra-field"><small>Baseline Start date</small><span>{{ plan.baselineStartDate }}</span></div>
-                            <div class="ra-field"><small>Baseline End date</small><span>{{ plan.baselineEndDate }}</span></div>
-                          </div>
-                          <div class="ra-text-block">
-                            <small>In Scope</small>
-                            <div class="ra-text-content">{{ plan.inScope }}</div>
-                          </div>
-                          <div class="ra-card">
-                            <div class="ra-card-head">
-                              <span class="ra-card-icon"><span pmConsoleIcon="package" aria-hidden="true"></span></span>
-                              <div class="ra-card-copy"><strong>End Product (Deliverables)</strong><small>End deliverables produced by the project.</small></div>
-                              <span class="ra-count-pill">{{ plan.endProducts.length }} records</span>
-                            </div>
-                            <table class="ra-table">
-                              <thead><tr><th>Deliverable</th><th>Owner</th></tr></thead>
-                              <tbody>
-                                @for (row of plan.endProducts; track row.name) {
-                                  <tr><td>{{ row.name }}</td><td>{{ row.owner }}</td></tr>
-                                }
-                              </tbody>
-                            </table>
-                          </div>
-                          <div class="ra-card">
-                            <div class="ra-card-head">
-                              <span class="ra-card-icon"><span pmConsoleIcon="file-text" aria-hidden="true"></span></span>
-                              <div class="ra-card-copy"><strong>Management Product</strong><small>Management products required for governance.</small></div>
-                              <span class="ra-count-pill">{{ plan.managementProducts.length }} records</span>
-                            </div>
-                            <table class="ra-table">
-                              <thead><tr><th>Product</th><th>Owner</th></tr></thead>
-                              <tbody>
-                                @for (row of plan.managementProducts; track row.name) {
-                                  <tr><td>{{ row.name }}</td><td>{{ row.owner }}</td></tr>
-                                }
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      }
-                    </section>
-                    <!-- Budget baseline -->
-                    <section class="ra-section">
-                      <div class="ra-section-head" (click)="toggleReviewSection('budget')">
-                        <span class="ra-node"><span pmConsoleIcon="circle-dollar-sign" aria-hidden="true"></span></span>
-                        <h3>Budget baseline</h3>
-                        <button type="button" class="ra-info-btn" aria-label="Info"><span pmConsoleIcon="info" aria-hidden="true"></span></button>
-                        <span class="ra-spacer"></span>
-                        <button type="button" class="ra-chevron-btn"><span [pmConsoleIcon]="collapsedReviewSections.has('budget') ? 'chevron-down' : 'chevron-up'" aria-hidden="true"></span></button>
-                      </div>
-                      @if (!collapsedReviewSections.has('budget')) {
-                        <div class="ra-section-body">
-                          <div class="ra-fields two">
-                            <div class="ra-field"><small>CAPEX Baseline (FY)</small><span>{{ plan.capexBaseline }}</span></div>
-                            <div class="ra-field"><small>OPEX Baseline (FY)</small><span>{{ plan.opexBaseline }}</span></div>
-                          </div>
-                        </div>
-                      }
-                    </section>
-                    <!-- Risks -->
-                    <section class="ra-section">
-                      <div class="ra-section-head" (click)="toggleReviewSection('plan-risks')">
-                        <span class="ra-node red"><span pmConsoleIcon="shield-alert" aria-hidden="true"></span></span>
-                        <h3>Risks</h3>
-                        <button type="button" class="ra-info-btn" aria-label="Info"><span pmConsoleIcon="info" aria-hidden="true"></span></button>
-                        <span class="ra-spacer"></span>
-                        <button type="button" class="ra-chevron-btn"><span [pmConsoleIcon]="collapsedReviewSections.has('plan-risks') ? 'chevron-down' : 'chevron-up'" aria-hidden="true"></span></button>
-                      </div>
-                      @if (!collapsedReviewSections.has('plan-risks')) {
-                        <div class="ra-section-body">
-                          <div class="ra-card">
-                            <div class="ra-card-head">
-                              <span class="ra-card-icon red"><span pmConsoleIcon="shield-alert" aria-hidden="true"></span></span>
-                              <div class="ra-card-copy"><strong>Risks Register</strong><small>Risk, owner, and current exposure.</small></div>
-                              <span class="ra-count-pill">{{ plan.risks.length }} records</span>
-                            </div>
-                            <table class="ra-table">
-                              <thead><tr><th>Risk</th><th>Owner</th></tr></thead>
-                              <tbody>
-                                @for (row of plan.risks; track row.risk) {
-                                  <tr><td>{{ row.risk }}</td><td>{{ row.owner }}</td></tr>
-                                }
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      }
-                    </section>
-                  </div>
-                  <footer class="ra-footer">
-                    <button type="button" class="ra-footer-cancel" (click)="close.emit()">Cancel</button>
-                    <button type="button" class="ra-footer-more">More actions <span pmConsoleIcon="chevron-down" aria-hidden="true"></span></button>
-                    <button type="button" class="ra-footer-approve" (click)="submitAndClose($event)">Approve</button>
-                  </footer>
-                </aside>
-              </div>
-            }
+            <app-portfolio-manager-plan-review-drawer
+              [projectName]="selected.project"
+              [actionTitle]="selected.label"
+              (close)="close.emit()"
+            ></app-portfolio-manager-plan-review-drawer>
           }
           @default {
             <app-pm-console-plan-drawer
@@ -1072,6 +815,8 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
         display: flex;
         align-items: center;
         gap: 12px;
+        flex: 1 1 auto;
+        min-width: 0;
       }
 
       .overdue-reports-header .report-icon-bg {
@@ -1113,16 +858,50 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
         height: 20px;
       }
 
+      [data-drawer-type="Governance Committees"] .report-icon-bg {
+        background: rgba(52, 84, 196, 0.1) !important;
+        color: #3454c4 !important;
+      }
+
+      [data-drawer-type="Change requests"] .report-icon-bg,
+      [data-drawer-type="Change Requests"] .report-icon-bg {
+        background: rgba(196, 52, 114, 0.1) !important;
+        color: #c43472 !important;
+      }
+
+      [data-drawer-type="Status reports"] .report-icon-bg,
+      [data-drawer-type="Status Reports"] .report-icon-bg {
+        background: rgba(111, 32, 149, 0.1) !important;
+        color: #6f2095 !important;
+      }
+
+      [data-drawer-type="Plans"] .report-icon-bg,
+      [data-drawer-type="Project Plans"] .report-icon-bg {
+        background: rgba(121, 186, 221, 0.1) !important;
+        color: #79badd !important;
+      }
+
+      [data-drawer-type="Benefits"] .report-icon-bg {
+        background: rgba(22, 107, 73, 0.1) !important;
+        color: #166b49 !important;
+      }
+
       .overdue-reports-header h2 {
         color: #0b0b0b;
+        flex: 0 1 auto;
         font-size: 20px;
         font-weight: 600;
+        line-height: 1.15;
         margin: 0;
+        min-width: 0;
       }
 
       .overdue-reports-header .overdue-pill {
+        align-self: flex-start;
+        flex: 0 0 auto;
         font-size: 11px;
         font-weight: 600;
+        margin-left: auto;
         padding: 4px 8px;
         border-radius: 6px;
         line-height: 1;
@@ -1235,60 +1014,17 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
       .overdue-report-card .card-top-pill {
         display: flex;
         justify-content: flex-start;
-      }
-
-      .overdue-report-card .action-type-pill {
-        display: inline-flex;
         align-items: center;
-        justify-content: center;
-        font-size: 11px;
-        font-weight: 600;
-        padding: 4px 8px;
-        border-radius: 6px;
-        line-height: 1;
-        border: 1px solid transparent;
+        gap: 8px;
+        color: #737b8c;
+        font-size: 13px;
+        margin-bottom: 2px;
       }
 
-      .overdue-report-card .action-type-pill[data-card-type="Plans"] {
-        border-color: rgba(121, 186, 221, 0.25);
-        background: rgba(121, 186, 221, 0.1);
-        color: #79badd;
-      }
-
-      .overdue-report-card .action-type-pill[data-card-type="Governance Committees"] {
-        border-color: rgba(52, 84, 196, 0.25);
-        background: rgba(52, 84, 196, 0.1);
-        color: #3454c4;
-      }
-
-      .overdue-report-card .action-type-pill[data-card-type="Status reports"] {
-        border-color: rgba(111, 32, 149, 0.25);
-        background: rgba(111, 32, 149, 0.1);
-        color: #6f2095;
-      }
-
-      .overdue-report-card .action-type-pill[data-card-type="Change requests"] {
-        border-color: rgba(196, 52, 114, 0.25);
-        background: rgba(196, 52, 114, 0.1);
-        color: #c43472;
-      }
-
-      .overdue-report-card .action-type-pill[data-card-type="Benefits"] {
-        border-color: rgba(22, 107, 73, 0.25);
-        background: rgba(22, 107, 73, 0.1);
-        color: #166b49;
-      }
-
-      .overdue-report-card .action-type-pill[data-card-type="Dependency"] {
-        border-color: rgba(121, 186, 221, 0.25);
-        background: rgba(121, 186, 221, 0.1);
-        color: #79badd;
-      }
-
-      .overdue-report-card .action-type-pill[data-card-type="Risk"] {
-        border-color: rgba(196, 52, 114, 0.25);
-        background: rgba(196, 52, 114, 0.1);
-        color: #c43472;
+      .overdue-report-card .card-top-pill .calendar-icon {
+        width: 14px;
+        height: 14px;
+        color: #737b8c;
       }
 
       .overdue-report-card .card-title {
@@ -1320,15 +1056,22 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
       .overdue-report-card .card-footer-left {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 12px;
         color: #737b8c;
-        font-size: 12.5px;
+        font-size: 13px;
       }
 
-      .overdue-report-card .card-footer-left .calendar-icon {
-        width: 14px;
-        height: 14px;
-        color: #737b8c;
+      .overdue-report-card .avatar-circle {
+        background: #eef4ff;
+        color: #1f4fb8;
+        border-radius: 999px;
+        width: 24px;
+        height: 24px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 700;
       }
 
       .overdue-report-card .open-link {
@@ -1348,580 +1091,10 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
         width: 13px;
         height: 13px;
       }
-
-      /* === Review Action Drawer (Governance + Plan) === */
-
-      .review-action-drawer {
-        animation: motion-drawer-in var(--motion-medium) var(--motion-ease) backwards;
-        background: #ffffff;
-        bottom: 0;
-        box-shadow: -22px 0 50px rgba(25, 33, 61, 0.2);
-        display: flex;
-        flex-direction: column;
-        max-width: calc(100vw - 28px);
-        overflow: hidden;
-        pointer-events: auto;
-        position: absolute;
-        right: 0;
-        top: 0;
-        width: min(620px, calc(100vw - 72px));
-      }
-
-      .review-action-drawer::after {
-        background: linear-gradient(to bottom, #10069f, #7b6fcf 60%, #d5d3ec);
-        bottom: 0;
-        content: '';
-        left: 0;
-        position: absolute;
-        top: 0;
-        width: 4px;
-        z-index: 2;
-      }
-
-      .ra-header {
-        align-items: flex-start;
-        background: #f8f8fc;
-        border-bottom: 1px solid #e4e7ef;
-        display: flex;
-        flex: 0 0 auto;
-        gap: 16px;
-        justify-content: space-between;
-        padding: 24px 24px 20px 28px;
-      }
-
-      .ra-header-copy {
-        display: grid;
-        gap: 8px;
-        min-width: 0;
-      }
-
-      .ra-eyebrow {
-        color: #10069f;
-        font-size: 10px;
-        font-weight: 600;
-        letter-spacing: 0.1em;
-        line-height: 1;
-        text-transform: uppercase;
-      }
-
-      .ra-eyebrow.plan { color: #d4380d; }
-
-      .ra-header-copy h2 {
-        color: #0b0b0b;
-        font-size: 20px;
-        font-weight: 600;
-        line-height: 1.25;
-        margin: 0;
-      }
-
-      .ra-meta-row {
-        align-items: center;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-      }
-
-      .ra-meta-label {
-        color: #687182;
-        font-size: 12px;
-        font-weight: 400;
-      }
-
-      .ra-meta-value {
-        color: #2f2f2f;
-        font-size: 12px;
-        font-weight: 600;
-        margin-right: 10px;
-      }
-
-      .ra-category-pill {
-        background: transparent;
-        border: 1px solid #2f2f2f;
-        border-radius: 4px;
-        color: #2f2f2f;
-        font-size: 11px;
-        font-weight: 500;
-        padding: 2px 10px;
-      }
-
-      .ra-description {
-        color: #687182;
-        font-size: 12px;
-        line-height: 1.55;
-        margin: 0;
-        max-width: 52ch;
-      }
-
-      .ra-header-actions {
-        display: flex;
-        flex-shrink: 0;
-        gap: 6px;
-      }
-
-      .ra-icon-btn {
-        align-items: center;
-        background: transparent;
-        border: 1px solid #dfe4ee;
-        border-radius: 8px;
-        color: #536071;
-        cursor: pointer;
-        display: inline-flex;
-        height: 32px;
-        justify-content: center;
-        width: 32px;
-      }
-
-      .ra-icon-btn:hover,
-      .ra-icon-btn:focus-visible {
-        background: #f7f7ff;
-        border-color: rgba(16, 6, 159, 0.22);
-        color: #10069f;
-        outline: 0;
-      }
-
-      .ra-icon-btn .icon { height: 15px; width: 15px; }
-
-      /* Body + timeline */
-
-      .ra-body {
-        flex: 1 1 auto;
-        min-height: 0;
-        overflow-y: auto;
-        overscroll-behavior: contain;
-        padding: 28px 24px 28px 28px;
-        position: relative;
-      }
-
-      .ra-body::before {
-        background: linear-gradient(to bottom, #10069f 0%, #c5c3e5 60%, transparent 100%);
-        content: '';
-        left: 45px;
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        z-index: 0;
-      }
-
-      /* Sections */
-
-      .ra-section {
-        margin-bottom: 32px;
-      }
-
-      .ra-section:last-child {
-        margin-bottom: 0;
-      }
-
-      .ra-section-head {
-        align-items: center;
-        cursor: pointer;
-        display: flex;
-        gap: 10px;
-        user-select: none;
-      }
-
-      .ra-node {
-        align-items: center;
-        background: #eeedfc;
-        border: 3px solid #ffffff;
-        border-radius: 50%;
-        color: #10069f;
-        display: inline-flex;
-        flex-shrink: 0;
-        height: 36px;
-        justify-content: center;
-        position: relative;
-        width: 36px;
-        z-index: 1;
-      }
-
-      .ra-node .icon { height: 16px; width: 16px; }
-      .ra-node.red { background: #fce8e8; color: #b91c1c; }
-
-      .ra-section-head h3 {
-        color: #0b0b0b;
-        font-size: 15px;
-        font-weight: 600;
-        line-height: 1.3;
-        margin: 0;
-      }
-
-      .ra-info-btn {
-        align-items: center;
-        background: transparent;
-        border: 0;
-        border-radius: 50%;
-        color: #a0a8b9;
-        cursor: pointer;
-        display: inline-flex;
-        height: 20px;
-        justify-content: center;
-        padding: 0;
-        width: 20px;
-      }
-
-      .ra-info-btn .icon { height: 14px; width: 14px; }
-
-      .ra-spacer { flex: 1 1 auto; }
-
-      .ra-count-sep {
-        color: #c5c9d4;
-        font-size: 14px;
-        font-weight: 300;
-      }
-
-      .ra-count-inline {
-        color: #687182;
-        font-size: 13px;
-        font-weight: 400;
-        white-space: nowrap;
-      }
-
-      .ra-chevron-btn {
-        align-items: center;
-        background: transparent;
-        border: 1px solid #e4e8f1;
-        border-radius: 8px;
-        color: #536071;
-        cursor: pointer;
-        display: inline-flex;
-        flex-shrink: 0;
-        height: 28px;
-        justify-content: center;
-        width: 28px;
-      }
-
-      .ra-chevron-btn .icon { height: 14px; width: 14px; }
-
-      .ra-section-body {
-        display: grid;
-        gap: 20px;
-        padding: 16px 0 0 46px;
-      }
-
-      /* Fields */
-
-      .ra-fields {
-        display: grid;
-        gap: 16px;
-      }
-
-      .ra-fields.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-      .ra-fields.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      .ra-fields.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-
-      .ra-field {
-        display: grid;
-        gap: 6px;
-      }
-
-      .ra-field small {
-        color: #687182;
-        font-size: 11px;
-        font-weight: 400;
-        line-height: 1.3;
-      }
-
-      .ra-field > span {
-        color: #2f2f2f;
-        font-size: 13px;
-        font-weight: 500;
-        line-height: 1.35;
-      }
-
-      /* Sub-cards */
-
-      .ra-card {
-        background: #ffffff;
-        border: 1px solid #e4e8f1;
-        border-radius: 10px;
-        overflow: hidden;
-      }
-
-      .ra-card-head {
-        align-items: center;
-        background: #fbfcff;
-        border-bottom: 1px solid #eef1f6;
-        display: flex;
-        gap: 10px;
-        padding: 14px 16px;
-      }
-
-      .ra-card-icon {
-        align-items: center;
-        background: #eeedfc;
-        border-radius: 8px;
-        color: #10069f;
-        display: inline-flex;
-        flex-shrink: 0;
-        height: 32px;
-        justify-content: center;
-        width: 32px;
-      }
-
-      .ra-card-icon.red { background: #fce8e8; color: #b91c1c; }
-      .ra-card-icon .icon { height: 16px; width: 16px; }
-
-      .ra-card-copy {
-        display: grid;
-        gap: 2px;
-        min-width: 0;
-      }
-
-      .ra-card-copy strong {
-        color: #0b0b0b;
-        font-size: 13px;
-        font-weight: 600;
-        line-height: 1.3;
-      }
-
-      .ra-card-copy small {
-        color: #687182;
-        font-size: 11px;
-        font-weight: 400;
-        line-height: 1.3;
-      }
-
-      .ra-count-pill {
-        background: #f0eeff;
-        border-radius: 999px;
-        color: #10069f;
-        font-size: 11px;
-        font-weight: 600;
-        margin-left: auto;
-        padding: 4px 10px;
-        white-space: nowrap;
-      }
-
-      /* Tables */
-
-      .ra-table {
-        border-collapse: collapse;
-        width: 100%;
-      }
-
-      .ra-table th {
-        background: #f9fafb;
-        border-bottom: 1px solid #eef1f6;
-        color: #687182;
-        font-size: 11px;
-        font-weight: 500;
-        padding: 10px 16px;
-        text-align: left;
-      }
-
-      .ra-table td {
-        border-bottom: 1px solid #f3f4f8;
-        color: #2f2f2f;
-        font-size: 12.5px;
-        font-weight: 400;
-        padding: 12px 16px;
-      }
-
-      .ra-table tr:last-child td { border-bottom: 0; }
-
-      .ra-avatar-cell {
-        align-items: center;
-        display: inline-flex;
-        gap: 10px;
-      }
-
-      .ra-avatar {
-        align-items: center;
-        background: #10069f;
-        border-radius: 50%;
-        color: #ffffff;
-        display: inline-flex;
-        flex-shrink: 0;
-        font-size: 10px;
-        font-weight: 600;
-        height: 28px;
-        justify-content: center;
-        width: 28px;
-      }
-
-      /* Text blocks */
-
-      .ra-text-block {
-        display: grid;
-        gap: 8px;
-      }
-
-      .ra-text-block small {
-        color: #687182;
-        font-size: 11px;
-        font-weight: 400;
-      }
-
-      .ra-text-content {
-        background: #fafbfe;
-        border: 1px solid #e8ebf2;
-        border-left: 3px solid #10069f;
-        border-radius: 6px;
-        color: #2f2f2f;
-        font-size: 12.5px;
-        line-height: 1.6;
-        padding: 14px 16px;
-      }
-
-      /* Pill row */
-
-      .ra-pill-row {
-        align-items: center;
-        display: flex;
-        gap: 10px;
-      }
-
-      .ra-pill-row small {
-        color: #687182;
-        font-size: 11px;
-        font-weight: 400;
-      }
-
-      .ra-pill-tag {
-        background: #f0f4f8;
-        border: 1px solid #dfe4ee;
-        border-radius: 999px;
-        color: #2f2f2f;
-        font-size: 11px;
-        font-weight: 500;
-        padding: 3px 10px;
-      }
-
-      /* Agenda grid (governance) */
-
-      .ra-agenda-grid {
-        display: grid;
-        gap: 14px;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .ra-agenda-card {
-        background: #ffffff;
-        border: 1px solid #e4e8f1;
-        border-radius: 10px;
-        display: grid;
-        gap: 8px;
-        padding: 16px;
-      }
-
-      .ra-agenda-eyebrow {
-        color: #10069f;
-        font-size: 9px;
-        font-weight: 600;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-
-      .ra-agenda-card strong {
-        color: #0b0b0b;
-        font-size: 13px;
-        font-weight: 600;
-        line-height: 1.35;
-      }
-
-      .ra-agenda-card p {
-        color: #687182;
-        font-size: 12px;
-        line-height: 1.5;
-        margin: 0;
-      }
-
-      .ra-agenda-cta {
-        align-items: center;
-        background: transparent;
-        border: 0;
-        color: #10069f;
-        cursor: pointer;
-        display: inline-flex;
-        font-size: 12px;
-        font-weight: 600;
-        gap: 4px;
-        justify-self: start;
-        padding: 0;
-      }
-
-      .ra-agenda-cta .icon { height: 13px; width: 13px; }
-
-      /* Footer (Plans) */
-
-      .ra-footer {
-        align-items: center;
-        background: rgba(255, 255, 255, 0.98);
-        border-top: 1px solid #e4e7ef;
-        display: flex;
-        flex: 0 0 auto;
-        gap: 12px;
-        justify-content: center;
-        padding: 14px 24px;
-      }
-
-      .ra-footer-cancel {
-        background: transparent;
-        border: 0;
-        color: #536071;
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: 500;
-        padding: 0 8px;
-      }
-
-      .ra-footer-more {
-        align-items: center;
-        background: #ffffff;
-        border: 1px solid #dfe4ee;
-        border-radius: 8px;
-        color: #2f2f2f;
-        cursor: pointer;
-        display: inline-flex;
-        font-size: 13px;
-        font-weight: 500;
-        gap: 6px;
-        height: 38px;
-        justify-content: center;
-        padding: 0 14px;
-      }
-
-      .ra-footer-more .icon { height: 13px; width: 13px; }
-
-      .ra-footer-approve {
-        align-items: center;
-        background: #10069f;
-        border: 1px solid #10069f;
-        border-radius: 8px;
-        color: #ffffff;
-        cursor: pointer;
-        display: inline-flex;
-        font-size: 13px;
-        font-weight: 600;
-        height: 38px;
-        justify-content: center;
-        min-width: 100px;
-        padding: 0 20px;
-      }
-
-      .ra-footer-approve:hover { background: #0d0580; }
-
-      @media (max-width: 760px) {
-        .review-action-drawer {
-          max-width: 100vw;
-          width: 100vw;
-        }
-
-        .ra-fields.four,
-        .ra-fields.three {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        .ra-agenda-grid {
-          grid-template-columns: 1fr;
-        }
-      }
     `,
   ],
 })
-export class PortfolioManagerActionDrawerComponent implements OnChanges, OnDestroy {
+export class PortfolioManagerActionDrawerPmComponent implements OnChanges, OnDestroy {
   @Input() item: PortfolioActionItem | null = null;
   @Output() readonly close = new EventEmitter<void>();
 
@@ -1939,6 +1112,136 @@ export class PortfolioManagerActionDrawerComponent implements OnChanges, OnDestr
       r.project.toLowerCase().includes(q) ||
       r.ownerName.toLowerCase().includes(q)
     );
+  }
+
+  getAvatarInitials(name: string): string {
+    if (!name) return '';
+    if (name === 'Multiple') return 'M';
+    const parts = name.split(' ');
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  }
+
+  private readonly hardcodedBenefits = [
+    { dateStr: 'May 12 (Overdue by 5 days)', title: 'Value Realization Hub', project: 'Project: Vision 2030', owner: 'Muna Hasan' },
+    { dateStr: 'May 15 (Overdue by 2 days)', title: 'Outcome Tracking System', project: 'Project: UAE Research Map', owner: 'Osman Khan' },
+    { dateStr: 'May 18 (Overdue by 3 days)', title: 'Success Metrics Hub', project: 'Project: Vision 2030', owner: 'Nadia Hossain' },
+    { dateStr: 'May 25 (Overdue by 4 days)', title: 'Vision 2030 April benefits', project: 'Project: UAE Research Map', owner: 'Jasmine Smith' },
+    { dateStr: 'May 20 (Overdue by 1 days)', title: 'Finalize project timeline for Saudi Initiative', project: 'Project: Vision 2030', owner: 'Derek Patel' },
+  ];
+
+  private readonly hardcodedStatusReports = [
+    { dateStr: 'May 12 (Overdue by 5 days)', title: 'UAE Research map', project: 'Project Status Report', owner: 'Muna Hasan' },
+    { dateStr: 'May 15 (Overdue by 2 days)', title: 'Tasama 2026 weekly report', project: 'Program Status Report', owner: 'Osman Khan' },
+    { dateStr: 'May 20 (Overdue by 1 days)', title: 'Benefits for Saudi Initiative', project: 'Adhoc Report', owner: 'Derek Patel' },
+    { dateStr: 'May 25 (Overdue by 4 days)', title: 'Annual Budget', project: 'Scheduled Report', owner: 'Jasmine Smith' },
+    { dateStr: 'May 18 (Overdue by 3 days)', title: 'Vision 2030 Monthly Report', project: 'Program Report', owner: 'Nadia Hossain' },
+  ];
+
+  private readonly hardcodedPlans = [
+    { dateStr: 'May 12 (Overdue by 5 days)', title: 'UAE Research map', project: 'Project Plan', owner: 'Muna Hasan' },
+    { dateStr: 'May 18 (Overdue by 3 days)', title: 'TASAMA', project: 'Portfolio Plan', owner: 'Nadia Hossain' },
+    { dateStr: 'May 15 (Overdue by 2 days)', title: 'Program Name', project: 'Program Plan', owner: 'Osman Khan' },
+    { dateStr: 'May 25 (Overdue by 4 days)', title: 'Project Name', project: 'Project Plan', owner: 'Jasmine Smith' },
+    { dateStr: 'May 20 (Overdue by 1 days)', title: 'NEOM', project: 'Project Plan', owner: 'Derek Patel' },
+  ];
+
+  private readonly hardcodedGovernance = [
+    { dateStr: 'May 12 (Overdue by 5 days)', title: 'Steering Board', project: 'Project: Vision 2030', owner: 'Muna Hasan' },
+    { dateStr: 'May 15 (Overdue by 2 days)', title: 'Portfolio Council', project: 'Project: UAE Research Map', owner: 'Osman Khan' },
+    { dateStr: 'May 18 (Overdue by 3 days)', title: 'Executive Review Panel', project: 'Project: Vision 2030', owner: 'Nadia Hossain' },
+    { dateStr: 'May 25 (Overdue by 4 days)', title: 'Program Oversight Group', project: 'Project: UAE Research Map', owner: 'Jasmine Smith' },
+    { dateStr: 'May 20 (Overdue by 1 days)', title: 'Strategic Governance Forum', project: 'Project: Vision 2030', owner: 'Derek Patel' },
+  ];
+
+  private readonly hardcodedChangeRequests = [
+    { dateStr: 'May 12 (Overdue by 5 days)', title: 'Scope Revision Log', project: 'Project: Vision 2030', owner: 'Muna Hasan' },
+    { dateStr: 'May 15 (Overdue by 2 days)', title: 'Enhancement Queue', project: 'Project: UAE Research Map', owner: 'Osman Khan' },
+    { dateStr: 'May 18 (Overdue by 3 days)', title: 'Change Intake Board', project: 'Project: Vision 2030', owner: 'Nadia Hossain' },
+    { dateStr: 'May 25 (Overdue by 4 days)', title: 'Modification Tracker', project: 'Project: UAE Research Map', owner: 'Jasmine Smith' },
+    { dateStr: 'May 20 (Overdue by 1 days)', title: 'Release Adjustment Notes', project: 'Project: Vision 2030', owner: 'Derek Patel' },
+  ];
+
+  getCardDate(index: number, report: PortfolioActionItem): string {
+    const type = (this.item && 'type' in this.item ? this.item.type : '')?.toLowerCase();
+    if (type === 'benefits') {
+      return this.hardcodedBenefits[index % this.hardcodedBenefits.length].dateStr;
+    }
+    if (type === 'status reports') {
+      return this.hardcodedStatusReports[index % this.hardcodedStatusReports.length].dateStr;
+    }
+    if (type === 'plans') {
+      return this.hardcodedPlans[index % this.hardcodedPlans.length].dateStr;
+    }
+    if (type === 'governance committees') {
+      return this.hardcodedGovernance[index % this.hardcodedGovernance.length].dateStr;
+    }
+    if (type === 'change requests') {
+      return this.hardcodedChangeRequests[index % this.hardcodedChangeRequests.length].dateStr;
+    }
+    return `${this.formatCardDate(report.date)} (${this.getReportMeta(report, this.item?.column || '')})`;
+  }
+
+  getCardTitle(index: number, report: PortfolioActionItem): string {
+    const type = (this.item && 'type' in this.item ? this.item.type : '')?.toLowerCase();
+    if (type === 'benefits') {
+      return this.hardcodedBenefits[index % this.hardcodedBenefits.length].title;
+    }
+    if (type === 'status reports') {
+      return this.hardcodedStatusReports[index % this.hardcodedStatusReports.length].title;
+    }
+    if (type === 'plans') {
+      return this.hardcodedPlans[index % this.hardcodedPlans.length].title;
+    }
+    if (type === 'governance committees') {
+      return this.hardcodedGovernance[index % this.hardcodedGovernance.length].title;
+    }
+    if (type === 'change requests') {
+      return this.hardcodedChangeRequests[index % this.hardcodedChangeRequests.length].title;
+    }
+    return report.label;
+  }
+
+  getCardProject(index: number, report: PortfolioActionItem): string {
+    const type = (this.item && 'type' in this.item ? this.item.type : '')?.toLowerCase();
+    if (type === 'benefits') {
+      return this.hardcodedBenefits[index % this.hardcodedBenefits.length].project;
+    }
+    if (type === 'status reports') {
+      return this.hardcodedStatusReports[index % this.hardcodedStatusReports.length].project;
+    }
+    if (type === 'plans') {
+      return this.hardcodedPlans[index % this.hardcodedPlans.length].project;
+    }
+    if (type === 'governance committees') {
+      return this.hardcodedGovernance[index % this.hardcodedGovernance.length].project;
+    }
+    if (type === 'change requests') {
+      return this.hardcodedChangeRequests[index % this.hardcodedChangeRequests.length].project;
+    }
+    return `Project: ${report.project}`;
+  }
+
+  getCardOwner(index: number, report: PortfolioActionItem): string {
+    const type = (this.item && 'type' in this.item ? this.item.type : '')?.toLowerCase();
+    if (type === 'benefits') {
+      return this.hardcodedBenefits[index % this.hardcodedBenefits.length].owner;
+    }
+    if (type === 'status reports') {
+      return this.hardcodedStatusReports[index % this.hardcodedStatusReports.length].owner;
+    }
+    if (type === 'plans') {
+      return this.hardcodedPlans[index % this.hardcodedPlans.length].owner;
+    }
+    if (type === 'governance committees') {
+      return this.hardcodedGovernance[index % this.hardcodedGovernance.length].owner;
+    }
+    if (type === 'change requests') {
+      return this.hardcodedChangeRequests[index % this.hardcodedChangeRequests.length].owner;
+    }
+    return report.owner;
   }
 
   get filteredGroupItems(): readonly PortfolioActionItem[] {
@@ -2047,9 +1350,6 @@ export class PortfolioManagerActionDrawerComponent implements OnChanges, OnDestr
   activeReportOverviewFields: PortfolioActionReportOverviewField[] = [];
   activeReportScopeProducts: PortfolioActionScopeProduct[] = [];
   activeGroupItems: readonly PortfolioActionItem[] = [];
-  activeGovernanceData: GovernanceCommitteeDrawerData | null = null;
-  activePlanReviewData: PlanReviewDrawerData | null = null;
-  collapsedReviewSections = new Set<string>();
   reportMode: ReportDetailMode = 'simple';
   reportPresentationMode: ReportDrawerPresentationMode = 'compose';
   reportSection = 'Overview';
@@ -2109,16 +1409,6 @@ export class PortfolioManagerActionDrawerComponent implements OnChanges, OnDestr
 
   genericChecklist(action: PortfolioActionItem): PortfolioActionChecklistItem[] {
     return portfolioActionGenericChecklist(action);
-  }
-
-  toggleReviewSection(sectionId: string): void {
-    const next = new Set(this.collapsedReviewSections);
-    if (next.has(sectionId)) {
-      next.delete(sectionId);
-    } else {
-      next.add(sectionId);
-    }
-    this.collapsedReviewSections = next;
   }
 
   stageGateContextForAction(action: PortfolioActionItem): StageGateContext | null {
@@ -2333,9 +1623,6 @@ export class PortfolioManagerActionDrawerComponent implements OnChanges, OnDestr
     this.activeReportOverviewFields = [];
     this.activeReportScopeProducts = [];
     this.activeGroupItems = [];
-    this.activeGovernanceData = null;
-    this.activePlanReviewData = null;
-    this.collapsedReviewSections = new Set<string>();
     this.reportMode = 'simple';
     this.reportPresentationMode = 'compose';
     this.reportSection = 'Overview';
@@ -2343,14 +1630,6 @@ export class PortfolioManagerActionDrawerComponent implements OnChanges, OnDestr
     if (!action) return;
     if (action.detailItems?.length) {
       this.activeGroupItems = action.detailItems;
-      return;
-    }
-    if (action.kind === 'governance') {
-      this.activeGovernanceData = portfolioActionGovernanceData(action);
-      return;
-    }
-    if (action.kind === 'plan') {
-      this.activePlanReviewData = portfolioActionPlanReviewData(action);
       return;
     }
     if (action.kind === 'risk') {

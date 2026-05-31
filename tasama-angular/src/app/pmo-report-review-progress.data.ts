@@ -1,4 +1,4 @@
-export type PmoReportReviewTabId = 'standard' | 'custom';
+export type PmoReportReviewTabId = 'standard' | 'custom' | 'governance';
 
 export interface PmoReportReviewTab {
   readonly id: PmoReportReviewTabId;
@@ -110,6 +110,7 @@ const standardReportCards: readonly PmoReportReviewCard[] = [
 export const pmoReportReviewTabs: readonly PmoReportReviewTab[] = [
   { id: 'standard', label: 'Standard Reports', icon: 'square-chart-gantt', widthPx: 201 },
   { id: 'custom', label: 'Custom Reports', icon: 'network', widthPx: 192 },
+  { id: 'governance', label: 'Governance', icon: 'layout-grid', widthPx: 160 },
 ];
 
 export const pmoReportReviewFilters: readonly PmoReportReviewFilter[] = [
@@ -141,20 +142,23 @@ export const pmoReportReviewColumns: readonly PmoReportReviewColumn[] = [
   },
 ];
 
+export const scheduledReports: PmoReportReviewCard[] = [...createCustomReports('scheduled-report', true)];
+export const adHocReports: PmoReportReviewCard[] = [...createCustomReports('ad-hoc-report', false)];
+
 export const pmoReportReviewCustomColumns: readonly PmoReportReviewColumn[] = [
   {
     id: 'scheduled',
     title: 'Scheduled Reports',
     icon: 'network',
-    count: 4,
-    reports: createCustomReports('scheduled-report', true),
+    get count() { return scheduledReports.length; },
+    get reports() { return scheduledReports; }
   },
   {
     id: 'ad-hoc',
     title: 'Ad-hoc Reports',
     icon: 'layout-grid',
-    count: 3,
-    reports: createCustomReports('ad-hoc-report', false),
+    get count() { return adHocReports.length; },
+    get reports() { return adHocReports; }
   },
 ];
 
@@ -231,7 +235,7 @@ export const pmoReportReviewDrawerTabs: readonly PmoReportReviewDrawerTab[] = [
 ];
 
 export function isPmoReportReviewTabId(tabId: string): tabId is PmoReportReviewTabId {
-  return tabId === 'standard' || tabId === 'custom';
+  return tabId === 'standard' || tabId === 'custom' || tabId === 'governance';
 }
 
 export function isPmoReportReviewDrawerTabId(tabId: string): tabId is PmoReportReviewDrawerTabId {
@@ -246,4 +250,19 @@ function createCustomReports(prefix: string, includeRecurrence: boolean): readon
     publishedOn: '07/05/2026',
     actionLabel: 'Preview',
   }));
+}
+
+export function addScheduledReport(title: string, recursOn: string): void {
+  const today = new Date();
+  const publishedOn = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
+  
+  scheduledReports.unshift({
+    id: `scheduled-report-new-${Date.now()}`,
+    title,
+    recursOn,
+    publishedOn,
+    actionLabel: 'Preview',
+    creatorInitials: 'MH',
+    creatorName: 'Muna Hassan'
+  });
 }

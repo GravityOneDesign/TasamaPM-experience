@@ -31,6 +31,7 @@ The product currently focuses on:
 - PM onboarding and PM 101 flows.
 - Project plan, reporting, stage gate, risk, benefit, dependency, issue, resource, change request, and closure workflows.
 - An Executive front door and executive insights deep dive.
+- A PMO My Workspace surface with portfolio/risk/benefit/issue workspace tabs and a Governance tab for forum, source, record, and report-register surfaces.
 - Persona selection at login for Project Manager, Program Manager, Executive, PMO, and Portfolio Manager.
 
 Core product principle: each persona must have a clear root entry point and ownership boundary. Do not hide one persona inside another persona's dashboard, front door, page switch, or state machine unless the product design explicitly calls for a shared experience.
@@ -119,8 +120,6 @@ The root component is `tasama-angular/src/app/app.component.ts`. It owns the top
 - `login`
 - `onboarding`
 - `console`
-- `portfolio`
-- `pmo`
 - `persona`
 - `executive`
 
@@ -130,9 +129,9 @@ Top-level flow:
 - Login emits a selected persona id.
 - Project Manager mounts the PM console shell directly.
 - Executive mounts the Executive root directly.
-- Portfolio Manager mounts the Portfolio Manager shell directly.
-- PMO mounts the PMO governance shell directly.
+- PMO mounts the PMO governance shell directly, which now opens on a PMO-owned front door before the governance workspace.
 - Program Manager currently mounts a placeholder shell.
+- Portfolio Manager mounts a persona-owned portfolio shell.
 - The onboarding screen can mount PM console in guided-tour or PMO-assignment states.
 
 There is no URL route map yet. If routing is introduced later, preserve persona ownership by routing each persona to its own root shell rather than wiring new persona screens through the PM console content component.
@@ -165,8 +164,8 @@ Current persona states:
 
 - Project Manager has a real PM console entry.
 - Executive has a dedicated root experience in `src/app/executive`.
-- Portfolio Manager has a dedicated shell entry.
-- PMO has a dedicated PMO governance shell entry.
+- PMO has a dedicated governance workspace shell at `src/app/pmo-governance-shell.component.ts`.
+- Portfolio Manager has a persona-owned portfolio shell.
 - Program Manager is still a placeholder and should receive a persona-owned shell/folder when implemented.
 
 ## Persona Ownership Rules
@@ -190,19 +189,15 @@ Program Manager:
 
 PMO:
 
-- Owns the PMO governance shell mounted from login.
-- Current root component is `PmoGovernanceShellComponent`.
-- PMO-owned feature files live as `tasama-angular/src/app/pmo-*.ts` with PMO decision-intelligence imagery in `tasama-angular/src/assets/pmo-decision-intelligence`.
-- `PmoDecisionIntelligenceComponent` collapsed accordion rows use compact 67 x 60 artwork thumbnails with tighter radius/shadow, while expanded cards keep their larger artwork treatment.
-- PMO concepts also appear in PM onboarding and assignment flows, but the PMO persona itself must not be implemented as a page mode inside the PM console.
+- Owns the PMO front door and PMO My Workspace at the app root through `PmoGovernanceShellComponent`.
+- The PMO front door is `PmoFrontdoorComponent`, backed by typed fixtures in `pmo-frontdoor.data.ts`, and reuses shared mode tabs, digest panel, action cards, icon wrapper, side nav, top bar, notifications, and agent dock.
+- Uses `PmoGovernanceWorkspaceComponent` for the My Workspace tab frame, Governance lower tabs, Forums, Sources, Records, Reports, forum detail tabs, and record detail navigation.
+- PMO concepts may appear in PM onboarding and assignment flows, but the PMO persona itself must not be implemented as a page mode inside the PM console.
 
 Portfolio Manager:
 
-- Owns the Portfolio Manager shell and workspace components.
-- Current root component is `PortfolioManagerShellComponent`.
-- The `main` branch Portfolio Manager shell should preserve the Portfolio-manager branch experience when selected from login: Safe Security header/profile, Portfolio Manager front door, action workspace, portfolio workspace tabs, framework configuration drawers, and register/risk hierarchy behavior.
-- Portfolio Manager shares a small set of default-preserving primitives with PMO, including the action workspace, front-door overview/action cards, plan drawer, and portfolio register component. Keep PMO-specific inputs working when porting Portfolio Manager branch changes.
-- Reuse shared tables/cards/toolbars where appropriate, but do not mount portfolio workflows inside PM-only front-door switches.
+- Currently a placeholder.
+- Future implementation should get its own shell and folder. Reuse shared tables/cards/toolbars where appropriate, but do not mount portfolio workflows inside PM-only front-door switches.
 
 ## Glossary
 
@@ -580,14 +575,14 @@ Current shared component inventory:
 - `pm-console-status-pill.component.ts`: `span[pmConsoleStatusPill]` status/tone pill.
 - `pm-console-table-action.component.ts`: table action button directive/component.
 - `pm-console-toolbar.component.ts`: shared toolbar shell.
-- `pm-console-row-action-menu.component.ts`: row popover action menu.
-- `pm-console-register-table.component.ts`: configurable register table with selection, search, filter/export/add controls, column visibility, empty state, and row/cell action events.
-- `pm-console-expandable-search.component.ts`: compact expandable search control used by PMO governance workspaces.
-- `pm-console-field.component.ts`: generic field supporting text, number, date, password, search, textarea, select, and money.
+- `pm-console-expandable-search.component.ts`: hover/focus expanding search control used by register toolbars where compact search should expand without moving the primary action.
+- `pm-console-row-action-menu.component.ts`: row popover action menu with an optional trigger icon input for horizontal or vertical ellipsis variants.
+- `pm-console-register-table.component.ts`: configurable register table with selection, search, filter/export/add controls, column visibility, empty state, row/cell action events, wrapped/icon text cells, hierarchical primary cells, PM-flow-aligned segmented trend cells, projected toolbar actions, and an optional expanded row-detail template.
+- `pm-console-field.component.ts`: generic field supporting text, number, date, password, search, textarea, select, money, mandatory markers, and optional inline help icons.
 - `pm-console-date-field.component.ts`: date display/input wrapper.
 - `pm-console-mode-tabs.component.ts`: segmented/tabs pattern with icons and fixed widths.
 - `pm-console-side-nav.component.ts`: left rail nav.
-- `pm-console-top-bar.component.ts`: shared top bar with configurable console title and profile display.
+- `pm-console-top-bar.component.ts`: PM top bar with full-profile or avatar-only display modes.
 - `pm-console-project-dropdown.component.ts`: project switcher popover.
 - `pm-console-project-cover-cropper.component.ts`: cover upload/cropper using canvas output.
 - `pm-console-frontdoor-overview.component.ts`: PM front-door overview hero/card.
@@ -673,6 +668,69 @@ Executive implementation note:
 
 - The executive experience is persona-owned and should remain outside the PM console content state machine.
 - Shared PM primitives may be used if they are neutral and appropriate, but executive screens should not be coupled to PM shell state.
+
+## PMO Governance Architecture
+
+PMO files currently live at the app root and should move into a future `pmo/` folder during a deliberate folder-structure pass.
+
+Root:
+
+- `pmo-governance-shell.component.ts`
+- `pmo-frontdoor.component.ts`
+- `pmo-report-review-progress.component.ts`
+- `pmo-decision-intelligence.component.ts`
+
+Workspace/data/components:
+
+- `pmo-frontdoor.data.ts`
+- `pmo-report-review-progress.data.ts`
+- `pmo-decision-intelligence.data.ts`
+- `pmo-governance-workspace.component.ts`
+- `pmo-governance-workspace.data.ts`
+- `pmo-governance-forum-detail-drawer.component.ts`
+- `pmo-governance-forum-overview.component.ts`
+- `pmo-governance-issue-drawer.component.ts`
+- `pmo-governance-meeting-drawer.component.ts`
+- `pmo-governance-record-detail-drawer.component.ts`
+- `pmo-governance-record-detail.component.ts`
+- `pmo-governance-record-drawer.component.ts`
+- `pmo-governance-report-drawer.component.ts`
+- `pmo-governance-source-drawer.component.ts`
+- `pmo-governance-watchlist-risk-drawer.component.ts`
+
+PMO flow:
+
+- Login with the PMO persona mounts `PmoGovernanceShellComponent` directly from `AppComponent`.
+- The shell opens on the PMO front door by default. `activeSurface` switches between `frontdoor`, `governance`, `report-review`, and `decision-intelligence`; Home returns to the front door, the My Workspace rail item or generic front-door action cards enter the workspace, the front-door Report & Review Progress action opens its dedicated report-review surface, and the front-door Insights & Decision Intelligence action opens its dedicated decision-intelligence surface.
+- The PMO front door uses `PmoFrontdoorComponent` plus `pmo-frontdoor.data.ts` for the Figma-derived tabs, digest text, scope metrics, portfolio/program health rows, action cards, quick links, and PMO Manage My Work fixtures. The PMO Manage My Work tab mounts the existing `PortfolioManagerActionsComponent` calendar/board implementation with PMO action data, PMO-specific filters, aggregate high-volume queue tiles, and the board detail panel enabled. PMO queues group approve/review plans, status reports, benefits, change requests, and governance committees; selecting a board tile expands the underlying list in the right-side board panel and opening it uses the shared portfolio action drawer at PMO shell level.
+- PMO front-door Quick links reuse the same PM front-door `workspace-quick-links-view` and `selected-project-quick-link-*` card pattern rather than a new PMO card family. The Figma-derived quick-link fixture list currently includes Portfolio Register, Benefit Register, Risk Register, Issues Register, User Management, Lessons learnt, Upcoming Forums, Change request Register, Report Builder, and Dependency Register. Quick-link clicks emit a typed `PmoGovernanceWorkspaceTarget` through `PmoGovernanceShellComponent` so implemented destinations can open the matching My Workspace top/lower tab.
+- `PmoReportReviewProgressComponent` owns the PMO Report & Review Progress front-door subpage. It is backed by typed report tabs, filter summaries, report columns, report-card fixtures, and report-drawer document/status fixtures in `pmo-report-review-progress.data.ts`, uses Lucide icons through `pmConsoleIcon`, and matches the supplied Figma content-area frames with the illustrated header, Standard/Custom report tabs, top filter controls, the Standard Reports Portfolio/Programs/Project columns, and the Custom Reports Scheduled/Ad-hoc columns plus Report Builder CTA. The report board keeps the toolbar fixed within the content area and gives each report column its own vertical card-list scroll when viewport height is tight. The shared toolbar funnel opens a published-date filter popover that applies across both Standard and Custom report tabs and reuses `PmConsoleDateFieldComponent`. Standard Report cards emit the selected report to `PmoGovernanceShellComponent`, which mounts `PmoReportReviewDrawerComponent` at shell level so its backdrop and right drawer cover the full viewport instead of being trapped inside the animated report page host. The drawer has Project Plan download rows and a Project Status Report tab rendered as a status-register table with chip states and Create/Edit/Download actions.
+- `PmoDecisionIntelligenceComponent` owns the PMO Insights & Decision Intelligence front-door subpage. It is backed by typed accordion/card fixtures in `pmo-decision-intelligence.data.ts`, uses Lucide icons through `pmConsoleIcon`, and matches the supplied content-area frames with the illustrated 108px header, back action, Manage Delivery expanded by default, and Figma-style closed-stage rows for the remaining accordions. Closed rows use the compact 67 x 60 artwork thumbnail treatment from the reference, not the larger expanded category-card scale. Performance Trends and Governance Intelligence keep their full-card content and render it when expanded. The shell supplies the shared Tasama top bar and left rail; the content component intentionally does not duplicate shell chrome.
+- The shell reuses the Tasama PM top bar, left side nav, notifications panel, and agent dock while keeping PMO content outside the PM console content monolith. The PMO top bar uses the shared top bar's avatar-only profile mode to match the supplied front-door design.
+- The My Workspace header back arrow emits from `PmoGovernanceWorkspaceComponent` to `PmoGovernanceShellComponent.goHome()`, returning the PMO persona to its front door and clearing workspace overlays.
+- PMO My Workspace opens on the Portfolio Register top tab by default. The top tabs are Portfolio Register, Risk Register, Benefits Register, Issues Register, and Governance. Portfolio Register reuses the Portfolio Manager `PortfolioWorkspaceRegistersComponent` with its internal sub-tabs hidden, and that register now renders its portfolio/program/project hierarchy through the shared `PmConsoleRegisterTableComponent` instead of local table markup. The first level shows portfolio rows and a standalone-project group, expanding a portfolio reveals programs, and expanding a program reveals projects. The remaining non-Governance tabs currently show placeholder content until their product surfaces are specified.
+- The Governance top tab contains the lower Forums, Sources, Records, and Reports register tabs; there is no separate Home tab inside the workspace.
+- The Governance lower-tab registers in `PmoGovernanceWorkspaceComponent` use `PmConsoleRegisterTableComponent` for Forums, Sources, Records, and Reports. Keep the current typed PMO fixture data and search/scoping getters as the source of truth, then adapt them into shared register-table rows/columns instead of reintroducing local `<table>` markup. The Reports lower tab follows the same register toolbar rhythm as PMO table tabs: `PmConsoleExpandableSearchComponent` sits in the right action cluster immediately before the primary Create Report CTA, followed by the shared report-template register table.
+- Create Report in the Governance Reports lower tab opens `PmoGovernanceReportDrawerComponent`, a feature-scoped Tasama side drawer backed by typed report-template draft defaults/options in `pmo-governance-workspace.data.ts`. The drawer captures Report Name, Filters, Records, Division, People, Time Frame, and Group By, then saves a user-created report-template row into the reports table.
+- Create Meeting in the forum-detail Meetings tab uses the feature-scoped `PmoGovernanceMeetingDrawerComponent`, which reuses `PmConsolePlanDrawerComponent` and typed meeting draft defaults from `pmo-governance-workspace.data.ts`.
+- Add Source actions in the PMO Sources register and the forum-detail Sources tab use the feature-scoped `PmoGovernanceSourceDrawerComponent`, which reuses `PmConsolePlanDrawerComponent` and typed source draft defaults/options from `pmo-governance-workspace.data.ts`. The forum-detail variant adds Add Source/Add Existing Source radio controls and starts the Type field on a Select placeholder, matching the governance reference while keeping Tasama styling.
+- Add Record actions in the PMO Records register and the forum-detail Records tab use the feature-scoped `PmoGovernanceRecordDrawerComponent`. It reuses `PmConsolePlanDrawerComponent`, uses typed record draft defaults/options from `pmo-governance-workspace.data.ts`, and styles the Action/Decision choice as Tasama radio controls.
+- Add to Watchlist in the forum-detail Watchlist tab opens `PmoGovernanceWatchlistRiskDrawerComponent`, a wider `PmConsolePlanDrawerComponent` variant with risk-category tabs, search, selectable risk rows, a scroll-only table area, and typed picker fixtures from `pmo-governance-workspace.data.ts`. The shared plan drawer now supports configurable drawer width, projected footer prefix content, and optional submit-first button ordering for picker-style drawers.
+- Add Issue in the forum-detail Issues tab opens `PmoGovernanceIssueDrawerComponent`, which reuses `PmConsolePlanDrawerComponent` and typed issue draft/options from `pmo-governance-workspace.data.ts`. The drawer captures required Issue and Resolution text, optional Description/Priority/Status/Owner, and Date Raised/Issue Due Date/Date Closed values defaulting to the user's current day.
+- PMO forum/source/record register action rows use `PmConsoleExpandableSearchComponent` before the primary add action so the primary button remains the rightmost control.
+- PMO register tables should not use pagination, page-size controls, separate chevron-only open columns, standalone row edit/delete buttons, or local table markup when the shared register table can represent the data. Keep rows in scrollable shared table containers, keep primary open behavior on the row or name link when available, and place row-level view/edit/delete actions inside the shared register-table `menu` cell. The shared row-action trigger is plain vertical dots without a circular border/background, matching the PM flow tables.
+- The Forums table emits the selected forum to `PmoGovernanceShellComponent`, which mounts `PmoGovernanceForumDetailDrawerComponent` as a full-frame overlay above the top bar, left rail, agent dock, and workspace. The Governance register stays mounted behind the overlay and the drawer owns its own meetings, sources, records, watchlist, issues, search, and scope state using typed governance fixtures.
+- Forum detail opens on an editable Overview tab before Meetings. `PmoGovernanceForumOverviewComponent` edits forum profile data from `PmoGovernanceForumRow`, including name, type, category, description, created metadata, chair, secretariat, members, and forum ID. It composes existing Tasama primitives such as `PmConsoleFieldComponent`, `pmConsoleIcon`, and `PmConsoleStatusPillComponent`; save events flow through `PmoGovernanceForumDetailDrawerComponent` to `PmoGovernanceShellComponent`, which updates the forum collection passed into `PmoGovernanceWorkspaceComponent`. The Overview profile, identity, and ownership cards stack vertically rather than using a side column. The drawer should not expose a top-level Edit Forum Details action, and forum-detail tabs are left-aligned with the drawer content edge.
+- Forum detail drawer tables should use `PmConsoleRegisterTableComponent` rather than local `<table>` markup. Its Meetings, Sources, Records, and Watchlist tabs use column min-widths that intentionally overflow inside the drawer so the shared table scroll container provides horizontal scrolling when needed. The Watchlist category rail follows the PM report drawer's vertical section-navigation pattern. Picker drawers may use a local scroll table only when the interaction needs controlled multi-select rows and footer selection summaries that the shared register table does not yet own; promote that behavior to the shared table if it appears in another workflow.
+- The All Records table opens `PmoGovernanceRecordDetailDrawerComponent` when a row or row-menu View record action is clicked. The drawer follows the existing PMO forum-detail side-drawer shell: 1040px desktop width cap, grey header, compact tab strip, and card-based Overview/Relationships/Activity sections. Closing the drawer returns focus to the Records register context.
+
+PMO record detail:
+
+- Detail fixture data belongs in `pmo-governance-workspace.data.ts`.
+- The supplied governance HTML reference is represented by `pmoGovernanceRecordDetails.r65`, including overview, ownership, related projects, related sources/recommendations, related risks, empty related sections, and activity log entries.
+- `pmoGovernanceRecordDetailFor(record)` returns the full fixture when available and a typed fallback detail for other records so every record row can open consistently.
+- The detail drawer is feature-scoped, uses Lucide through `pmConsoleIcon`, and keeps the legacy governance information model while applying the compact forum-detail drawer scale, Tasama colors, and tabbed card layout.
+- In drawer mode, the workspace keeps the Records register mounted behind the overlay and uses the component header close control, shared drawer backdrop click, or Escape to dismiss the detail.
 
 ## Design System
 
@@ -890,22 +948,166 @@ When a user asks for UI from Figma:
 
 ## Memory Log
 
+2026-05-29:
+
+- Merged and isolated revised 'Calendar' tab of Portfolio Manager:
+  - Created `PmConsoleWorkCalendarPmComponent` (`pm-console-work-calendar-pm.component.ts`) with selector `app-pm-console-work-calendar-pm` to host the revised calendar changes.
+  - Copied and updated `PortfolioManagerActionsPmComponent` (`portfolio-manager-actions-pm.component.ts`) to use `PmConsoleWorkCalendarPmComponent` and `<app-pm-console-work-calendar-pm>` instead of the shared calendar.
+  - Integrated `PortfolioManagerActionsPmComponent` on the `manage-work` tab in `portfolio-manager-landing.component.ts`.
+  - Copied `portfolio-manager-actions.data.ts` and `portfolio-manager-actions.component.ts` changes to support the new calendar's event kinds and mock data.
+  - This guarantees that no other views or personas (e.g. Project Manager in `pm-console-content.component.ts` or PMO in `pmo-frontdoor.component.ts`) are affected by the revised calendar visual/functional enhancements.
+
 2026-05-28:
 
-- Ported the Portfolio Manager branch experience onto `main` while keeping `main`'s persona-owned `PortfolioManagerShellComponent` and PMO/Executive/Project Manager entry points intact.
-- Preserved PMO-facing defaults on shared Portfolio Manager primitives while aligning the Portfolio Manager front door, action workspace, portfolio workspace, framework drawers, registers, and risk hierarchy with the Portfolio-manager branch.
+- Completed changes to 'PMO console' 'My actions' tab styling colors:
+  - Updated card styling color hex codes for Plans (`#79BADD`), Governance (`#3454C4`), Status reports (`#6F2095`), Change (`#C43472`), and Benefits (`#166B49`).
+  - Maintained the current logic of 25% side-stroke opacity, 10% icon container background opacity, and 100% icon color while supporting broad case-insensitive selectors.
+- Completed Phase 2 changes to 'PMO console' 'My calendar' view:
+  - Default replaced "All programs and projects" with "All portfolios" in the target picker filter dropdown.
+  - Made multi-item pop-up responsive in height and completely non-scrollable by removing max-height constraints and overflow scrolls.
+  - Redesigned each row inside the multi-item pop-up to render a Type chip pill, a neutral project/program name pill, the bold Task name description, and its action-specific current CTA.
+  - Expanded the layout spacing (gap) and padding of the single-item hover pop-up to `16px` for enhanced aesthetics and readability.
+2026-05-28:
+
+- Replaced the static "(Pending)" status metadata text in the side drawer action list cards with dynamic relative due state text:
+  - If the parent action card is in the "Overdue" lane/column, the card metadata displays as `(Overdue)`.
+  - If the parent action card is in the "This week" or "Upcoming" columns, it dynamically parses `report.date` relative to May 26, 2026 to calculate and render the relative days remaining, displaying as `(Due in x days)`.
+- Updated the action type chips in the PMO Console "My calendar" view to use specific, customized colors while keeping the soft background tint (10%), border (25%), and full text/dot (100%) opacity:
+  - Plans: `#8DC8E8` (soft sky blue)
+  - Governance Committees: `#3454C4` (deep blue)
+  - Status reports: `#6F2095` (royal purple)
+  - Change requests: `#C43472` (vibrant magenta)
+  - Benefits: `#166B49` (emerald green)
+  - Seamlessly applied these theme color variables across inline calendar cells, hovering preview cards, and agenda list preview overlays by coupling selectors to standard data attributes (`[attr.data-event-type]`).
+- Redesigned the action detail cards visible inside the PMO Console "My Actions" tab side drawer to exactly match Figma Image 2 and brand color opacities:
+  - Replaced the card header date and avatar column with a clean, responsive layout.
+  - Implemented the `getNormalizedCardType(report)` typescript helper to accurately categorize action items (`Plans`, `Governance Committees`, `Status reports`, `Change requests`, `Benefits`, `Dependency`, `Risk`).
+  - Added a top-aligned container displaying the brand-styled `action-type-pill` for each item using the exact color and opacity rules matching Phase 3 (25% border, 10% background, and 100% text color).
+  - Maintained bold action name and project name stacked immediately below the pill.
+  - Rendered a discreet divider line separating the body from the horizontal footer.
+  - Restructured the footer to display a calendar icon and due-state metadata horizontally stacked on the left, next to the dynamic chevron arrow CTA link (`report.cta || 'Open'`) on the right.
+- Completed changes to 'PMO console' 'My calendar' view:
+  - Configured hovering over individual chips inside collapsed cells (dates with more than two items) to open the multi-item day agenda hover popup rather than the single project details card.
+  - Mapped all calendar chips to display exactly one of the 5 requested category names (`Plans`, `Status reports`, `Benefits`, `Change requests`, `Governance Committees`) based on item `kind` for both collapsed and non-collapsed blocks.
+  - Added collapsible `Portfolios` group in the program/project target picker dropdown on the "Manage My Work" control toolbar, populating active portfolio names from `portfolioRows` in `portfolio-workspace.data.ts` and implementing dynamic target matching and count labels.
+  - Updated the single-item hover detail pop-up content to show the mapped Type chip, Project name, dynamic Task name title, and a "View" CTA while removing the Date section entirely.
+  - Re-mapped generated PMO calendar items in `generatePmoCalendarWorkItems()` to have realistic randomized project assignments and distinct, descriptive task names (e.g. `Review ${project} weekly report`, `Verify ${project} benefit evidence`) so Task name and Type do not share identical content.
+- Updated the first PMO front-door Overview journey card title in `pmo-frontdoor.data.ts` to Title Case: "Set Up Your Framework".
+- Corrected the PMO "My Actions" tab compact cards CSS grid columns (`grid-template-columns: auto minmax(0, 1fr) auto auto !important;`) to perfectly accommodate the 4-column children layout following inner side stroke removal, successfully preventing the lavender count circles from stretching horizontally.
+- Refined the PMO "My Actions" tab compact cards by removing the inner `.compact-action-accent` side stroke element positioned immediately to the left of the icon container, cleanly retaining only the premium outer card edge side stroke (drawn by the card's `::before` selector).
+- Completed the PMO "My Actions" tab card styling, color opacity rules, and layout refinements in `PortfolioManagerActionsComponent`:
+  - Updated the board column header icons to render as standalone grey icons (`#657084`) with transparent backgrounds and no surrounding containers, perfectly matching Image 2.
+  - Increased the compact card height (`min-height: 64px`) and added generous top/bottom padding (`14px`) around the title text.
+  - Applied a premium light font weight (`font-weight: 300`) to the card titles (`.compact-action-title`, `.task-card-title`) and View All CTAs (`.compact-action-view span`, `.task-card-action span`).
+  - Styled the count container around the numbers (`.compact-action-count`) as a circular `#EEF4FF` container with light `#2F2F2F` number text at a light font weight.
+  - Implemented exact custom color shade mapping and specific opacity rules (25% side stroke, 10% icon container background, 100% icon color) based on task types:
+    - Governance Committees: `#0B0482`
+    - Change Requests: `#C43472`
+    - Status Reports: `#84509D`
+    - Project Plans: `#3454C4`
+    - Benefits: `#4ED0FF`
+  - Re-distributed the random calendar work item generator thresholds in `pmo-frontdoor.data.ts` to ensure that all 3 columns (Overdue, This week, and Upcoming) are beautifully populated with action cards.
+- Redesigned the "My Actions" board individual task cards (`.task-card`) in `PortfolioManagerActionsComponent` to match the premium, single-row grouped card layout (Image 2):
+  - Modified the card structure in the board template to remove the obsolete top type pill, project name sub-headline, user avatar initials circle, and due-date text metadata.
+  - Implemented the brand-specific colored icon container (`.task-card-icon`) on the left of each card using dynamic Lucide icons mapping through `boardDetailIcon(item)`.
+  - Nested the card title and total action volume count side-by-side in a clean flex layout container (`.task-card-title-container`), rendering the count inside a light lavender circular pill (`.task-card-count`).
+  - Added a thick left-side accent stroke (`.task-card::before`) with a 12px border radius, fully integrated with the component's existing color theme palette rules (`.blue`, `.red`, `.green`, `.amber`, `.neutral`).
+  - Updated the right-aligned call-to-action button to render a standardized "View All" CTA with a premium chevron chevron-right icon.
+  - Set a 12px border radius, 50px compact card min-height, grid column alignments, and modern micro-interaction hover scaling effects (`translateY(-1px)`).
+  - Verified compilation success with a zero-warning, zero-error Angular CLI build.
+- Completed the PMO "Manage my work" "My actions" tab grouping and side drawer transition:
+  - Implemented the `filteredGroupItems` getter inside `PortfolioManagerActionDrawerComponent` class to support real-time searching and filtering of task list group items within the side drawer.
+  - Implemented typescript helper methods `formatCardDate(dateStr: string)`, `getOwnerFullName(initials: string)`, and `handleDetailItemClick(detail: PortfolioActionItem)` to enable dynamic date parsing, initials-to-name lookup, and smooth deep-linking from grouped task cards to detailed single-item views inside the side drawer.
+  - Added tone-specific CSS styling classes (`.blue`, `.red`, `.green`, `.amber`, `.neutral`) for `.report-icon-bg` and `.overdue-pill` elements to ensure drawer visual alignment with each action type's theme.
+  - Added background color styles for additional user initials (`avatar-fq`, `avatar-ah`, `avatar-sa`, `avatar-fa`) to visually enrich avatar displays.
+  - Verified stability with a zero-warning production build compilation.
+- Redesigned the calendar day grouping logic for cells with multiple scheduled items in `PmConsoleWorkCalendarComponent`:
+  - Replaced the generic "N actions" button with individual, project-specific `.calendar-event` buttons for the first two items, showing their project names in the standard brand layout (dot, color tone, text styles, etc.).
+  - Added a stylish, clickable `+N` badge beside the second project button, which triggers the day preview popover containing all scheduled items when clicked or hovered.
+  - Implemented `calendarEventProjectTitle` helper method to cleanly truncate long project names with an ellipsis.
+  - Updated the CTA label for all items rendered in the multiple-items hover card popover (`previewCell`) to read "View" instead of dynamic actions (e.g. "Open work item", "Open report"), ensuring a cleaner and more consistent user experience.
+- Updated the PMO front door and left navigation bar according to new requirements:
+  - Enabled the program/project selector dropdown filter (`[showTargetPicker]="true"`) on the "Manage My Work" tab workspace control bar directly to the left of the "All PMO actions" dropdown.
+  - Removed the 'All portfolios' scope selector dropdown in the top right of the Overview tab (`pmo-frontdoor.component.ts`) and adjusted the operational tab container max-width to allow clean layout expansion.
+  - Renamed the "Create & manage" journey card action to "Manage Portfolio Workspaces" in `pmo-frontdoor.data.ts`.
+  - Reconfigured the PMO left navigation rail (`pmo-governance-shell.component.ts`) to contain "Home" (with the standard home icon), "My Workspaces" (with the layout-grid icon), and "Dashboards" (with the chart-column icon, marked disabled/unclickable as shown in image 2).
+- Redesigned the multi-action calendar popup/hover card (`PmConsoleWorkCalendarComponent`) to align with the premium Figma designs in the PMO "Manage My Work" landing tab:
+  - Transformed the card row layout into a clean three-column structure (status dot, text info column, right-aligned blue CTA).
+  - Cleaned up the text details to show the task title (`item.label`) in bold charcoal (`#0b0b0b`) and combined the project name and task kind in a muted gray (`#536071`) subtitle separated by a hyphen (`{{ item.project }} - {{ itemKindLabel(item) }}`).
+  - Removed the redundant bold Project Name pill border and background, enabling smooth left-alignment of all text items.
+  - Relocated the dynamic blue CTA link (e.g. "Open schedule", "Open risk") to the right-most column of each item card, vertically centered.
+  - Introduced premium, status-tailored border and subtle background colors for each action card based on its status tone (blue, red, green, neutral) to boost micro-aesthetics and interactive hover/focus animations.
+  - Verified through a complete, successful Angular CLI production build.
+- Updated the welcome subtext message on the PMO landing view (`pmo-frontdoor.component.ts`) from "portfolio" to plural "portfolios" to accurately reflect multi-portfolio governance contexts without altering any other visual properties.
 
 2026-05-27:
 
+- Added Status Reports section to PMO Overview with preview cards showing overdue reports.
+- Created `PmoStatusReportsDrawerComponent` for the right-side slide-in panel showing all status reports with search, owner info, and open actions.
+- Added `PmoStatusReport` interface and `pmoStatusReports` fixture data in `pmo-frontdoor.data.ts`.
+- Status Reports drawer opens when clicking "View all" or any preview card; shows 5 overdue reports with dates, project names, and owner avatars.
+
+- Disabled the PMO front-door Set up your framework and Access & Manage Learning action cards so they render as static, non-clickable tiles with no CTA arrow, while Create & manage, Report & Review Progress, and Insights & Decision Intelligence remain interactive.
 - Reworked the PMO front-door overview banner to match the supplied Figma node: the banner now uses a centered 976-1280 x 264 composition inside an expanding blue gradient shell, uses the exact linked Figma overall-health arrow SVG asset with cyan-faded grid lines and an expanded crop window so the grid blends into the banner background, pins the metric chips to the banner's left edge on wide screens, lets the main health and budget clusters expand outward from center without reaching the banner edges, aligns the overall-health illustration-to-copy spacing with Budget Health, offsets the complete unclipped budget illustration left so it avoids the budget card, and keeps health and budget headings at 14px with softer 12px health subtext.
 - Aligned the PMO front-door Welcome/Daily Digest right rail with the supplied Figma node: the PMO digest now uses the 320px rail width, Figma copy, Montserrat 12/16 digest typography, #0b0b0b item text, #777777 section labels, #10069f medium portfolio emphasis, 12px item padding, and PMO-scoped gradient/card overrides while preserving the shared digest component for other personas.
 
 2026-05-26:
 
-- Linked the PMO login persona on `main` to `PmoGovernanceShellComponent` instead of the generic placeholder, preserving Project Manager, Portfolio Manager, Executive, and Program Manager entry behavior.
-- Added the PMO-owned governance/front-door/decision-intelligence files and PMO decision-intelligence artwork to `main`.
-- Added default-preserving shared/component inputs needed by the PMO shell: configurable top bar title/profile display, expandable search, field help icons, register table wrapped cells, submit-first drawer footers, hidden register tabs, and configurable Portfolio action workspace inputs.
 - Reduced the PMO Insights & Decision Intelligence collapsed accordion artwork to the compact 67 x 60 thumbnail scale shown in the reference rows, with tighter radius/shadow and spacing while preserving the expanded category-card treatment.
+- Updated the PMO Insights & Decision Intelligence collapsed accordion rows so closed sections use a compact rounded gradient/glass thumbnail from the same Figma artwork as the expanded category card, replacing the previous Lucide-only purple square while preserving the title and chevron interaction.
+- Replaced the PMO Insights & Decision Intelligence expanded category-card artwork with the supplied Figma glass-card assets for Manage Delivery, Performance Trends, and Governance Intelligence; the existing typed section fixture now owns each card's artwork metadata while the component preserves the Figma blue gradient, compact radius, shadow, and green section title treatment.
+- Reworked the visible PMO Governance lower-tab registers in `PmoGovernanceWorkspaceComponent` to use the shared `PmConsoleRegisterTableComponent` for Forums, Sources, Records, and Reports, preserving the existing PMO fixture arrays, search/scoping getters, row-open behavior, and drawer actions while removing local visible table markup from those tabs.
+- Adjusted shared calendar hover behavior so `PmConsoleWorkCalendarComponent` uses the custom hover card without browser-native `title` tooltips, aligns the popover arrow to the hovered calendar item even when clamped near viewport edges, and changed `PortfolioManagerActionsComponent` to use `workspaceTitle` instead of a `title` input so PMO Manage My Work does not expose a host-level native tooltip.
+- Added the PMO Insights & Decision Intelligence front-door subpage as `PmoDecisionIntelligenceComponent`, backed by typed accordion/card fixtures in `pmo-decision-intelligence.data.ts`; the PMO front-door Insights & Decision Intelligence card now opens this PMO-owned Figma-matched content area while the shared shell continues to provide the top bar and left rail.
+- Added the remaining PMO Insights & Decision Intelligence full-card rows from the supplied Figma frame: Performance Trends now has 2 cards, Governance Intelligence now has 3 cards, and the section chevrons now toggle real expanded/collapsed state instead of being decorative.
+- Adjusted the PMO Insights & Decision Intelligence accordion default state so only Manage Delivery opens initially, while collapsed Performance Trends and Governance Intelligence rows use the supplied closed-stage card treatment with a purple thumbnail, blue title, subtle border/shadow, and right-aligned chevron.
+- Aligned the shared `PmConsoleRegisterTableComponent` trend cell and Portfolio/PMO Status Trend column sizing with the PM flow Workspace Project Register treatment: one 34px segmented rounded control with internal dividers and Lucide status icons rather than separate small outline chips.
+- Reworked the Portfolio Register inside `PortfolioWorkspaceRegistersComponent` to use the shared `PmConsoleRegisterTableComponent` rather than a local `<table>`, preserving the current portfolio/program/project data, expansion hierarchy, Add new menu, summary pills, and three-period trend values. The shared register table now supports hierarchical primary cells, PM-flow-aligned segmented trend cells, and projected toolbar actions for this and future register variants.
+- Added the PMO front-door Quick links tab using the shared PM front-door quick-link card/grid classes, populated it from the supplied Figma options, added the PM-style All Portfolios selector, and wired quick-link clicks through typed workspace targets so implemented register links land on the matching My Workspace tab.
+- Removed the `div.pmo-status-reports-section-title` from the PMO landing/front door Overview page footer status reports section.
+- Updated the right panel drawer (`PortfolioManagerActionDrawerComponent`) when an overdue status report action card is clicked, perfectly matching the provided Figma screenshot. Added a search input box, dynamic counts, custom card styles (calendar icons, overdue date metadata, main titles, project scopes, circle initials avatars, and active "Open" link triggers).
+- Updated action board cards (`.task-card::before` and `.compact-action-card::before`) side stroke opacity to 80% (`opacity: 0.8`) for a more refined visual look.
+- Refined PMO front-door Manage My Work into aggregate PMO work queues using the existing `PortfolioManagerActionsComponent`: plan approvals, status reports, benefits, change requests, and governance committees now show high-volume counts on calendar/board tiles, expand into a right-side board list, and open the shared shell-level action drawer with all underlying queue items.
+- Updated PMO My Workspace to land on the Portfolio Register tab by default, with the PMO-facing primary tab label restored to Portfolio Register while keeping the shared portfolio/program/project hierarchy content.
+- Added the PMO Report & Review Progress front-door subpage as `PmoReportReviewProgressComponent`, backed by typed fixtures in `pmo-report-review-progress.data.ts`; the PMO front-door Report & Review Progress card now opens this PMO-owned Figma-matched reports board instead of the generic My Workspace surface.
+- Added the Figma-matched Custom Reports tab inside `PmoReportReviewProgressComponent`, including Scheduled Reports and Ad-hoc Reports two-up report cards, recurrence/date metadata, and the Report Builder toolbar action wired to the existing tab control.
+- Added the Figma-matched PMO Report & Review Progress right-side report log drawer. Standard Report cards now open `PmoReportReviewDrawerComponent`, backed by typed drawer tab/document fixtures and rendered with the supplied header tabs, close affordance, and download table.
+- Added the Figma-matched Project Status Report tab inside the PMO Report & Review Progress drawer. It now switches from the Project Plan download table to a typed seven-column status table with Not Created/Draft/Submitted and Not Tracked/Alert/On Track chips plus Create/Edit/Download row actions.
+- Moved the PMO Report & Review Progress report drawer mount from the animated content page into `PmoGovernanceShellComponent`, fixing the drawer/backdrop to cover the full viewport height rather than only the report content area.
+- Added a published-date filter popover to the PMO Report & Review Progress toolbar funnel. The filter reuses `PmConsoleDateFieldComponent`, applies to both Standard and Custom report tabs, and recalculates visible report counts while preserving the existing tab/column layout.
+- Fixed PMO Report & Review Progress card-board scrolling by making the content body allocate remaining height to the report columns and allowing each column's card list to scroll vertically.
+- Wired the PMO My Workspace header back arrow to return to the PMO front door through `PmoGovernanceShellComponent.goHome()`.
+- Replaced the PMO My Workspace Portfolio Register placeholder with the shared Portfolio Manager Program & Project register. `PortfolioWorkspaceRegistersComponent` now accepts `showRegisterTabs` so PMO can reuse the program/project table without embedding the Portfolio Manager's internal risk/benefits sub-tabs, and its project table keeps a stable horizontal-scroll width on narrow panes.
+- Added the portfolio parent layer to the shared Portfolio Manager register fixture/component: top-level rows are portfolios plus a standalone-project group, portfolio expansion reveals programs, program expansion reveals projects, and Portfolio/Program/Project/Project Group chips now use distinct colors.
+- Reframed the PMO Governance Workspace as PMO My Workspace. `PmoGovernanceWorkspaceComponent` adds top tabs for Portfolio Register, Risk Register, Benefits Register, Issues Register, and Governance, removes the old workspace Home tab, and moves Reports into the lower Governance tab row beside Forums, Sources, and Records. The PMO rail label and governance drawer eyebrows now use My Workspace terminology.
+- Added the PMO Figma front door as `PmoFrontdoorComponent` with typed fixture/config data in `pmo-frontdoor.data.ts`; the PMO shell now opens on this front door and switches into the existing governance workspace from rail/action-card events while keeping PMO outside the PM console monolith.
+- Removed PMO Governance pagination/page-size footers from workspace and forum-detail register surfaces; governance tables now rely on scrollable table containers instead of Show entries / Previous / Next controls.
+- Changed the PMO forum detail Overview tab so the Forum information, Forum Identity, and Ownership cards stack vertically instead of using a right-side metadata column.
+- Made the PMO forum detail Overview tab editable using the shared `PmConsoleFieldComponent`, status pill, and Lucide icon wrapper; saved Overview changes now update the shell-owned forum collection and persist when the drawer is closed and reopened, and the forum-detail tab rail is left-aligned.
+- Added the forum-detail Add Issue side drawer. `pmo-governance-issue-drawer.component.ts` owns the issue, description, priority, resolution, status, owner, and three date fields with Tasama form styling and typed draft/options in `pmo-governance-workspace.data.ts`.
+- Added the PMO Reports Create Report side drawer. `pmo-governance-report-drawer.component.ts` reuses the shared plan-drawer shell, presents the supplied report-template fields with Tasama styling, and saves created templates back into the Reports table using typed report draft options from `pmo-governance-workspace.data.ts`.
+- Added the forum-detail Add Risks to Watchlist side drawer. `pmo-governance-watchlist-risk-drawer.component.ts` owns the risk-category tabs, search, scroll-only selectable risk table, selected-count footer chip, and typed picker fixtures, while `PmConsolePlanDrawerComponent` now supports wider picker drawers and footer prefix content.
+- Simplified the PMO Reports tab header and empty register surface: removed the Published badge and More header action, replaced the old Show/Search controls with the shared expandable search next to the right-aligned Create Report CTA, and removed bottom report pagination while there is no report data.
+- Updated the forum-detail Add Source drawer variant with Add Source/Add Existing Source radio controls and a blank Type select state while preserving the shared Tasama drawer and main Sources register behavior.
+- Reworked the PMO forum detail Overview tab into `PmoGovernanceForumOverviewComponent`, replacing faux read-only input boxes with compact Tasama read-only sections, existing icon/status-pill primitives, and responsive metadata/ownership panels.
+- Added a PMO Governance forum Create Meeting side drawer. `pmo-governance-meeting-drawer.component.ts` owns Meeting Name and required Meeting Date fields, uses the shared plan drawer shell and Tasama form styling, and is launched from the forum-detail Meetings tab.
+- Updated `PmConsoleRowActionMenuComponent` so the shared trigger uses the PM table plain vertical-dots treatment by default, preventing PMO governance tables from showing rounded icon-button outlines around row menus.
+- Removed chevron-only open action columns and standalone row edit/delete controls from PMO governance tables. Main workspace tables and forum-detail shared register tables now use the shared three-dot row action menu for row-level view/edit/delete actions, and the record detail header no longer exposes a separate Edit Record button.
+- Added shared `PmConsoleExpandableSearchComponent`, wired it into PMO governance register toolbars and the shared register table workspace search, and reordered shared/PMO toolbar actions so primary add buttons remain the rightmost control.
+- Added a PMO Governance Workspace Add Record side drawer. `pmo-governance-record-drawer.component.ts` owns forum, meeting, title, type, owner, due date, and optional detail fields, uses Tasama-styled radio controls for Action/Decision, and is launched from both the main Records register and forum-detail Records tab.
+- Added the PMO forum detail Overview tab as the first forum tab and moved forum profile fields into typed forum fixtures; removed the top-level Edit Forum Details action from the forum detail drawer.
+- Removed the non-reports `View Info` action and the favorite/comment utility buttons from the PMO Governance Workspace page header; the Reports header no longer carries status or utility actions.
+- Added a PMO Governance Workspace Add Source side drawer. `pmo-governance-source-drawer.component.ts` owns the required Type and Source Name fields, uses Lucide icons through `pmConsoleIcon`, and is launched from both the main Sources register and forum-detail Sources tab.
+- Reworked the PMO forum detail drawer tables to reuse `PmConsoleRegisterTableComponent` across Meetings, Sources, Records, and Watchlist; added shared table support for wrapped/icon text cells and expanded row-detail templates; and aligned the Watchlist category rail with the PM create-report drawer's left section navigation.
+- Changed the PMO Governance Workspace forum detail interaction from full-page replacement to a right-side drawer. `pmo-governance-forum-detail-drawer.component.ts` now owns the selected forum tabs and keeps the Home register visible behind the overlay.
+- Promoted the selected forum detail drawer mount from the workspace content frame to `PmoGovernanceShellComponent`, so the backdrop covers the header and left rail and the panel uses the full viewport height.
+- Added a PMO Governance Workspace Add New Forum drawer. The drawer is feature-scoped in `pmo-governance-forum-drawer.component.ts`, reuses the shared `PmConsolePlanDrawerComponent`, and takes typed defaults/options from `pmo-governance-workspace.data.ts`. The shared plan drawer layer now sits above the AI agent launcher so drawer footers remain clickable.
+- Added PMO governance record-detail documentation: the PMO persona now owns a governance shell/workspace, and All Records can open a Tasama-styled record detail page.
+- Documented `pmo-governance-record-detail.component.ts`, `pmoGovernanceRecordDetails`, and `pmoGovernanceRecordDetailFor(record)` as the typed fixture/detail pattern for governance records.
+- Changed the PMO governance record detail interaction from full-page replacement to a right-side drawer so the All Records register remains visible behind the detail overlay.
+- Moved the PMO governance record-detail drawer overlay outside the workspace card frame so it spans the full viewport and dims the top bar and left navigation as well as the content area.
+- Reworked `PmoGovernanceRecordDetailDrawerComponent` to follow the existing PMO forum-detail side-drawer pattern: 1040px drawer width cap, grey header, compact tabs, and card-based Overview/Relationships/Activity sections, replacing the oversized record-detail drawer pass.
+- Tuned the PMO Governance Workspace forum register typography to lighter table/body weights, kept headers one step stronger, and replaced the forum pagination footer with a scrollable table area.
 
 2026-05-25:
 

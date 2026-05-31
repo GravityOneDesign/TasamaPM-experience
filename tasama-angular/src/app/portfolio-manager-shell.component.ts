@@ -2,7 +2,7 @@ import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component
 import { PmConsoleIconService } from './pm-console-icon.service';
 import { PmConsoleNotificationsComponent } from './pm-console-notifications.component';
 import { ProjectOption } from './pm-console.types';
-import { PortfolioManagerActionDrawerComponent } from './portfolio-manager-action-drawer.component';
+import { PortfolioManagerActionDrawerPmComponent } from './portfolio-manager-action-drawer-pm.component';
 import { PortfolioManagerActionDrawerService } from './portfolio-manager-action-drawer.service';
 import { PortfolioManagerConsoleComponent } from './portfolio-manager-console.component';
 import { PortfolioConsolePage, PortfolioManagerMountOptions, PortfolioWorkspaceView } from './portfolio-manager.types';
@@ -20,7 +20,7 @@ interface PortfolioRailItem extends PmConsoleSideNavItem {
   selector: 'app-portfolio-manager-shell',
   standalone: true,
   imports: [
-    PortfolioManagerActionDrawerComponent,
+    PortfolioManagerActionDrawerPmComponent,
     PortfolioManagerConsoleComponent,
     PmConsoleAgentDockComponent,
     PmConsoleIconComponent,
@@ -98,10 +98,10 @@ interface PortfolioRailItem extends PmConsoleSideNavItem {
         (consoleStateChange)="applyContentState($event)"
       />
 
-      <app-portfolio-manager-action-drawer
+      <app-portfolio-manager-action-drawer-pm
         [item]="activePortfolioActionItem()"
         (close)="closePortfolioActionDrawer()"
-      ></app-portfolio-manager-action-drawer>
+      ></app-portfolio-manager-action-drawer-pm>
       <app-pm-console-notifications [open]="notificationPanelOpen" (closePanel)="closeNotifications()" />
       <app-pm-console-agent-dock />
     </div>
@@ -165,7 +165,7 @@ export class PortfolioManagerShellComponent implements OnInit, AfterViewChecked 
   constructor(
     private readonly changeDetector: ChangeDetectorRef,
     private readonly iconsService: PmConsoleIconService,
-  ) {}
+  ) { }
 
   get usesConsoleHeader(): boolean {
     return this.frontDoorMode !== 'unassigned' && ['workspace', 'workspaces', 'portfolio-workspace', 'framework', 'performance'].includes(this.selectedPage);

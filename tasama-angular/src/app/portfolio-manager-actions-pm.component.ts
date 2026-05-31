@@ -1,12 +1,14 @@
-import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, Output } from '@angular/core';
+import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PmConsoleWorkCalendarComponent, PmConsoleCalendarCell, PmConsoleCalendarItem, PmConsoleCalendarFilter } from './shared/pm-console-work-calendar.component';
 import { PmConsoleIconService } from './pm-console-icon.service';
 import { iconName } from './portfolio-manager-icon.utils';
 import { portfolioActionItems, portfolioBoardFilters, PortfolioActionItem, PortfolioBoardFilter, PortfolioBoardColumn } from './portfolio-manager-actions.data';
+import { portfolioManagerActionItems } from './portfolio-manager-actions-pm.data';
 import { PortfolioManagerActionDrawerService } from './portfolio-manager-action-drawer.service';
 import { portfolioProgramRows, standaloneProjects, type ProgramRow } from './portfolio-workspace/portfolio-workspace.data';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
+import { PortfolioManagerActionCardComponent } from './portfolio-manager-action-card.component';
 
 type PortfolioWorkTargetType = 'all' | 'portfolio' | 'program' | 'project';
 type PortfolioActionsBoardPresentation = 'kanban' | 'compact';
@@ -36,16 +38,16 @@ interface PortfolioTargetRow {
 }
 
 @Component({
-  selector: 'app-portfolio-manager-actions',
+  selector: 'app-portfolio-manager-actions-pm',
   standalone: true,
-  imports: [CommonModule, PmConsoleIconComponent, PmConsoleWorkCalendarComponent],
+  imports: [CommonModule, PmConsoleIconComponent, PmConsoleWorkCalendarComponent, PortfolioManagerActionCardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="actions-workspace">
       <!-- Toolbar row -->
       <div class="workspace-control-row actions-control-row">
         <!-- Heading -->
-        <h2 class="workspace-action-title">{{ currentWorkspaceTitle }}</h2>
+        <h2 class="workspace-action-title">{{ workspaceTitle }}</h2>
 
         <!-- Search input -->
         <label class="workspace-search">
@@ -61,14 +63,14 @@ interface PortfolioTargetRow {
         <!-- Program / Project selector -->
         @if (showTargetPicker) {
         <div class="portfolio-target-picker" [attr.aria-label]="targetPickerAriaLabel">
-          <details class="work-filter-dropdown target-picker-dropdown" (toggle)="onFilterDropdownToggle($event)">
-            <summary [attr.aria-label]="'Select program or project: ' + targetPickerLabel">
+          <details class="work-filter-dropdown target-picker-dropdown">
+            <summary [attr.aria-label]="'Select program or project: ' + selectedTargetOption.label">
               <span class="work-filter-selected-icon">
                 <span class="icon" aria-hidden="true">
-                  <i [attr.data-lucide]="targetPickerIcon"></i>
+                  <i [attr.data-lucide]="targetIconName(selectedTargetOption)"></i>
                 </span>
               </span>
-              <span>{{ targetPickerLabel }}</span>
+              <span>{{ selectedTargetOption.label }}</span>
               <span class="icon" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
             </summary>
             <div class="work-filter-menu target-picker-menu" role="menu">
@@ -83,9 +85,18 @@ interface PortfolioTargetRow {
                 />
               </label>
 
-              <button class="target-picker-reset" type="button" (click)="resetFilters($event)">
-                <span pmConsoleIcon="rotate-ccw" aria-hidden="true"></span>
-                <span>Reset filters</span>
+              <button
+                class="target-picker-option all-target"
+                [class.active]="selectedTargetId === allTargetOption.id"
+                type="button"
+                role="menuitemradio"
+                [attr.aria-checked]="selectedTargetId === allTargetOption.id"
+                (click)="selectTarget(allTargetOption.id, $event)"
+              >
+                <span class="target-option-copy">
+                  <strong>{{ allTargetOption.label }}</strong>
+                  <small>{{ actionItems.length }} actions</small>
+                </span>
               </button>
 
               @if (hasFilteredTargetOptions) {
@@ -104,21 +115,18 @@ interface PortfolioTargetRow {
                       @for (target of group.options; track target.id) {
                         <button
                           class="target-picker-option"
-                          [class.active]="isTargetSelected(target.id)"
+                          [class.active]="selectedTargetId === target.id"
                           type="button"
-                          role="menuitemcheckbox"
-                          [attr.aria-checked]="isTargetSelected(target.id)"
+                          role="menuitemradio"
+                          [attr.aria-checked]="selectedTargetId === target.id"
                           (click)="selectTarget(target.id, $event)"
                         >
-                          <span class="target-picker-check" [class.checked]="isTargetSelected(target.id)" aria-hidden="true">
-                            <span pmConsoleIcon="check" aria-hidden="true"></span>
-                          </span>
                           <span class="target-option-copy">
                             <strong>{{ target.label }}</strong>
                             @if (target.parentLabel) {
                               <small>{{ target.parentLabel }}</small>
                             } @else {
-                              <small>{{ targetOptionSubtitle(target) }}</small>
+                              <small>{{ target.type === 'program' || target.type === 'portfolio' ? targetCountLabel(target) : 'Standalone project' }}</small>
                             }
                           </span>
                         </button>
@@ -136,7 +144,7 @@ interface PortfolioTargetRow {
 
         <!-- Filter dropdown -->
         <div class="board-filter action-board-filter" aria-label="Action filters">
-          <details class="work-filter-dropdown" (toggle)="onFilterDropdownToggle($event)">
+          <details class="work-filter-dropdown">
             <summary [attr.aria-label]="'Filter actions by ' + selectedFilterOption.label">
               <span class="work-filter-selected-icon">
                 <span class="icon" aria-hidden="true">
@@ -263,29 +271,19 @@ interface PortfolioTargetRow {
                   </header>
                   <div class="task-stack">
                     @for (item of column.items; track item.id) {
-                      <button
-                        class="task-card {{ taskCardClass(item.type) }} {{ item.tone }}"
-                        [class.is-selected]="activeBoardItem?.id === item.id"
-                        [attr.data-card-kind]="item.kind"
-                        [attr.data-card-type]="item.type"
-                        type="button"
-                        [attr.aria-label]="actionItemAriaLabel(item)"
-                        (click)="selectBoardItem(item)"
+                      <app-portfolio-manager-action-card
+                        [eventType]="actionChipType(item.type)"
+                        [tag]="item.type"
+                        [title]="item.label"
+                        [subtitle]="item.project"
+                        [due]="formatMetaText(item.meta)"
+                        [ownerInitials]="item.owner"
+                        [ownerName]="item.ownerName || ''"
+                        [actionLabel]="item.cta || 'Open'"
+                        [clickable]="item.kind === 'plan' || item.kind === 'governance'"
+                        (cardClick)="selectBoardItem(item)"
                       >
-                        <span class="task-card-icon {{ item.tone }}">
-                          <span [pmConsoleIcon]="boardDetailIcon(item)" aria-hidden="true"></span>
-                        </span>
-                        
-                        <div class="task-card-title-container">
-                          <span class="task-card-title">{{ item.label }}</span>
-                          <span class="task-card-count">{{ actionItemTotal(item) }}</span>
-                        </div>
-
-                        <span class="task-card-action">
-                          <span>View All</span>
-                          <span pmConsoleIcon="chevron-right" class="arrow-icon" aria-hidden="true"></span>
-                        </span>
-                      </button>
+                      </app-portfolio-manager-action-card>
                     } @empty {
                       <div class="empty-column">No actions in this lane.</div>
                     }
@@ -373,29 +371,67 @@ interface PortfolioTargetRow {
       height: 100%;
     }
     .actions-control-row {
-      padding: 0 0 8px;
+      padding: 0 0 20px !important;
       overflow: visible;
       position: relative;
       z-index: 180;
     }
     .workspace-body {
-      display: flex;
-      flex-direction: column;
-      flex: 1 1 auto;
-      height: auto;
-      min-height: 0;
-      overflow: hidden;
-      padding: 0;
-      position: relative;
-      z-index: 0;
+      display: flex !important;
+      flex-direction: column !important;
+      flex: 1 1 auto !important;
+      height: 100% !important;
+      min-height: 0 !important;
+      overflow: hidden !important;
+      padding: 0 !important;
+      position: relative !important;
+      z-index: 0 !important;
     }
-    .calendar-view,
     .board-view {
       display: flex;
-      flex-direction: column;
-      flex: 1 1 auto;
-      height: auto;
-      min-height: 0;
+      flex-direction: column !important;
+      flex: 1 1 auto !important;
+      height: 100% !important;
+      min-height: 0 !important;
+      overflow: hidden !important;
+    }
+    .kanban-board {
+      display: grid !important;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      gap: 20px !important;
+      flex: 1 1 auto !important;
+      height: 100% !important;
+      min-height: 0 !important;
+      overflow: hidden !important;
+    }
+    .kanban-column {
+      display: flex !important;
+      flex-direction: column !important;
+      height: 100% !important;
+      min-height: 0 !important;
+      overflow: hidden !important;
+      background: #f7f8fb !important;
+      border: 1px solid #eef1f6 !important;
+      border-radius: 8px !important;
+    }
+    .task-stack {
+      display: flex !important;
+      flex: 1 1 auto !important;
+      flex-direction: column !important;
+      gap: 18px !important;
+      min-height: 0 !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      padding: 18px !important;
+      scrollbar-width: thin !important;
+    }
+    .calendar-view {
+      display: flex;
+      flex-direction: column !important;
+      flex: 1 1 auto !important;
+      height: 100% !important;
+      min-height: 0 !important;
+      overflow: hidden !important;
     }
 
     .board-view.has-detail-panel {
@@ -1064,11 +1100,11 @@ interface PortfolioTargetRow {
 
     .target-picker-menu {
       display: grid;
-      gap: 8px;
+      gap: 2px;
       max-height: 360px;
       min-width: 330px;
       overflow: auto;
-      padding: 8px;
+      padding: 6px;
       z-index: 220;
     }
 
@@ -1083,37 +1119,9 @@ interface PortfolioTargetRow {
       height: 36px;
       margin-bottom: 6px;
       padding: 0 10px;
-      position: relative;
-      z-index: 3;
-    }
-
-    .target-picker-reset {
-      align-items: center;
-      background: #f4f6fb;
-      border: 0;
-      border-radius: 8px;
-      color: var(--brand, #10069f);
-      cursor: pointer;
-      display: flex;
-      gap: 8px;
-      font: inherit;
-      font-size: 12px;
-      font-weight: 500;
-      min-height: 36px;
-      padding: 8px 10px;
-      text-align: left;
-      width: 100%;
-    }
-
-    .target-picker-reset .icon {
-      height: 13px;
-      width: 13px;
-    }
-
-    .target-picker-reset:hover,
-    .target-picker-reset:focus-visible {
-      background: #eef0ff;
-      outline: 0;
+      position: sticky;
+      top: 0;
+      z-index: 2;
     }
 
     .target-picker-search input {
@@ -1134,7 +1142,7 @@ interface PortfolioTargetRow {
 
     .target-picker-group {
       display: grid;
-      gap: 4px;
+      gap: 2px;
       min-width: 0;
     }
 
@@ -1144,8 +1152,6 @@ interface PortfolioTargetRow {
 
     .target-picker-group-label {
       align-items: center;
-      border: 1px solid #e3e8f0;
-      border-radius: 8px;
       color: #4c5566;
       cursor: pointer;
       display: flex;
@@ -1154,8 +1160,7 @@ interface PortfolioTargetRow {
       gap: 8px;
       justify-content: space-between;
       letter-spacing: 0;
-      min-height: 42px;
-      padding: 8px 12px;
+      padding: 8px 8px 4px;
       text-transform: none;
       user-select: none;
     }
@@ -1179,10 +1184,9 @@ interface PortfolioTargetRow {
       cursor: pointer;
       display: flex;
       font: inherit;
-      gap: 10px;
       min-height: 40px;
       min-width: 0;
-      padding: 6px 12px;
+      padding: 6px 10px;
       text-align: left;
       width: 100%;
     }
@@ -1194,35 +1198,6 @@ interface PortfolioTargetRow {
 
     .target-picker-option.active {
       color: var(--brand, #10069f);
-    }
-
-    .target-picker-check {
-      align-items: center;
-      background: #ffffff;
-      border: 1px solid #cfd6e4;
-      border-radius: 4px;
-      color: #ffffff;
-      display: inline-flex;
-      flex: 0 0 auto;
-      height: 16px;
-      justify-content: center;
-      margin-top: 1px;
-      width: 16px;
-    }
-
-    .target-picker-check .icon {
-      height: 11px;
-      opacity: 0;
-      width: 11px;
-    }
-
-    .target-picker-check.checked {
-      background: var(--brand, #10069f);
-      border-color: var(--brand, #10069f);
-    }
-
-    .target-picker-check.checked .icon {
-      opacity: 1;
     }
 
     .target-option-copy {
@@ -1325,7 +1300,7 @@ interface PortfolioTargetRow {
     }
 
     .compact-action-card::before {
-      display: none !important;
+      border-radius: 12px 0 0 12px !important;
     }
 
     .compact-action-title,
@@ -1422,13 +1397,12 @@ interface PortfolioTargetRow {
     }
   `],
 })
-export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDestroy {
+export class PortfolioManagerActionsPmComponent implements AfterViewChecked, OnDestroy {
   @Input() workspaceTitle = 'Portfolio Name';
-  @Input() boardWorkspaceTitle = '';
   @Input() searchPlaceholder = 'Search actions...';
   @Input() targetPickerAriaLabel = 'Portfolio work target selector';
-  @Input() targetAllLabel = 'All portfolios';
-  @Input() actionItems: readonly PortfolioActionItem[] = portfolioActionItems;
+  @Input() targetAllLabel = 'All programs & projects';
+  @Input() actionItems: readonly PortfolioActionItem[] = portfolioManagerActionItems;
   @Input() boardFilters: readonly PortfolioBoardFilter[] = portfolioBoardFilters;
   @Input() showTargetPicker = true;
   @Input() openItemsInDrawer = true;
@@ -1440,8 +1414,7 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
   activeView: 'calendar' | 'board' = 'calendar';
   calendarMonth = new Date(2026, 4, 1); // May 2026
   selectedFilter = 'all';
-  selectedTargetId = 'portfolio::all';
-  selectedTargetIds = new Set<string>(['portfolio::all']);
+  selectedTargetId = 'all';
   selectedBoardItemId = '';
   searchQuery = '';
   targetSearchQuery = '';
@@ -1451,15 +1424,14 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
   readonly portfolios: readonly PortfolioTargetRow[] = [
     { name: 'Tasama Client 1', programs: portfolioProgramRows },
   ];
-  readonly collapsedTargetGroupIds = new Set<PortfolioWorkTargetGroup['id']>(['programs', 'projects']);
+  readonly collapsedTargetGroupIds = new Set<PortfolioWorkTargetGroup['id']>();
 
   private iconsHydrated = false;
 
   constructor(
     private readonly changeDetector: ChangeDetectorRef,
     private readonly actionDrawer: PortfolioManagerActionDrawerService,
-    private readonly iconsService: PmConsoleIconService,
-    private readonly elementRef: ElementRef<HTMLElement>
+    private readonly iconsService: PmConsoleIconService
   ) { }
 
   ngAfterViewChecked(): void {
@@ -1478,10 +1450,6 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
     return iconName(name);
   }
 
-  get currentWorkspaceTitle(): string {
-    return this.activeView === 'board' && this.boardWorkspaceTitle ? this.boardWorkspaceTitle : this.workspaceTitle;
-  }
-
   setView(view: 'calendar' | 'board'): void {
     this.activeView = view;
     this.iconsHydrated = false;
@@ -1495,31 +1463,6 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
     }
     this.iconsHydrated = false;
     this.changeDetector.markForCheck();
-  }
-
-  resetFilters(event?: Event): void {
-    event?.stopPropagation();
-    this.selectedTargetId = 'portfolio::all';
-    this.selectedTargetIds.clear();
-    this.selectedTargetIds.add('portfolio::all');
-    this.selectedFilter = 'all';
-    this.searchQuery = '';
-    this.targetSearchQuery = '';
-    this.collapsedTargetGroupIds.clear();
-    this.collapsedTargetGroupIds.add('programs');
-    this.collapsedTargetGroupIds.add('projects');
-    (event?.currentTarget as HTMLElement | null)?.closest('details.target-picker-dropdown')?.removeAttribute('open');
-    this.iconsHydrated = false;
-    this.changeDetector.markForCheck();
-  }
-
-  onFilterDropdownToggle(event: Event): void {
-    const current = event.currentTarget as HTMLDetailsElement;
-    if (!current.open) return;
-    const filters = this.elementRef.nativeElement.querySelectorAll<HTMLDetailsElement>('.actions-control-row > .portfolio-target-picker > details, .actions-control-row > .board-filter > details');
-    filters.forEach((details) => {
-      if (details !== current) details.removeAttribute('open');
-    });
   }
 
   onSearchChange(event: Event): void {
@@ -1540,7 +1483,6 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
   onTargetGroupToggle(groupId: PortfolioWorkTargetGroup['id'], event: Event): void {
     const details = event.currentTarget as HTMLDetailsElement;
     if (details.open) {
-      this.collapsedTargetGroupIds.clear();
       this.collapsedTargetGroupIds.delete(groupId);
     } else {
       this.collapsedTargetGroupIds.add(groupId);
@@ -1553,35 +1495,13 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
   }
 
   selectTarget(targetId: string, event?: Event): void {
-    event?.stopPropagation();
-    const target = this.targetOptions.find((option) => option.id === targetId);
-    const isAllTarget = targetId === 'portfolio::all' || targetId === 'program::all' || targetId === 'project::all' || target?.type === 'all';
-
-    if (isAllTarget) {
-      this.selectedTargetIds.clear();
-      this.selectedTargetIds.add(targetId);
-    } else {
-      this.selectedTargetIds.delete('portfolio::all');
-      this.selectedTargetIds.delete('program::all');
-      this.selectedTargetIds.delete('project::all');
-      if (this.selectedTargetIds.has(targetId)) {
-        this.selectedTargetIds.delete(targetId);
-      } else {
-        this.selectedTargetIds.add(targetId);
-      }
-      if (!this.selectedTargetIds.size) {
-        this.selectedTargetIds.add('portfolio::all');
-      }
-    }
-
-    this.selectedTargetId = Array.from(this.selectedTargetIds)[0] || 'portfolio::all';
+    this.selectedTargetId = targetId;
     this.targetSearchQuery = '';
+    if (event) {
+      (event.currentTarget as HTMLElement | null)?.closest('details')?.removeAttribute('open');
+    }
     this.iconsHydrated = false;
     this.changeDetector.markForCheck();
-  }
-
-  isTargetSelected(targetId: string): boolean {
-    return this.selectedTargetIds.has(targetId);
   }
 
   handleAddActionItem(): void {
@@ -1617,8 +1537,8 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
   // Getters
   get allTargetOption(): PortfolioWorkTargetOption {
     return {
-      id: 'portfolio::all',
-      label: 'All portfolios',
+      id: 'all',
+      label: this.targetAllLabel,
       type: 'all',
     };
   }
@@ -1642,47 +1562,14 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
 
     return [
       {
-        id: 'portfolios',
-        label: 'Portfolios',
-        options: [
-          this.allTargetOption,
-          ...this.portfolios.map((portfolio) => ({
-            id: `portfolio::${portfolio.name}`,
-            label: portfolio.name,
-            type: 'portfolio' as const,
-            projectNames: Array.from(new Set([
-              ...(portfolio.programs || []).flatMap((prog) => (prog.projects || []).map((proj) => proj.name)),
-              ...actionProjectOptions,
-            ])),
-          })),
-        ],
-      },
-      {
         id: 'programs',
         label: 'Programs',
-        options: [
-          {
-            id: 'program::all',
-            label: 'All programs',
-            type: 'program' as const,
-            projectNames: Array.from(new Set([
-              ...this.programs.flatMap((program) => (program.projects || []).map((project) => project.name)),
-              ...actionProjectOptions,
-            ])),
-          },
-          ...this.programs.map((program) => this.createProgramTarget(program)),
-        ],
+        options: this.programs.map((program) => this.createProgramTarget(program)),
       },
       {
         id: 'projects',
         label: 'Projects',
         options: [
-          {
-            id: 'project::all',
-            label: 'All projects',
-            type: 'project' as const,
-            projectNames: Array.from(new Set([...fixtureProjectOptions, ...actionProjectOptions])),
-          },
           ...this.programs.flatMap((program) =>
             (program.projects || []).map((project) => this.createProjectTarget(project.name, program.name)),
           ),
@@ -1710,28 +1597,11 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
   }
 
   get targetOptions(): PortfolioWorkTargetOption[] {
-    return this.targetGroups.flatMap((group) => group.options);
+    return [this.allTargetOption, ...this.targetGroups.flatMap((group) => group.options)];
   }
 
   get selectedTargetOption(): PortfolioWorkTargetOption {
-    const selectedIds = Array.from(this.selectedTargetIds);
-    if (selectedIds.length === 1) {
-      return this.targetOptions.find((option) => option.id === selectedIds[0]) || this.allTargetOption;
-    }
-    return {
-      id: 'selected-targets',
-      label: `${selectedIds.length} filters`,
-      type: 'all',
-    };
-  }
-
-  get targetPickerLabel(): string {
-    return this.selectedTargetOption.label;
-  }
-
-  get targetPickerIcon(): string {
-    if (this.selectedTargetIds.size > 1) return 'list-filter';
-    return this.targetIconName(this.selectedTargetOption);
+    return this.targetOptions.find((option) => option.id === this.selectedTargetId) || this.allTargetOption;
   }
 
   getFilterIdForKind(kind: string): string {
@@ -1851,13 +1721,6 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
     return count === 1 ? '1 project' : `${count} projects`;
   }
 
-  targetOptionSubtitle(target: PortfolioWorkTargetOption): string {
-    if (target.type === 'all') return `${this.actionItems.length} actions`;
-    if (target.type === 'program' || target.type === 'portfolio') return this.targetCountLabel(target);
-    if (target.id === 'project::all') return `${target.projectNames?.length || 0} projects`;
-    return 'Standalone project';
-  }
-
   // Board columns
   get visibleBoardColumns(): PortfolioBoardColumn[] {
     const items = this.filteredItems;
@@ -1881,6 +1744,10 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
   }
 
   selectBoardItem(item: PortfolioActionItem): void {
+    // Disable clicks on all card types except 'Plans' and 'Governance & committee'
+    if (item.kind !== 'plan' && item.kind !== 'governance') {
+      return;
+    }
     if (!this.showBoardDetailPanel) {
       this.openActionDrawer(item);
       return;
@@ -1984,6 +1851,37 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
       .replace(/(^-|-$)/g, '');
   }
 
+  actionChipType(type: string): string {
+    const normalized = type.toLowerCase().trim();
+    if (normalized.includes('plan')) return 'Plans';
+    if (normalized.includes('governance')) return 'Governance Committees';
+    if (normalized.includes('report')) return 'Status reports';
+    if (normalized.includes('change')) return 'Change requests';
+    if (normalized.includes('benefit')) return 'Benefits';
+    if (normalized.includes('risk')) return 'Risk';
+    return type;
+  }
+
+  formatMetaText(meta: string): string {
+    if (!meta) return '';
+    const match = meta.match(/\(([^)]+)\)/);
+    return match ? match[1] : meta;
+  }
+
+  getAvatarStyle(owner: string): { [key: string]: string } {
+    const colors: Record<string, { bg: string, color: string }> = {
+      'MH': { bg: '#eef4ff', color: '#3454c4' },
+      'AH': { bg: '#fff0f0', color: '#b91c1c' },
+      'FA': { bg: '#eefbf5', color: '#166c49' },
+      'SA': { bg: '#f2f4f8', color: '#536071' },
+    };
+    const match = colors[owner.toUpperCase()] || { bg: '#f2f4f8', color: '#536071' };
+    return {
+      'background-color': match.bg,
+      'color': match.color
+    };
+  }
+
   shiftMonth(delta: number): void {
     this.calendarMonth = new Date(this.calendarMonth.getFullYear(), this.calendarMonth.getMonth() + delta, 1);
     this.iconsHydrated = false;
@@ -2029,19 +1927,13 @@ export class PortfolioManagerActionsComponent implements AfterViewChecked, OnDes
 
   private matchesSelectedTarget(item: PortfolioActionItem): boolean {
     if (!this.showTargetPicker) return true;
-    const selectedTargets = Array.from(this.selectedTargetIds)
-      .map((targetId) => this.targetOptions.find((target) => target.id === targetId))
-      .filter((target): target is PortfolioWorkTargetOption => Boolean(target));
-    if (!selectedTargets.length) return true;
-    return selectedTargets.some((target) => {
-      if (target.type === 'all' || target.id === 'portfolio::all') return true;
-      if (target.id === 'program::all' || target.id === 'project::all') return Boolean(target.projectNames?.includes(item.project));
-      if (target.type === 'project') return item.project === target.label;
-      if (target.type === 'portfolio') {
-        return item.project === target.label || Boolean(target.projectNames?.includes(item.project));
-      }
+    const target = this.selectedTargetOption;
+    if (target.type === 'all') return true;
+    if (target.type === 'project') return item.project === target.label;
+    if (target.type === 'portfolio') {
       return item.project === target.label || Boolean(target.projectNames?.includes(item.project));
-    });
+    }
+    return item.project === target.label || Boolean(target.projectNames?.includes(item.project));
   }
 
   private matchesSearch(item: PortfolioActionItem, query: string): boolean {

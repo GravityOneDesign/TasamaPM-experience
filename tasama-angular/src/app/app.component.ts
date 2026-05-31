@@ -5,12 +5,12 @@ import { PmConsoleMountOptions } from './pm-console.types';
 import { PmConsoleLoginComponent } from './pm-console-login.component';
 import { PmConsoleOnboardingComponent } from './pm-console-onboarding.component';
 import { PmConsoleShellComponent } from './pm-console-shell.component';
-import { PmoGovernanceShellComponent } from './pmo-governance-shell.component';
 import { PortfolioManagerShellComponent } from './portfolio-manager-shell.component';
 import { PortfolioManagerMountOptions } from './portfolio-manager.types';
 import { PersonaFlowPlaceholderComponent } from './persona-flow-placeholder.component';
+import { PmoGovernanceShellComponent } from './pmo-governance-shell.component';
 
-type AppView = 'login' | 'onboarding' | 'console' | 'portfolio' | 'pmo' | 'persona' | 'executive';
+type AppView = 'login' | 'onboarding' | 'console' | 'portfolio' | 'persona' | 'executive' | 'pmo';
 
 @Component({
   selector: 'app-root',

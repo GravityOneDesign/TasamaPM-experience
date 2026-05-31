@@ -1,16 +1,22 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PmConsoleIconComponent } from '../shared/pm-console-icon.component';
-import { PmConsoleCreateMenuComponent, type PmConsoleCreateMenuOption } from '../shared/pm-console-create-menu.component';
-import { type PmConsoleFieldOption } from '../shared/pm-console-field.component';
-import { PortfolioManagerStatusTrendComponent, type PortfolioManagerStatusTrendInput } from '../portfolio-manager-status-trend.component';
-import { PmConsolePlanEmptyStateComponent } from '../pm-console-plan-empty-state.component';
+import type { PortfolioManagerStatusTrendInput } from '../portfolio-manager-status-trend.component';
 import {
+  PmConsoleRegisterTableComponent,
+  type PmConsoleRegisterTableCell,
+  type PmConsoleRegisterTableColumn,
+  type PmConsoleRegisterTableRow,
+  type PmConsoleRegisterTableTrendItem,
+} from '../shared/pm-console-register-table.component';
+import {
+  portfolioRows,
   portfolioProgramRows,
   standaloneProjects,
   riskRegisterData,
   benefitsRegisterData,
+  PortfolioRow,
   ProgramRow,
   ProjectRow,
   Risk,
@@ -18,34 +24,8 @@ import {
 } from './portfolio-workspace.data';
 import { PortfolioWorkspaceRiskRegisterComponent } from './portfolio-workspace-risk-register.component';
 import { PortfolioWorkspaceBenefitsRegisterComponent } from './portfolio-workspace-benefits-register.component';
-import {
-  PortfolioWorkspaceRegisterCreateDrawerComponent,
-  type PortfolioProgramCreatePayload,
-  type PortfolioProjectCreatePayload,
-  type PortfolioRegisterCreateKind,
-} from './portfolio-workspace-register-create-drawer.component';
 
-type SubTab = 'projects' | 'benefits' | 'risks' | 'issues';
-
-interface RegisterSubTabItem {
-  readonly id: SubTab;
-  readonly label: string;
-}
-
-const registerSubTabs: readonly RegisterSubTabItem[] = [
-  { id: 'projects', label: 'Program & Project Register' },
-  { id: 'benefits', label: 'Benefit' },
-  { id: 'risks', label: 'Risk' },
-  { id: 'issues', label: 'Issues' },
-];
-
-const createMenuOptions: readonly PmConsoleCreateMenuOption[] = [
-  { id: 'program', label: 'Program', icon: 'layers' },
-  { id: 'project', label: 'Project', icon: 'folder' },
-];
-
-const portfolioOptions: readonly string[] = ['Tasama Client 1'];
-const unassignedManager = 'Unassigned';
+type SubTab = 'projects' | 'risks' | 'benefits';
 
 @Component({
   selector: 'app-portfolio-workspace-registers',
@@ -54,280 +34,133 @@ const unassignedManager = 'Unassigned';
     CommonModule,
     FormsModule,
     PmConsoleIconComponent,
-    PmConsoleCreateMenuComponent,
-    PortfolioManagerStatusTrendComponent,
-    PmConsolePlanEmptyStateComponent,
+    PmConsoleRegisterTableComponent,
     PortfolioWorkspaceRiskRegisterComponent,
-    PortfolioWorkspaceBenefitsRegisterComponent,
-    PortfolioWorkspaceRegisterCreateDrawerComponent
+    PortfolioWorkspaceBenefitsRegisterComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="workspace-registers-tab">
-      <div class="portfolio-register-shell" [class.without-register-nav]="!showRegisterTabs">
-        @if (showRegisterTabs) {
-          <aside class="portfolio-register-nav" aria-label="Register sections">
-            <div class="portfolio-register-tab-scroll">
-              <div class="portfolio-register-tab-list" role="tablist" aria-label="Portfolio registers">
-                @for (tab of registerSubTabs; track tab.id) {
-                  <button
-                    [class.active]="activeSubTab === tab.id"
-                    type="button"
-                    role="tab"
-                    [attr.aria-selected]="activeSubTab === tab.id"
-                    (click)="setSubTab(tab.id)"
-                  >
-                    <span class="portfolio-register-tab-label">{{ tab.label }}</span>
-                  </button>
-                }
-              </div>
-            </div>
-          </aside>
+
+      @if (showRegisterTabs) {
+        <div class="sub-tabs">
+          <button
+            class="pm-register-tab"
+            [class.is-active]="activeSubTab === 'projects'"
+            type="button"
+            (click)="setSubTab('projects')"
+          >
+            <span>Program & Project Register</span>
+          </button>
+          <button
+            class="pm-register-tab"
+            [class.is-active]="activeSubTab === 'risks'"
+            type="button"
+            (click)="setSubTab('risks')"
+          >
+            <span>Risk Register</span>
+          </button>
+          <button
+            class="pm-register-tab"
+            [class.is-active]="activeSubTab === 'benefits'"
+            type="button"
+            (click)="setSubTab('benefits')"
+          >
+            <span>Benefits Register</span>
+          </button>
+          <button
+            class="pm-register-tab"
+            type="button"
+            [disabled]="true"
+          >
+            <span>Issues Register</span>
+          </button>
+        </div>
+      }
+
+      <!-- Tab Outlet -->
+      @switch (activeSubTab) {
+
+        <!-- PROJECT REGISTER -->
+	        @case ('projects') {
+	          <div class="tab-content-container animation-slide">
+	            <app-pm-console-register-table
+	              class="portfolio-register-table"
+	              [columns]="portfolioRegisterColumns"
+	              [rows]="portfolioRegisterRows"
+	              storageKey="tasama.portfolioRegister.visibleColumns.v1"
+	              ariaLabel="Portfolio register"
+	              itemName="portfolio register rows"
+	              [showItemLabel]="false"
+	              [selectable]="false"
+	              searchVariant="workspace"
+	              searchPlaceholder="Search portfolios..."
+	              searchAriaLabel="Search portfolio register"
+	              toolbarClass="pm-workspace-register-toolbar portfolio-register-toolbar"
+	              [showGroupBy]="false"
+	              [showFilter]="true"
+	              [showExport]="true"
+	              emptyTitle="No portfolio register rows"
+	              emptyDescription="Try a different search or filter."
+	              (rowOpen)="openPortfolioRegisterRow($event)"
+	            >
+	              <span registerTableToolbarLabel class="portfolio-register-summary" aria-label="Portfolio register summary">
+	                <span class="summary-pill active">
+	                  <span class="pill-label">Portfolios</span>
+	                  <span class="pill-badge-circle">{{ portfolios.length }}</span>
+	                </span>
+	                <span class="summary-pill inactive">
+	                  <span class="pill-label">Standalone Project Groups</span>
+	                  <span class="pill-badge-circle">{{ standaloneProjectGroupCount }}</span>
+	                </span>
+	              </span>
+
+	              <span registerTableToolbarActions class="create-dropdown-container">
+	                <button class="pm-table-add-project" type="button" (click)="toggleCreateDropdown($event)">
+	                  <span pmConsoleIcon="plus" aria-hidden="true"></span>
+	                  <span>Add new</span>
+	                </button>
+	                @if (showCreateDropdown) {
+	                  <span class="create-dropdown-menu">
+	                    <button class="dropdown-item" type="button" (click)="onCreateOption('New Portfolio')">
+	                      <span pmConsoleIcon="briefcase" aria-hidden="true"></span>
+	                      <span>New Portfolio</span>
+	                    </button>
+	                    <button class="dropdown-item" type="button" (click)="onCreateOption('New Program')">
+	                      <span pmConsoleIcon="layers" aria-hidden="true"></span>
+	                      <span>New Program</span>
+	                    </button>
+	                    <button class="dropdown-item" type="button" (click)="onCreateOption('New Project')">
+	                      <span pmConsoleIcon="folder" aria-hidden="true"></span>
+	                      <span>New Project</span>
+	                    </button>
+	                  </span>
+	                }
+	              </span>
+	            </app-pm-console-register-table>
+	          </div>
+	        }
+
+        <!-- RISK REGISTER -->
+        @case ('risks') {
+          <div class="tab-content-container animation-slide">
+            <app-portfolio-workspace-risk-register
+              [risks]="riskData"
+              [programs]="programs"
+              [standaloneProjects]="standaloneList"
+              (riskCreate)="addRisk($event)"
+            />
+          </div>
         }
 
-        <main class="portfolio-register-panel">
-          @switch (activeSubTab) {
-            @case ('projects') {
-              <div class="tab-content-container animation-slide">
-
-            <div class="register-toolbar">
-              <div class="toolbar-left">
-                <!-- Programs summary container -->
-                <div class="summary-pill active">
-                  <span class="pill-label">Programs</span>
-                  <span class="pill-badge-circle">{{ allProgramsCount }}</span>
-                </div>
-                <!-- Standalone Projects summary container -->
-                <div class="summary-pill inactive">
-                  <span class="pill-label">Standalone Projects</span>
-                  <span class="pill-badge-circle">{{ standaloneList.length }}</span>
-                </div>
-              </div>
-
-              <div class="toolbar-right">
-                <!-- Toggleable Search -->
-                <div class="search-toggle-container" [class.is-expanded]="showSearch">
-                  <button class="tb-btn search-toggle-btn" type="button" (click)="showSearch = !showSearch" aria-label="Toggle search">
-                    <span [pmConsoleIcon]="'search'"></span>
-                  </button>
-                  @if (showSearch) {
-                    <input
-                      type="search"
-                      class="toolbar-search-input"
-                      placeholder="Search Programs..."
-                      [(ngModel)]="searchQuery"
-                      (input)="onSearch()"
-                      autofocus
-                    />
-                  }
-                </div>
-
-                <button class="tb-btn" type="button" aria-label="Filter options">
-                  <span [pmConsoleIcon]="'filter'"></span>
-                  <span>Filter</span>
-                </button>
-                <button class="tb-btn" type="button" aria-label="Export">
-                  <span [pmConsoleIcon]="'download'"></span>
-                  <span>Export</span>
-                </button>
-
-                <app-pm-console-create-menu
-                  label="Add new"
-                  ariaLabel="Add program or project"
-                  [options]="createMenuOptions"
-                  (optionSelect)="openCreateDrawer($event)"
-                />
-
-                <button class="tb-btn settings-btn" type="button" aria-label="Settings">
-                  <span [pmConsoleIcon]="'settings'"></span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Table -->
-            <div class="pm-project-table-scroll">
-              <table class="pm-project-table">
-                <thead>
-                  <tr>
-                    <th>Program / Project Name</th>
-                    <th>Manager</th>
-                    <th>Status Trend</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
-                    <th>Budget Utilised</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (prog of filteredPrograms; track prog.id) {
-                    <!-- Program Row -->
-                    <tr class="program-row" [class.is-expanded]="isExpanded(prog.id)">
-                      <td class="primary-col">
-                        <div class="name-cell-wrapper">
-                          <button
-                            class="expand-toggle-btn"
-                            type="button"
-                            (click)="toggleProgram(prog.id)"
-                            [attr.aria-label]="isExpanded(prog.id) ? 'Collapse projects' : 'Expand projects'"
-                          >
-                            <span [pmConsoleIcon]="isExpanded(prog.id) ? 'chevron-down' : 'chevron-right'" class="chevron-icon"></span>
-                          </button>
-                          <div class="program-title-column" title="{{ prog.name }}">
-                            <div class="program-id-alert-wrapper">
-                              <span class="program-display-id">{{ getProgramDisplayId(prog.id) }}</span>
-                              @if (prog.id === 'prog-1' || prog.id === 'prog-2') {
-                                <span class="review-needed-alert" title="Needs attention">
-                                  <span [pmConsoleIcon]="'triangle-alert'"></span>
-                                </span>
-                              }
-                            </div>
-                            <div class="title-meta">
-                              <strong class="program-name-blue" title="{{ prog.name }}">{{ truncateName(prog.name, 30) }}</strong>
-                              <span class="badge-tag program-tag">Program</span>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="avatar-cell">
-                          <div class="avatar-circle" [ngStyle]="getManagerAvatarStyles(prog.manager)">{{ getInitials(prog.manager) }}</div>
-                          <span class="manager-name">{{ prog.manager }}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <app-portfolio-manager-status-trend [tones]="getThreePeriodTrend(prog.id)" [ariaLabel]="prog.name + ' report status trend'"></app-portfolio-manager-status-trend>
-                      </td>
-                      <td class="date-col">{{ formatDate(prog.startDate) }}</td>
-                      <td class="date-col">{{ formatDate(prog.endDate) }}</td>
-                      <td class="budget-col">
-                        <span class="pm-table-budget">
-                          <strong>{{ getBudgetParts(prog.budgetUtilised).bold }}</strong><small>{{ getBudgetParts(prog.budgetUtilised).normal }}</small>
-                        </span>
-                      </td>
-                    </tr>
-
-                    <!-- Child Project Rows -->
-                    @if (isExpanded(prog.id) && prog.projects) {
-                      @for (proj of prog.projects; track proj.id) {
-                        <tr class="project-child-row animation-slide">
-                          <td class="primary-col indented-col">
-                            <div class="name-cell-wrapper">
-                              <span [pmConsoleIcon]="'corner-down-right'" class="corner-arrow"></span>
-                              <div class="program-title-column" title="{{ proj.name }}">
-                                <span class="program-display-id">{{ getProgramDisplayId(proj.id) }}</span>
-                                <div class="title-meta">
-                                  <strong class="program-name-blue" title="{{ proj.name }}">{{ truncateName(proj.name, 30) }}</strong>
-                                  <span class="badge-tag project-tag">Project</span>
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                          <td>
-                            <div class="avatar-cell">
-                              <div class="avatar-circle" [ngStyle]="getManagerAvatarStyles(proj.manager)">{{ getInitials(proj.manager) }}</div>
-                              <span class="manager-name">{{ proj.manager }}</span>
-                            </div>
-                          </td>
-                          <td>
-                            <app-portfolio-manager-status-trend [tones]="getThreePeriodTrend(proj.id)" [ariaLabel]="proj.name + ' report status trend'"></app-portfolio-manager-status-trend>
-                          </td>
-                          <td class="date-col">{{ formatDate(proj.startDate) }}</td>
-                          <td class="date-col">{{ formatDate(proj.endDate) }}</td>
-                          <td class="budget-col">
-                            <span class="pm-table-budget">
-                              <strong>{{ getBudgetParts(proj.budgetUtilised).bold }}</strong><small>{{ getBudgetParts(proj.budgetUtilised).normal }}</small>
-                            </span>
-                          </td>
-                        </tr>
-                      }
-                    }
-                  }
-
-                  <!-- Standalone Projects -->
-                  @for (sa of standaloneList; track sa.id) {
-                    <tr class="program-row standalone-row">
-                      <td class="primary-col">
-                        <div class="name-cell-wrapper no-chevron">
-                          <div class="program-title-column" title="{{ sa.name }}">
-                            <span class="program-display-id">{{ getProgramDisplayId(sa.id) }}</span>
-                            <div class="title-meta">
-                              <strong class="program-name-blue" title="{{ sa.name }}">{{ truncateName(sa.name, 30) }}</strong>
-                              <span class="badge-tag project-tag">Project</span>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="avatar-cell">
-                          <div class="avatar-circle" [ngStyle]="getManagerAvatarStyles(sa.manager)">{{ getInitials(sa.manager) }}</div>
-                          <span class="manager-name">{{ sa.manager }}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <app-portfolio-manager-status-trend [tones]="getThreePeriodTrend(sa.id)" [ariaLabel]="sa.name + ' report status trend'"></app-portfolio-manager-status-trend>
-                      </td>
-                      <td class="date-col">{{ formatDate(sa.startDate) }}</td>
-                      <td class="date-col">{{ formatDate(sa.endDate) }}</td>
-                      <td class="budget-col">
-                        <span class="pm-table-budget">
-                          <strong>{{ getBudgetParts(sa.budgetUtilised).bold }}</strong><small>{{ getBudgetParts(sa.budgetUtilised).normal }}</small>
-                        </span>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
+        <!-- BENEFITS REGISTER -->
+        @case ('benefits') {
+          <div class="tab-content-container animation-slide">
+            <app-portfolio-workspace-benefits-register [benefits]="benefits" />
           </div>
-            }
-
-            @case ('benefits') {
-              <div class="tab-content-container animation-slide">
-                <app-portfolio-workspace-benefits-register [benefits]="benefits" />
-              </div>
-            }
-
-            @case ('risks') {
-              <div class="tab-content-container animation-slide">
-                <app-portfolio-workspace-risk-register
-                  [risks]="riskData"
-                  [programs]="programs"
-                  [standaloneProjects]="standaloneList"
-                  (riskCreate)="addRisk($event)"
-                  (riskDelete)="deleteRisk($event)"
-                />
-              </div>
-            }
-
-            @case ('issues') {
-              <div class="tab-content-container animation-slide">
-                <div class="portfolio-issues-empty">
-                  <app-pm-console-plan-empty-state
-                    title="Issues register"
-                    description="Track portfolio, program, and project issues that need active resolution."
-                    countLabel="0 issues"
-                    actionLabel="Add issue"
-                    actionAriaLabel="Add issue"
-                    iconName="issues"
-                    emptyTitle="No issues logged yet"
-                    emptyBody="Open blockers, dependency problems, and unresolved decisions will appear here once they are added to the portfolio workspace."
-                  />
-                </div>
-              </div>
-            }
-          }
-        </main>
-      </div>
-      @if (createDrawerKind) {
-        <app-portfolio-workspace-register-create-drawer
-          [kind]="createDrawerKind"
-          [portfolioOptions]="portfolioOptions"
-          [programOptions]="programSelectOptions"
-          [managerOptions]="managerOptions"
-          (close)="closeCreateDrawer()"
-          (programCreate)="addProgramFromDrawer($event)"
-          (projectCreate)="addProjectFromDrawer($event)"
-        />
+        }
       }
+
     </div>
   `,
   styles: [`
@@ -345,146 +178,89 @@ const unassignedManager = 'Unassigned';
       height: 100%;
       min-height: 0;
       overflow: hidden;
-      padding: 0;
+      padding: 4px 0 0;
       animation: fadeIn 0.3s ease-out;
     }
 
-    .portfolio-register-shell {
-      background: #ffffff;
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      min-height: 0;
-      overflow: hidden;
-    }
-
-    .portfolio-register-nav {
-      align-items: stretch;
+    /* Sub-tabs styling */
+    .sub-tabs {
+      position: sticky;
+      top: -10px;
+      z-index: 12;
       background: #ffffff;
       border-bottom: 1px solid #edf0f6;
+      margin-bottom: 4px;
       display: flex;
-      flex: 0 0 auto;
-      height: 48px;
-      margin: 0;
-      min-height: 0;
-      overflow-x: auto;
-      overflow-y: hidden;
-      padding: 0 32px;
-      width: 100%;
+      gap: 24px;
     }
 
-    .portfolio-register-tab-scroll {
-      align-items: stretch;
-      display: flex;
-      flex: 1 1 auto;
-      flex-direction: row;
-      height: 100%;
-      min-height: 0;
-      overflow-x: auto;
-      overflow-y: hidden;
-      width: 100%;
-    }
-
-    .portfolio-register-tab-list {
-      align-items: stretch;
-      display: flex;
-      flex-direction: row;
-      gap: 32px;
-      height: 100%;
-      width: auto;
-    }
-
-    .portfolio-register-tab-list button {
-      align-items: center;
+    .sub-tabs .pm-register-tab {
       background: transparent;
-      border: 0;
-      color: #5e6472;
-      display: inline-flex;
-      flex: 0 0 auto;
-      font-size: 12px;
+      border: none;
+      padding: 10px 4px 8px 4px;
+      font-size: 13.5px;
       font-weight: 500;
-      height: 100%;
-      justify-content: center;
-      line-height: 16px;
-      min-width: 0;
-      overflow: visible;
-      padding: 0 2px;
+      color: #707788;
+      cursor: pointer;
       position: relative;
-      white-space: nowrap;
-      width: auto;
-      z-index: 0;
+      transition: color 0.2s ease;
     }
 
-    .portfolio-register-tab-list button:hover {
-      color: #252a34;
+    .sub-tabs .pm-register-tab:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
-    .portfolio-register-tab-list button.active {
-      background: transparent;
-      color: var(--brand);
-      font-weight: 500;
-    }
-
-    .portfolio-register-tab-list button.active::after {
-      background: var(--brand);
-      border-radius: 999px 999px 0 0;
-      bottom: -1px;
-      content: "";
-      display: block;
-      height: 2px;
-      left: 0;
-      pointer-events: none;
+    .sub-tabs .pm-register-tab::after {
+      content: '';
       position: absolute;
+      bottom: -1px;
+      left: 0;
       right: 0;
+      height: 2px;
+      background: transparent;
+      transition: background-color 0.2s ease;
     }
 
-    .portfolio-register-tab-label {
-      overflow: visible;
-      text-overflow: clip;
-      white-space: nowrap;
+    .sub-tabs .pm-register-tab.is-active {
+      color: var(--brand, #007aff);
+      font-weight: 600;
     }
 
-    .portfolio-register-tab-list button:focus {
-      outline: none;
+    .sub-tabs .pm-register-tab.is-active::after {
+      background: var(--brand, #007aff);
     }
 
-    .portfolio-register-tab-list button:focus-visible {
-      box-shadow: inset 0 0 0 2px rgba(16, 6, 159, 0.18);
-    }
+	    .tab-content-container {
+	      display: flex;
+	      flex-direction: column;
+	      gap: 8px;
+	      flex: 1;
+	      min-height: 0;
+	      overflow: hidden;
+	    }
 
-    .portfolio-register-panel {
-      background: #ffffff;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-      min-width: 0;
-      overflow: hidden;
-      padding: 0;
-    }
+	    .portfolio-register-table {
+	      display: block;
+	      flex: 1 1 auto;
+	      min-height: 0;
+	    }
 
-    .tab-content-container {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      flex: 1;
-      min-height: 0;
-      overflow: hidden;
-    }
+	    .portfolio-register-summary {
+	      align-items: center;
+	      display: inline-flex;
+	      gap: 12px;
+	      min-width: 0;
+	    }
 
-    .portfolio-issues-empty {
-      min-height: 0;
-      overflow: auto;
-      padding: 4px;
-    }
-
-    /* Toolbar */
+	    /* Toolbar */
     .register-toolbar {
       position: sticky;
       top: 0px;
       z-index: 11;
       background: transparent;
-      padding: 14px 20px 12px;
-      margin-bottom: 0;
+      padding: 6px 0;
+      margin-bottom: 4px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -505,9 +281,9 @@ const unassignedManager = 'Unassigned';
       border: none;
     }
 
-    .summary-pill .pill-badge-circle {
-      display: inline-flex;
-      align-items: center;
+	    .summary-pill .pill-badge-circle {
+	      display: inline-flex;
+	      align-items: center;
       justify-content: center;
       width: 20px;
       height: 20px;
@@ -517,10 +293,54 @@ const unassignedManager = 'Unassigned';
       color: #4f46e5;
       font-size: 11px;
       font-weight: 400; /* light font weight */
-      line-height: 1;
-    }
+	      line-height: 1;
+	    }
 
-    .pm-project-table-scroll {
+	    .create-dropdown-container {
+	      display: inline-flex;
+	      position: relative;
+	    }
+
+	    .create-dropdown-menu {
+	      background: #ffffff;
+	      border: 1px solid #edf0f6;
+	      border-radius: 10px;
+	      box-shadow: 0 10px 25px rgba(25, 33, 61, 0.12);
+	      display: flex;
+	      flex-direction: column;
+	      gap: 4px;
+	      margin-top: 6px;
+	      padding: 6px;
+	      position: absolute;
+	      right: 0;
+	      top: 100%;
+	      width: 172px;
+	      z-index: 100;
+	    }
+
+	    .create-dropdown-menu .dropdown-item {
+	      align-items: center;
+	      background: transparent;
+	      border: 0;
+	      border-radius: 6px;
+	      color: #252a34;
+	      cursor: pointer;
+	      display: flex;
+	      font-size: 13px;
+	      font-weight: 500;
+	      gap: 8px;
+	      padding: 8px 12px;
+	      text-align: left;
+	      width: 100%;
+	    }
+
+	    .create-dropdown-menu .dropdown-item .icon {
+	      color: #707788;
+	      height: 14px;
+	      width: 14px;
+	    }
+
+	    .pm-project-table-scroll {
       flex: 1;
       overflow: auto;
       min-height: 0;
@@ -528,7 +348,6 @@ const unassignedManager = 'Unassigned';
       border-radius: 16px;
       background: #ffffff;
       box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-      margin: 12px;
     }
 
     .pm-project-table th {
@@ -541,7 +360,7 @@ const unassignedManager = 'Unassigned';
     .toolbar-left {
       display: flex;
       align-items: center;
-      gap: 24px;
+      gap: 16px;
     }
 
     .items-count {
@@ -578,8 +397,7 @@ const unassignedManager = 'Unassigned';
     .toolbar-right {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-left: auto;
+      gap: 10px;
     }
 
     .tb-btn {
@@ -613,12 +431,21 @@ const unassignedManager = 'Unassigned';
       border-color: #0062cc;
     }
 
-    .program-row {
+    .portfolio-row,
+    .program-row,
+    .standalone-group-row {
       transition: background-color 0.15s ease;
     }
 
-    .program-row.is-expanded {
-      background: rgba(0, 122, 255, 0.02) !important;
+    .portfolio-row,
+    .standalone-group-row {
+      background: #ffffff;
+    }
+
+    .portfolio-row.is-expanded,
+    .program-row.is-expanded,
+    .standalone-group-row.is-expanded {
+      background: rgba(16, 6, 159, 0.025) !important;
     }
 
     .name-cell-wrapper {
@@ -690,8 +517,6 @@ const unassignedManager = 'Unassigned';
       display: flex;
       align-items: center;
       gap: 8px;
-      flex-wrap: nowrap;
-      min-width: 0;
     }
 
     .title-meta strong {
@@ -711,14 +536,24 @@ const unassignedManager = 'Unassigned';
       align-items: center;
     }
 
+    .portfolio-tag {
+      background: #e5f4ef;
+      color: #0f6b57;
+    }
+
     .program-tag {
-      background: #eef2ff; /* solid light lavender background from image 2 */
-      color: #10069f;      /* deep indigo text from image 2 */
+      background: #eef2ff;
+      color: #10069f;
     }
 
     .project-tag {
-      background: #E6ECF8; /* solid very light gray-blue background */
-      color: #244980;      /* blue text */
+      background: #fff3dc;
+      color: #975a16;
+    }
+
+    .standalone-group-tag {
+      background: #eef1f5;
+      color: #4b5565;
     }
 
     .stage-span {
@@ -753,12 +588,10 @@ const unassignedManager = 'Unassigned';
     .manager-name, .owner-name {
       font-size: 13px;
       color: #252a34;
-      white-space: nowrap;
     }
 
     .date-col, .budget-col {
       color: #555555;
-      white-space: nowrap;
     }
 
     .pm-project-table th:last-child,
@@ -767,12 +600,21 @@ const unassignedManager = 'Unassigned';
     }
 
     /* Child rows styling */
+    .program-child-row {
+      background: #fbfcff !important;
+    }
+
     .project-child-row {
       background: #f8fafc !important;
     }
 
-    .indented-col {
-      padding-left: 24px !important;
+    .nested-level-one {
+      padding-left: 28px !important;
+    }
+
+    .nested-level-two,
+    .nested-standalone-project {
+      padding-left: 56px !important;
     }
 
     .corner-arrow {
@@ -785,30 +627,20 @@ const unassignedManager = 'Unassigned';
       font-size: 13px;
     }
 
-    .standalone-row {
+    .standalone-group-row {
       border-top: 1.5px solid #edf0f6 !important;
       background: #ffffff;
     }
 
-    /* Keep register columns spacious; allow horizontal scroll on narrower screens. */
-    .pm-project-table {
-      width: 100% !important;
-      min-width: 1680px !important;
-      table-layout: fixed;
+    .standalone-row {
+      background: #fbfcfe;
     }
 
-    .pm-project-table th:nth-child(1) { width: 34% !important; }
-    .pm-project-table th:nth-child(2) { width: 16% !important; }
-    .pm-project-table th:nth-child(3) { width: 18% !important; }
-    .pm-project-table th:nth-child(4) { width: 11% !important; }
-    .pm-project-table th:nth-child(5) { width: 11% !important; }
-    .pm-project-table th:nth-child(6) { width: 10% !important; }
-
-    .pm-project-table td:nth-child(3),
-    .pm-project-table td:nth-child(4),
-    .pm-project-table td:nth-child(5),
-    .pm-project-table td:nth-child(6) {
-      white-space: nowrap;
+    /* Table extension to edge */
+    .pm-project-table {
+      min-width: 980px !important;
+      table-layout: fixed;
+      width: 100% !important;
     }
 
     /* Risk / Benefit styling modifications */
@@ -830,7 +662,7 @@ const unassignedManager = 'Unassigned';
 
     .risk-rating-badge {
       font-size: 10px;
-      font-weight: 700;
+      font-weight: 600;
       text-transform: uppercase;
       padding: 3px 8px;
       border-radius: 4px;
@@ -876,6 +708,10 @@ const unassignedManager = 'Unassigned';
       border-color: rgba(16, 6, 159, 0.15);
       color: #10069f;
     }
+    .create-dropdown-menu .dropdown-item:hover {
+      background-color: #f4f5f7 !important;
+    }
+
     /* Animations */
     .animation-slide {
       animation: slideIn 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -900,12 +736,6 @@ const unassignedManager = 'Unassigned';
       width: 32px;
       height: 32px;
       padding: 0 !important;
-    }
-
-    .program-id-alert-wrapper {
-      align-items: center;
-      display: flex;
-      gap: 6px;
     }
 
     /* Needs Review indicator & legend styles */
@@ -950,90 +780,266 @@ const unassignedManager = 'Unassigned';
       stroke-width: 2.5px !important;
       color: #de350b !important;
     }
-
-    @media (max-width: 900px) {
-      .portfolio-register-nav {
-        padding: 0 16px;
-      }
-
-      .portfolio-register-tab-list {
-        gap: 24px;
-      }
-
-      .portfolio-register-tab-list button {
-        font-size: 12px;
-      }
-    }
   `]
 })
 export class PortfolioWorkspaceRegistersComponent {
   @Input() showRegisterTabs = true;
 
-  readonly registerSubTabs = registerSubTabs;
-  readonly createMenuOptions = createMenuOptions;
-  readonly portfolioOptions = portfolioOptions;
-
-  activeSubTab: SubTab = 'risks';
+  activeSubTab: SubTab = 'projects';
+  expandedPortfolioIds = new Set<string>();
   expandedProgramIds = new Set<string>(); // default closed by default
+  standaloneGroupExpanded = false;
   searchQuery = '';
   statusFilter: string | null = null;
   showSearch = false; // toggleable search bar
-  createDrawerKind: PortfolioRegisterCreateKind | null = null;
+  showCreateDropdown = false;
 
-  programs: ProgramRow[] = portfolioProgramRows.map((program) => ({
-    ...program,
-    projects: program.projects ? [...program.projects] : undefined,
-  }));
-  standaloneList: ProgramRow[] = standaloneProjects.map((project) => ({ ...project }));
+  portfolios: PortfolioRow[] = portfolioRows;
+  programs = portfolioProgramRows;
+  standaloneList = standaloneProjects;
   riskData: Risk[] = riskRegisterData;
   benefits: Benefit[] = benefitsRegisterData;
+	  readonly standaloneProjectGroup = {
+	    id: 'standalone-projects',
+	    name: 'Standalone Projects',
+	    manager: 'PMO Desk',
+	    startDate: '2026-02-18',
+	    endDate: '2027-02-28',
+	    budgetUtilised: '$830K / $4.05M',
+	  };
+	  readonly portfolioRegisterColumns: PmConsoleRegisterTableColumn[] = [
+	    { id: 'name', label: 'Portfolio / Program / Project Name', minWidth: 330, maxWidth: 440 },
+	    { id: 'manager', label: 'Manager', minWidth: 180, maxWidth: 230 },
+	    { id: 'statusTrend', label: 'Status Trend', minWidth: 286, maxWidth: 286 },
+	    { id: 'startDate', label: 'Start Date', minWidth: 130, maxWidth: 160 },
+	    { id: 'endDate', label: 'End Date', minWidth: 130, maxWidth: 160 },
+	    { id: 'budget', label: 'Budget Utilised', minWidth: 150, maxWidth: 185, align: 'right' },
+	  ];
+	  private readonly trendPeriodLabels = ['Mar', 'Apr', 'May'];
 
-  openCreateDrawer(option: PmConsoleCreateMenuOption): void {
-    if (!this.isCreateKind(option.id)) return;
-    this.createDrawerKind = option.id;
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.showCreateDropdown = false;
   }
 
-  closeCreateDrawer(): void {
-    this.createDrawerKind = null;
+  toggleCreateDropdown(event: MouseEvent): void {
+    event.stopPropagation();
+    this.showCreateDropdown = !this.showCreateDropdown;
   }
 
-  addProgramFromDrawer(payload: PortfolioProgramCreatePayload): void {
-    const program = this.createProgramRow(payload);
-    this.programs = [program, ...this.programs];
-    this.closeCreateDrawer();
+  onCreateOption(option: string): void {
+    console.log('Selected option:', option);
+    this.showCreateDropdown = false;
   }
 
-  addProjectFromDrawer(payload: PortfolioProjectCreatePayload): void {
-    const selectedProgram = this.programs.find((program) => program.id === payload.programId);
-    if (!selectedProgram) {
-      this.standaloneList = [this.createStandaloneProjectRow(payload), ...this.standaloneList];
-      this.closeCreateDrawer();
-      return;
-    }
+	  addRisk(risk: Risk): void {
+	    this.riskData = [...this.riskData, risk];
+	  }
 
-    const project = this.createProjectRow(payload, selectedProgram);
-    this.programs = this.programs.map((program) => {
-      if (program.id !== selectedProgram.id) return program;
-      return {
-        ...program,
-        projects: [project, ...(program.projects || [])],
-      };
-    });
-    const nextExpandedProgramIds = new Set(this.expandedProgramIds);
-    nextExpandedProgramIds.add(selectedProgram.id);
-    this.expandedProgramIds = nextExpandedProgramIds;
-    this.closeCreateDrawer();
-  }
+	  get portfolioRegisterRows(): PmConsoleRegisterTableRow[] {
+	    const rows: PmConsoleRegisterTableRow[] = [];
 
-  addRisk(risk: Risk): void {
-    this.riskData = [...this.riskData, risk];
-  }
+	    for (const portfolio of this.filteredPortfolios) {
+	      rows.push(this.portfolioRegisterRowForPortfolio(portfolio));
 
-  deleteRisk(riskId: string): void {
-    this.riskData = this.riskData.filter((risk) => risk.id !== riskId);
-  }
+	      if (this.isPortfolioExpanded(portfolio.id)) {
+	        for (const program of portfolio.programs) {
+	          rows.push(this.portfolioRegisterRowForProgram(program));
 
-  getRowStatusLabel(id: string, defaultStatus: string): string {
+	          if (this.isExpanded(program.id)) {
+	            for (const project of program.projects || []) {
+	              rows.push(this.portfolioRegisterRowForProject(project, 2));
+	            }
+	          }
+	        }
+	      }
+	    }
+
+	    if (this.standaloneProjectGroupCount) {
+	      rows.push(this.portfolioRegisterRowForStandaloneGroup());
+
+	      if (this.standaloneGroupExpanded) {
+	        for (const project of this.filteredStandaloneProjects) {
+	          rows.push(this.portfolioRegisterRowForProject(project, 1));
+	        }
+	      }
+	    }
+
+	    return rows;
+	  }
+
+	  openPortfolioRegisterRow(row: PmConsoleRegisterTableRow): void {
+	    if (row.id === this.standaloneProjectGroup.id) {
+	      this.toggleStandaloneGroup();
+	      return;
+	    }
+
+	    if (row.id.startsWith('portfolio-')) {
+	      this.togglePortfolio(row.id);
+	      return;
+	    }
+
+	    if (row.id.startsWith('prog-')) {
+	      this.toggleProgram(row.id);
+	    }
+	  }
+
+	  private portfolioRegisterRowForPortfolio(portfolio: PortfolioRow): PmConsoleRegisterTableRow {
+	    return this.portfolioRegisterRowForItem({
+	      id: portfolio.id,
+	      name: portfolio.name,
+	      manager: portfolio.manager,
+	      startDate: portfolio.startDate,
+	      endDate: portfolio.endDate,
+	      budgetUtilised: portfolio.budgetUtilised,
+	      tag: 'Portfolio',
+	      tagTone: 'portfolio',
+	      prefixIcon: this.isPortfolioExpanded(portfolio.id) ? 'chevron-down' : 'chevron-right',
+	      clickable: true,
+	      expanded: this.isPortfolioExpanded(portfolio.id),
+	      alert: portfolio.status === 'alert' || portfolio.status === 'off-track',
+	      ariaLabel: `${this.isPortfolioExpanded(portfolio.id) ? 'Collapse' : 'Expand'} ${portfolio.name} programs`,
+	    });
+	  }
+
+	  private portfolioRegisterRowForProgram(program: ProgramRow): PmConsoleRegisterTableRow {
+	    const isExpanded = this.isExpanded(program.id);
+	    return this.portfolioRegisterRowForItem({
+	      id: program.id,
+	      name: program.name,
+	      manager: program.manager,
+	      startDate: program.startDate,
+	      endDate: program.endDate,
+	      budgetUtilised: program.budgetUtilised,
+	      tag: 'Program',
+	      tagTone: 'program',
+	      prefixIcon: isExpanded ? 'chevron-down' : 'chevron-right',
+	      indentLevel: 1,
+	      clickable: Boolean(program.projects?.length),
+	      expanded: isExpanded,
+	      alert: program.id === 'prog-1' || program.id === 'prog-2',
+	      ariaLabel: `${isExpanded ? 'Collapse' : 'Expand'} ${program.name} projects`,
+	    });
+	  }
+
+	  private portfolioRegisterRowForProject(project: ProjectRow | ProgramRow, indentLevel: number): PmConsoleRegisterTableRow {
+	    return this.portfolioRegisterRowForItem({
+	      id: project.id,
+	      name: project.name,
+	      manager: project.manager,
+	      startDate: project.startDate,
+	      endDate: project.endDate,
+	      budgetUtilised: project.budgetUtilised,
+	      tag: 'Project',
+	      tagTone: 'project',
+	      prefixIcon: 'corner-down-right',
+	      indentLevel,
+	      clickable: false,
+	      ariaLabel: project.name,
+	    });
+	  }
+
+	  private portfolioRegisterRowForStandaloneGroup(): PmConsoleRegisterTableRow {
+	    return this.portfolioRegisterRowForItem({
+	      id: this.standaloneProjectGroup.id,
+	      name: this.standaloneProjectGroup.name,
+	      manager: this.standaloneProjectGroup.manager,
+	      startDate: this.standaloneProjectGroup.startDate,
+	      endDate: this.standaloneProjectGroup.endDate,
+	      budgetUtilised: this.standaloneProjectGroup.budgetUtilised,
+	      tag: 'Project Group',
+	      tagTone: 'project-group',
+	      prefixIcon: this.standaloneGroupExpanded ? 'chevron-down' : 'chevron-right',
+	      clickable: true,
+	      expanded: this.standaloneGroupExpanded,
+	      ariaLabel: `${this.standaloneGroupExpanded ? 'Collapse' : 'Expand'} standalone projects`,
+	    });
+	  }
+
+	  private portfolioRegisterRowForItem(item: {
+	    id: string;
+	    name: string;
+	    manager: string;
+	    startDate: string;
+	    endDate: string;
+	    budgetUtilised: string;
+	    tag: string;
+	    tagTone: string;
+	    prefixIcon: string;
+	    indentLevel?: number;
+	    clickable: boolean;
+	    expanded?: boolean;
+	    alert?: boolean;
+	    ariaLabel: string;
+	  }): PmConsoleRegisterTableRow {
+	    const budget = this.getBudgetParts(item.budgetUtilised);
+	    const cells: Record<string, PmConsoleRegisterTableCell> = {
+	      name: {
+	        kind: 'primary',
+	        title: item.name,
+	        subtitle: this.getRegisterDisplayId(item.id),
+	        prefixIcon: item.prefixIcon,
+	        tag: item.tag,
+	        tagTone: item.tagTone,
+	        indentLevel: item.indentLevel,
+	        alert: item.alert,
+	        alertLabel: 'Needs attention',
+	        ariaLabel: item.ariaLabel,
+	      },
+	      manager: {
+	        kind: 'person',
+	        title: item.manager,
+	        initials: this.getInitials(item.manager),
+	      },
+	      statusTrend: {
+	        kind: 'trend',
+	        trend: this.trendItemsFor(item.id),
+	      },
+	      startDate: { kind: 'text', text: this.formatDate(item.startDate) },
+	      endDate: { kind: 'text', text: this.formatDate(item.endDate) },
+	      budget: { kind: 'budget', value: budget.bold, suffix: budget.normal },
+	    };
+
+	    return {
+	      id: item.id,
+	      ariaLabel: item.ariaLabel,
+	      clickable: item.clickable,
+	      expanded: item.expanded,
+	      cells,
+	    };
+	  }
+
+	  private trendItemsFor(id: string): readonly PmConsoleRegisterTableTrendItem[] {
+	    return this.getThreePeriodTrend(id).map((trend, index) => {
+	      const label = this.trendPeriodLabels[index] ?? `P${index + 1}`;
+	      return {
+	        label,
+	        icon: this.trendIcon(trend),
+	        tone: this.trendTone(trend),
+	        ariaLabel: `${label}: ${this.trendAriaLabel(trend)}`,
+	      };
+	    });
+	  }
+
+	  private trendIcon(trend: PortfolioManagerStatusTrendInput): string {
+	    if (trend === 'cross') return 'circle-x';
+	    if (trend === 'bell') return 'triangle-alert';
+	    return 'circle-check';
+	  }
+
+	  private trendTone(trend: PortfolioManagerStatusTrendInput): PmConsoleRegisterTableTrendItem['tone'] {
+	    if (trend === 'cross') return 'danger';
+	    if (trend === 'bell') return 'warning';
+	    return 'success';
+	  }
+
+	  private trendAriaLabel(trend: PortfolioManagerStatusTrendInput): string {
+	    if (trend === 'cross') return 'Off track';
+	    if (trend === 'bell') return 'Alert';
+	    return 'On track';
+	  }
+
+	  getRowStatusLabel(id: string, defaultStatus: string): string {
     // The first three top-level rows visible are 'prog-1', 'prog-2', 'prog-3'
     if (id === 'prog-1' || id === 'prog-2' || id === 'prog-3') {
       return 'Review Needed';
@@ -1075,6 +1081,18 @@ export class PortfolioWorkspaceRegistersComponent {
     this.activeSubTab = tab;
   }
 
+  isPortfolioExpanded(id: string): boolean {
+    return this.expandedPortfolioIds.has(id);
+  }
+
+  togglePortfolio(id: string): void {
+    if (this.expandedPortfolioIds.has(id)) {
+      this.expandedPortfolioIds.delete(id);
+    } else {
+      this.expandedPortfolioIds.add(id);
+    }
+  }
+
   isExpanded(id: string): boolean {
     return this.expandedProgramIds.has(id);
   }
@@ -1087,6 +1105,10 @@ export class PortfolioWorkspaceRegistersComponent {
     }
   }
 
+  toggleStandaloneGroup(): void {
+    this.standaloneGroupExpanded = !this.standaloneGroupExpanded;
+  }
+
   filterStatus(status: string | null): void {
     this.statusFilter = status;
   }
@@ -1095,134 +1117,37 @@ export class PortfolioWorkspaceRegistersComponent {
     // Component search query handled reactively in getter below
   }
 
-  private createManagerOptions(): readonly string[] {
-    const names = new Set<string>();
-    for (const program of this.programs) {
-      if (program.manager && program.manager !== unassignedManager) names.add(program.manager);
-      for (const project of program.projects || []) {
-        if (project.manager && project.manager !== unassignedManager) names.add(project.manager);
-      }
+
+
+  getRegisterDisplayId(id: string): string {
+    if (id.startsWith('portfolio-')) {
+      const num = id.split('-')[1];
+      return `ATRC-PF-0${num}`;
     }
-    for (const project of this.standaloneList) {
-      if (project.manager && project.manager !== unassignedManager) names.add(project.manager);
+    if (id === 'standalone-projects') {
+      return 'ATRC-SA';
     }
-    return [...names].sort((a, b) => a.localeCompare(b));
-  }
-
-  get managerOptions(): readonly string[] {
-    return this.createManagerOptions();
-  }
-
-  get programSelectOptions(): readonly PmConsoleFieldOption[] {
-    return this.programs.map((program) => ({
-      value: program.id,
-      label: program.name,
-    }));
-  }
-
-  private isCreateKind(id: string): id is PortfolioRegisterCreateKind {
-    return id === 'program' || id === 'project';
-  }
-
-  private createProgramRow(payload: PortfolioProgramCreatePayload): ProgramRow {
-    return {
-      id: this.nextProgramId(),
-      name: payload.name,
-      stage: 'Initiation',
-      trend: 'stable',
-      manager: payload.manager || unassignedManager,
-      relatedPortfolio: payload.relatedPortfolio,
-      startDate: this.isoDateWithOffset(0),
-      endDate: this.isoDateWithOffset(365),
-      budgetUtilised: '$0 / $0',
-      status: 'not-started',
-      isProgram: true,
-      projects: [],
-    };
-  }
-
-  private createStandaloneProjectRow(payload: PortfolioProjectCreatePayload): ProgramRow {
-    return {
-      id: this.nextStandaloneProjectId(),
-      name: payload.name,
-      stage: payload.complete ? 'Planning' : 'Initiation',
-      trend: 'stable',
-      manager: payload.manager || unassignedManager,
-      relatedPortfolio: this.portfolioOptions[0],
-      startDate: this.isoDateWithOffset(0),
-      endDate: this.isoDateWithOffset(90),
-      budgetUtilised: '$0 / $0',
-      status: payload.complete ? 'under-review' : 'not-started',
-      isProgram: false,
-    };
-  }
-
-  private createProjectRow(payload: PortfolioProjectCreatePayload, program: ProgramRow): ProjectRow {
-    return {
-      id: this.nextProjectId(program),
-      name: payload.name,
-      stage: payload.complete ? 'Planning' : 'Initiation',
-      trend: 'stable',
-      manager: payload.manager || unassignedManager,
-      startDate: this.isoDateWithOffset(0),
-      endDate: this.isoDateWithOffset(90),
-      budgetUtilised: '$0 / $0',
-      status: payload.complete ? 'under-review' : 'not-started',
-    };
-  }
-
-  private nextProgramId(): string {
-    return `prog-${this.nextNumericId(this.programs, /^prog-(\d+)$/)}`;
-  }
-
-  private nextStandaloneProjectId(): string {
-    return `sa-proj-${this.nextNumericId(this.standaloneList, /^sa-proj-(\d+)$/)}`;
-  }
-
-  private nextProjectId(program: ProgramRow): string {
-    const programNumber = program.id.match(/^prog-(\d+)$/)?.[1] || '0';
-    return `proj-${programNumber}-${this.nextNumericId(program.projects || [], /^proj-\d+-(\d+)$/)}`;
-  }
-
-  private nextNumericId(rows: readonly { readonly id: string }[], pattern: RegExp): number {
-    return rows.reduce((next, row) => {
-      const match = row.id.match(pattern);
-      if (!match) return next;
-      return Math.max(next, Number(match[1]) + 1);
-    }, 1);
-  }
-
-  private isoDateWithOffset(days: number): string {
-    const date = new Date();
-    date.setDate(date.getDate() + days);
-    return date.toISOString().slice(0, 10);
-  }
-
-  private displayIdPart(value: string | undefined): string {
-    return (value || '0').padStart(2, '0');
-  }
-
-
-
-  getProgramDisplayId(id: string): string {
     if (id.startsWith('prog-')) {
-      const num = this.displayIdPart(id.split('-')[1]);
-      return `ATRC-${num}`;
+      const num = id.split('-')[1];
+      return `ATRC-0${num}`;
     }
     if (id.startsWith('sa-proj-')) {
-      const num = this.displayIdPart(id.split('-')[2]);
-      return `ATRC-SA-${num}`;
+      const num = id.split('-')[2];
+      return `ATRC-SA-0${num}`;
     }
     if (id.startsWith('proj-')) {
       // e.g. proj-1-1 -> ATRC-01-01
       const parts = id.split('-');
-      return `ATRC-${this.displayIdPart(parts[1])}-${this.displayIdPart(parts[2])}`;
+      return `ATRC-0${parts[1]}-0${parts[2]}`;
     }
     return id.toUpperCase();
   }
 
   getThreePeriodTrend(id: string): readonly PortfolioManagerStatusTrendInput[] {
     const trendMap: Record<string, readonly PortfolioManagerStatusTrendInput[]> = {
+      'portfolio-1': ['check', 'check', 'bell'],
+      'portfolio-2': ['check', 'bell', 'bell'],
+      'standalone-projects': ['check', 'bell', 'check'],
       'prog-1': ['check', 'bell', 'bell'],
       'proj-1-1': ['check', 'check', 'bell'],
       'proj-1-2': ['check', 'check', 'check'],
@@ -1261,6 +1186,24 @@ export class PortfolioWorkspaceRegistersComponent {
     return trendMap[id] || ['check', 'check', 'check'];
   }
 
+  get filteredPortfolios(): PortfolioRow[] {
+    let list = this.portfolios;
+    if (this.statusFilter) {
+      list = list.filter((portfolio) => portfolio.status === this.statusFilter);
+    }
+    if (this.searchQuery) {
+      const q = this.searchQuery.toLowerCase();
+      list = list.filter((portfolio) => this.portfolioSearchValue(portfolio).includes(q));
+    }
+    return list;
+  }
+
+  get filteredStandaloneProjects(): ProgramRow[] {
+    if (!this.searchQuery) return this.standaloneList;
+    const q = this.searchQuery.toLowerCase();
+    return this.standaloneList.filter((project) => this.programSearchValue(project).includes(q));
+  }
+
   get filteredPrograms(): ProgramRow[] {
     let list = this.programs;
     if (this.statusFilter) {
@@ -1275,6 +1218,10 @@ export class PortfolioWorkspaceRegistersComponent {
 
   get allProgramsCount(): number {
     return this.programs.length;
+  }
+
+  get standaloneProjectGroupCount(): number {
+    return this.standaloneList.length ? 1 : 0;
   }
 
   get onTrackCount(): number {
@@ -1294,7 +1241,25 @@ export class PortfolioWorkspaceRegistersComponent {
   }
 
   get totalRowsCount(): number {
-    return this.filteredPrograms.length + this.standaloneList.length;
+    return this.filteredPortfolios.length + this.standaloneProjectGroupCount;
+  }
+
+  private portfolioSearchValue(portfolio: PortfolioRow): string {
+    return [
+      portfolio.name,
+      portfolio.manager,
+      portfolio.status,
+      portfolio.programs.map((program: ProgramRow) => this.programSearchValue(program)).join(' '),
+    ].join(' ').toLowerCase();
+  }
+
+  private programSearchValue(program: ProgramRow): string {
+    return [
+      program.name,
+      program.manager,
+      program.status,
+      program.projects?.map((project) => [project.name, project.manager, project.status].join(' ')).join(' ') ?? '',
+    ].join(' ').toLowerCase();
   }
 
   formatDate(dateStr: string): string {

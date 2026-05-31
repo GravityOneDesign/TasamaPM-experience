@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PmConsolePlanDrawerComponent } from '../pm-console-plan-drawer.component';
-import { PmConsoleFieldComponent } from '../shared/pm-console-field.component';
-import { PmConsoleIconComponent } from '../shared/pm-console-icon.component';
+import { PmConsolePlanDrawerComponent } from './pm-console-plan-drawer.component';
+import { PmConsoleFieldComponent } from './shared/pm-console-field.component';
+import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
 import {
   PmConsoleRiskProfileComponent,
   type RiskProfileFieldChange,
@@ -13,9 +13,9 @@ import {
   type RiskTreatmentDraftChange,
   type RiskTreatmentDraftRecord,
   type RiskTreatmentRecord,
-} from '../shared/pm-console-risk-profile.component';
-import { PmConsoleRowActionMenuComponent } from '../shared/pm-console-row-action-menu.component';
-import { PmConsoleStatusPillComponent } from '../shared/pm-console-status-pill.component';
+} from './shared/pm-console-risk-profile.component';
+import { PmConsoleRowActionMenuComponent } from './shared/pm-console-row-action-menu.component';
+import { PmConsoleStatusPillComponent } from './shared/pm-console-status-pill.component';
 import {
   ProgramRow,
   Risk,
@@ -24,7 +24,7 @@ import {
   type RiskExposure,
   type RiskLevel,
   type RiskStatus,
-} from './portfolio-workspace.data';
+} from './portfolio-workspace/portfolio-workspace.data';
 
 export interface ProjectGroup {
   key: string;
@@ -66,7 +66,6 @@ interface AddPortfolioRiskDraft {
   status: RiskStatus;
 }
 
-type RiskRegisterViewMode = 'grouped' | 'tree-detail';
 type RiskTreeSelectionKind = RiskLevel | 'standalone';
 
 interface RiskTreeSelection {
@@ -77,7 +76,7 @@ interface RiskTreeSelection {
   risks: Risk[];
 }
 
-type RiskFilterField = 'status' | 'level' | 'program' | 'project' | 'category' | 'exposure';
+type RiskFilterField = 'status' | 'level' | 'portfolio' | 'program' | 'project' | 'category' | 'exposure' | 'owner' | 'endDate' | 'reviewDate' | 'residualRisk';
 
 interface RiskAppliedFilter {
   field: RiskFilterField;
@@ -87,7 +86,7 @@ interface RiskAppliedFilter {
 }
 
 @Component({
-  selector: 'app-portfolio-workspace-risk-register',
+  selector: 'app-pmo-governance-risk-register',
   standalone: true,
   imports: [
     CommonModule,
@@ -105,28 +104,8 @@ interface RiskAppliedFilter {
         <article class="risk-hierarchy-shell">
           <header class="risk-hierarchy-toolbar" aria-label="Risk register tools">
             <div class="risk-hierarchy-toolbar-left">
-              <div class="risk-view-toggle" role="group" aria-label="Risk register view">
-                <button
-                  type="button"
-                  [class.active]="riskRegisterViewMode === 'grouped'"
-                  [attr.aria-pressed]="riskRegisterViewMode === 'grouped'"
-                  (click)="setRiskRegisterViewMode('grouped')"
-                >
-                  <span pmConsoleIcon="table-2" aria-hidden="true"></span>
-                  <span>Grouped Table</span>
-                </button>
-                <button
-                  type="button"
-                  [class.active]="riskRegisterViewMode === 'tree-detail'"
-                  [attr.aria-pressed]="riskRegisterViewMode === 'tree-detail'"
-                  (click)="setRiskRegisterViewMode('tree-detail')"
-                >
-                  <span pmConsoleIcon="list-tree" aria-hidden="true"></span>
-                  <span>Tree + Detail</span>
-                </button>
-              </div>
+              <h2 class="risk-register-title">Risk Register</h2>
             </div>
-
             <div class="risk-hierarchy-toolbar-actions">
               <label class="risk-hierarchy-search" [class.has-query]="riskSearchQuery.trim().length > 0" title="Search risks">
                 <span pmConsoleIcon="search" aria-hidden="true"></span>
@@ -142,112 +121,136 @@ interface RiskAppliedFilter {
                 <button
                   class="risk-toolbar-button risk-entity-filter-button"
                   type="button"
-                  aria-label="Filter by program"
+                  aria-label="Filter by portfolio, program, or project"
                   aria-haspopup="menu"
-                  [class.active]="riskProgramFilterMenuOpen || riskProgramFilters.length"
-                  [attr.aria-expanded]="riskProgramFilterMenuOpen"
-                  (click)="toggleRiskProgramFilterMenu()"
+                  [class.active]="riskEntityFilterMenuOpen || totalEntityFilterCount > 0"
+                  [attr.aria-expanded]="riskEntityFilterMenuOpen"
+                  (click)="toggleRiskEntityFilterMenu()"
                 >
-                  <span pmConsoleIcon="layers" aria-hidden="true"></span>
-                  <span>{{ riskProgramDropdownLabel }}</span>
-                  @if (riskProgramFilters.length) {
-                    <strong class="risk-filter-count">{{ riskProgramFilters.length }}</strong>
-                  }
+                  <span pmConsoleIcon="layout-grid" aria-hidden="true"></span>
+                  <span>{{ totalEntityFilterCount ? totalEntityFilterCount + ' levels' : 'Select Level' }}</span>
                   <span class="risk-dropdown-chevron" pmConsoleIcon="chevron-down" aria-hidden="true"></span>
                 </button>
 
-                @if (riskProgramFilterMenuOpen) {
-                  <section class="risk-filter-menu risk-entity-filter-menu" role="menu" aria-label="Filter risks by program">
-                    <header>
-                      <strong>Programs</strong>
-                      <button type="button" [disabled]="!riskProgramFilters.length" (click)="clearRiskEntityFilters('program')">Clear</button>
-                    </header>
-                    <label class="risk-filter-menu-search">
+                @if (riskEntityFilterMenuOpen) {
+                  <section class="work-filter-menu target-picker-menu" role="menu" aria-label="Filter risks by entity">
+                    <label class="target-picker-search" (click)="$event.stopPropagation()">
                       <span pmConsoleIcon="search" aria-hidden="true"></span>
                       <input
                         type="search"
-                        [value]="riskProgramFilterQuery"
-                        placeholder="Search programs"
-                        aria-label="Search programs"
-                        (input)="setRiskProgramFilterQuery($event)"
+                        [value]="riskEntityFilterQuery"
+                        placeholder="Search programs or projects"
+                        aria-label="Search entities"
+                        (input)="setRiskEntityFilterQuery($event)"
                       />
                     </label>
-                    <div class="risk-entity-filter-list">
+
+                    <button
+                      class="target-picker-option"
+                      type="button"
+                      (click)="clearAllRiskEntityFilters()"
+                      style="color: var(--brand, #10069f); gap: 8px;"
+                    >
+                      <span pmConsoleIcon="rotate-ccw" aria-hidden="true" class="icon" style="height: 16px; width: 16px; color: currentColor;"></span>
+                      <span class="target-option-copy">
+                        <strong>Reset filters</strong>
+                      </span>
+                    </button>
+
+                    <button
+                      class="target-picker-option all-target"
+                      type="button"
+                      (click)="clearAllRiskEntityFilters()"
+                    >
+                      <span class="target-option-copy">
+                        <strong>All portfolios</strong>
+                        <small>{{ riskPortfolioFilters.length + riskProgramFilters.length + riskProjectFilters.length }} actions applied</small>
+                      </span>
+                    </button>
+
+                    <details
+                      class="target-picker-group"
+                      [open]="riskEntityAccordionState.portfolio"
+                      (toggle)="toggleRiskEntityAccordion('portfolio', $event)"
+                    >
+                      <summary class="target-picker-group-label" (click)="$event.stopPropagation()">
+                        <span>Portfolios</span>
+                        <span pmConsoleIcon="chevron-down" aria-hidden="true" class="icon"></span>
+                      </summary>
+                      @if (filteredRiskPortfolioFilterOptions.length) {
+                        @for (portfolio of filteredRiskPortfolioFilterOptions; track portfolio) {
+                          <label class="target-picker-option" style="cursor: pointer;">
+                            <input type="checkbox" [checked]="isRiskFilterSelected('portfolio', portfolio)" (change)="toggleRiskFilter('portfolio', portfolio, $event)" style="margin-right: 8px;" />
+                            <span class="target-option-copy">
+                              <strong>{{ portfolio }}</strong>
+                            </span>
+                          </label>
+                        }
+                      } @else {
+                        <p style="padding: 6px 10px; font-size: 11.5px; color: #6f7785; margin: 0;">No portfolios found</p>
+                      }
+                    </details>
+
+                    <details
+                      class="target-picker-group"
+                      [open]="riskEntityAccordionState.program"
+                      (toggle)="toggleRiskEntityAccordion('program', $event)"
+                    >
+                      <summary class="target-picker-group-label" (click)="$event.stopPropagation()">
+                        <span>Programs</span>
+                        <span pmConsoleIcon="chevron-down" aria-hidden="true" class="icon"></span>
+                      </summary>
                       @if (filteredRiskProgramFilterOptions.length) {
                         @for (program of filteredRiskProgramFilterOptions; track program) {
-                          <label>
-                            <input type="checkbox" [checked]="isRiskFilterSelected('program', program)" (change)="toggleRiskFilter('program', program, $event)" />
-                            <span>{{ program }}</span>
+                          <label class="target-picker-option" style="cursor: pointer;">
+                            <input type="checkbox" [checked]="isRiskFilterSelected('program', program)" (change)="toggleRiskFilter('program', program, $event)" style="margin-right: 8px;" />
+                            <span class="target-option-copy">
+                              <strong>{{ program }}</strong>
+                            </span>
                           </label>
                         }
                       } @else {
-                        <p>No programs found.</p>
+                        <p style="padding: 6px 10px; font-size: 11.5px; color: #6f7785; margin: 0;">No programs found</p>
                       }
-                    </div>
-                  </section>
-                }
-              </div>
-              <div class="risk-filter-control risk-entity-filter-control">
-                <button
-                  class="risk-toolbar-button risk-entity-filter-button"
-                  type="button"
-                  aria-label="Filter by project"
-                  aria-haspopup="menu"
-                  [class.active]="riskProjectFilterMenuOpen || riskProjectFilters.length"
-                  [attr.aria-expanded]="riskProjectFilterMenuOpen"
-                  (click)="toggleRiskProjectFilterMenu()"
-                >
-                  <span pmConsoleIcon="folder" aria-hidden="true"></span>
-                  <span>{{ riskProjectDropdownLabel }}</span>
-                  @if (riskProjectFilters.length) {
-                    <strong class="risk-filter-count">{{ riskProjectFilters.length }}</strong>
-                  }
-                  <span class="risk-dropdown-chevron" pmConsoleIcon="chevron-down" aria-hidden="true"></span>
-                </button>
+                    </details>
 
-                @if (riskProjectFilterMenuOpen) {
-                  <section class="risk-filter-menu risk-entity-filter-menu" role="menu" aria-label="Filter risks by project">
-                    <header>
-                      <strong>Projects</strong>
-                      <button type="button" [disabled]="!riskProjectFilters.length" (click)="clearRiskEntityFilters('project')">Clear</button>
-                    </header>
-                    <label class="risk-filter-menu-search">
-                      <span pmConsoleIcon="search" aria-hidden="true"></span>
-                      <input
-                        type="search"
-                        [value]="riskProjectFilterQuery"
-                        placeholder="Search projects"
-                        aria-label="Search projects"
-                        (input)="setRiskProjectFilterQuery($event)"
-                      />
-                    </label>
-                    <div class="risk-entity-filter-list">
+                    <details
+                      class="target-picker-group"
+                      [open]="riskEntityAccordionState.project"
+                      (toggle)="toggleRiskEntityAccordion('project', $event)"
+                    >
+                      <summary class="target-picker-group-label" (click)="$event.stopPropagation()">
+                        <span>Projects</span>
+                        <span pmConsoleIcon="chevron-down" aria-hidden="true" class="icon"></span>
+                      </summary>
                       @if (filteredRiskProjectFilterOptions.length) {
                         @for (project of filteredRiskProjectFilterOptions; track project) {
-                          <label>
-                            <input type="checkbox" [checked]="isRiskFilterSelected('project', project)" (change)="toggleRiskFilter('project', project, $event)" />
-                            <span>{{ project }}</span>
+                          <label class="target-picker-option" style="cursor: pointer;">
+                            <input type="checkbox" [checked]="isRiskFilterSelected('project', project)" (change)="toggleRiskFilter('project', project, $event)" style="margin-right: 8px;" />
+                            <span class="target-option-copy">
+                              <strong>{{ project }}</strong>
+                            </span>
                           </label>
                         }
                       } @else {
-                        <p>No projects found.</p>
+                        <p style="padding: 6px 10px; font-size: 11.5px; color: #6f7785; margin: 0;">No projects found</p>
                       }
-                    </div>
+                    </details>
                   </section>
                 }
               </div>
               <div class="risk-filter-control">
                 <button
-                  class="risk-toolbar-button"
+                  class="risk-toolbar-button risk-toolbar-icon-button"
                   type="button"
                   aria-label="Filter risks"
                   aria-haspopup="menu"
                   [class.active]="riskFilterMenuOpen || hasRiskFacetFilters"
                   [attr.aria-expanded]="riskFilterMenuOpen"
                   (click)="toggleRiskFilterMenu()"
+                  title="Filter risks"
                 >
                   <span pmConsoleIcon="filter" aria-hidden="true"></span>
-                  <span>Filter</span>
                   @if (riskFacetFilterCount) {
                     <strong class="risk-filter-count">{{ riskFacetFilterCount }}</strong>
                   }
@@ -274,15 +277,7 @@ interface RiskAppliedFilter {
                         }
                       </fieldset>
 
-                      <fieldset>
-                        <legend>Level</legend>
-                        @for (level of riskLevelFilterOptions; track level) {
-                          <label>
-                            <input type="checkbox" [checked]="isRiskFilterSelected('level', level)" (change)="toggleRiskFilter('level', level, $event)" />
-                            <span>{{ riskLevelLabel(level) }}</span>
-                          </label>
-                        }
-                      </fieldset>
+
 
                       <fieldset>
                         <legend>Category</legend>
@@ -303,6 +298,68 @@ interface RiskAppliedFilter {
                           </label>
                         }
                       </fieldset>
+
+                      <fieldset>
+                        <legend>RR</legend>
+                        @for (rr of riskResidualRiskFilterOptions; track rr) {
+                          <label>
+                            <input type="checkbox" [checked]="isRiskFilterSelected('residualRisk', rr)" (change)="toggleRiskFilter('residualRisk', rr, $event)" />
+                            <span>{{ valueLabel(rr) }}</span>
+                          </label>
+                        }
+                      </fieldset>
+
+                      <fieldset style="grid-column: span 2;">
+                        <legend>Risk Owner</legend>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                          @for (owner of riskOwnerFilterOptions; track owner) {
+                            <label>
+                              <input type="checkbox" [checked]="isRiskFilterSelected('owner', owner)" (change)="toggleRiskFilter('owner', owner, $event)" />
+                              <span>{{ owner }}</span>
+                            </label>
+                          }
+                        </div>
+                      </fieldset>
+                    </div>
+                  </section>
+                }
+              </div>
+
+              <div class="risk-filter-control">
+                <button
+                  class="risk-toolbar-button risk-toolbar-icon-button"
+                  type="button"
+                  aria-label="Filter by review date"
+                  aria-haspopup="menu"
+                  [class.active]="riskReviewDateMenuOpen || (riskReviewDateStart || riskReviewDateEnd)"
+                  [attr.aria-expanded]="riskReviewDateMenuOpen"
+                  (click)="toggleRiskReviewDateMenu()"
+                  title="Filter by review date"
+                >
+                  <span pmConsoleIcon="calendar" aria-hidden="true"></span>
+                  @if (riskReviewDateStart || riskReviewDateEnd) {
+                    <strong class="risk-filter-count">1</strong>
+                  }
+                </button>
+
+                @if (riskReviewDateMenuOpen) {
+                  <section class="risk-filter-menu" role="menu" aria-label="Filter by review date">
+                    <header>
+                      <div>
+                        <strong>Review Due Date</strong>
+                        <small>Select date range</small>
+                      </div>
+                      <button class="risk-filter-reset" type="button" [disabled]="!riskReviewDateStart && !riskReviewDateEnd" (click)="resetRiskReviewDateFilters()">Reset</button>
+                    </header>
+                    <div style="display: flex; flex-direction: column; gap: 12px; padding: 12px;">
+                      <label style="display: flex; flex-direction: column; gap: 4px;">
+                        <span style="font-size: 13px; font-weight: 500; color: #202633;">Start Date</span>
+                        <input type="date" [value]="riskReviewDateStart" (change)="setRiskReviewDateStart($event)" style="padding: 6px 12px; border: 1px solid #dfe4ef; border-radius: 6px; font-size: 13.5px; color: #202633; outline: none;" />
+                      </label>
+                      <label style="display: flex; flex-direction: column; gap: 4px;">
+                        <span style="font-size: 13px; font-weight: 500; color: #202633;">End Date</span>
+                        <input type="date" [value]="riskReviewDateEnd" (change)="setRiskReviewDateEnd($event)" style="padding: 6px 12px; border: 1px solid #dfe4ef; border-radius: 6px; font-size: 13.5px; color: #202633; outline: none;" />
+                      </label>
                     </div>
                   </section>
                 }
@@ -336,6 +393,7 @@ interface RiskAppliedFilter {
             <thead>
               <tr>
                 <th class="risk-col-name">Risk Name</th>
+                <th class="risk-col-level">Level</th>
                 <th class="risk-col-category">Risk Category</th>
                 <th class="risk-col-ar">AR</th>
                 <th class="risk-col-treatment">Treatment</th>
@@ -360,166 +418,7 @@ interface RiskAppliedFilter {
           </ng-template>
 
           @let hierarchy = riskHierarchy;
-          @if (riskRegisterViewMode === 'grouped') {
-            <div class="risk-portfolio-block">
-              <div class="risk-table-scroll">
-                <table class="risk-structure-table" aria-label="Hierarchical risk register">
-                  <ng-container *ngTemplateOutlet="riskTableHead"></ng-container>
-                  <tbody>
-                    @if (activeRisks.length) {
-                      <tr class="risk-group-row risk-portfolio-row" [class.is-risk-open]="!isRiskNodeCollapsed(portfolioNodeId)">
-                        <td colspan="10">
-                          <button
-                            class="risk-group-toggle risk-portfolio-toggle"
-                            type="button"
-                            [attr.aria-expanded]="!isRiskNodeCollapsed(portfolioNodeId)"
-                            (click)="toggleRiskNode(portfolioNodeId)"
-                          >
-                            <ng-container *ngTemplateOutlet="riskBranchMarker; context: { branchClass: 'portfolio-node' }"></ng-container>
-                            <span class="risk-toggle-icon" [pmConsoleIcon]="isRiskNodeCollapsed(portfolioNodeId) ? 'chevron-right' : 'chevron-down'" aria-hidden="true"></span>
-                            <strong>{{ hierarchy.label }}</strong>
-                            <span class="risk-portfolio-id">Portfolio</span>
-                            <span class="risk-portfolio-count">{{ riskCountLabel(portfolioRiskCount(hierarchy)) }}</span>
-                            @if (hierarchy.directRisks.length) {
-                              <small>{{ riskLevelCountLabel(hierarchy.directRisks.length, 'portfolio') }}</small>
-                            }
-                          </button>
-                        </td>
-                      </tr>
-
-                      @if (!isRiskNodeCollapsed(portfolioNodeId)) {
-                        <ng-container
-                          *ngTemplateOutlet="riskRows; context: { $implicit: hierarchy.directRisks, levelClass: 'portfolio-risk', indentClass: '', branchClass: 'portfolio-risk-node' }"
-                        ></ng-container>
-                      }
-
-                      @for (program of hierarchy.programs; track program.key) {
-                        <tr class="risk-group-row risk-program-row" [class.is-risk-open]="!isRiskNodeCollapsed(program.key)">
-                          <td colspan="10">
-                            <button
-                              class="risk-group-toggle"
-                              type="button"
-                              [attr.aria-expanded]="!isRiskNodeCollapsed(program.key)"
-                              (click)="toggleRiskNode(program.key)"
-                            >
-                              <ng-container
-                                *ngTemplateOutlet="
-                                  riskBranchMarker;
-                                  context: {
-                                    branchClass:
-                                      program.projects.length || (!isRiskNodeCollapsed(program.key) && program.directRisks.length)
-                                        ? 'program-node branch-start-node'
-                                        : 'program-node'
-                                  }
-                                "
-                              ></ng-container>
-                              <span class="risk-toggle-icon" [pmConsoleIcon]="isRiskNodeCollapsed(program.key) ? 'chevron-right' : 'chevron-down'" aria-hidden="true"></span>
-                              <strong>{{ program.label }}</strong>
-                              <span class="risk-level-badge program">Program</span>
-                              <span class="risk-node-count">{{ riskCountLabel(programRiskCount(program)) }}</span>
-                              @if (program.directRisks.length) {
-                                <small>{{ riskLevelCountLabel(program.directRisks.length, 'program') }}</small>
-                              }
-                            </button>
-                          </td>
-                        </tr>
-
-                        @if (!isRiskNodeCollapsed(program.key)) {
-                          <ng-container
-                            *ngTemplateOutlet="riskRows; context: { $implicit: program.directRisks, levelClass: 'program-risk', indentClass: 'ind-program', branchClass: 'program-risk-node' }"
-                          ></ng-container>
-                        }
-
-                        @for (project of program.projects; track project.key; let isLastProject = $last) {
-                          <tr class="risk-group-row risk-project-row" [class.is-risk-open]="!isRiskNodeCollapsed(project.key)">
-                            <td colspan="10">
-                              <button
-                                class="risk-group-toggle"
-                                type="button"
-                                [attr.aria-expanded]="!isRiskNodeCollapsed(project.key)"
-                                (click)="toggleRiskNode(project.key)"
-                              >
-                                <ng-container *ngTemplateOutlet="riskBranchMarker; context: { branchClass: isLastProject && isRiskNodeCollapsed(project.key) ? 'project-node project-terminal-node' : 'project-node' }"></ng-container>
-                                <span class="risk-toggle-icon" [pmConsoleIcon]="isRiskNodeCollapsed(project.key) ? 'chevron-right' : 'chevron-down'" aria-hidden="true"></span>
-                                <strong>{{ project.label }}</strong>
-                                <span class="risk-level-badge project">Project</span>
-                                <span class="risk-node-count">{{ riskCountLabel(project.risks.length) }}</span>
-                                <small>{{ riskLevelCountLabel(project.risks.length, 'project') }}</small>
-                              </button>
-                            </td>
-                          </tr>
-
-                          @if (!isRiskNodeCollapsed(project.key)) {
-                            <ng-container
-                              *ngTemplateOutlet="riskRows; context: { $implicit: project.risks, levelClass: 'project-risk', indentClass: 'ind-project', branchClass: 'project-risk-node', terminalBranch: isLastProject }"
-                            ></ng-container>
-                          }
-                        }
-                      }
-
-                      @if (standaloneRiskProjects.length) {
-                        <tr class="risk-group-row risk-standalone-row" [class.is-risk-open]="!isRiskNodeCollapsed(standaloneNodeId)">
-                          <td colspan="10">
-                            <button
-                              class="risk-group-toggle"
-                              type="button"
-                              [attr.aria-expanded]="!isRiskNodeCollapsed(standaloneNodeId)"
-                              (click)="toggleRiskNode(standaloneNodeId)"
-                            >
-                              <ng-container *ngTemplateOutlet="riskBranchMarker; context: { branchClass: 'standalone-node' }"></ng-container>
-                              <span class="risk-toggle-icon" [pmConsoleIcon]="isRiskNodeCollapsed(standaloneNodeId) ? 'chevron-right' : 'chevron-down'" aria-hidden="true"></span>
-                              <strong>{{ hierarchy.standaloneProjects.label }}</strong>
-                              <span class="risk-level-badge standalone">Standalone</span>
-                              <span class="risk-node-count">{{ riskCountLabel(standaloneRiskCount) }}</span>
-                            </button>
-                          </td>
-                        </tr>
-
-                        @if (!isRiskNodeCollapsed(standaloneNodeId)) {
-                          @for (project of standaloneRiskProjects; track project.key; let isLastStandaloneProject = $last) {
-                            <tr class="risk-group-row risk-project-row risk-standalone-project-row" [class.is-risk-open]="!isRiskNodeCollapsed(project.key)">
-                              <td colspan="10">
-                                <button
-                                  class="risk-group-toggle"
-                                  type="button"
-                                  [attr.aria-expanded]="!isRiskNodeCollapsed(project.key)"
-                                  (click)="toggleRiskNode(project.key)"
-                                >
-                                  <ng-container *ngTemplateOutlet="riskBranchMarker; context: { branchClass: isLastStandaloneProject && isRiskNodeCollapsed(project.key) ? 'standalone-project-node project-terminal-node' : 'standalone-project-node' }"></ng-container>
-                                  <span class="risk-toggle-icon" [pmConsoleIcon]="isRiskNodeCollapsed(project.key) ? 'chevron-right' : 'chevron-down'" aria-hidden="true"></span>
-                                  <strong>{{ project.label }}</strong>
-                                  <span class="risk-level-badge project">Project</span>
-                                  <span class="risk-node-count">{{ riskCountLabel(project.risks.length) }}</span>
-                                  <small>{{ riskLevelCountLabel(project.risks.length, 'project') }}</small>
-                                </button>
-                              </td>
-                            </tr>
-
-                            @if (!isRiskNodeCollapsed(project.key)) {
-                              <ng-container
-                                *ngTemplateOutlet="riskRows; context: { $implicit: project.risks, levelClass: 'project-risk', indentClass: 'ind-project', branchClass: 'standalone-risk-node', terminalBranch: isLastStandaloneProject }"
-                              ></ng-container>
-                            }
-                          }
-                        }
-                      }
-                    } @else {
-                      <tr>
-                        <td colspan="10">
-                          <div class="risk-hierarchy-empty">
-                            <span pmConsoleIcon="shield-alert" aria-hidden="true"></span>
-                            <strong>No risks match this view</strong>
-                            <span>Clear the search or add a risk linked to this portfolio.</span>
-                          </div>
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          } @else {
-            @let selectedContext = selectedRiskTreeContext;
+          @let selectedContext = selectedRiskTreeContext;
             <div class="risk-tree-detail-layout">
               <aside class="risk-tree-panel" aria-label="Risk relationship tree">
                 <header class="risk-tree-panel-header">
@@ -539,7 +438,7 @@ interface RiskAppliedFilter {
                       <span [pmConsoleIcon]="isRiskTreeNodeCollapsed(hierarchy.key) ? 'chevron-right' : 'chevron-down'" aria-hidden="true"></span>
                     </button>
                     <button class="risk-tree-node" type="button" (click)="selectRiskTreeNode(hierarchy.key)">
-                      <span pmConsoleIcon="briefcase-business" aria-hidden="true"></span>
+                      <span class="risk-node-dot portfolio"></span>
                       <span class="risk-tree-copy">
                         <strong>{{ hierarchy.label }}</strong>
                         <small>Portfolio</small>
@@ -561,7 +460,7 @@ interface RiskAppliedFilter {
                           <span [pmConsoleIcon]="isRiskTreeNodeCollapsed(program.key) ? 'chevron-right' : 'chevron-down'" aria-hidden="true"></span>
                         </button>
                         <button class="risk-tree-node" type="button" (click)="selectRiskTreeNode(program.key)">
-                          <span class="risk-level-badge program">Program</span>
+                          <span class="risk-node-dot program"></span>
                           <span class="risk-tree-copy">
                             <strong>{{ program.label }}</strong>
                             <small>{{ hierarchy.label }}</small>
@@ -575,7 +474,7 @@ interface RiskAppliedFilter {
                           <div class="risk-tree-row level-2" [class.active]="isRiskTreeNodeSelected(project.key)">
                             <span class="risk-tree-expander placeholder" aria-hidden="true"></span>
                             <button class="risk-tree-node" type="button" (click)="selectRiskTreeNode(project.key)">
-                              <span class="risk-level-badge project">Project</span>
+                              <span class="risk-node-dot project"></span>
                               <span class="risk-tree-copy">
                                 <strong>{{ project.label }}</strong>
                                 <small>{{ program.label }}</small>
@@ -599,7 +498,7 @@ interface RiskAppliedFilter {
                           <span [pmConsoleIcon]="isRiskTreeNodeCollapsed(standaloneNodeId) ? 'chevron-right' : 'chevron-down'" aria-hidden="true"></span>
                         </button>
                         <button class="risk-tree-node" type="button" (click)="selectRiskTreeNode(standaloneNodeId)">
-                          <span class="risk-level-badge standalone">Standalone</span>
+                          <span class="risk-node-dot standalone"></span>
                           <span class="risk-tree-copy">
                             <strong>Standalone Projects</strong>
                             <small>{{ hierarchy.label }}</small>
@@ -613,7 +512,7 @@ interface RiskAppliedFilter {
                           <div class="risk-tree-row level-2" [class.active]="isRiskTreeNodeSelected(project.key)">
                             <span class="risk-tree-expander placeholder" aria-hidden="true"></span>
                             <button class="risk-tree-node" type="button" (click)="selectRiskTreeNode(project.key)">
-                              <span class="risk-level-badge project">Project</span>
+                              <span class="risk-node-dot project"></span>
                               <span class="risk-tree-copy">
                                 <strong>{{ project.label }}</strong>
                                 <small>Standalone</small>
@@ -644,11 +543,11 @@ interface RiskAppliedFilter {
                     <tbody>
                       @if (selectedContext.risks.length) {
                         <ng-container
-                          *ngTemplateOutlet="riskRows; context: { $implicit: selectedContext.risks, levelClass: riskTreeLevelClass(selectedContext.kind), indentClass: '', branchClass: riskTreeBranchClass(selectedContext.kind) }"
+                          *ngTemplateOutlet="riskRows; context: { $implicit: selectedContext.risks }"
                         ></ng-container>
                       } @else {
                         <tr>
-                          <td colspan="10">
+                          <td colspan="11">
                             <div class="risk-hierarchy-empty compact">
                               <span pmConsoleIcon="shield-alert" aria-hidden="true"></span>
                               <strong>No risks at this level</strong>
@@ -662,20 +561,19 @@ interface RiskAppliedFilter {
                 </div>
               </section>
             </div>
-          }
         </article>
       </div>
 
-      <ng-template #riskRows let-risks let-levelClass="levelClass" let-indentClass="indentClass" let-branchClass="branchClass" let-terminalBranch="terminalBranch">
+      <ng-template #riskRows let-risks>
         @for (risk of risks; track risk.id; let isLastRisk = $last) {
           <tr
-            class="risk-data-row {{ levelClass }}"
-            [class.is-branch-terminal]="isLastRisk && levelClass === 'project-risk'"
-            [class.is-program-branch-terminal]="isLastRisk && terminalBranch"
+            class="risk-data-row {{ riskTreeLevelClass(risk.level) }}"
+            [class.is-branch-terminal]="isLastRisk && risk.level === 'project'"
+            [class.is-program-branch-terminal]="isLastRisk && risk.level === 'standalone'"
           >
-            <td class="risk-name-cell {{ indentClass }}">
+            <td class="risk-name-cell">
               <div class="risk-name-row">
-                <ng-container *ngTemplateOutlet="riskBranchMarker; context: { branchClass: branchClass }"></ng-container>
+                <ng-container *ngTemplateOutlet="riskBranchMarker; context: { branchClass: riskTreeBranchClass(risk.level) }"></ng-container>
                 <div class="risk-name-stack">
                   <span class="risk-id-line">
                     <span class="risk-id-code">{{ risk.id }}</span>
@@ -685,6 +583,9 @@ interface RiskAppliedFilter {
                   <small>{{ riskLineageLabel(risk) }}</small>
                 </div>
               </div>
+            </td>
+            <td class="risk-level-cell">
+              <span class="risk-level-badge {{ risk.level }}">{{ riskTreeKindLabel(risk.level) }}</span>
             </td>
             <td class="risk-category-cell">
               <span class="risk-category-text">{{ risk.category }}</span>
@@ -943,6 +844,14 @@ interface RiskAppliedFilter {
       margin-left: auto;
     }
 
+    .risk-register-title {
+      color: #1e293b;
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 24px;
+      margin: 0;
+    }
+
     .risk-register-total {
       background: #eef1f6;
       border: 1px solid #e8ebf2;
@@ -1047,6 +956,11 @@ interface RiskAppliedFilter {
       white-space: nowrap;
     }
 
+    .risk-toolbar-icon-button {
+      padding: 0;
+      width: 40px;
+    }
+
     .risk-toolbar-button:hover,
     .risk-toolbar-button:focus-visible,
     .risk-hierarchy-search:hover,
@@ -1117,7 +1031,7 @@ interface RiskAppliedFilter {
     }
 
     .risk-filter-popover {
-      width: min(420px, calc(100vw - 32px));
+      width: min(820px, calc(100vw - 32px));
     }
 
     .risk-filter-menu {
@@ -1175,11 +1089,11 @@ interface RiskAppliedFilter {
 
     .risk-filter-grid {
       display: grid;
-      gap: 10px;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      max-height: 300px;
+      gap: 16px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      max-height: 400px;
       overflow: auto;
-      padding-right: 2px;
+      padding-right: 4px;
     }
 
     .risk-filter-grid fieldset {
@@ -1228,63 +1142,145 @@ interface RiskAppliedFilter {
       white-space: nowrap;
     }
 
-    .risk-filter-menu-search {
+    .target-picker-menu {
+      display: grid;
+      gap: 2px;
+      max-height: 360px;
+      min-width: 330px;
+      overflow: auto;
+      padding: 6px;
+      z-index: 220;
+      background: #ffffff;
+      border: 1px solid #e3e8f0;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 4px;
+    }
+
+    .target-picker-search {
       align-items: center;
-      background: #f8fafc;
-      border: 1px solid #e4e8f0;
-      border-radius: 9px;
+      background: #ffffff;
+      border: 1px solid #e3e8f0;
+      border-radius: 8px;
+      color: #6f7785;
       display: flex;
       gap: 8px;
       height: 36px;
+      margin-bottom: 6px;
       padding: 0 10px;
+      position: sticky;
+      top: 0;
+      z-index: 2;
     }
 
-    .risk-filter-menu-search .icon {
-      color: #7b8495;
+    .target-picker-search input {
+      background: transparent;
+      border: 0;
+      color: #252a34;
+      font: inherit;
+      font-size: 12px;
+      min-width: 0;
+      outline: 0;
+      width: 100%;
+    }
+
+    .target-picker-search .icon {
       height: 15px;
       width: 15px;
     }
 
-    .risk-filter-menu-search input {
-      background: transparent;
-      border: 0;
-      color: #252a34;
-      flex: 1 1 auto;
-      font-size: 11.5px;
-      min-width: 0;
-      outline: 0;
-    }
-
-    .risk-entity-filter-list {
+    .target-picker-group {
       display: grid;
-      gap: 4px;
-      max-height: 260px;
-      overflow: auto;
-      padding-right: 2px;
+      gap: 2px;
+      min-width: 0;
     }
 
-    .risk-entity-filter-list label {
+    .target-picker-group summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .target-picker-group-label {
       align-items: center;
-      border-radius: 8px;
-      color: #303746;
+      color: #4c5566;
+      cursor: pointer;
       display: flex;
       font-size: 11.5px;
+      font-weight: 500;
       gap: 8px;
-      line-height: 15px;
-      min-height: 32px;
+      justify-content: space-between;
+      letter-spacing: 0;
+      padding: 8px 8px 4px;
+      text-transform: none;
+      user-select: none;
+    }
+
+    .target-picker-group-label .icon {
+      height: 13px;
+      transition: transform 160ms ease;
+      width: 13px;
+    }
+
+    .target-picker-group:not([open]) .target-picker-group-label .icon {
+      transform: rotate(-90deg);
+    }
+
+    .target-picker-option {
+      align-items: center;
+      background: transparent;
+      border: 0;
+      border-radius: 6px;
+      color: #252a34;
+      cursor: pointer;
+      display: flex;
+      font: inherit;
+      min-height: 40px;
       min-width: 0;
-      padding: 6px 8px;
+      padding: 6px 10px;
+      text-align: left;
+      width: 100%;
     }
 
-    .risk-entity-filter-list label:hover {
-      background: #f6f8fb;
+    .target-picker-option:hover,
+    .target-picker-option.active {
+      background: #f4f6fb;
     }
 
-    .risk-entity-filter-list input {
-      accent-color: #10069f;
-      flex: 0 0 auto;
-      height: 14px;
-      width: 14px;
+    .target-picker-option.active {
+      color: var(--brand, #10069f);
+    }
+
+    .target-option-copy {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .target-picker-option strong,
+    .target-picker-option small {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .target-picker-option strong {
+      font-size: 11.5px;
+      font-weight: 500;
+    }
+
+    .target-picker-option small {
+      color: #6f7785;
+      font-size: 10.5px;
+    }
+
+    .all-target {
+      background: #f4f6fb;
+    }
+    
+    .all-target strong {
+      color: var(--brand, #10069f);
     }
 
     .risk-entity-filter-list label span {
@@ -1564,11 +1560,34 @@ interface RiskAppliedFilter {
       outline: 0;
     }
 
-    .risk-tree-node > .icon {
-      color: #10069f;
+    .risk-tree-node .icon {
+      color: #6f7785;
       flex: 0 0 auto;
-      height: 15px;
-      width: 15px;
+      height: 16px;
+      width: 16px;
+    }
+
+    .risk-node-dot {
+      border-radius: 50%;
+      height: 8px;
+      width: 8px;
+      flex: 0 0 auto;
+    }
+
+    .risk-node-dot.portfolio {
+      background: #10069f;
+    }
+
+    .risk-node-dot.program {
+      background: #1d5bbf;
+    }
+
+    .risk-node-dot.project {
+      background: #267a57;
+    }
+
+    .risk-node-dot.standalone {
+      background: #1d5bbf;
     }
 
     .risk-tree-node .risk-level-badge {
@@ -1672,7 +1691,11 @@ interface RiskAppliedFilter {
     }
 
     .risk-detail-table .risk-col-name {
-      width: 34%;
+      width: 26%;
+    }
+
+    .risk-detail-table .risk-col-level {
+      width: 8%;
     }
 
     .risk-detail-table .risk-col-ar,
@@ -1772,7 +1795,11 @@ interface RiskAppliedFilter {
     }
 
     .risk-col-name {
-      width: 34%;
+      width: 26%;
+    }
+
+    .risk-col-level {
+      width: 8%;
     }
 
     .risk-structure-table th.risk-col-name {
@@ -1821,11 +1848,6 @@ interface RiskAppliedFilter {
 
     .risk-data-row:hover {
       background: #fbfcff;
-    }
-
-    .risk-structure-table td.risk-name-cell.ind-program,
-    .risk-structure-table td.risk-name-cell.ind-project {
-      padding-left: 10px;
     }
 
     .risk-group-row td {
@@ -2470,7 +2492,7 @@ interface RiskAppliedFilter {
     }
   `],
 })
-export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
+export class PmoGovernanceRiskRegisterComponent implements OnChanges {
   @Input() risks: Risk[] = [];
   @Input() programs: ProgramRow[] = [];
   @Input() standaloneProjects: ProgramRow[] = [];
@@ -2488,34 +2510,42 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
   readonly riskStatusFilterOptions: RiskStatus[] = ['watching', 'monitoring', 'active', 'escalated'];
   readonly portfolioNodeId = 'risk-node::portfolio';
   readonly standaloneNodeId = 'risk-node::standalone-projects';
-  collapsedRiskNodeIds = new Set<string>([this.standaloneNodeId]);
   collapsedRiskTreeNodeIds = new Set<string>();
   isAddRiskDrawerOpen = false;
   riskFilterMenuOpen = false;
-  riskProgramFilterMenuOpen = false;
-  riskProjectFilterMenuOpen = false;
+  riskReviewDateMenuOpen = false;
+  riskReviewDateStart = '';
+  riskReviewDateEnd = '';
+  riskEntityFilterMenuOpen = false;
+  riskEntityFilterQuery = '';
+  riskEntityAccordionState = {
+    portfolio: false,
+    program: false,
+    project: false
+  };
+
   riskStatusFilters: string[] = [];
   riskLevelFilters: string[] = [];
+  riskPortfolioFilters: string[] = [];
   riskProgramFilters: string[] = [];
   riskProjectFilters: string[] = [];
   riskCategoryFilters: string[] = [];
   riskExposureFilters: string[] = [];
+  riskOwnerFilters: string[] = [];
+  riskEndDateFilters: string[] = [];
+  riskReviewDateFilters: string[] = [];
+  riskResidualRiskFilters: string[] = [];
+  riskPortfolioFilterQuery = '';
   riskProgramFilterQuery = '';
   riskProjectFilterQuery = '';
-  riskRegisterViewMode: RiskRegisterViewMode = 'grouped';
   selectedRiskTreeNodeId = this.portfolioNodeId;
   riskSearchQuery = '';
   addRiskDraft: AddPortfolioRiskDraft = this.createAddRiskDraft();
   activeRiskProfile: RiskProfileRecord | null = null;
   activeRiskProfileTab: RiskProfileTab = 'identification';
   riskTreatmentDraft: RiskTreatmentDraftRecord = this.createRiskTreatmentDraft();
-  private riskDefaultCollapseInitialized = false;
 
   ngOnChanges(): void {
-    if (this.riskDefaultCollapseInitialized || (!this.risks.length && !this.programs.length && !this.standaloneProjects.length)) return;
-
-    this.collapsedRiskNodeIds = this.defaultCollapsedRiskNodeIds();
-    this.riskDefaultCollapseInitialized = true;
   }
 
   get activeRisks(): Risk[] {
@@ -2623,7 +2653,7 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
 
   get projectLinkOptions(): ProjectLinkOption[] {
     const programProjects = this.programs.flatMap((program) =>
-      (program.projects || []).map((project) => ({
+      (program.projects || []).map((project: any) => ({
         label: `${program.name} / ${project.name}`,
         projectName: project.name,
         parentProgram: program.name,
@@ -2638,6 +2668,39 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
 
   get projectOptions(): string[] {
     return this.projectLinkOptions.map((project) => project.label);
+  }
+
+
+  get riskOwnerFilterOptions(): string[] {
+    return Array.from(new Set(this.risks.map((r: Risk) => r.owner.name))).filter(Boolean).sort();
+  }
+
+  get riskEndDateFilterOptions(): string[] {
+    return Array.from(new Set(this.risks.map((r: Risk) => this.riskDateLabel(this.riskEndDate(r))))).filter((v) => v !== 'N/A').sort();
+  }
+
+  get riskReviewDateFilterOptions(): string[] {
+    return Array.from(new Set(this.risks.map((r: Risk) => this.riskDateLabel(this.riskReviewDueDate(r))))).filter((v) => v !== 'N/A').sort();
+  }
+
+  get riskResidualRiskFilterOptions(): string[] {
+    return Array.from(new Set(this.risks.map((r: Risk) => this.residualRiskLabel(r)))).filter(Boolean).sort();
+  }
+
+  get riskPortfolioFilterOptions(): string[] {
+    const portfolios = new Set<string>();
+    this.risks.forEach((risk) => {
+      portfolios.add(risk.parentPortfolio || this.portfolioName);
+    });
+    return Array.from(portfolios).filter(Boolean).sort();
+  }
+
+  get filteredRiskPortfolioFilterOptions(): string[] {
+    return this.filteredFilterOptions(this.riskPortfolioFilterOptions, this.riskEntityFilterQuery);
+  }
+
+  get totalEntityFilterCount(): number {
+    return this.riskPortfolioFilters.length + this.riskProgramFilters.length + this.riskProjectFilters.length;
   }
 
   get riskProgramFilterOptions(): string[] {
@@ -2658,34 +2721,24 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
   }
 
   get filteredRiskProgramFilterOptions(): string[] {
-    return this.filteredFilterOptions(this.riskProgramFilterOptions, this.riskProgramFilterQuery);
+    return this.filteredFilterOptions(this.riskProgramFilterOptions, this.riskEntityFilterQuery);
   }
 
   get filteredRiskProjectFilterOptions(): string[] {
-    return this.filteredFilterOptions(this.riskProjectFilterOptions, this.riskProjectFilterQuery);
+    return this.filteredFilterOptions(this.riskProjectFilterOptions, this.riskEntityFilterQuery);
   }
 
-  get riskProgramDropdownLabel(): string {
-    if (!this.riskProgramFilters.length) return 'Program';
-    if (this.riskProgramFilters.length === 1) return this.riskProgramFilters[0];
-    return `${this.riskProgramFilters.length} programs`;
-  }
 
-  get riskProjectDropdownLabel(): string {
-    if (!this.riskProjectFilters.length) return 'Project';
-    if (this.riskProjectFilters.length === 1) return this.riskProjectFilters[0];
-    return `${this.riskProjectFilters.length} projects`;
-  }
 
   get ownerOptions(): string[] {
     const names = [
       this.portfolioName,
-      ...this.programs.map((program) => program.manager),
-      ...this.programs.flatMap((program) => (program.projects || []).map((project) => project.manager)),
-      ...this.standaloneProjects.map((project) => project.manager),
-      ...this.risks.map((risk) => risk.owner.name),
+      ...this.programs.map((program: ProgramRow) => program.manager),
+      ...this.programs.flatMap((program: ProgramRow) => (program.projects || []).map((project: any) => project.manager)),
+      ...this.standaloneProjects.map((project: any) => project.manager),
+      ...this.risks.map((risk: Risk) => risk.owner.name),
     ];
-    return Array.from(new Set(names.filter((name) => name && name !== this.portfolioName))).sort();
+    return Array.from(new Set(names.filter((name: string) => name && name !== this.portfolioName))).sort();
   }
 
   get riskProfileConfig(): RiskProfileOptions {
@@ -2709,7 +2762,7 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
   }
 
   get projectRiskProfileCount(): number {
-    return this.activeRisks.filter((risk) => risk.level === 'project').length;
+    return this.activeRisks.filter((risk: Risk) => risk.level === 'project').length;
   }
 
   get canSaveAddRiskDraft(): boolean {
@@ -2767,12 +2820,12 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
 
   get riskAppliedFilters(): RiskAppliedFilter[] {
     return [
-      ...this.riskStatusFilters.map((value) => this.createAppliedFilter('status', value, this.valueLabel(value))),
-      ...this.riskLevelFilters.map((value) => this.createAppliedFilter('level', value, this.riskLevelLabel(value as RiskLevel))),
-      ...this.riskProgramFilters.map((value) => this.createAppliedFilter('program', value, value)),
-      ...this.riskProjectFilters.map((value) => this.createAppliedFilter('project', value, value)),
-      ...this.riskCategoryFilters.map((value) => this.createAppliedFilter('category', value, value)),
-      ...this.riskExposureFilters.map((value) => this.createAppliedFilter('exposure', value, this.valueLabel(value))),
+      ...this.riskStatusFilters.map((value: string) => this.createAppliedFilter('status', value, this.valueLabel(value))),
+      ...this.riskLevelFilters.map((value: string) => this.createAppliedFilter('level', value, this.riskLevelLabel(value as RiskLevel))),
+      ...this.riskProgramFilters.map((value: string) => this.createAppliedFilter('program', value, value)),
+      ...this.riskProjectFilters.map((value: string) => this.createAppliedFilter('project', value, value)),
+      ...this.riskCategoryFilters.map((value: string) => this.createAppliedFilter('category', value, value)),
+      ...this.riskExposureFilters.map((value: string) => this.createAppliedFilter('exposure', value, this.valueLabel(value))),
     ];
   }
 
@@ -2783,45 +2836,63 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
     }
   }
 
-  setRiskRegisterViewMode(mode: RiskRegisterViewMode): void {
-    this.riskRegisterViewMode = mode;
-  }
-
   toggleRiskFilterMenu(): void {
     this.riskFilterMenuOpen = !this.riskFilterMenuOpen;
     if (this.riskFilterMenuOpen) {
-      this.riskProgramFilterMenuOpen = false;
-      this.riskProjectFilterMenuOpen = false;
+      this.riskEntityFilterMenuOpen = false;
+      this.riskReviewDateMenuOpen = false;
     }
   }
 
-  toggleRiskProgramFilterMenu(): void {
-    this.riskProgramFilterMenuOpen = !this.riskProgramFilterMenuOpen;
-    if (this.riskProgramFilterMenuOpen) {
+  toggleRiskReviewDateMenu(): void {
+    this.riskReviewDateMenuOpen = !this.riskReviewDateMenuOpen;
+    if (this.riskReviewDateMenuOpen) {
+      this.riskEntityFilterMenuOpen = false;
       this.riskFilterMenuOpen = false;
-      this.riskProjectFilterMenuOpen = false;
     }
   }
 
-  toggleRiskProjectFilterMenu(): void {
-    this.riskProjectFilterMenuOpen = !this.riskProjectFilterMenuOpen;
-    if (this.riskProjectFilterMenuOpen) {
+  setRiskReviewDateStart(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.riskReviewDateStart = target.value;
+  }
+
+  setRiskReviewDateEnd(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.riskReviewDateEnd = target.value;
+  }
+
+  resetRiskReviewDateFilters(): void {
+    this.riskReviewDateStart = '';
+    this.riskReviewDateEnd = '';
+  }
+
+  toggleRiskEntityFilterMenu(): void {
+    this.riskEntityFilterMenuOpen = !this.riskEntityFilterMenuOpen;
+    if (this.riskEntityFilterMenuOpen) {
       this.riskFilterMenuOpen = false;
-      this.riskProgramFilterMenuOpen = false;
+      this.riskReviewDateMenuOpen = false;
     }
   }
 
-  setRiskProgramFilterQuery(event: Event): void {
+  toggleRiskEntityAccordion(section: 'portfolio' | 'program' | 'project', event?: Event): void {
+    if (event) {
+      const details = event.currentTarget as HTMLDetailsElement;
+      this.riskEntityAccordionState[section] = details.open;
+    } else {
+      this.riskEntityAccordionState[section] = !this.riskEntityAccordionState[section];
+    }
+  }
+
+  setRiskEntityFilterQuery(event: Event): void {
     const target = event.target;
     if (target instanceof HTMLInputElement) {
-      this.riskProgramFilterQuery = target.value;
-    }
-  }
-
-  setRiskProjectFilterQuery(event: Event): void {
-    const target = event.target;
-    if (target instanceof HTMLInputElement) {
-      this.riskProjectFilterQuery = target.value;
+      this.riskEntityFilterQuery = target.value;
+      if (this.riskEntityFilterQuery.trim()) {
+        this.riskEntityAccordionState.portfolio = true;
+        this.riskEntityAccordionState.program = true;
+        this.riskEntityAccordionState.project = true;
+      }
     }
   }
 
@@ -2833,18 +2904,18 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
     const normalizedValue = this.filterKey(value);
     const nextValues = target.checked
       ? Array.from(new Set([...values, value]))
-      : values.filter((item) => this.filterKey(item) !== normalizedValue);
+      : values.filter((item: string) => this.filterKey(item) !== normalizedValue);
     this.setRiskFilterValues(field, nextValues);
   }
 
   isRiskFilterSelected(field: RiskFilterField, value: string): boolean {
     const normalizedValue = this.filterKey(value);
-    return this.riskFilterValues(field).some((item) => this.filterKey(item) === normalizedValue);
+    return this.riskFilterValues(field).some((item: string) => this.filterKey(item) === normalizedValue);
   }
 
   clearRiskFilter(field: RiskFilterField, value: string): void {
     const normalizedValue = this.filterKey(value);
-    this.setRiskFilterValues(field, this.riskFilterValues(field).filter((item) => this.filterKey(item) !== normalizedValue));
+    this.setRiskFilterValues(field, this.riskFilterValues(field).filter((item: string) => this.filterKey(item) !== normalizedValue));
   }
 
   resetRiskFilters(): void {
@@ -2863,15 +2934,11 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
     this.riskExposureFilters = [];
   }
 
-  clearRiskEntityFilters(field: 'program' | 'project'): void {
-    if (field === 'program') {
-      this.riskProgramFilters = [];
-      this.riskProgramFilterQuery = '';
-      return;
-    }
-
+  clearAllRiskEntityFilters(): void {
+    this.riskPortfolioFilters = [];
+    this.riskProgramFilters = [];
     this.riskProjectFilters = [];
-    this.riskProjectFilterQuery = '';
+    this.riskEntityFilterQuery = '';
   }
 
   manageRisk(risk: Risk): void {
@@ -2951,7 +3018,7 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
     if (!this.activeRiskProfile) return;
     this.activeRiskProfile = {
       ...this.activeRiskProfile,
-      treatments: this.activeRiskProfile.treatments.filter((treatment) => treatment.id !== treatmentId),
+      treatments: this.activeRiskProfile.treatments.filter((treatment: RiskTreatmentRecord) => treatment.id !== treatmentId),
     };
   }
 
@@ -2965,19 +3032,6 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
 
   deleteRisk(riskId: string): void {
     this.riskDelete.emit(riskId);
-  }
-
-  toggleRiskNode(nodeId: string): void {
-    if (this.collapsedRiskNodeIds.has(nodeId)) {
-      this.collapsedRiskNodeIds.delete(nodeId);
-    } else {
-      this.collapsedRiskNodeIds.add(nodeId);
-    }
-    this.collapsedRiskNodeIds = new Set(this.collapsedRiskNodeIds);
-  }
-
-  isRiskNodeCollapsed(nodeId: string): boolean {
-    return this.collapsedRiskNodeIds.has(nodeId);
   }
 
   toggleRiskTreeNode(nodeId: string): void {
@@ -3002,13 +3056,13 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
   }
 
   programRiskCount(program: ProgramGroup): number {
-    return program.directRisks.length + program.projects.reduce((total, project) => total + project.risks.length, 0);
+    return program.directRisks.length + program.projects.reduce((total: number, project: ProjectGroup) => total + project.risks.length, 0);
   }
 
   portfolioRiskCount(portfolio: PortfolioGroup): number {
     return (
       portfolio.directRisks.length +
-      portfolio.programs.reduce((total, program) => total + this.programRiskCount(program), 0) +
+      portfolio.programs.reduce((total: number, program: ProgramGroup) => total + this.programRiskCount(program), 0) +
       portfolio.standaloneProjects.risks.length
     );
   }
@@ -3092,7 +3146,7 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
     if (!this.canSaveAddRiskDraft) return;
 
     const draft = this.addRiskDraft;
-    const projectLink = draft.level === 'project' ? this.projectLinkOptions.find((project) => project.label === draft.project) : null;
+    const projectLink = draft.level === 'project' ? this.projectLinkOptions.find((project: ProjectLinkOption) => project.label === draft.project) : null;
     const risk: Risk = {
       id: this.nextRiskId(),
       name: draft.riskName.trim(),
@@ -3179,7 +3233,7 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
   valueLabel(value: string): string {
     return value
       .split('-')
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .map((part: string) => part.charAt(0).toUpperCase() + part.slice(1))
       .join(' ');
   }
 
@@ -3197,11 +3251,14 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
           label: program.label,
           kind: 'program',
           lineage: hierarchy.label,
-          risks: program.directRisks,
+          risks: [
+            ...program.directRisks,
+            ...program.projects.flatMap((project: ProjectGroup) => project.risks)
+          ],
         };
       }
 
-      const project = program.projects.find((item) => item.key === nodeId);
+      const project = program.projects.find((item: ProjectGroup) => item.key === nodeId);
       if (project) {
         return {
           key: project.key,
@@ -3219,7 +3276,7 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
         label: 'Standalone Projects',
         kind: 'standalone',
         lineage: hierarchy.label,
-        risks: this.standaloneRiskProjects.flatMap((project) => project.risks),
+        risks: this.standaloneRiskProjects.flatMap((project: ProjectGroup) => project.risks),
       };
     }
 
@@ -3244,7 +3301,14 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
       label: hierarchy.label,
       kind: 'portfolio',
       lineage: 'Portfolio',
-      risks: hierarchy.directRisks,
+      risks: [
+        ...hierarchy.directRisks,
+        ...hierarchy.programs.flatMap((program: ProgramGroup) => [
+          ...program.directRisks,
+          ...program.projects.flatMap((project: ProjectGroup) => project.risks)
+        ]),
+        ...this.standaloneRiskProjects.flatMap((project: ProjectGroup) => project.risks)
+      ],
     };
   }
 
@@ -3256,7 +3320,7 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
   }
 
   private riskCategoryFromLabel(label: string): RiskCategory {
-    return this.riskCategoryOptions.find((category) => category === label) || 'Reputational';
+    return this.riskCategoryOptions.find((category: string) => category === label) || 'Reputational';
   }
 
   private exposureFromLabel(label: string): RiskExposure {
@@ -3291,7 +3355,7 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
   }
 
   private nextRiskId(): string {
-    const next = this.risks.reduce((max, risk) => {
+    const next = this.risks.reduce((max: number, risk: Risk) => {
       const match = risk.id.match(/\d+$/);
       return match ? Math.max(max, Number(match[0])) : max;
     }, 0) + 1;
@@ -3302,9 +3366,9 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
     return name
       .trim()
       .split(/\s+/)
-      .filter(Boolean)
+      .filter((part: string) => part)
       .slice(0, 2)
-      .map((part) => part.charAt(0).toUpperCase())
+      .map((part: string) => part.charAt(0).toUpperCase())
       .join('') || 'R';
   }
 
@@ -3335,51 +3399,94 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
   private riskFilterFieldLabel(field: RiskFilterField): string {
     if (field === 'status') return 'Status';
     if (field === 'level') return 'Level';
+    if (field === 'portfolio') return 'Portfolio';
     if (field === 'program') return 'Program';
     if (field === 'project') return 'Project';
     if (field === 'category') return 'Category';
+    if (field === 'owner') return 'Risk Owner';
+    if (field === 'endDate') return 'End Date';
+    if (field === 'reviewDate') return 'Review Due Date';
+    if (field === 'residualRisk') return 'RR';
     return 'AR';
   }
 
   private filteredFilterOptions(options: string[], query: string): string[] {
     const normalizedQuery = query.trim().toLowerCase();
     if (!normalizedQuery) return options;
-    return options.filter((option) => option.toLowerCase().includes(normalizedQuery));
+    return options.filter((option: string) => option.toLowerCase().includes(normalizedQuery));
   }
 
   private riskFilterValues(field: RiskFilterField): string[] {
     if (field === 'status') return this.riskStatusFilters;
     if (field === 'level') return this.riskLevelFilters;
+    if (field === 'portfolio') return this.riskPortfolioFilters;
     if (field === 'program') return this.riskProgramFilters;
     if (field === 'project') return this.riskProjectFilters;
     if (field === 'category') return this.riskCategoryFilters;
+    if (field === 'owner') return this.riskOwnerFilters;
+    if (field === 'endDate') return this.riskEndDateFilters;
+    if (field === 'reviewDate') return this.riskReviewDateFilters;
+    if (field === 'residualRisk') return this.riskResidualRiskFilters;
     return this.riskExposureFilters;
   }
 
   private setRiskFilterValues(field: RiskFilterField, values: string[]): void {
     if (field === 'status') this.riskStatusFilters = values;
     if (field === 'level') this.riskLevelFilters = values;
+    if (field === 'portfolio') this.riskPortfolioFilters = values;
     if (field === 'program') this.riskProgramFilters = values;
     if (field === 'project') this.riskProjectFilters = values;
     if (field === 'category') this.riskCategoryFilters = values;
     if (field === 'exposure') this.riskExposureFilters = values;
+    if (field === 'owner') this.riskOwnerFilters = values;
+    if (field === 'endDate') this.riskEndDateFilters = values;
+    if (field === 'reviewDate') this.riskReviewDateFilters = values;
+    if (field === 'residualRisk') this.riskResidualRiskFilters = values;
   }
 
   private riskMatchesFilters(risk: Risk): boolean {
-    if (this.riskStatusFilters.length && !this.riskStatusFilters.some((status) => this.filterKey(status) === this.filterKey(risk.status))) return false;
-    if (this.riskLevelFilters.length && !this.riskLevelFilters.some((level) => this.filterKey(level) === this.filterKey(risk.level))) return false;
-    if (this.riskCategoryFilters.length && !this.riskCategoryFilters.some((category) => this.filterKey(category) === this.filterKey(risk.category))) return false;
-    if (this.riskExposureFilters.length && !this.riskExposureFilters.some((exposure) => this.filterKey(exposure) === this.filterKey(risk.exposure))) return false;
+    if (this.riskStatusFilters.length && !this.riskStatusFilters.some((status: string) => this.filterKey(status) === this.filterKey(risk.status))) return false;
+    if (this.riskLevelFilters.length && !this.riskLevelFilters.some((level: string) => this.filterKey(level) === this.filterKey(risk.level))) return false;
+    if (this.riskCategoryFilters.length && !this.riskCategoryFilters.some((category: string) => this.filterKey(category) === this.filterKey(risk.category))) return false;
+    if (this.riskExposureFilters.length && !this.riskExposureFilters.some((exposure: string) => this.filterKey(exposure) === this.filterKey(risk.exposure))) return false;
+    if (this.riskOwnerFilters.length && !this.riskOwnerFilters.some((owner: string) => this.filterKey(owner) === this.filterKey(risk.owner.name))) return false;
+    if (this.riskEndDateFilters.length && !this.riskEndDateFilters.some((date: string) => this.filterKey(date) === this.filterKey(this.riskDateLabel(this.riskEndDate(risk))))) return false;
+    if (this.riskReviewDateFilters.length && !this.riskReviewDateFilters.some((date: string) => this.filterKey(date) === this.filterKey(this.riskDateLabel(this.riskReviewDueDate(risk))))) return false;
+    if (this.riskResidualRiskFilters.length && !this.riskResidualRiskFilters.some((rr: string) => this.filterKey(rr) === this.filterKey(this.residualRiskLabel(risk)))) return false;
+
+    if (this.riskPortfolioFilters.length) {
+      const riskPortfolio = risk.parentPortfolio || this.portfolioName;
+      if (!this.riskPortfolioFilters.some((portfolio: string) => this.sameEntityName(portfolio, riskPortfolio))) return false;
+    }
 
     if (this.riskProgramFilters.length) {
       const riskProgram = risk.level === 'program' ? risk.linkedTo : risk.parentProgram || '';
-      if (!this.riskProgramFilters.some((program) => this.sameEntityName(program, riskProgram))) return false;
+      if (!this.riskProgramFilters.some((program: string) => this.sameEntityName(program, riskProgram))) return false;
     }
 
     if (this.riskProjectFilters.length) {
-      if (risk.level !== 'project' || !this.riskProjectFilters.some((project) => this.sameEntityName(project, risk.linkedTo))) return false;
+      if (risk.level !== 'project' || !this.riskProjectFilters.some((project: string) => this.sameEntityName(project, risk.linkedTo))) return false;
     }
 
+    if (!this.reviewDateInRange(risk)) return false;
+
+    return true;
+  }
+
+  private reviewDateInRange(risk: Risk): boolean {
+    if (!this.riskReviewDateStart && !this.riskReviewDateEnd) return true;
+    
+    const reviewDateStr = this.riskReviewDueDate(risk);
+    if (!reviewDateStr || reviewDateStr === 'N/A') return false;
+    
+    const match = reviewDateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (!match) return false;
+    
+    const riskIso = `${match[3]}-${match[1]}-${match[2]}`;
+    
+    if (this.riskReviewDateStart && riskIso < this.riskReviewDateStart) return false;
+    if (this.riskReviewDateEnd && riskIso > this.riskReviewDateEnd) return false;
+    
     return true;
   }
 
@@ -3404,7 +3511,7 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
       risk.status,
     ];
 
-    return searchable.some((value) => value.toLowerCase().includes(query));
+    return searchable.some((value: string) => value.toLowerCase().includes(query));
   }
 
   private residualRiskExposure(risk: Risk): RiskExposure {
@@ -3421,29 +3528,29 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
   }
 
   private findProgramEndDate(programName: string): string {
-    return this.programs.find((program) => this.sameEntityName(program.name, programName))?.endDate || '';
+    return this.programs.find((program: ProgramRow) => this.sameEntityName(program.name, programName))?.endDate || '';
   }
 
   private findProjectEndDate(projectName: string, parentProgram?: string): string {
     if (parentProgram) {
-      const program = this.programs.find((item) => this.sameEntityName(item.name, parentProgram));
-      const project = program?.projects?.find((item) => this.sameEntityName(item.name, projectName));
+      const program = this.programs.find((item: ProgramRow) => this.sameEntityName(item.name, parentProgram));
+      const project = program?.projects?.find((item: any) => this.sameEntityName(item.name, projectName));
       if (project?.endDate) return project.endDate;
     }
 
     for (const program of this.programs) {
-      const project = program.projects?.find((item) => this.sameEntityName(item.name, projectName));
+      const project = program.projects?.find((item: any) => this.sameEntityName(item.name, projectName));
       if (project?.endDate) return project.endDate;
     }
 
-    return this.standaloneProjects.find((project) => this.sameEntityName(project.name, projectName))?.endDate || '';
+    return this.standaloneProjects.find((project: any) => this.sameEntityName(project.name, projectName))?.endDate || '';
   }
 
   private latestPortfolioEndDate(): string {
     const endDates = [
-      ...this.programs.map((program) => program.endDate),
-      ...this.programs.flatMap((program) => (program.projects || []).map((project) => project.endDate)),
-      ...this.standaloneProjects.map((project) => project.endDate),
+      ...this.programs.map((program: ProgramRow) => program.endDate),
+      ...this.programs.flatMap((program: ProgramRow) => (program.projects || []).map((project: any) => project.endDate)),
+      ...this.standaloneProjects.map((project: any) => project.endDate),
     ].filter(Boolean);
 
     const sortedEndDates = endDates.sort();
@@ -3566,25 +3673,6 @@ export class PortfolioWorkspaceRiskRegisterComponent implements OnChanges {
     if (!match) return value;
     const [, month, day, year] = match;
     return `${year}-${month}-${day}`;
-  }
-
-  private defaultCollapsedRiskNodeIds(): Set<string> {
-    const collapsedNodeIds = new Set<string>();
-    const hierarchy = this.riskHierarchy;
-    collapsedNodeIds.add(this.standaloneNodeId);
-
-    for (const program of hierarchy.programs) {
-      collapsedNodeIds.add(program.key);
-      for (const project of program.projects) {
-        collapsedNodeIds.add(project.key);
-      }
-    }
-
-    for (const project of this.standaloneRiskProjects) {
-      collapsedNodeIds.add(project.key);
-    }
-
-    return collapsedNodeIds;
   }
 
   private sameEntityName(left: string, right: string): boolean {
