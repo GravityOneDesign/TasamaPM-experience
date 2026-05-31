@@ -23,6 +23,13 @@ export interface PmConsoleModeTabItem {
       :host {
         display: contents;
       }
+
+      .plan-builder-mode-toggle button,
+      .project-mode-toggle button {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
     `,
   ],
   template: `

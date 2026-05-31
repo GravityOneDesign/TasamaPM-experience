@@ -15264,6 +15264,11 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       return;
     }
 
+    if (actionId === 'report-progress') {
+      this.openPortfolioImplementationRoute('portfolioreporting', 'Report progress');
+      return;
+    }
+
     if (actionId === 'insights') {
       this.openImpactStudioExploreInsights('pmo');
       return;
@@ -15436,7 +15441,7 @@ export class PmConsoleContentComponent implements AfterViewChecked, OnChanges, O
       id: tab.id,
       label: tab.label,
       icon: 'layout-grid',
-      widthPx: 170,
+      widthPx: Math.max(140, tab.label.length * 8 + 48),
       ariaLabel: tab.label,
     }));
   }
