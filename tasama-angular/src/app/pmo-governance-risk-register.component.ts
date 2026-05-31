@@ -300,18 +300,6 @@ interface RiskAppliedFilter {
                       </fieldset>
 
                       <fieldset>
-                        <legend>Risk Owner</legend>
-                        @for (owner of riskOwnerFilterOptions; track owner) {
-                          <label>
-                            <input type="checkbox" [checked]="isRiskFilterSelected('owner', owner)" (change)="toggleRiskFilter('owner', owner, $event)" />
-                            <span>{{ owner }}</span>
-                          </label>
-                        }
-                      </fieldset>
-
-
-
-                      <fieldset>
                         <legend>RR</legend>
                         @for (rr of riskResidualRiskFilterOptions; track rr) {
                           <label>
@@ -319,6 +307,18 @@ interface RiskAppliedFilter {
                             <span>{{ valueLabel(rr) }}</span>
                           </label>
                         }
+                      </fieldset>
+
+                      <fieldset style="grid-column: span 2;">
+                        <legend>Risk Owner</legend>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                          @for (owner of riskOwnerFilterOptions; track owner) {
+                            <label>
+                              <input type="checkbox" [checked]="isRiskFilterSelected('owner', owner)" (change)="toggleRiskFilter('owner', owner, $event)" />
+                              <span>{{ owner }}</span>
+                            </label>
+                          }
+                        </div>
                       </fieldset>
                     </div>
                   </section>
@@ -343,7 +343,7 @@ interface RiskAppliedFilter {
                 </button>
 
                 @if (riskReviewDateMenuOpen) {
-                  <section class="risk-filter-popover" role="menu" aria-label="Filter by review date">
+                  <section class="risk-filter-menu" role="menu" aria-label="Filter by review date">
                     <header>
                       <div>
                         <strong>Review Due Date</strong>
@@ -351,7 +351,7 @@ interface RiskAppliedFilter {
                       </div>
                       <button class="risk-filter-reset" type="button" [disabled]="!riskReviewDateStart && !riskReviewDateEnd" (click)="resetRiskReviewDateFilters()">Reset</button>
                     </header>
-                    <div class="risk-filter-grid" style="display: flex; flex-direction: column; gap: 12px; padding: 12px;">
+                    <div style="display: flex; flex-direction: column; gap: 12px; padding: 12px;">
                       <label style="display: flex; flex-direction: column; gap: 4px;">
                         <span style="font-size: 13px; font-weight: 500; color: #202633;">Start Date</span>
                         <input type="date" [value]="riskReviewDateStart" (change)="setRiskReviewDateStart($event)" style="padding: 6px 12px; border: 1px solid #dfe4ef; border-radius: 6px; font-size: 13.5px; color: #202633; outline: none;" />
