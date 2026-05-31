@@ -53,6 +53,7 @@ import {
   type DashboardComponentsQuery,
 } from '../../services/dashboard-components.service';
 import {
+  collectLandingDashboardRequests,
   pmoDigestSections,
   pmoOverviewActions,
   pmoQuickLinks,
@@ -4055,11 +4056,7 @@ const roleLandingDashboardRequests: Record<string, RoleLandingDashboardRequest> 
     dashboardName: 'Framework Configurations',
     isGrouped: true,
   },
-  'framework-configuration': {
-    frontDoorName: 'Static PMO Dashboard',
-    dashboardName: 'Framework Configurations',
-    isGrouped: true,
-  },
+  ...collectLandingDashboardRequests(portfolioManagerQuickLinks),
   'portfolio-insights': {
     frontDoorName: 'P3M Workspaces',
     dashboardName: 'Insights & Decision Intelligence',
@@ -4077,11 +4074,7 @@ const roleLandingDashboardRequests: Record<string, RoleLandingDashboardRequest> 
   },
 };
 const portfolioManagerRoleLandingDashboardRequests: Record<string, RoleLandingDashboardRequest> = {
-  framework: {
-    frontDoorName: 'Framework Configurations',
-    dashboardName: 'Static PM Dashboard',
-    isGrouped: true,
-  },
+  ...collectLandingDashboardRequests(portfolioManagerOverviewActions),
 };
 const normalFrontDoorInsidePagePaths: Record<string, string> = {
   'project-plan': '',

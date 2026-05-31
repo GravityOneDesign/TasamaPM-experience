@@ -2,6 +2,31 @@ import type { PmConsoleDigestSection } from '../../../shared/components/ui/diges
 import type { PmConsoleFrontdoorAction } from '../components/frontdoor-action-cards/frontdoor-action-cards.component';
 import type { RoleQuickLink } from '../components/role-quick-links-grid/role-quick-links-grid.component';
 
+export interface LandingDashboardNavigation {
+  frontDoorName: string;
+  dashboardName: string;
+  isGrouped?: boolean;
+}
+
+type RoleQuickLinkWithLanding = RoleQuickLink & {
+  landingDashboard?: LandingDashboardNavigation;
+};
+
+type PmConsoleFrontdoorActionWithLanding = PmConsoleFrontdoorAction & {
+  landingDashboard?: LandingDashboardNavigation;
+};
+
+export function collectLandingDashboardRequests(
+  items: ReadonlyArray<{ id: string; landingDashboard?: LandingDashboardNavigation }>,
+): Record<string, LandingDashboardNavigation> {
+  return items.reduce<Record<string, LandingDashboardNavigation>>((requests, item) => {
+    if (item.landingDashboard) {
+      requests[item.id] = item.landingDashboard;
+    }
+    return requests;
+  }, {});
+}
+
 export const pmoQuickLinks: readonly RoleQuickLink[] = [
   {
     id: 'portfolio-register',
@@ -65,12 +90,17 @@ export const pmoQuickLinks: readonly RoleQuickLink[] = [
   },
 ];
 
-export const portfolioManagerQuickLinks: readonly RoleQuickLink[] = [
+export const portfolioManagerQuickLinks: readonly RoleQuickLinkWithLanding[] = [
   {
     id: 'framework-configuration',
     title: 'Framework & Configuration',
     description: 'Set governance controls, structures, users, workflows, and portfolio standards.',
     icon: 'settings',
+    landingDashboard: {
+      frontDoorName: 'Framework Configurations',
+      dashboardName: 'Static PM Dashboard',
+      isGrouped: true,
+    },
   },
   {
     id: 'portfolio-workspace',
@@ -223,13 +253,18 @@ export const pmoOverviewActions: readonly PmConsoleFrontdoorAction[] = [
   },
 ];
 
-export const portfolioManagerOverviewActions: readonly PmConsoleFrontdoorAction[] = [
+export const portfolioManagerOverviewActions: readonly PmConsoleFrontdoorActionWithLanding[] = [
   {
     id: 'framework',
     title: 'Set up your framework',
     description: 'Define frameworks, governance controls, manage users, and set up your delivery standards.',
     icon: 'folder',
     decor: 'waves',
+    landingDashboard: {
+      frontDoorName: 'Framework Configurations',
+      dashboardName: 'Static PM Dashboard',
+      isGrouped: true,
+    },
   },
   {
     id: 'manage-portfolio',
