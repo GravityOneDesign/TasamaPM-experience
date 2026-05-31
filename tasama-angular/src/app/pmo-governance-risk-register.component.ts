@@ -128,7 +128,7 @@ interface RiskAppliedFilter {
                   (click)="toggleRiskEntityFilterMenu()"
                 >
                   <span pmConsoleIcon="layout-grid" aria-hidden="true"></span>
-                  <span>{{ totalEntityFilterCount ? totalEntityFilterCount + ' filters' : 'Entity Filters' }}</span>
+                  <span>{{ totalEntityFilterCount ? totalEntityFilterCount + ' levels' : 'Select Level' }}</span>
                   <span class="risk-dropdown-chevron" pmConsoleIcon="chevron-down" aria-hidden="true"></span>
                 </button>
 
@@ -241,16 +241,16 @@ interface RiskAppliedFilter {
               </div>
               <div class="risk-filter-control">
                 <button
-                  class="risk-toolbar-button"
+                  class="risk-toolbar-button risk-toolbar-icon-button"
                   type="button"
                   aria-label="Filter risks"
                   aria-haspopup="menu"
                   [class.active]="riskFilterMenuOpen || hasRiskFacetFilters"
                   [attr.aria-expanded]="riskFilterMenuOpen"
                   (click)="toggleRiskFilterMenu()"
+                  title="Filter risks"
                 >
                   <span pmConsoleIcon="filter" aria-hidden="true"></span>
-                  <span>Filter</span>
                   @if (riskFacetFilterCount) {
                     <strong class="risk-filter-count">{{ riskFacetFilterCount }}</strong>
                   }
@@ -277,15 +277,7 @@ interface RiskAppliedFilter {
                         }
                       </fieldset>
 
-                      <fieldset>
-                        <legend>Level</legend>
-                        @for (level of riskLevelFilterOptions; track level) {
-                          <label>
-                            <input type="checkbox" [checked]="isRiskFilterSelected('level', level)" (change)="toggleRiskFilter('level', level, $event)" />
-                            <span>{{ riskLevelLabel(level) }}</span>
-                          </label>
-                        }
-                      </fieldset>
+
 
                       <fieldset>
                         <legend>Category</legend>
@@ -317,25 +309,7 @@ interface RiskAppliedFilter {
                         }
                       </fieldset>
 
-                      <fieldset>
-                        <legend>End Date</legend>
-                        @for (date of riskEndDateFilterOptions; track date) {
-                          <label>
-                            <input type="checkbox" [checked]="isRiskFilterSelected('endDate', date)" (change)="toggleRiskFilter('endDate', date, $event)" />
-                            <span>{{ date }}</span>
-                          </label>
-                        }
-                      </fieldset>
 
-                      <fieldset>
-                        <legend>Review Due Date</legend>
-                        @for (date of riskReviewDateFilterOptions; track date) {
-                          <label>
-                            <input type="checkbox" [checked]="isRiskFilterSelected('reviewDate', date)" (change)="toggleRiskFilter('reviewDate', date, $event)" />
-                            <span>{{ date }}</span>
-                          </label>
-                        }
-                      </fieldset>
 
                       <fieldset>
                         <legend>RR</legend>
@@ -346,6 +320,46 @@ interface RiskAppliedFilter {
                           </label>
                         }
                       </fieldset>
+                    </div>
+                  </section>
+                }
+              </div>
+
+              <div class="risk-filter-control">
+                <button
+                  class="risk-toolbar-button risk-toolbar-icon-button"
+                  type="button"
+                  aria-label="Filter by review date"
+                  aria-haspopup="menu"
+                  [class.active]="riskReviewDateMenuOpen || (riskReviewDateStart || riskReviewDateEnd)"
+                  [attr.aria-expanded]="riskReviewDateMenuOpen"
+                  (click)="toggleRiskReviewDateMenu()"
+                  title="Filter by review date"
+                >
+                  <span pmConsoleIcon="calendar" aria-hidden="true"></span>
+                  @if (riskReviewDateStart || riskReviewDateEnd) {
+                    <strong class="risk-filter-count">1</strong>
+                  }
+                </button>
+
+                @if (riskReviewDateMenuOpen) {
+                  <section class="risk-filter-popover" role="menu" aria-label="Filter by review date">
+                    <header>
+                      <div>
+                        <strong>Review Due Date</strong>
+                        <small>Select date range</small>
+                      </div>
+                      <button class="risk-filter-reset" type="button" [disabled]="!riskReviewDateStart && !riskReviewDateEnd" (click)="resetRiskReviewDateFilters()">Reset</button>
+                    </header>
+                    <div class="risk-filter-grid" style="display: flex; flex-direction: column; gap: 12px; padding: 12px;">
+                      <label style="display: flex; flex-direction: column; gap: 4px;">
+                        <span style="font-size: 13px; font-weight: 500; color: #202633;">Start Date</span>
+                        <input type="date" [value]="riskReviewDateStart" (change)="setRiskReviewDateStart($event)" style="padding: 6px 12px; border: 1px solid #dfe4ef; border-radius: 6px; font-size: 13.5px; color: #202633; outline: none;" />
+                      </label>
+                      <label style="display: flex; flex-direction: column; gap: 4px;">
+                        <span style="font-size: 13px; font-weight: 500; color: #202633;">End Date</span>
+                        <input type="date" [value]="riskReviewDateEnd" (change)="setRiskReviewDateEnd($event)" style="padding: 6px 12px; border: 1px solid #dfe4ef; border-radius: 6px; font-size: 13.5px; color: #202633; outline: none;" />
+                      </label>
                     </div>
                   </section>
                 }
@@ -940,6 +954,11 @@ interface RiskAppliedFilter {
       padding: 0 14px;
       transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
       white-space: nowrap;
+    }
+
+    .risk-toolbar-icon-button {
+      padding: 0;
+      width: 40px;
     }
 
     .risk-toolbar-button:hover,
@@ -2494,6 +2513,9 @@ export class PmoGovernanceRiskRegisterComponent implements OnChanges {
   collapsedRiskTreeNodeIds = new Set<string>();
   isAddRiskDrawerOpen = false;
   riskFilterMenuOpen = false;
+  riskReviewDateMenuOpen = false;
+  riskReviewDateStart = '';
+  riskReviewDateEnd = '';
   riskEntityFilterMenuOpen = false;
   riskEntityFilterQuery = '';
   riskEntityAccordionState = {
@@ -2818,13 +2840,38 @@ export class PmoGovernanceRiskRegisterComponent implements OnChanges {
     this.riskFilterMenuOpen = !this.riskFilterMenuOpen;
     if (this.riskFilterMenuOpen) {
       this.riskEntityFilterMenuOpen = false;
+      this.riskReviewDateMenuOpen = false;
     }
+  }
+
+  toggleRiskReviewDateMenu(): void {
+    this.riskReviewDateMenuOpen = !this.riskReviewDateMenuOpen;
+    if (this.riskReviewDateMenuOpen) {
+      this.riskEntityFilterMenuOpen = false;
+      this.riskFilterMenuOpen = false;
+    }
+  }
+
+  setRiskReviewDateStart(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.riskReviewDateStart = target.value;
+  }
+
+  setRiskReviewDateEnd(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.riskReviewDateEnd = target.value;
+  }
+
+  resetRiskReviewDateFilters(): void {
+    this.riskReviewDateStart = '';
+    this.riskReviewDateEnd = '';
   }
 
   toggleRiskEntityFilterMenu(): void {
     this.riskEntityFilterMenuOpen = !this.riskEntityFilterMenuOpen;
     if (this.riskEntityFilterMenuOpen) {
       this.riskFilterMenuOpen = false;
+      this.riskReviewDateMenuOpen = false;
     }
   }
 
@@ -3421,6 +3468,25 @@ export class PmoGovernanceRiskRegisterComponent implements OnChanges {
       if (risk.level !== 'project' || !this.riskProjectFilters.some((project: string) => this.sameEntityName(project, risk.linkedTo))) return false;
     }
 
+    if (!this.reviewDateInRange(risk)) return false;
+
+    return true;
+  }
+
+  private reviewDateInRange(risk: Risk): boolean {
+    if (!this.riskReviewDateStart && !this.riskReviewDateEnd) return true;
+    
+    const reviewDateStr = this.riskReviewDueDate(risk);
+    if (!reviewDateStr || reviewDateStr === 'N/A') return false;
+    
+    const match = reviewDateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (!match) return false;
+    
+    const riskIso = `${match[3]}-${match[1]}-${match[2]}`;
+    
+    if (this.riskReviewDateStart && riskIso < this.riskReviewDateStart) return false;
+    if (this.riskReviewDateEnd && riskIso > this.riskReviewDateEnd) return false;
+    
     return true;
   }
 
