@@ -110,7 +110,7 @@ const standardReportCards: readonly PmoReportReviewCard[] = [
 export const pmoReportReviewTabs: readonly PmoReportReviewTab[] = [
   { id: 'standard', label: 'Standard Reports', icon: 'square-chart-gantt', widthPx: 201 },
   { id: 'custom', label: 'Custom Reports', icon: 'network', widthPx: 192 },
-  { id: 'governance', label: 'Governance Register', icon: 'layout-grid', widthPx: 215 },
+  { id: 'governance', label: 'Governance', icon: 'layout-grid', widthPx: 160 },
 ];
 
 export const pmoReportReviewFilters: readonly PmoReportReviewFilter[] = [
