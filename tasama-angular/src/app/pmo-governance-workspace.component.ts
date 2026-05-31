@@ -5,8 +5,10 @@ import { ChangeDetectionStrategy, Component, EventEmitter, HostListener, Input, 
 
 
 import { PortfolioWorkspaceRegistersComponent } from './portfolio-workspace/portfolio-workspace-registers.component';
+import { portfolioProgramRows, riskRegisterData, standaloneProjects } from './portfolio-workspace/portfolio-workspace.data';
 import { PmConsoleExpandableSearchComponent } from './shared/pm-console-expandable-search.component';
 import { PmConsoleIconComponent } from './shared/pm-console-icon.component';
+import { PmoGovernanceRiskRegisterComponent } from './pmo-governance-risk-register.component';
 import {
   PmConsoleRegisterTableComponent,
   type PmConsoleRegisterTableActionEvent,
@@ -64,6 +66,7 @@ type PmoGovernanceRecordDrawerContext = 'workspace' | 'forum';
     PmConsoleIconComponent,
                         PmConsoleRegisterTableComponent,
     PortfolioWorkspaceRegistersComponent,
+    PmoGovernanceRiskRegisterComponent,
     PmConsoleRowActionMenuComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -103,6 +106,706 @@ type PmoGovernanceRecordDrawerContext = 'workspace' | 'forum';
             @if (activePrimaryTab === 'portfolio-register') {
               <section class="pmo-program-register-view" aria-label="Portfolio register">
                 <app-portfolio-workspace-registers [showRegisterTabs]="false"></app-portfolio-workspace-registers>
+              </section>
+            } @else if (activePrimaryTab === 'governance') {
+              @if (selectedForum; as forum) {
+                <section hidden class="pmo-forum-detail-view" [attr.aria-label]="forum.forumName + ' forum meetings'">
+                  <header class="pmo-forum-detail-header">
+                    <button class="pmo-forum-detail-back" type="button" aria-label="Back to forums" (click)="closeForumDetail()">
+                      <span pmConsoleIcon="arrow-left" aria-hidden="true"></span>
+                    </button>
+
+                    <div class="pmo-forum-detail-meta">
+                      <div class="pmo-forum-detail-field is-wide">
+                        <span>Forum Name</span>
+                        <strong>{{ forum.forumName }}</strong>
+                      </div>
+                      <div class="pmo-forum-detail-field">
+                        <span>Type</span>
+                        <strong>{{ forum.type }}</strong>
+                      </div>
+                      <div class="pmo-forum-detail-field">
+                        <span>Category</span>
+                        <strong>{{ forum.category }}</strong>
+                      </div>
+                    </div>
+
+                  </header>
+
+                  <nav class="pmo-forum-detail-tabs" role="tablist" aria-label="Forum detail sections">
+                    @for (tab of forumDetailTabs; track tab.id) {
+                      <button
+                        [class.active]="activeForumDetailTab === tab.id"
+                        type="button"
+                        role="tab"
+                        [attr.aria-selected]="activeForumDetailTab === tab.id"
+                        (click)="setForumDetailTab(tab.id)"
+                      >
+                        {{ tab.label }}
+                      </button>
+                    }
+                  </nav>
+
+                  @if (activeForumDetailTab === 'meetings') {
+                    <section class="pmo-meetings-register" aria-label="Forum meetings">
+                      <div class="pmo-meeting-section-heading">
+                        <h2>Upcoming Meetings</h2>
+                        <button class="pm-table-add-project pmo-create-meeting" type="button">
+                          <span pmConsoleIcon="plus" aria-hidden="true"></span>
+                          <span>Create New Meeting</span>
+                        </button>
+                      </div>
+
+                      <div class="pmo-meeting-table-wrap">
+                        <table class="pmo-forum-table pmo-meeting-table" aria-label="Upcoming meetings">
+                          <colgroup>
+                            <col class="pmo-meeting-col-date" />
+                            <col class="pmo-meeting-col-name" />
+                            <col class="pmo-meeting-col-count" />
+                            <col class="pmo-meeting-col-count" />
+                          </colgroup>
+                          <thead>
+                            <tr>
+                              <th scope="col">Meeting Date</th>
+                              <th scope="col">Meeting Name</th>
+                              <th scope="col" class="pmo-center">Actions</th>
+                              <th scope="col" class="pmo-center">Decisions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td colspan="4"><span class="pmo-no-meeting-badge">No Meeting!</span></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div class="pmo-meeting-section-heading pmo-past-meeting-heading">
+                        <h2>Past Meetings</h2>
+                        <app-pm-console-expandable-search
+                          class="pmo-meeting-search"
+                          [ariaLabel]="'Search past meetings'"
+                          [placeholder]="'Search'"
+                          [value]="meetingSearchQuery"
+                          (searchChange)="setMeetingSearchQuery($event)"
+                        />
+                      </div>
+
+                      <div class="pmo-meeting-table-wrap">
+                        <table class="pmo-forum-table pmo-meeting-table pmo-past-meeting-table" aria-label="Past meetings">
+                          <colgroup>
+                            <col class="pmo-meeting-col-date" />
+                            <col class="pmo-meeting-col-name" />
+                            <col class="pmo-meeting-col-count" />
+                            <col class="pmo-meeting-col-count" />
+                            <col class="pmo-col-action" />
+                          </colgroup>
+                          <thead>
+                            <tr>
+                              <th scope="col">Meeting Date</th>
+                              <th scope="col">
+                                <span class="pmo-sort-header">Meeting Name<span pmConsoleIcon="arrow-up" aria-hidden="true"></span></span>
+                              </th>
+                              <th scope="col" class="pmo-center">Actions</th>
+                              <th scope="col" class="pmo-center">Decisions</th>
+                              <th scope="col" aria-label="Actions"></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (meeting of visiblePastMeetings; track meeting.id) {
+                              <tr>
+                                <td>{{ meeting.meetingDate }}</td>
+                                <td><span class="pmo-forum-name">{{ meeting.meetingName }}</span></td>
+                                <td class="pmo-center">{{ meeting.actions }}</td>
+                                <td class="pmo-center">{{ meeting.decisions }}</td>
+                                <td class="pmo-action-cell">
+                                  <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + meeting.meetingName">
+                                    <button type="button" role="menuitem">
+                                      <span pmConsoleIcon="eye" aria-hidden="true"></span>
+                                      <span>View meeting</span>
+                                    </button>
+                                    <button type="button" role="menuitem">
+                                      <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                      <span>Edit meeting</span>
+                                    </button>
+                                    <button class="danger" type="button" role="menuitem">
+                                      <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                      <span>Delete meeting</span>
+                                    </button>
+                                  </app-pm-console-row-action-menu>
+                                </td>
+                              </tr>
+                            } @empty {
+                              <tr>
+                                <td colspan="5"><span class="pmo-no-report-data">No meetings match your search</span></td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      </div>
+
+                    </section>
+                  } @else if (activeForumDetailTab === 'sources') {
+                    <section class="pmo-forum-sources-register" aria-label="Forum sources">
+                      <div class="pmo-forum-source-toolbar">
+                        <div class="pmo-viewing-control" aria-label="Forum source visibility">
+                          <span>Viewing</span>
+                          <button
+                            [class.active]="forumSourceScope === 'mine'"
+                            type="button"
+                            [attr.aria-pressed]="forumSourceScope === 'mine'"
+                            (click)="setForumSourceScope('mine')"
+                          >
+                            My Sources (0)
+                          </button>
+                          <button
+                            [class.active]="forumSourceScope === 'all'"
+                            type="button"
+                            [attr.aria-pressed]="forumSourceScope === 'all'"
+                            (click)="setForumSourceScope('all')"
+                          >
+                            All Sources (8)
+                          </button>
+                        </div>
+
+                        <div class="pmo-forum-actions">
+                          <app-pm-console-expandable-search
+                            class="pmo-meeting-search pmo-forum-source-search"
+                            [ariaLabel]="'Search forum sources'"
+                            [placeholder]="'Search'"
+                            [value]="forumSourceSearchQuery"
+                            (searchChange)="setForumSourceSearchQuery($event)"
+                          />
+                          <button class="pm-table-add-project pmo-add-source" type="button" (click)="openSourceDrawer('forum')">
+                            <span pmConsoleIcon="plus" aria-hidden="true"></span>
+                            <span>Add Source</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div class="pmo-meeting-table-wrap">
+                        <table class="pmo-forum-table pmo-source-table pmo-forum-source-table" aria-label="Forum sources">
+                          <colgroup>
+                            <col class="pmo-source-col-name" />
+                            <col class="pmo-source-col-type" />
+                            <col class="pmo-source-col-updated" />
+                            <col class="pmo-source-col-count" />
+                            <col class="pmo-source-col-count" />
+                            <col class="pmo-col-action" />
+                          </colgroup>
+                          <thead>
+                            <tr>
+                              <th scope="col">Source</th>
+                              <th scope="col">Type</th>
+                              <th scope="col">
+                                <span class="pmo-sort-header">Last Updated On<span pmConsoleIcon="arrow-up" aria-hidden="true"></span></span>
+                              </th>
+                              <th scope="col" class="pmo-center">Recommendations</th>
+                              <th scope="col" class="pmo-center">Associated Records</th>
+                              <th scope="col" aria-label="Actions"></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (source of visibleForumSources; track source.id) {
+                              <tr>
+                                <td><span class="pmo-forum-name">{{ source.source }}</span></td>
+                                <td>{{ source.type }}</td>
+                                <td>{{ source.lastUpdatedOn }}</td>
+                                <td class="pmo-center">{{ source.recommendations }}</td>
+                                <td class="pmo-center">{{ source.associatedRecords }}</td>
+                                <td class="pmo-action-cell">
+                                  <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + source.source">
+                                    <button type="button" role="menuitem">
+                                      <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                      <span>Edit source</span>
+                                    </button>
+                                    <button class="danger" type="button" role="menuitem">
+                                      <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                      <span>Delete source</span>
+                                    </button>
+                                  </app-pm-console-row-action-menu>
+                                </td>
+                              </tr>
+                            } @empty {
+                              <tr>
+                                <td colspan="6"><span class="pmo-no-report-data">No sources match your search</span></td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      </div>
+
+                    </section>
+                  } @else if (activeForumDetailTab === 'records') {
+                    <section class="pmo-forum-records-register" aria-label="Forum records">
+                      <div class="pmo-forum-source-toolbar pmo-forum-record-toolbar">
+                        <div class="pmo-viewing-control" aria-label="Forum record visibility">
+                          <span>Viewing</span>
+                          <button
+                            [class.active]="forumRecordScope === 'mine'"
+                            type="button"
+                            [attr.aria-pressed]="forumRecordScope === 'mine'"
+                            (click)="setForumRecordScope('mine')"
+                          >
+                            My Records (0)
+                          </button>
+                          <button
+                            [class.active]="forumRecordScope === 'all'"
+                            type="button"
+                            [attr.aria-pressed]="forumRecordScope === 'all'"
+                            (click)="setForumRecordScope('all')"
+                          >
+                            All Records (24)
+                          </button>
+                          <button class="pmo-print-records-button" type="button">
+                            <span pmConsoleIcon="printer" aria-hidden="true"></span>
+                            <span>Print Forum Records</span>
+                          </button>
+                        </div>
+
+                        <div class="pmo-forum-actions">
+                          <app-pm-console-expandable-search
+                            class="pmo-meeting-search pmo-forum-source-search"
+                            [ariaLabel]="'Search forum records'"
+                            [placeholder]="'Search'"
+                            [value]="forumRecordSearchQuery"
+                            (searchChange)="setForumRecordSearchQuery($event)"
+                          />
+                          <button class="pm-table-add-project pmo-add-source" type="button" (click)="openRecordDrawer('forum')">
+                            <span pmConsoleIcon="plus" aria-hidden="true"></span>
+                            <span>Add Record</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div class="pmo-meeting-table-wrap">
+                        <table class="pmo-forum-table pmo-record-table pmo-forum-record-table" aria-label="Forum records">
+                          <colgroup>
+                            <col class="pmo-col-favorite" />
+                            <col class="pmo-record-col-id" />
+                            <col class="pmo-record-col-title" />
+                            <col class="pmo-record-col-type" />
+                            <col class="pmo-record-col-owner" />
+                            <col class="pmo-record-col-due" />
+                            <col class="pmo-record-col-status" />
+                            <col class="pmo-col-action" />
+                          </colgroup>
+                          <thead>
+                            <tr>
+                              <th scope="col" aria-label="Favorite"><span pmConsoleIcon="star" aria-hidden="true"></span></th>
+                              <th scope="col">
+                                <span class="pmo-sort-header">Record<span pmConsoleIcon="arrow-up" aria-hidden="true"></span></span>
+                              </th>
+                              <th scope="col">Record Title</th>
+                              <th scope="col">Type</th>
+                              <th scope="col">Owner</th>
+                              <th scope="col">Due On</th>
+                              <th scope="col">Status</th>
+                              <th scope="col" aria-label="Actions"></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (record of visibleForumRecords; track record.id) {
+                              <tr>
+                                <td class="pmo-favorite-cell">
+                                  <button class="pmo-favorite-button" [class.is-favorite]="record.favorite" type="button" [attr.aria-label]="'Favorite ' + record.record">
+                                    <span pmConsoleIcon="star" aria-hidden="true"></span>
+                                  </button>
+                                </td>
+                                <td><strong class="pmo-record-id">{{ record.record }}</strong></td>
+                                <td><span class="pmo-forum-name pmo-record-title">{{ record.recordTitle }}</span></td>
+                                <td>{{ record.type }}</td>
+                                <td>{{ record.owner }}</td>
+                                <td>
+                                  @if (record.dueOn === 'N/A') {
+                                    {{ record.dueOn }}
+                                  } @else {
+                                    <span class="pmo-record-date" [class.is-open]="record.status === 'Open'">{{ record.dueOn }}</span>
+                                  }
+                                </td>
+                                <td>
+                                  @if (record.status === 'N/A') {
+                                    {{ record.status }}
+                                  } @else {
+                                    <span class="pmo-record-status" [class.is-open]="record.status === 'Open'">
+                                      {{ record.status }}
+                                    </span>
+                                  }
+                                </td>
+                                <td class="pmo-action-cell">
+                                  <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + record.record">
+                                    <button type="button" role="menuitem">
+                                      <span pmConsoleIcon="eye" aria-hidden="true"></span>
+                                      <span>View record</span>
+                                    </button>
+                                    <button type="button" role="menuitem">
+                                      <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                      <span>Edit record</span>
+                                    </button>
+                                    <button class="danger" type="button" role="menuitem">
+                                      <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                      <span>Delete record</span>
+                                    </button>
+                                  </app-pm-console-row-action-menu>
+                                </td>
+                              </tr>
+                            } @empty {
+                              <tr>
+                                <td colspan="8"><span class="pmo-no-report-data">No records match your search</span></td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  } @else if (activeForumDetailTab === 'watchlist') {
+                    <section class="pmo-watchlist-register" aria-label="Forum watchlist">
+                      <nav class="pmo-watchlist-category-rail" aria-label="Watchlist categories">
+                        @for (category of watchlistCategories; track category.id) {
+                          <button
+                            [class.active]="activeWatchlistCategory === category.id"
+                            type="button"
+                            [attr.aria-current]="activeWatchlistCategory === category.id ? 'page' : null"
+                            (click)="setWatchlistCategory(category.id)"
+                          >
+                            <span>{{ category.label }}</span>
+                            <span pmConsoleIcon="chevron-right" aria-hidden="true"></span>
+                          </button>
+                        }
+                      </nav>
+
+                      <section class="pmo-watchlist-panel" [attr.aria-label]="activeWatchlistCategoryLabel + ' watchlist'">
+                        <header class="pmo-watchlist-heading">
+                          <h2>{{ activeWatchlistCategoryLabel }}</h2>
+                          <button class="pm-table-add-project pmo-add-watchlist" type="button">
+                            <span pmConsoleIcon="plus" aria-hidden="true"></span>
+                            <span>Add to Watchlist</span>
+                          </button>
+                  </header>
+
+                        <div class="pmo-watchlist-table-wrap">
+                          <table class="pmo-forum-table pmo-watchlist-table" aria-label="Watchlist items">
+                            <colgroup>
+                              <col class="pmo-watchlist-col-name" />
+                              <col class="pmo-watchlist-col-related" />
+                              <col class="pmo-watchlist-col-owner" />
+                              <col class="pmo-watchlist-col-action" />
+                            </colgroup>
+                            <thead>
+                              <tr>
+                                <th scope="col">
+                                  <span class="pmo-sort-header">Name<span pmConsoleIcon="arrow-up" aria-hidden="true"></span></span>
+                                </th>
+                                <th scope="col">Related Entity</th>
+                                <th scope="col">Owner</th>
+                                <th scope="col" aria-label="Actions"></th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              @for (item of visibleWatchlistRows; track item.id) {
+                                <tr class="pmo-watchlist-item-row" [class.is-expanded]="item.expanded">
+                                  <td>
+                                    <span class="pmo-watchlist-name">
+                                      <span pmConsoleIcon="chevron-down" aria-hidden="true"></span>
+                                      <strong>{{ item.name }}</strong>
+                                    </span>
+                                  </td>
+                                  <td>{{ item.relatedEntity }}</td>
+                                  <td>{{ item.owner }}</td>
+                                  <td class="pmo-action-cell">
+                                    <app-pm-console-row-action-menu [ariaLabel]="'Actions for ' + item.name">
+                                      <button type="button" role="menuitem">
+                                        <span pmConsoleIcon="pencil" aria-hidden="true"></span>
+                                        <span>Edit watchlist item</span>
+                                      </button>
+                                      <button class="danger" type="button" role="menuitem">
+                                        <span pmConsoleIcon="trash-2" aria-hidden="true"></span>
+                                        <span>Delete watchlist item</span>
+                                      </button>
+                                    </app-pm-console-row-action-menu>
+                                  </td>
+                                </tr>
+                                @if (item.expanded) {
+                                  <tr class="pmo-watchlist-expanded-row">
+                                    <td colspan="4">
+                                      <div class="pmo-watchlist-records-panel">
+                                        <span>Records</span>
+                                        <button class="pmo-watchlist-record-add" type="button">
+                                          <span pmConsoleIcon="plus" aria-hidden="true"></span>
+                                          <span>Add</span>
+                                        </button>
+                                        <div class="pmo-watchlist-no-records">
+                                          @if (item.records.length) {
+                                            @for (record of item.records; track record) {
+                                              <strong>{{ record }}</strong>
+                                            }
+                                          } @else {
+                                            <span>No Record Added</span>
+                                          }
+                                        </div>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                }
+                              } @empty {
+                                <tr>
+                                  <td colspan="4"><span class="pmo-no-report-data">No watchlist items available</span></td>
+                                </tr>
+                              }
+                            </tbody>
+                          </table>
+                        </div>
+                      </section>
+                    </section>
+                  } @else if (activeForumDetailTab === 'issues') {
+                    <section class="pmo-issues-register" aria-label="Forum issues">
+                      <header class="pmo-issues-toolbar">
+                        <button class="pm-table-add-project pmo-add-issue" type="button">
+                          <span pmConsoleIcon="plus" aria-hidden="true"></span>
+                          <span>Add Issue</span>
+                        </button>
+                      </header>
+
+                      <div class="pmo-issues-empty-state">
+                        <p>{{ forumIssueEmptyState.message }}</p>
+                        <span>{{ forumIssueEmptyState.badgeLabel }}</span>
+                      </div>
+                    </section>
+                  } @else {
+                    <section class="pmo-forum-detail-empty" aria-label="Forum detail empty state">
+                      <strong>{{ activeForumDetailLabel }}</strong>
+                      <span>No data is available for this forum section yet.</span>
+                    </section>
+                  }
+                </section>
+              }
+              <nav class="pmo-tab-strip pmo-secondary-tabs" role="tablist" aria-label="Governance registers">
+                @for (tab of sectionTabs; track tab.id) {
+                  <button
+                    [class.active]="activeSectionTab === tab.id"
+                    type="button"
+                    role="tab"
+                    [attr.aria-selected]="activeSectionTab === tab.id"
+                    (click)="setSectionTab(tab.id)"
+                  >
+                    {{ tab.label }}
+                  </button>
+                }
+              </nav>
+
+              @if (activeSectionTab === 'forums') {
+                <div class="pmo-forum-toolbar">
+                  <div class="pmo-viewing-control" aria-label="Forum visibility">
+                    <span>Viewing</span>
+                    <button
+                      [class.active]="forumScope === 'mine'"
+                      type="button"
+                      [attr.aria-pressed]="forumScope === 'mine'"
+                      (click)="setForumScope('mine')"
+                    >
+                      My Forums (0)
+                    </button>
+                    <button
+                      [class.active]="forumScope === 'all'"
+                      type="button"
+                      [attr.aria-pressed]="forumScope === 'all'"
+                      (click)="setForumScope('all')"
+                    >
+                      All Forums (15)
+                    </button>
+                  </div>
+
+                  <div class="pmo-forum-actions">
+                    <app-pm-console-expandable-search
+                      class="pmo-forum-search"
+                      [ariaLabel]="'Search forums'"
+                      [placeholder]="'Search'"
+                      [value]="searchQuery"
+                      (searchChange)="setSearchQuery($event)"
+                    />
+                    <button class="pm-table-add-project pmo-add-forum" type="button" (click)="openForumDrawer()">
+                      <span pmConsoleIcon="plus" aria-hidden="true"></span>
+                      <span>Add New Forum</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="pmo-table-wrap pmo-scroll-table-wrap pmo-register-table-wrap">
+                  <app-pm-console-register-table
+                    class="pmo-governance-register-table pmo-forum-register-table"
+                    [columns]="forumRegisterColumns"
+                    [rows]="forumRegisterRows"
+                    ariaLabel="Governance forums"
+                    itemName="forums"
+                    [selectable]="false"
+                    [showToolbar]="false"
+                    [showSearch]="false"
+                    [showFilter]="false"
+                    [showExport]="false"
+                    emptyTitle="No forums match your search"
+                    emptyDescription="Try another forum name, owner, or category."
+                    (rowOpen)="openForumRegisterRow($event)"
+                    (cellAction)="handleForumRegisterAction($event)"
+                  ></app-pm-console-register-table>
+                </div>
+
+              } @else if (activeSectionTab === 'sources') {
+                <div class="pmo-forum-toolbar">
+                  <div class="pmo-viewing-control" aria-label="Source visibility">
+                    <span>Viewing</span>
+                    <button
+                      [class.active]="sourceScope === 'mine'"
+                      type="button"
+                      [attr.aria-pressed]="sourceScope === 'mine'"
+                      (click)="setSourceScope('mine')"
+                    >
+                      My Sources (0)
+                    </button>
+                    <button
+                      [class.active]="sourceScope === 'all'"
+                      type="button"
+                      [attr.aria-pressed]="sourceScope === 'all'"
+                      (click)="setSourceScope('all')"
+                    >
+                      All Sources (19)
+                    </button>
+                  </div>
+
+                  <div class="pmo-forum-actions">
+                    <app-pm-console-expandable-search
+                      class="pmo-forum-search"
+                      [ariaLabel]="'Search sources'"
+                      [placeholder]="'Search'"
+                      [value]="sourceSearchQuery"
+                      (searchChange)="setSourceSearchQuery($event)"
+                    />
+                    <button class="pm-table-add-project pmo-add-forum" type="button" (click)="openSourceDrawer('workspace')">
+                      <span pmConsoleIcon="plus" aria-hidden="true"></span>
+                      <span>Add New Source</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="pmo-table-wrap pmo-register-table-wrap">
+                  <app-pm-console-register-table
+                    class="pmo-governance-register-table pmo-source-register-table"
+                    [columns]="sourceRegisterColumns"
+                    [rows]="sourceRegisterRows"
+                    ariaLabel="Governance sources"
+                    itemName="sources"
+                    [selectable]="false"
+                    [showToolbar]="false"
+                    [showSearch]="false"
+                    [showFilter]="false"
+                    [showExport]="false"
+                    emptyTitle="No sources match your search"
+                    emptyDescription="Try another source name, type, or date."
+                  ></app-pm-console-register-table>
+                </div>
+
+              } @else if (activeSectionTab === 'records') {
+                <div class="pmo-forum-toolbar">
+                  <div class="pmo-viewing-control" aria-label="Record visibility">
+                    <span>Viewing</span>
+                    <button
+                      [class.active]="recordScope === 'mine'"
+                      type="button"
+                      [attr.aria-pressed]="recordScope === 'mine'"
+                      (click)="setRecordScope('mine')"
+                    >
+                      My Records (0)
+                    </button>
+                    <button
+                      [class.active]="recordScope === 'all'"
+                      type="button"
+                      [attr.aria-pressed]="recordScope === 'all'"
+                      (click)="setRecordScope('all')"
+                    >
+                      All Records (49)
+                    </button>
+                  </div>
+
+                  <div class="pmo-forum-actions">
+                    <app-pm-console-expandable-search
+                      class="pmo-forum-search"
+                      [ariaLabel]="'Search records'"
+                      [placeholder]="'Search'"
+                      [value]="recordSearchQuery"
+                      (searchChange)="setRecordSearchQuery($event)"
+                    />
+                    <button class="pm-table-add-project pmo-add-forum" type="button" (click)="openRecordDrawer('workspace')">
+                      <span pmConsoleIcon="plus" aria-hidden="true"></span>
+                      <span>Add New Record</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="pmo-table-wrap pmo-register-table-wrap">
+                  <app-pm-console-register-table
+                    class="pmo-governance-register-table pmo-record-register-table"
+                    [columns]="recordRegisterColumns"
+                    [rows]="recordRegisterRows"
+                    ariaLabel="Governance records"
+                    itemName="records"
+                    [selectable]="false"
+                    [showToolbar]="false"
+                    [showSearch]="false"
+                    [showFilter]="false"
+                    [showExport]="false"
+                    emptyTitle="No data available in table"
+                    (rowOpen)="openRecordRegisterRow($event)"
+                    (cellAction)="handleRecordRegisterAction($event)"
+                  ></app-pm-console-register-table>
+                </div>
+
+              } @else if (activeSectionTab === 'reports') {
+                <section class="pmo-reports-view" aria-label="Saved Report Templates">
+                  <header class="pmo-reports-heading">
+                    <div>
+                      <h2>Saved Report Templates</h2>
+                    </div>
+                  </header>
+
+                  <div class="pmo-forum-toolbar pmo-report-toolbar">
+                    <div class="pmo-forum-actions pmo-report-actions">
+                      <app-pm-console-expandable-search
+                        class="pmo-forum-search"
+                        [ariaLabel]="'Search saved report templates'"
+                        [placeholder]="'Search'"
+                        [value]="reportSearchQuery"
+                        (searchChange)="setReportSearchQuery($event)"
+                      />
+                      <button class="pm-table-add-project pmo-create-report" type="button" (click)="openReportDrawer()">
+                        <span pmConsoleIcon="plus" aria-hidden="true"></span>
+                        <span>Create Report</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="pmo-table-wrap pmo-report-table-wrap pmo-register-table-wrap">
+                    <app-pm-console-register-table
+                      class="pmo-governance-register-table pmo-report-register-table"
+                      [columns]="reportRegisterColumns"
+                      [rows]="reportRegisterRows"
+                      ariaLabel="Saved report templates"
+                      itemName="report templates"
+                      [selectable]="false"
+                      [showToolbar]="false"
+                      [showSearch]="false"
+                      [showFilter]="false"
+                      [showExport]="false"
+                      emptyTitle="No data available in table"
+                    ></app-pm-console-register-table>
+                  </div>
+                </section>
+              }
+            } @else if (activePrimaryTab === 'risk-register') {
+              <section class="pmo-program-register-view" aria-label="Risk register">
+                <app-pmo-governance-risk-register
+                  [risks]="riskData"
+                  [programs]="programs"
+                  [standaloneProjects]="standaloneProjects"
+                />
               </section>
             } @else {
               <section class="pmo-register-placeholder" [attr.aria-label]="activePrimaryTabLabel + ' coming soon'">
@@ -1589,6 +2292,10 @@ export class PmoGovernanceWorkspaceComponent implements OnChanges {
   @Input() initialTarget: PmoGovernanceWorkspaceTarget = pmoGovernanceDefaultWorkspaceTarget;
   @Output() readonly backSelected = new EventEmitter<void>();
   @Output() readonly forumDetailSelected = new EventEmitter<PmoGovernanceForumRow>();
+
+  riskData = riskRegisterData;
+  programs = portfolioProgramRows;
+  standaloneProjects = standaloneProjects;
 
   readonly primaryTabs = pmoGovernancePrimaryTabs;
   readonly sectionTabs = pmoGovernanceSectionTabs;
