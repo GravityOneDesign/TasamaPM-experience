@@ -304,6 +304,12 @@ interface CalendarPopoverPosition {
         padding: 0 6px;
         position: relative;
         z-index: 70;
+        border: none !important;
+      }
+
+      /* Hide the leading status dot inside calendar pills */
+      .calendar-event .calendar-event-dot {
+        display: none !important;
       }
 
       .calendar-event[data-event-type="Plans"],
@@ -551,7 +557,7 @@ interface CalendarPopoverPosition {
         min-width: 248px;
         padding: 12px;
         position: fixed;
-        z-index: 120;
+        z-index: 240;
       }
 
       .calendar-hover-card {
