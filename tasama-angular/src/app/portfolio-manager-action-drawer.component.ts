@@ -340,7 +340,10 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
                 <aside class="review-action-drawer" role="dialog" aria-modal="true" [attr.aria-label]="'Review plan: ' + selected.label">
                   <header class="ra-header">
                     <div class="ra-header-copy">
-                      <span class="ra-eyebrow plan">REVIEW ACTION</span>
+                      <span class="ra-eyebrow-row">
+                        <span class="ra-eyebrow plan">REVIEW ACTION</span>
+                        <span class="ra-eyebrow-pill">Project Plan</span>
+                      </span>
                       <h2>{{ selected.label }}</h2>
                       <p class="ra-description">Track blockers, open decisions, and delivery problems so ownership and next action are visible without opening another tool.</p>
                     </div>
@@ -1368,25 +1371,18 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
       }
 
       .review-action-drawer::after {
-        background: linear-gradient(to bottom, #10069f, #7b6fcf 60%, #d5d3ec);
-        bottom: 0;
-        content: '';
-        left: 0;
-        position: absolute;
-        top: 0;
-        width: 4px;
-        z-index: 2;
+        display: none;
       }
 
       .ra-header {
         align-items: flex-start;
-        background: #f8f8fc;
-        border-bottom: 1px solid #e4e7ef;
+        background: #f7f7fc;
+        border-bottom: 1px solid #ddd;
         display: flex;
         flex: 0 0 auto;
         gap: 16px;
         justify-content: space-between;
-        padding: 24px 24px 20px 28px;
+        padding: 24px 24px 17px 24px;
       }
 
       .ra-header-copy {
@@ -1395,19 +1391,35 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
         min-width: 0;
       }
 
+      .ra-eyebrow-row {
+        align-items: center;
+        display: flex;
+        gap: 8px;
+      }
+
       .ra-eyebrow {
         color: #10069f;
         font-size: 10px;
         font-weight: 600;
-        letter-spacing: 0.1em;
+        letter-spacing: 0.08em;
         line-height: 1;
         text-transform: uppercase;
       }
 
-      .ra-eyebrow.plan { color: #d4380d; }
+      .ra-eyebrow.plan { color: #10069f; }
+
+      .ra-eyebrow-pill {
+        background: rgba(49, 136, 181, 0.1);
+        border-radius: 6px;
+        color: #3188b5;
+        font-size: 11px;
+        font-weight: 500;
+        line-height: 16px;
+        padding: 2px 6px;
+      }
 
       .ra-header-copy h2 {
-        color: #0b0b0b;
+        color: #202633;
         font-size: 20px;
         font-weight: 600;
         line-height: 1.25;
@@ -1446,7 +1458,8 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
 
       .ra-description {
         color: #687182;
-        font-size: 12px;
+        font-size: 11px;
+        font-weight: 500;
         line-height: 1.55;
         margin: 0;
         max-width: 52ch;
@@ -1460,8 +1473,8 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
 
       .ra-icon-btn {
         align-items: center;
-        background: transparent;
-        border: 1px solid #dfe4ee;
+        background: #ffffff;
+        border: 1px solid #e4e7ef;
         border-radius: 8px;
         color: #536071;
         cursor: pointer;
@@ -1484,29 +1497,30 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
       /* Body + timeline */
 
       .ra-body {
+        background: #f7f7fc;
+        display: flex;
         flex: 1 1 auto;
+        flex-direction: column;
+        gap: 10px;
         min-height: 0;
         overflow-y: auto;
         overscroll-behavior: contain;
-        padding: 28px 24px 28px 28px;
+        padding: 16px 24px 24px 24px;
         position: relative;
       }
 
       .ra-body::before {
-        background: linear-gradient(to bottom, #10069f 0%, #c5c3e5 60%, transparent 100%);
-        content: '';
-        left: 45px;
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        z-index: 0;
+        display: none;
       }
 
-      /* Sections */
+      /* Sections — each rendered as its own white card */
 
       .ra-section {
-        margin-bottom: 32px;
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 2px 2px rgba(1, 10, 15, 0.08);
+        margin-bottom: 0;
+        padding: 16px;
       }
 
       .ra-section:last-child {
@@ -1517,33 +1531,31 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
         align-items: center;
         cursor: pointer;
         display: flex;
-        gap: 10px;
+        gap: 12px;
         user-select: none;
       }
 
       .ra-node {
         align-items: center;
-        background: #eeedfc;
-        border: 3px solid #ffffff;
-        border-radius: 50%;
+        background: rgba(16, 6, 159, 0.03);
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(1, 10, 15, 0.1);
         color: #10069f;
         display: inline-flex;
         flex-shrink: 0;
-        height: 36px;
+        height: 40px;
         justify-content: center;
-        position: relative;
-        width: 36px;
-        z-index: 1;
+        width: 40px;
       }
 
-      .ra-node .icon { height: 16px; width: 16px; }
-      .ra-node.red { background: #fce8e8; color: #b91c1c; }
+      .ra-node .icon { height: 22px; width: 22px; }
+      .ra-node.red { background: rgba(16, 6, 159, 0.03); color: #10069f; }
 
       .ra-section-head h3 {
         color: #0b0b0b;
-        font-size: 15px;
+        font-size: 14px;
         font-weight: 600;
-        line-height: 1.3;
+        line-height: 1.4;
         margin: 0;
       }
 
@@ -1580,24 +1592,24 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
 
       .ra-chevron-btn {
         align-items: center;
-        background: transparent;
-        border: 1px solid #e4e8f1;
-        border-radius: 8px;
+        background: #ffffff;
+        border: 1px solid #dfe4ee;
+        border-radius: 999px;
         color: #536071;
         cursor: pointer;
-        display: inline-flex;
         flex-shrink: 0;
-        height: 28px;
+        display: inline-flex;
+        height: 32px;
         justify-content: center;
-        width: 28px;
+        width: 32px;
       }
 
-      .ra-chevron-btn .icon { height: 14px; width: 14px; }
+      .ra-chevron-btn .icon { height: 16px; width: 16px; }
 
       .ra-section-body {
         display: grid;
-        gap: 20px;
-        padding: 16px 0 0 46px;
+        gap: 16px;
+        padding: 8px 0 0 0;
       }
 
       /* Fields */
@@ -1617,16 +1629,16 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
       }
 
       .ra-field small {
-        color: #687182;
+        color: #6f6f6f;
         font-size: 11px;
-        font-weight: 400;
-        line-height: 1.3;
+        font-weight: 500;
+        line-height: 1.45;
       }
 
       .ra-field > span {
         color: #2f2f2f;
-        font-size: 13px;
-        font-weight: 500;
+        font-size: 12px;
+        font-weight: 600;
         line-height: 1.35;
       }
 
@@ -1634,92 +1646,104 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
 
       .ra-card {
         background: #ffffff;
-        border: 1px solid #e4e8f1;
-        border-radius: 10px;
+        border: 1px solid #eee;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(1, 10, 15, 0.08);
         overflow: hidden;
+        padding: 2px;
       }
 
       .ra-card-head {
         align-items: center;
-        background: #fbfcff;
-        border-bottom: 1px solid #eef1f6;
+        background: #ffffff;
+        border-bottom: 1px solid #eee;
         display: flex;
-        gap: 10px;
-        padding: 14px 16px;
+        gap: 12px;
+        padding: 16px 16px 17px;
       }
 
       .ra-card-icon {
         align-items: center;
-        background: #eeedfc;
+        background: rgba(16, 6, 159, 0.03);
         border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(1, 10, 15, 0.1);
         color: #10069f;
         display: inline-flex;
         flex-shrink: 0;
-        height: 32px;
+        height: 40px;
         justify-content: center;
-        width: 32px;
+        width: 40px;
       }
 
-      .ra-card-icon.red { background: #fce8e8; color: #b91c1c; }
-      .ra-card-icon .icon { height: 16px; width: 16px; }
+      .ra-card-icon.red { background: rgba(16, 6, 159, 0.03); color: #10069f; }
+      .ra-card-icon .icon { height: 22px; width: 22px; }
 
       .ra-card-copy {
         display: grid;
-        gap: 2px;
+        gap: 4px;
         min-width: 0;
       }
 
       .ra-card-copy strong {
         color: #0b0b0b;
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 600;
-        line-height: 1.3;
+        line-height: 1.4;
       }
 
       .ra-card-copy small {
-        color: #687182;
-        font-size: 11px;
-        font-weight: 400;
+        color: #777;
+        font-size: 12px;
+        font-weight: 500;
         line-height: 1.3;
       }
 
       .ra-count-pill {
-        background: #f0eeff;
+        background: #f4f7fb;
         border-radius: 999px;
-        color: #10069f;
-        font-size: 11px;
+        color: #556072;
+        font-size: 10.5px;
         font-weight: 600;
         margin-left: auto;
-        padding: 4px 10px;
+        padding: 7px 12px;
         white-space: nowrap;
       }
 
       /* Tables */
 
       .ra-table {
-        border-collapse: collapse;
-        width: 100%;
+        border: 1px solid #e5eef4;
+        border-collapse: separate;
+        border-radius: 12px;
+        border-spacing: 0;
+        margin: 10px;
+        overflow: hidden;
+        width: calc(100% - 20px);
       }
 
       .ra-table th {
-        background: #f9fafb;
-        border-bottom: 1px solid #eef1f6;
+        background: #f7f7fc;
+        border-bottom: 1px solid #e5eef4;
         color: #687182;
-        font-size: 11px;
-        font-weight: 500;
-        padding: 10px 16px;
+        font-size: 10.5px;
+        font-weight: 600;
+        letter-spacing: 0.105px;
+        padding: 12px 16px;
         text-align: left;
       }
 
       .ra-table td {
-        border-bottom: 1px solid #f3f4f8;
-        color: #2f2f2f;
-        font-size: 12.5px;
+        border-top: 1px solid #edf0f6;
+        color: #303645;
+        font-size: 12px;
         font-weight: 400;
         padding: 12px 16px;
       }
 
-      .ra-table tr:last-child td { border-bottom: 0; }
+      .ra-table thead tr:first-child th:first-child { border-top-left-radius: 12px; }
+      .ra-table thead tr:first-child th:last-child { border-top-right-radius: 12px; }
+      .ra-table tbody tr:last-child td:first-child { border-bottom-left-radius: 12px; }
+      .ra-table tbody tr:last-child td:last-child { border-bottom-right-radius: 12px; }
 
       .ra-avatar-cell {
         align-items: center;
@@ -1749,20 +1773,20 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
       }
 
       .ra-text-block small {
-        color: #687182;
-        font-size: 11px;
-        font-weight: 400;
+        color: #2f2f2f;
+        font-size: 12px;
+        font-weight: 500;
       }
 
       .ra-text-content {
-        background: #fafbfe;
-        border: 1px solid #e8ebf2;
-        border-left: 3px solid #10069f;
-        border-radius: 6px;
-        color: #2f2f2f;
-        font-size: 12.5px;
-        line-height: 1.6;
-        padding: 14px 16px;
+        background: #ffffff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        color: #687182;
+        font-size: 11px;
+        font-weight: 500;
+        line-height: 1.55;
+        padding: 16px;
       }
 
       /* Pill row */
@@ -1774,19 +1798,24 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
       }
 
       .ra-pill-row small {
-        color: #687182;
-        font-size: 11px;
-        font-weight: 400;
+        color: #2f2f2f;
+        font-size: 12px;
+        font-weight: 500;
       }
 
       .ra-pill-tag {
-        background: #f0f4f8;
+        align-items: center;
+        background: #f6f8ff;
         border: 1px solid #dfe4ee;
-        border-radius: 999px;
-        color: #2f2f2f;
+        border-radius: 10px;
+        color: #10069f;
+        display: inline-flex;
         font-size: 11px;
-        font-weight: 500;
-        padding: 3px 10px;
+        font-weight: 600;
+        justify-content: center;
+        min-width: 70px;
+        padding: 6px 10px;
+        text-align: center;
       }
 
       /* Agenda grid (governance) */
@@ -1848,57 +1877,61 @@ type ReportDrawerPresentationMode = 'compose' | 'pdf-preview';
 
       .ra-footer {
         align-items: center;
-        background: rgba(255, 255, 255, 0.98);
-        border-top: 1px solid #e4e7ef;
+        background: #ffffff;
+        border-top: 1px solid #ddd;
         display: flex;
         flex: 0 0 auto;
         gap: 12px;
-        justify-content: center;
-        padding: 14px 24px;
+        justify-content: flex-end;
+        padding: 17px 24px 16px;
       }
 
       .ra-footer-cancel {
         background: transparent;
         border: 0;
-        color: #536071;
+        border-radius: 999px;
+        color: #404040;
         cursor: pointer;
-        font-size: 13px;
-        font-weight: 500;
-        padding: 0 8px;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.14px;
+        padding: 0 16px;
       }
 
       .ra-footer-more {
         align-items: center;
         background: #ffffff;
-        border: 1px solid #dfe4ee;
-        border-radius: 8px;
-        color: #2f2f2f;
+        border: 1px solid #d3d3d3;
+        border-radius: 999px;
+        color: #404040;
         cursor: pointer;
         display: inline-flex;
-        font-size: 13px;
-        font-weight: 500;
-        gap: 6px;
-        height: 38px;
+        font-size: 14px;
+        font-weight: 600;
+        gap: 8px;
+        height: 40px;
         justify-content: center;
-        padding: 0 14px;
+        letter-spacing: 0.14px;
+        padding: 0 17px;
       }
 
-      .ra-footer-more .icon { height: 13px; width: 13px; }
+      .ra-footer-more .icon { height: 16px; width: 16px; }
 
       .ra-footer-approve {
         align-items: center;
         background: #10069f;
         border: 1px solid #10069f;
-        border-radius: 8px;
+        border-radius: 999px;
         color: #ffffff;
         cursor: pointer;
         display: inline-flex;
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 600;
-        height: 38px;
+        height: 40px;
         justify-content: center;
-        min-width: 100px;
-        padding: 0 20px;
+        letter-spacing: 0.14px;
+        min-width: 96px;
+        padding: 0 31px;
       }
 
       .ra-footer-approve:hover { background: #0d0580; }
@@ -2351,6 +2384,8 @@ export class PortfolioManagerActionDrawerComponent implements OnChanges, OnDestr
     }
     if (action.kind === 'plan') {
       this.activePlanReviewData = portfolioActionPlanReviewData(action);
+      // Start with only Project Profile expanded; collapse the rest.
+      this.collapsedReviewSections = new Set<string>(['purpose', 'dates', 'budget', 'plan-risks']);
       return;
     }
     if (action.kind === 'risk') {

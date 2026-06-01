@@ -387,7 +387,8 @@ interface PortfolioTargetRow {
       overflow: hidden;
       padding: 0;
       position: relative;
-      z-index: 0;
+      /* z-index intentionally omitted: a stacking context here would trap the
+         calendar hover/preview cards beneath the control row (filters). */
     }
     .calendar-view,
     .board-view {
