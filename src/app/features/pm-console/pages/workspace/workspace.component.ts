@@ -8931,7 +8931,7 @@ const changeRequestTableColumns: PmConsoleRegisterTableColumn[] = [
                 <section class="workspace-panel" [class.project-workspace-panel]="!isAllProjects && !usesPm101DesignShell" [class.board-workspace-panel]="selectedView === 'board'" [class.calendar-workspace-panel]="selectedView === 'calendar'" [class.stages-workspace-panel]="selectedView === 'stages'" [class.quicklinks-workspace-panel]="selectedView === 'quicklinks'" [class.pm101-locked-workspace]="usesPm101DesignShell" [class.pm101-operational-workspace]="usesPm101OperationalLayout" [class.normal-pm-frontdoor-workspace]="isRoleLandingFrontDoor">
                   <div class="workspace-shell-head" [class.pm101-locked-shell-head]="usesPm101DesignShell" [class.pm101-operational-shell-head]="usesPm101OperationalLayout" [class.pm101-awaiting-shell-head]="onboardingPm101Locked" [class.pm101-frontdoor-assigned-shell-head]="usesAssignedFrontDoorShell || isRoleLandingFrontDoor" [class.normal-pm-frontdoor-shell-head]="isRoleLandingFrontDoor">
                     @if (usesPm101DesignShell) {
-                      @if (!onboardingPm101Locked) {
+                      @if (!onboardingPm101Locked && !isPmoFrontDoor) {
                         <div class="workspace-shell-actions" aria-label="Workspace utilities">
                           @if (shouldShowWorkspaceProjectDropdown) {
                             <app-pm-console-project-dropdown
