@@ -948,6 +948,25 @@ When a user asks for UI from Figma:
 
 ## Memory Log
 
+2026-06-01:
+
+- Refactored and updated Portfolio Manager Framework Settings (`portfolio-workspace-framework.component.ts`):
+  - Removed "Organisational Structure" tab completely, cleaning up template blocks, related styles, and TS class-only properties and methods.
+  - Set default active tab to "User Management".
+  - Renamed "Add User" buttons to "Request new license" (both toolbar and empty state) and replaced row action "Print" with "Swap User" in User Management.
+  - Renamed the "Add a new User" title to "Request new license" and the "Add" CTA submit label to "Send request" inside the User Management create-user side drawer.
+  - Removed "Add workflow" button, type selector dropdown, and all associated class handlers, variables, and CSS rules from Workflow Designer.
+  - Added dedicated project/program "Reporting Frequency" custom side drawer using standard platform shell with dynamic selection flow.
+  - Added visual customization indicator banner to "Monitoring & Reporting" panel notifying that cards allow customisation vs other global defaults.
+  - Redesigned the "Reporting Frequency" side drawer to replace the 3-step project/program configuration flow with a filterable, 5-column inline-editable data table.
+  - Positioned the Portfolio/Program/Project type chips in their own column to the right of the item name, and applied a premium light font weight (`font-weight: 300`) to the item names.
+  - Implemented dynamic character truncation (slice to 20 characters followed by an ellipsis for names exceeding 22 characters) on item names with native hover tooltips to show the full name.
+  - Removed borders and background styles around the edit/save/cancel icons (`rf-edit-btn`, `rf-save-btn`, `rf-cancel-btn`) to create premium, borderless action items with clean hover overlays.
+  - Decreased projected drawer padding (`padding: 0 0 24px 0`) to perfectly left-align the filters and table with the drawer title and "MONITORING & REPORTING" eyebrow.
+  - Implemented a custom entity picker dropdown (grouped collapsible programs & projects with real-time searching) and a frequency select pill above the table to filter rows.
+  - Reused the existing `.priority-table` CSS class family with custom style rules for a premium look, featuring inline-editing buttons (✔ Save / ✕ Cancel) to modify frequency and cycle due days per row in a silent-commit style.
+  - Retained all PMO framework setting flows completely untouched under `pmo-governance-framework.component.ts`.
+
 2026-05-29:
 
 - Merged and isolated revised 'Calendar' tab of Portfolio Manager:
